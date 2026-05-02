@@ -544,6 +544,47 @@ h1 {
   margin-top: 0;
 }
 
+
+.bug-report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+  padding-bottom: 96px;
+}
+
+.bug-summary-card,
+.bug-section-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  padding: 30px;
+  background: linear-gradient(180deg, rgba(18, 14, 15, 0.94), rgba(8, 8, 8, 0.96));
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.26);
+}
+
+.bug-summary-card {
+  border-color: rgba(239, 68, 68, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.1), transparent 36%),
+    linear-gradient(180deg, rgba(20, 13, 14, 0.98), rgba(8, 8, 8, 0.96));
+}
+
+.bug-summary-card h3,
+.bug-section-card h3 {
+  margin: 0 0 14px;
+  font-size: 1.08rem;
+  line-height: 1.35;
+}
+
+.bug-two-column-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.bug-actual-card {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
 .generic-output {
   position: relative;
   z-index: 1;
@@ -603,8 +644,14 @@ h1 {
   .test-case-card,
   .risk-summary-card,
   .risk-card,
-  .risk-section-card {
+  .risk-section-card,
+  .bug-summary-card,
+  .bug-section-card {
     padding: 22px;
+  }
+
+  .bug-two-column-grid {
+    grid-template-columns: 1fr;
   }
 
   .test-case-label-row,

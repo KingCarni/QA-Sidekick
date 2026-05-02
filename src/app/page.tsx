@@ -38,6 +38,20 @@ type RiskReview = {
   suggestedTestFocus?: unknown;
 };
 
+type BugReport = {
+  title?: unknown;
+  severitySuggestion?: unknown;
+  prioritySuggestion?: unknown;
+  summary?: unknown;
+  environment?: unknown;
+  stepsToReproduce?: unknown;
+  expectedResult?: unknown;
+  actualResult?: unknown;
+  impact?: unknown;
+  missingInfo?: unknown;
+  qaNotes?: unknown;
+};
+
 const tools: Array<{ id: ToolId; label: string; button: string; placeholder: string }> = [
   {
     id: "tests",
@@ -196,6 +210,44 @@ function formatRiskReview(review: RiskReview): string {
     ...(focus.length
       ? focus.map((item, index) => `${index + 1}. ${item}`)
       : ["No suggested test focus returned."]),
+  ].join("\n");
+}
+
+
+function formatBugReport(report: BugReport): string {
+  const steps = normalizeSteps(report.stepsToReproduce);
+  const missingInfo = meaningfulLines(report.missingInfo);
+  const qaNotes = meaningfulLines(report.qaNotes);
+
+  return [
+    `# ${safeText(report.title)}`,
+    "",
+    `Severity: ${safeText(report.severitySuggestion)}`,
+    `Priority: ${safeText(report.prioritySuggestion)}`,
+    "",
+    "## Summary",
+    safeText(report.summary),
+    "",
+    "## Environment",
+    safeText(report.environment),
+    "",
+    "## Steps to Reproduce",
+    ...(steps.length ? steps.map((step, index) => `${index + 1}. ${step}`) : ["1. Not specified."]),
+    "",
+    "## Expected Result",
+    safeText(report.expectedResult),
+    "",
+    "## Actual Result",
+    safeText(report.actualResult),
+    "",
+    "## Impact",
+    safeText(report.impact),
+    "",
+    "## Missing Info",
+    ...(missingInfo.length ? missingInfo.map((item) => `- ${item}`) : ["- No missing info returned."]),
+    "",
+    "## QA Notes",
+    ...(qaNotes.length ? qaNotes.map((item) => `- ${item}`) : ["- No QA notes returned."]),
   ].join("\n");
 }
 
@@ -575,6 +627,103 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
   );
 }
 
+
+function BugReportCards({ bugReport }: { bugReport: BugReport }) {
+  const [copied, setCopied] = useState(false);
+  const [exported, setExported] = useState(false);
+  const steps = normalizeSteps(bugReport.stepsToReproduce);
+
+  async function handleCopy() {
+    await copyText(formatBugReport(bugReport));
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1200);
+  }
+
+  function handleExportMarkdown() {
+    const markdown = formatBugReport(bugReport);
+    const filename = `qa-sidekick-bug-report-${buildTimestampForFilename()}.md`;
+
+    downloadTextFile(filename, markdown, "text/markdown");
+    setExported(true);
+    window.setTimeout(() => setExported(false), 1400);
+  }
+
+  return (
+    <div className="report-wrap bug-report-wrap">
+      <div className="report-header">
+        <div>
+          <p className="report-kicker">Bug Writer Report</p>
+          <h2>Structured Bug Report</h2>
+        </div>
+        <div className="report-actions">
+          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
+            {exported ? "Exported" : "Export Markdown"}
+          </button>
+          <button className="copy-all-button" type="button" onClick={handleCopy}>
+            {copied ? "Copied" : "Copy Bug Report"}
+          </button>
+        </div>
+      </div>
+
+      <div className="bug-report-list">
+        <section className="bug-summary-card">
+          <div className="badge-row">
+            <span className={badgeClass(bugReport.severitySuggestion, "risk")}>
+              Severity: {safeText(bugReport.severitySuggestion)}
+            </span>
+            <span className={badgeClass(bugReport.prioritySuggestion, "priority")}>
+              Priority: {safeText(bugReport.prioritySuggestion)}
+            </span>
+          </div>
+          <h3>{safeText(bugReport.title)}</h3>
+          <p className="field-text">{safeText(bugReport.summary)}</p>
+        </section>
+
+        <section className="bug-section-card">
+          <h3>Environment</h3>
+          <p className="field-text">{safeText(bugReport.environment)}</p>
+        </section>
+
+        <section className="bug-section-card">
+          <h3>Steps to Reproduce</h3>
+          <ol className="step-list">
+            {steps.map((step, index) => (
+              <li key={`${step}-${index}`}>{step}</li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="bug-two-column-grid">
+          <article className="bug-section-card">
+            <h3>Expected Result</h3>
+            <p className="field-text">{safeText(bugReport.expectedResult)}</p>
+          </article>
+
+          <article className="bug-section-card bug-actual-card">
+            <h3>Actual Result</h3>
+            <p className="field-text">{safeText(bugReport.actualResult)}</p>
+          </article>
+        </section>
+
+        <section className="bug-section-card">
+          <h3>Impact</h3>
+          <p className="field-text">{safeText(bugReport.impact)}</p>
+        </section>
+
+        <section className="bug-section-card">
+          <h3>Missing Info</h3>
+          <ValueBlock value={bugReport.missingInfo} />
+        </section>
+
+        <section className="bug-section-card">
+          <h3>QA Notes</h3>
+          <ValueBlock value={bugReport.qaNotes} />
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function GenericOutput({ output }: { output: string }) {
   const parsed = parseOutput(output);
 
@@ -584,6 +733,10 @@ function GenericOutput({ output }: { output: string }) {
 
   if (isPlainObject(parsed) && isPlainObject(parsed.riskReview)) {
     return <RiskReviewCards riskReview={parsed.riskReview as RiskReview} />;
+  }
+
+  if (isPlainObject(parsed) && isPlainObject(parsed.bugReport)) {
+    return <BugReportCards bugReport={parsed.bugReport as BugReport} />;
   }
 
   const displayText = typeof parsed === "string" ? parsed : JSON.stringify(parsed, null, 2);
