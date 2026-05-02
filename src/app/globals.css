@@ -1084,3 +1084,186 @@ h1 {
     width: 100%;
   }
 }
+
+
+/* QAS-11 evidence display in generated bug report */
+.bug-evidence-report-card {
+  border-color: rgba(248, 113, 113, 0.2);
+}
+
+.bug-evidence-group + .bug-evidence-group {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.bug-evidence-group h4 {
+  margin: 0 0 16px;
+  color: #fca5a5;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.bug-evidence-screenshot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.bug-evidence-screenshot-card {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.bug-evidence-screenshot-card img {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  background: #050505;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.bug-evidence-screenshot-card div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+}
+
+.bug-evidence-screenshot-card span {
+  min-width: 0;
+  overflow: hidden;
+  color: #f8fafc;
+  font-size: 0.9rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bug-evidence-screenshot-card small,
+.bug-evidence-log-row small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.bug-evidence-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bug-evidence-log-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.bug-evidence-log-row span {
+  min-width: 0;
+  overflow: hidden;
+  color: #f8fafc;
+  font-size: 0.9rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .bug-evidence-screenshot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bug-evidence-screenshot-card img {
+    max-height: 280px;
+  }
+
+  .bug-evidence-log-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+
+.bug-refine-help-text {
+  margin: -4px 0 12px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+
+/* QAS-11 badge spacing polish */
+.bug-summary-card .badge-row {
+  margin-top: 0;
+  margin-bottom: 18px;
+}
+
+.bug-summary-card h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+
+/* QAS-36 repro fields + markdown evidence polish */
+.bug-context-grid select {
+  width: 100%;
+  min-width: 0;
+  color: var(--text);
+  background: #070707;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  outline: none;
+  padding: 12px 13px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.015),
+    inset 0 14px 34px rgba(0, 0, 0, 0.24);
+}
+
+.bug-context-grid select:focus {
+  border-color: rgba(239, 68, 68, 0.58);
+  box-shadow:
+    0 0 0 3px rgba(239, 68, 68, 0.11),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+}
+
+
+/* QAS-37 Jira placeholder action */
+.jira-placeholder-button {
+  background: linear-gradient(135deg, #334155, #1e293b);
+  border: 1px solid rgba(147, 197, 253, 0.28);
+  box-shadow:
+    0 12px 24px rgba(15, 23, 42, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.jira-placeholder-button:hover {
+  border-color: rgba(147, 197, 253, 0.52);
+}
+
+.jira-placeholder-message {
+  position: relative;
+  z-index: 1;
+  margin: -12px 0 28px;
+  padding: 13px 15px;
+  color: #dbeafe;
+  border: 1px solid rgba(147, 197, 253, 0.22);
+  border-radius: 14px;
+  background: rgba(30, 41, 59, 0.42);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}

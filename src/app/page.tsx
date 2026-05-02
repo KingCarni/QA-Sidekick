@@ -254,11 +254,33 @@ function formatRiskReview(review: RiskReview): string {
 }
 
 
-function formatBugReport(report: BugReport): string {
+function formatBugReport(report: BugReport, evidenceFiles: UploadedEvidenceFile[] = [], evidenceLink = ""): string {
   const steps = normalizeSteps(report.stepsToReproduce);
   const missingInfo = meaningfulLines(report.missingInfo);
   const followUpQuestions = meaningfulLines(report.followUpQuestions);
   const qaNotes = meaningfulLines(report.qaNotes);
+  const screenshotEvidence = evidenceFiles.filter((file) => file.dataUrl);
+  const logEvidence = evidenceFiles.filter((file) => file.textPreview);
+  const evidenceRows = [
+    evidenceLink.trim() ? ["Evidence Link / Reference", evidenceLink.trim()] : [],
+    screenshotEvidence.length > 0
+      ? ["Screenshots", ...screenshotEvidence.map((file) => `${file.name} (${formatBytes(file.size)})`)]
+      : [],
+    logEvidence.length > 0
+      ? ["Logs", ...logEvidence.map((file) => `${file.name} (${formatBytes(file.size)})`)]
+      : [],
+  ].filter((row) => row.length > 0);
+
+  const logFindings = logEvidence.flatMap((file) => {
+    const preview = file.textPreview ?? "";
+    const lines = preview
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => /error|exception|crash|fatal|hang|unresponsive|warn/i.test(line))
+      .slice(0, 8);
+
+    return lines.map((line) => `${file.name}: ${line}`);
+  });
 
   return [
     `# ${safeText(report.title)}`,
@@ -294,6 +316,17 @@ function formatBugReport(report: BugReport): string {
     "",
     "## QA Notes",
     ...(qaNotes.length ? qaNotes.map((item) => `- ${item}`) : ["- No QA notes returned."]),
+    "",
+    "## Evidence",
+    ...(evidenceRows.length
+      ? evidenceRows.flatMap(([label, ...items]) => [
+          `${label}:`,
+          ...items.map((item) => `- ${item}`),
+          "",
+        ])
+      : ["- No evidence attached or referenced.", ""]),
+    "Relevant Log Findings:",
+    ...(logFindings.length ? logFindings.map((item) => `- ${item}`) : ["- No log findings included."]),
   ].join("\n");
 }
 
@@ -594,6 +627,7 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
 function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
+  const [jiraMessage, setJiraMessage] = useState("");
   const keyRisks = arrayFromUnknown<RiskItem>(riskReview.keyRisks);
   const bottlenecks = arrayFromUnknown<BottleneckItem>(riskReview.bottlenecks);
 
@@ -705,24 +739,40 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
 }
 
 
-function BugReportCards({ bugReport }: { bugReport: BugReport }) {
+function BugReportCards({
+  bugReport,
+  evidenceFiles = [],
+  evidenceLink = "",
+}: {
+  bugReport: BugReport;
+  evidenceFiles?: UploadedEvidenceFile[];
+  evidenceLink?: string;
+}) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
+  const [jiraMessage, setJiraMessage] = useState("");
   const steps = normalizeSteps(bugReport.stepsToReproduce);
+  const screenshotEvidence = evidenceFiles.filter((file) => file.dataUrl);
+  const logEvidence = evidenceFiles.filter((file) => file.textPreview);
 
   async function handleCopy() {
-    await copyText(formatBugReport(bugReport));
+    await copyText(formatBugReport(bugReport, evidenceFiles, evidenceLink));
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   }
 
   function handleExportMarkdown() {
-    const markdown = formatBugReport(bugReport);
+    const markdown = formatBugReport(bugReport, evidenceFiles, evidenceLink);
     const filename = `qa-sidekick-bug-report-${buildTimestampForFilename()}.md`;
 
     downloadTextFile(filename, markdown, "text/markdown");
     setExported(true);
     window.setTimeout(() => setExported(false), 1400);
+  }
+
+  function handleCreateJiraIssue() {
+    setJiraMessage("Jira issue creation is coming soon. For now, use Copy Bug Report or Export Markdown.");
+    window.setTimeout(() => setJiraMessage(""), 3200);
   }
 
   return (
@@ -733,6 +783,9 @@ function BugReportCards({ bugReport }: { bugReport: BugReport }) {
           <h2>Structured Bug Report</h2>
         </div>
         <div className="report-actions">
+          <button className="copy-all-button jira-placeholder-button" type="button" onClick={handleCreateJiraIssue}>
+            Create Jira Issue
+          </button>
           <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
             {exported ? "Exported" : "Export Markdown"}
           </button>
@@ -741,6 +794,8 @@ function BugReportCards({ bugReport }: { bugReport: BugReport }) {
           </button>
         </div>
       </div>
+
+      {jiraMessage ? <div className="jira-placeholder-message">{jiraMessage}</div> : null}
 
       <div className="bug-report-list">
         <section className="bug-summary-card">
@@ -801,12 +856,57 @@ function BugReportCards({ bugReport }: { bugReport: BugReport }) {
           <h3>QA Notes</h3>
           <ValueBlock value={bugReport.qaNotes} />
         </section>
+
+        {screenshotEvidence.length > 0 || logEvidence.length > 0 ? (
+          <section className="bug-section-card bug-evidence-report-card">
+            <h3>Evidence</h3>
+
+            {screenshotEvidence.length > 0 ? (
+              <div className="bug-evidence-group">
+                <h4>Screenshots</h4>
+                <div className="bug-evidence-screenshot-grid">
+                  {screenshotEvidence.map((file) => (
+                    <article className="bug-evidence-screenshot-card" key={file.name}>
+                      <img src={file.dataUrl} alt={`Evidence screenshot: ${file.name}`} />
+                      <div>
+                        <span>{file.name}</span>
+                        <small>{formatBytes(file.size)}</small>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {logEvidence.length > 0 ? (
+              <div className="bug-evidence-group">
+                <h4>Logs</h4>
+                <div className="bug-evidence-log-list">
+                  {logEvidence.map((file) => (
+                    <div className="bug-evidence-log-row" key={file.name}>
+                      <span>{file.name}</span>
+                      <small>{formatBytes(file.size)}</small>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </section>
+        ) : null}
       </div>
     </div>
   );
 }
 
-function GenericOutput({ output }: { output: string }) {
+function GenericOutput({
+  output,
+  evidenceFiles = [],
+  evidenceLink = "",
+}: {
+  output: string;
+  evidenceFiles?: UploadedEvidenceFile[];
+  evidenceLink?: string;
+}) {
   const parsed = parseOutput(output);
 
   if (isPlainObject(parsed) && Array.isArray(parsed.testCases)) {
@@ -818,7 +918,7 @@ function GenericOutput({ output }: { output: string }) {
   }
 
   if (isPlainObject(parsed) && isPlainObject(parsed.bugReport)) {
-    return <BugReportCards bugReport={parsed.bugReport as BugReport} />;
+    return <BugReportCards bugReport={parsed.bugReport as BugReport} evidenceFiles={evidenceFiles} evidenceLink={evidenceLink} />;
   }
 
   const displayText = typeof parsed === "string" ? parsed : JSON.stringify(parsed, null, 2);
@@ -835,6 +935,8 @@ export default function Home() {
   const [bugBuildNumber, setBugBuildNumber] = useState("");
   const [bugPlatform, setBugPlatform] = useState("");
   const [bugAccountRole, setBugAccountRole] = useState("");
+  const [bugReproRate, setBugReproRate] = useState("Unknown");
+  const [bugReproNotes, setBugReproNotes] = useState("");
   const [bugEvidenceLinks, setBugEvidenceLinks] = useState("");
   const [bugEvidenceNotes, setBugEvidenceNotes] = useState("");
   const [bugScreenshotFiles, setBugScreenshotFiles] = useState<UploadedEvidenceFile[]>([]);
@@ -929,6 +1031,8 @@ export default function Home() {
       bugBuildNumber.trim() ? `Build number: ${bugBuildNumber.trim()}` : "",
       bugPlatform.trim() ? `Browser/platform: ${bugPlatform.trim()}` : "",
       bugAccountRole.trim() ? `Account/user role: ${bugAccountRole.trim()}` : "",
+      bugReproRate ? `Repro rate: ${bugReproRate}` : "",
+      bugReproNotes.trim() ? `Repro notes: ${bugReproNotes.trim()}` : "",
     ].filter(Boolean);
 
     const answeredFollowUps = bugFollowUpQuestions
@@ -967,6 +1071,16 @@ export default function Home() {
       bugEvidenceNotes.trim() ? `Evidence notes: ${bugEvidenceNotes.trim()}` : "",
     ].filter(Boolean);
 
+    const testerNotesContext = bugContextAnswers.trim()
+      ? [
+          "Tester notes interpretation rules:",
+          "- Treat tester notes as direct QA-provided facts or suspects.",
+          "- If tester notes identify an item, trigger, account, condition, workaround, or recent change, use it in the report.",
+          "- Do not ask follow-up questions that are already answered by tester notes.",
+          "- Do not list tester-note details as missing info.",
+        ].join("\n")
+      : "";
+
     const hasBugRefinementContext =
       activeTool === "bug" &&
       (bugEnvironmentContext.length > 0 ||
@@ -994,8 +1108,10 @@ export default function Home() {
             ? answeredFollowUps.join("\n\n")
             : "No specific follow-up question answers supplied.",
           "",
-          "Additional freeform context:",
-          bugContextAnswers.trim() || "No additional freeform context supplied.",
+          "CRITICAL TESTER NOTES - treat as direct answers/context, not optional background:",
+          bugContextAnswers.trim() || "No critical tester notes supplied.",
+          "",
+          testerNotesContext,
         ].join("\n")
       : input;
 
@@ -1060,6 +1176,8 @@ export default function Home() {
                     setBugBuildNumber("");
                     setBugPlatform("");
                     setBugAccountRole("");
+                    setBugReproRate("Unknown");
+                    setBugReproNotes("");
                     setBugEvidenceLinks("");
                     setBugEvidenceNotes("");
                     setBugScreenshotFiles([]);
@@ -1141,6 +1259,29 @@ export default function Home() {
                       value={bugAccountRole}
                       onChange={(event) => setBugAccountRole(event.target.value)}
                       placeholder="Player, teacher, admin..."
+                    />
+                  </label>
+
+                  <label>
+                    Repro rate
+                    <select
+                      value={bugReproRate}
+                      onChange={(event) => setBugReproRate(event.target.value)}
+                    >
+                      <option value="Unknown">Unknown</option>
+                      <option value="Always">Always</option>
+                      <option value="Intermittent">Intermittent</option>
+                      <option value="Once">Once</option>
+                      <option value="Unable to reproduce">Unable to reproduce</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Repro notes
+                    <input
+                      value={bugReproNotes}
+                      onChange={(event) => setBugReproNotes(event.target.value)}
+                      placeholder="Example: 5/5 attempts on Xbox build 1..."
                     />
                   </label>
                 </div>
@@ -1247,12 +1388,15 @@ export default function Home() {
               </div>
 
               <div className="bug-refine-section">
-                <h4>Extra context</h4>
+                <h4>Additional tester notes</h4>
+                <p className="bug-refine-help-text">
+                  Use this for suspects, known patterns, workarounds, recent changes, or details that answer the follow-up questions.
+                </p>
                 <textarea
                   className="follow-up-answer-textarea"
                   value={bugContextAnswers}
                   onChange={(event) => setBugContextAnswers(event.target.value)}
-                  placeholder="Add any other details before re-improving the bug report..."
+                  placeholder="Example: Item in question is Super Pistol. Crash started after latest update. Happens only when this item is in inventory..."
                 />
               </div>
             </section>
@@ -1265,7 +1409,11 @@ export default function Home() {
 
         <section className="panel output-panel">
           {output ? (
-            <GenericOutput output={output} />
+            <GenericOutput
+              output={output}
+              evidenceFiles={[...bugScreenshotFiles, ...bugLogFiles]}
+              evidenceLink={bugEvidenceLinks}
+            />
           ) : (
             <div className="output-empty">Run a tool to see QA output here.</div>
           )}
