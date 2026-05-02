@@ -108,12 +108,27 @@ Use this exact JSON shape:
 
 Rules:
 - Use only the information provided in the bug notes and any additional answers/context supplied by the user.
-- If the input includes "Structured environment/context fields", use those fields to improve the Environment section and severity/priority reasoning.
-- If structured fields include Repro rate or Repro notes, include them in the Environment, Impact, or QA Notes as appropriate. Do not ask whether the bug is consistent if Repro rate already answers it.
+- If the input includes "STRUCTURED ENVIRONMENT AND REPRO FIELDS" or "Structured environment/context fields", treat those fields as already answered facts from the tester.
+- Use structured environment/repro fields to improve the Environment section and severity/priority reasoning.
+- Do not ask for device type if Device type is supplied.
+- Do not ask for operating system if Operating system is supplied.
+- Do not ask for app/game version or build number if App/game version or Build number is supplied.
+- Do not ask whether the issue reproduces consistently if Repro rate is supplied and is not Unknown.
+- If Repro notes are supplied, include them in Environment, Impact, or QA Notes as appropriate.
+- Missing Info and Follow-up Questions must not repeat structured fields that are already supplied.
+- The user may provide structured environment/repro fields before the first report is generated. Treat those fields exactly the same as post-generation refinement fields.
 - If the input includes "Evidence attachments, screenshots, logs, or links", include useful evidence references in qaNotes and use evidence details to improve impact/repro clarity. If an evidence link/reference is provided, mention that evidence is attached/referenced in qaNotes.
 - If logs are provided, summarize relevant error messages or patterns in qaNotes without dumping the entire log.
 - If screenshots are attached, use only visible screenshot evidence and do not invent unseen interactions.
 - If the input includes "Answered follow-up questions", use those answers to improve the report.
+- Use answered follow-up questions to rebuild qaNotes as a concise triage summary. Do not dump raw Q/A pairs into qaNotes; the UI keeps raw Q/A in Follow-up History.
+- Preserve the RESULT of important answered follow-ups in qaNotes when they change triage context, repro scope, suspected trigger, workaround, persistence after a change, or severity/priority reasoning.
+- Each answered follow-up may include a Resolution value:
+  - Resolved: the question has been answered; do not ask it again.
+  - Still open: use the answer, but ask a sharper follow-up if more detail is needed.
+  - No more questions: stop generating follow-up questions unless there is a critical missing blocker.
+- If the follow-up loop status says "No more questions requested by QA", return an empty followUpQuestions array unless a critical missing blocker remains.
+- Example: If QA answers that the crash still happens after removing a suspected item, qaNotes should explicitly mention that the issue persists after removing that item, not merely repeat the question and answer.
 - If the input includes "CRITICAL TESTER NOTES" or "Additional tester notes", treat those notes as the highest-priority tester-supplied context after the original bug notes. They are not optional background.
 - Critical tester notes must be used to update Missing Info, Follow-up Questions, Impact, QA Notes, suspected cause, suspected item, suspected trigger, and reproduction context.
 - Never ask a follow-up question that is directly answered by critical tester notes.

@@ -61,6 +61,15 @@ type UploadedEvidenceFile = {
   textPreview?: string;
 };
 
+type FollowUpResolution = "Resolved" | "Still open" | "No more questions";
+
+type AnsweredFollowUp = {
+  question: string;
+  answer: string;
+  answerType: string;
+  resolution: FollowUpResolution;
+};
+
 const tools: Array<{ id: ToolId; label: string; button: string; placeholder: string }> = [
   {
     id: "tests",
@@ -149,6 +158,49 @@ function isNegativeOrNotApplicableAnswer(value: string): boolean {
   ].includes(normalized);
 }
 
+function buildAnsweredFollowUps(
+  questions: string[],
+  answers: Record<string, string>,
+  resolutions: Record<string, FollowUpResolution>
+): AnsweredFollowUp[] {
+  return questions
+    .map((question) => {
+      const answer = answers[question]?.trim();
+
+      if (!answer) return null;
+
+      return {
+        question,
+        answer,
+        answerType: isNegativeOrNotApplicableAnswer(answer)
+          ? "Answered negative / not applicable"
+          : "Answered",
+        resolution: resolutions[question] ?? "Still open",
+      };
+    })
+    .filter((item): item is AnsweredFollowUp => item !== null);
+}
+
+function mergeAnsweredFollowUpHistory(
+  history: AnsweredFollowUp[],
+  latestAnswers: AnsweredFollowUp[]
+): AnsweredFollowUp[] {
+  const merged = [...history];
+
+  latestAnswers.forEach((latest) => {
+    const existingIndex = merged.findIndex((item) => item.question === latest.question);
+
+    if (existingIndex >= 0) {
+      merged[existingIndex] = latest;
+      return;
+    }
+
+    merged.push(latest);
+  });
+
+  return merged;
+}
+
 function arrayFromUnknown<T = unknown>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
@@ -186,6 +238,51 @@ function formatValueForClipboard(value: unknown, indent = ""): string {
   const lines = valueLines(value);
   if (lines.length === 1) return `${indent}${lines[0]}`;
   return lines.map((line) => `${indent}- ${line}`).join("\n");
+}
+
+function extractMarkdownListSection(markdown: string, heading: string): string[] {
+  const pattern = new RegExp(
+    `^##\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$([\\s\\S]*?)(?=^##\\s+|\\z)`,
+    "im"
+  );
+  const match = markdown.match(pattern);
+
+  if (!match?.[1]) return [];
+
+  return match[1]
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.replace(/^[-*]\s+/, "").replace(/^\d+[.)]\s+/, "").trim())
+    .filter(Boolean)
+    .filter((line) => !line.toLowerCase().startsWith("no follow-up questions"));
+}
+
+function buildTestCasesMarkdown(testCases: TestCase[]): string {
+  return [
+    "# Test Cases",
+    "",
+    ...testCases.flatMap((testCase, index) => [
+      `## Test Case ${index + 1}: ${safeText(testCase.title)}`,
+      "",
+      `Type: ${safeText(testCase.type)}`,
+      `Priority: ${safeText(testCase.priority)}`,
+      "",
+      "### Preconditions",
+      safeText(testCase.preconditions),
+      "",
+      "### Steps",
+      ...normalizeSteps(testCase.steps).map((step, stepIndex) => `${stepIndex + 1}. ${step}`),
+      "",
+      "### Expected Result",
+      safeText(testCase.expectedResult),
+      "",
+    ]),
+  ].join("\n");
+}
+
+function buildRiskReviewMarkdown(review: RiskReview): string {
+  return formatRiskReview(review);
 }
 
 function formatTestCase(testCase: TestCase, index: number): string {
@@ -254,7 +351,12 @@ function formatRiskReview(review: RiskReview): string {
 }
 
 
-function formatBugReport(report: BugReport, evidenceFiles: UploadedEvidenceFile[] = [], evidenceLink = ""): string {
+function formatBugReport(
+  report: BugReport,
+  evidenceFiles: UploadedEvidenceFile[] = [],
+  evidenceLink = "",
+  answeredFollowUps: AnsweredFollowUp[] = []
+): string {
   const steps = normalizeSteps(report.stepsToReproduce);
   const missingInfo = meaningfulLines(report.missingInfo);
   const followUpQuestions = meaningfulLines(report.followUpQuestions);
@@ -316,6 +418,16 @@ function formatBugReport(report: BugReport, evidenceFiles: UploadedEvidenceFile[
     "",
     "## QA Notes",
     ...(qaNotes.length ? qaNotes.map((item) => `- ${item}`) : ["- No QA notes returned."]),
+    "",
+    "Follow-up History:",
+    ...(answeredFollowUps.length
+      ? answeredFollowUps.flatMap((item, index) => [
+          `${index + 1}. Q: ${item.question}`,
+          `   A: ${item.answer}`,
+          `   Type: ${item.answerType}`,
+          `   Resolution: ${item.resolution}`,
+        ])
+      : ["- No answered follow-up questions recorded."]),
     "",
     "## Evidence",
     ...(evidenceRows.length
@@ -535,10 +647,16 @@ function RiskTextList({ title, items }: { title: string; items: unknown }) {
 function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
   const [copied, setCopied] = useState<string | null>(null);
   const [exported, setExported] = useState(false);
+  const [markdownExported, setMarkdownExported] = useState(false);
+  const [isEditingMarkdown, setIsEditingMarkdown] = useState(false);
+  const [editedMarkdown, setEditedMarkdown] = useState("");
+  const [savedMarkdown, setSavedMarkdown] = useState("");
+
+  const generatedMarkdown = useMemo(() => buildTestCasesMarkdown(testCases), [testCases]);
 
   const allText = useMemo(
-    () => testCases.map((testCase, index) => formatTestCase(testCase, index)).join("\n\n---\n\n"),
-    [testCases]
+    () => savedMarkdown || testCases.map((testCase, index) => formatTestCase(testCase, index)).join("\n\n---\n\n"),
+    [savedMarkdown, testCases]
   );
 
   async function handleCopy(id: string, text: string) {
@@ -556,6 +674,29 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
     window.setTimeout(() => setExported(false), 1400);
   }
 
+  function handleExportMarkdown() {
+    const filename = `qa-sidekick-test-cases-${buildTimestampForFilename()}.md`;
+
+    downloadTextFile(filename, savedMarkdown || generatedMarkdown, "text/markdown");
+    setMarkdownExported(true);
+    window.setTimeout(() => setMarkdownExported(false), 1400);
+  }
+
+  function handleToggleEditMarkdown() {
+    if (!isEditingMarkdown) {
+      setEditedMarkdown(savedMarkdown || generatedMarkdown);
+      setIsEditingMarkdown(true);
+      return;
+    }
+
+    setIsEditingMarkdown(false);
+  }
+
+  function handleSaveMarkdownEdits() {
+    setSavedMarkdown(editedMarkdown);
+    setIsEditingMarkdown(false);
+  }
+
   return (
     <div className="report-wrap">
       <div className="report-header">
@@ -564,14 +705,40 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
           <h2>{testCases.length} Test Cases</h2>
         </div>
         <div className="report-actions">
-          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportCsv}>
-            {exported ? "Exported" : "Export CSV"}
-          </button>
           <button className="copy-all-button" type="button" onClick={() => handleCopy("all", allText)}>
             {copied === "all" ? "Copied" : "Copy All"}
           </button>
+          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
+            {markdownExported ? "Exported" : "Export Markdown"}
+          </button>
+          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportCsv}>
+            {exported ? "Exported" : "Export CSV"}
+          </button>
+          <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
+            {isEditingMarkdown ? "Close Editor" : "Edit Report"}
+          </button>
         </div>
       </div>
+
+      {isEditingMarkdown ? (
+        <section className="report-markdown-editor-card">
+          <div className="report-markdown-editor-header">
+            <div>
+              <p>Edit before export</p>
+              <h3>Test Case Markdown</h3>
+            </div>
+            <button className="copy-all-button save-edit-button" type="button" onClick={handleSaveMarkdownEdits}>
+              Save Edits
+            </button>
+          </div>
+
+          <textarea
+            value={editedMarkdown}
+            onChange={(event) => setEditedMarkdown(event.target.value)}
+            spellCheck={false}
+          />
+        </section>
+      ) : null}
 
       <div className="test-card-list">
         {testCases.map((testCase, index) => {
@@ -627,12 +794,15 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
 function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
-  const [jiraMessage, setJiraMessage] = useState("");
+  const [markdownExported, setMarkdownExported] = useState(false);
+  const [isEditingMarkdown, setIsEditingMarkdown] = useState(false);
+  const [editedMarkdown, setEditedMarkdown] = useState("");
+  const [savedMarkdown, setSavedMarkdown] = useState("");
   const keyRisks = arrayFromUnknown<RiskItem>(riskReview.keyRisks);
   const bottlenecks = arrayFromUnknown<BottleneckItem>(riskReview.bottlenecks);
 
   async function handleCopy() {
-    await copyText(formatRiskReview(riskReview));
+    await copyText(savedMarkdown || buildRiskReviewMarkdown(riskReview));
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   }
@@ -646,6 +816,29 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
     window.setTimeout(() => setExported(false), 1400);
   }
 
+  function handleExportMarkdown() {
+    const filename = `qa-sidekick-risk-review-${buildTimestampForFilename()}.md`;
+
+    downloadTextFile(filename, savedMarkdown || buildRiskReviewMarkdown(riskReview), "text/markdown");
+    setMarkdownExported(true);
+    window.setTimeout(() => setMarkdownExported(false), 1400);
+  }
+
+  function handleToggleEditMarkdown() {
+    if (!isEditingMarkdown) {
+      setEditedMarkdown(savedMarkdown || buildRiskReviewMarkdown(riskReview));
+      setIsEditingMarkdown(true);
+      return;
+    }
+
+    setIsEditingMarkdown(false);
+  }
+
+  function handleSaveMarkdownEdits() {
+    setSavedMarkdown(editedMarkdown);
+    setIsEditingMarkdown(false);
+  }
+
   return (
     <div className="report-wrap risk-report-wrap">
       <div className="report-header">
@@ -654,14 +847,40 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
           <h2>Pre-production QA Risk Review</h2>
         </div>
         <div className="report-actions">
-          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportCsv}>
-            {exported ? "Exported" : "Export CSV"}
-          </button>
           <button className="copy-all-button" type="button" onClick={handleCopy}>
             {copied ? "Copied" : "Copy Risk Report"}
           </button>
+          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
+            {markdownExported ? "Exported" : "Export Markdown"}
+          </button>
+          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportCsv}>
+            {exported ? "Exported" : "Export CSV"}
+          </button>
+          <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
+            {isEditingMarkdown ? "Close Editor" : "Edit Report"}
+          </button>
         </div>
       </div>
+
+      {isEditingMarkdown ? (
+        <section className="report-markdown-editor-card">
+          <div className="report-markdown-editor-header">
+            <div>
+              <p>Edit before export</p>
+              <h3>Risk Review Markdown</h3>
+            </div>
+            <button className="copy-all-button save-edit-button" type="button" onClick={handleSaveMarkdownEdits}>
+              Save Edits
+            </button>
+          </div>
+
+          <textarea
+            value={editedMarkdown}
+            onChange={(event) => setEditedMarkdown(event.target.value)}
+            spellCheck={false}
+          />
+        </section>
+      ) : null}
 
       <div className="risk-report-list">
         <section className="risk-summary-card">
@@ -743,29 +962,53 @@ function BugReportCards({
   bugReport,
   evidenceFiles = [],
   evidenceLink = "",
+  answeredFollowUps = [],
+  onSaveBugMarkdown,
+  savedEditedMarkdown = "",
 }: {
   bugReport: BugReport;
   evidenceFiles?: UploadedEvidenceFile[];
   evidenceLink?: string;
+  answeredFollowUps?: AnsweredFollowUp[];
+  onSaveBugMarkdown?: (markdown: string) => void;
+  savedEditedMarkdown?: string;
 }) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
   const [jiraMessage, setJiraMessage] = useState("");
+  const [isEditingMarkdown, setIsEditingMarkdown] = useState(false);
+  const [editedMarkdown, setEditedMarkdown] = useState("");
   const steps = normalizeSteps(bugReport.stepsToReproduce);
   const screenshotEvidence = evidenceFiles.filter((file) => file.dataUrl);
   const logEvidence = evidenceFiles.filter((file) => file.textPreview);
+  const generatedMarkdown = formatBugReport(bugReport, evidenceFiles, evidenceLink, answeredFollowUps);
+  const exportMarkdown = isEditingMarkdown ? editedMarkdown : savedEditedMarkdown || generatedMarkdown;
+
+  function handleToggleEditMarkdown() {
+    if (!isEditingMarkdown) {
+      setEditedMarkdown(editedMarkdown || savedEditedMarkdown || generatedMarkdown);
+      setIsEditingMarkdown(true);
+      return;
+    }
+
+    setIsEditingMarkdown(false);
+  }
+
+  function handleSaveMarkdownEdits() {
+    onSaveBugMarkdown?.(editedMarkdown);
+    setIsEditingMarkdown(false);
+  }
 
   async function handleCopy() {
-    await copyText(formatBugReport(bugReport, evidenceFiles, evidenceLink));
+    await copyText(exportMarkdown);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   }
 
   function handleExportMarkdown() {
-    const markdown = formatBugReport(bugReport, evidenceFiles, evidenceLink);
     const filename = `qa-sidekick-bug-report-${buildTimestampForFilename()}.md`;
 
-    downloadTextFile(filename, markdown, "text/markdown");
+    downloadTextFile(filename, exportMarkdown, "text/markdown");
     setExported(true);
     window.setTimeout(() => setExported(false), 1400);
   }
@@ -782,20 +1025,46 @@ function BugReportCards({
           <p className="report-kicker">Bug Writer Report</p>
           <h2>Structured Bug Report</h2>
         </div>
-        <div className="report-actions">
+        <div className="report-actions bug-report-actions">
           <button className="copy-all-button jira-placeholder-button" type="button" onClick={handleCreateJiraIssue}>
             Create Jira Issue
+          </button>
+          <button className="copy-all-button" type="button" onClick={handleCopy}>
+            {copied ? "Copied" : "Copy Bug Report"}
           </button>
           <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
             {exported ? "Exported" : "Export Markdown"}
           </button>
-          <button className="copy-all-button" type="button" onClick={handleCopy}>
-            {copied ? "Copied" : "Copy Bug Report"}
+          <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
+            {isEditingMarkdown ? "Close Editor" : "Edit Report"}
           </button>
         </div>
       </div>
 
       {jiraMessage ? <div className="jira-placeholder-message">{jiraMessage}</div> : null}
+
+      {isEditingMarkdown ? (
+        <section className="bug-markdown-editor-card">
+          <div className="bug-markdown-editor-header">
+            <div>
+              <p>Edit before export</p>
+              <h3>Markdown Report</h3>
+            </div>
+            <div className="editor-action-stack">
+              <span>Save Edits updates copy/export and syncs edited Follow-up Questions back to the left panel.</span>
+              <button className="copy-all-button save-edit-button" type="button" onClick={handleSaveMarkdownEdits}>
+                Save Edits
+              </button>
+            </div>
+          </div>
+
+          <textarea
+            value={editedMarkdown}
+            onChange={(event) => setEditedMarkdown(event.target.value)}
+            spellCheck={false}
+          />
+        </section>
+      ) : null}
 
       <div className="bug-report-list">
         <section className="bug-summary-card">
@@ -857,6 +1126,22 @@ function BugReportCards({
           <ValueBlock value={bugReport.qaNotes} />
         </section>
 
+        {answeredFollowUps.length > 0 ? (
+          <section className="bug-section-card followup-history-card">
+            <h3>Follow-up History</h3>
+            <div className="followup-history-list">
+              {answeredFollowUps.map((item, index) => (
+                <article className="followup-history-item" key={`${item.question}-${index}`}>
+                  <span>Question {index + 1}</span>
+                  <strong>{item.question}</strong>
+                  <p>{item.answer}</p>
+                  <small>{item.answerType} · {item.resolution}</small>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         {screenshotEvidence.length > 0 || logEvidence.length > 0 ? (
           <section className="bug-section-card bug-evidence-report-card">
             <h3>Evidence</h3>
@@ -902,10 +1187,14 @@ function GenericOutput({
   output,
   evidenceFiles = [],
   evidenceLink = "",
+  answeredFollowUps = [],
+  onSaveBugMarkdown,
 }: {
   output: string;
   evidenceFiles?: UploadedEvidenceFile[];
   evidenceLink?: string;
+  answeredFollowUps?: AnsweredFollowUp[];
+  onSaveBugMarkdown?: (markdown: string) => void;
 }) {
   const parsed = parseOutput(output);
 
@@ -918,7 +1207,16 @@ function GenericOutput({
   }
 
   if (isPlainObject(parsed) && isPlainObject(parsed.bugReport)) {
-    return <BugReportCards bugReport={parsed.bugReport as BugReport} evidenceFiles={evidenceFiles} evidenceLink={evidenceLink} />;
+    return (
+      <BugReportCards
+        bugReport={parsed.bugReport as BugReport}
+        evidenceFiles={evidenceFiles}
+        evidenceLink={evidenceLink}
+        answeredFollowUps={answeredFollowUps}
+        onSaveBugMarkdown={onSaveBugMarkdown}
+        savedEditedMarkdown={typeof parsed.editedMarkdown === "string" ? parsed.editedMarkdown : ""}
+      />
+    );
   }
 
   const displayText = typeof parsed === "string" ? parsed : JSON.stringify(parsed, null, 2);
@@ -942,6 +1240,9 @@ export default function Home() {
   const [bugScreenshotFiles, setBugScreenshotFiles] = useState<UploadedEvidenceFile[]>([]);
   const [bugLogFiles, setBugLogFiles] = useState<UploadedEvidenceFile[]>([]);
   const [bugQuestionAnswers, setBugQuestionAnswers] = useState<Record<string, string>>({});
+  const [bugQuestionResolutions, setBugQuestionResolutions] = useState<Record<string, FollowUpResolution>>({});
+  const [bugAnsweredFollowUpHistory, setBugAnsweredFollowUpHistory] = useState<AnsweredFollowUp[]>([]);
+  const [followUpLoopClosed, setFollowUpLoopClosed] = useState(false);
   const [bugContextAnswers, setBugContextAnswers] = useState("");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
@@ -949,12 +1250,69 @@ export default function Home() {
   const tool = tools.find((item) => item.id === activeTool) ?? tools[0];
   const currentBugReport = activeTool === "bug" ? getBugReportFromOutput(output) : null;
   const bugFollowUpQuestions = currentBugReport ? meaningfulLines(currentBugReport.followUpQuestions) : [];
+  const currentAnsweredFollowUps = buildAnsweredFollowUps(
+    bugFollowUpQuestions,
+    bugQuestionAnswers,
+    bugQuestionResolutions
+  );
+  const bugAnsweredFollowUps = mergeAnsweredFollowUpHistory(
+    bugAnsweredFollowUpHistory,
+    currentAnsweredFollowUps
+  );
 
   function updateBugQuestionAnswer(question: string, answer: string) {
     setBugQuestionAnswers((current) => ({
       ...current,
       [question]: answer,
     }));
+
+    setBugQuestionResolutions((current) => ({
+      ...current,
+      [question]: current[question] ?? "Still open",
+    }));
+  }
+
+  function updateBugQuestionResolution(question: string, resolution: FollowUpResolution) {
+    setBugQuestionResolutions((current) => ({
+      ...current,
+      [question]: resolution,
+    }));
+
+    if (resolution === "No more questions") {
+      setFollowUpLoopClosed(true);
+    }
+  }
+
+  function handleSaveBugMarkdown(markdown: string) {
+    const parsed = parseOutput(output);
+
+    if (!isPlainObject(parsed) || !isPlainObject(parsed.bugReport)) {
+      return;
+    }
+
+    const editedFollowUps = extractMarkdownListSection(markdown, "Follow-up Questions");
+
+    const nextBugReport = {
+      ...parsed.bugReport,
+      followUpQuestions: editedFollowUps.length > 0 ? editedFollowUps : parsed.bugReport.followUpQuestions,
+    };
+
+    setOutput(
+      JSON.stringify(
+        {
+          ...parsed,
+          bugReport: nextBugReport,
+          editedMarkdown: markdown,
+        },
+        null,
+        2
+      )
+    );
+
+    if (editedFollowUps.length > 0) {
+      setBugQuestionAnswers({});
+      setBugQuestionResolutions({});
+    }
   }
 
   async function handleScreenshotFiles(files: FileList | null) {
@@ -1035,19 +1393,15 @@ export default function Home() {
       bugReproNotes.trim() ? `Repro notes: ${bugReproNotes.trim()}` : "",
     ].filter(Boolean);
 
-    const answeredFollowUps = bugFollowUpQuestions
-      .map((question) => {
-        const answer = bugQuestionAnswers[question]?.trim();
+    const mergedAnsweredFollowUps = mergeAnsweredFollowUpHistory(
+      bugAnsweredFollowUpHistory,
+      currentAnsweredFollowUps
+    );
 
-        if (!answer) return "";
-
-        const answerType = isNegativeOrNotApplicableAnswer(answer)
-          ? "Answered negative / not applicable"
-          : "Answered";
-
-        return `Q: ${question}\nA: ${answer}\nAnswer type: ${answerType}`;
-      })
-      .filter(Boolean);
+    const answeredFollowUps = mergedAnsweredFollowUps.map(
+      (item) =>
+        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nResolution: ${item.resolution}`
+    );
 
     const uploadedScreenshotContext = bugScreenshotFiles.map(
       (file, index) =>
@@ -1088,15 +1442,26 @@ export default function Home() {
         bugEvidenceContext.length > 0 ||
         bugContextAnswers.trim());
 
+    if (activeTool === "bug" && mergedAnsweredFollowUps.length > bugAnsweredFollowUpHistory.length) {
+      setBugAnsweredFollowUpHistory(mergedAnsweredFollowUps);
+    }
+
     const requestInput = hasBugRefinementContext
       ? [
           "Original rough bug notes:",
           input.trim(),
           "",
-          "Structured environment/context fields:",
+          "STRUCTURED ENVIRONMENT AND REPRO FIELDS - treat these as already answered:",
           bugEnvironmentContext.length > 0
             ? bugEnvironmentContext.join("\n")
             : "No structured environment/context fields supplied.",
+          "",
+          "Structured field interpretation rules:",
+          "- If Device type is supplied, do not ask what device was used.",
+          "- If Operating system is supplied, do not ask what OS was used.",
+          "- If App/game version or Build number is supplied, do not ask for that same version/build again.",
+          "- If Repro rate is supplied and is not Unknown, do not ask whether the issue reproduces consistently.",
+          "- If Repro notes are supplied, use them to refine impact, priority, and follow-up questions.",
           "",
           "Evidence attachments, screenshots, logs, or links:",
           bugEvidenceContext.length > 0
@@ -1107,6 +1472,11 @@ export default function Home() {
           answeredFollowUps.length > 0
             ? answeredFollowUps.join("\n\n")
             : "No specific follow-up question answers supplied.",
+          "",
+          "Follow-up loop status:",
+          followUpLoopClosed
+            ? "No more questions requested by QA. Do not generate additional follow-up questions unless there is a critical missing blocker."
+            : "Follow-up loop is still open.",
           "",
           "CRITICAL TESTER NOTES - treat as direct answers/context, not optional background:",
           bugContextAnswers.trim() || "No critical tester notes supplied.",
@@ -1183,6 +1553,9 @@ export default function Home() {
                     setBugScreenshotFiles([]);
                     setBugLogFiles([]);
                     setBugQuestionAnswers({});
+                    setBugQuestionResolutions({});
+                    setBugAnsweredFollowUpHistory([]);
+                    setFollowUpLoopClosed(false);
                     setBugContextAnswers("");
                   }
                 }}
@@ -1198,12 +1571,18 @@ export default function Home() {
             placeholder={tool.placeholder}
           />
 
-          {activeTool === "bug" && currentBugReport ? (
+          {activeTool === "bug" ? (
             <section className="follow-up-answer-box">
               <div className="follow-up-answer-header">
                 <p>Refine bug context</p>
-                <span>{bugFollowUpQuestions.length} questions</span>
+                <span>{currentBugReport ? `${bugFollowUpQuestions.length} questions` : "Optional before first run"}</span>
               </div>
+
+              {followUpLoopClosed ? (
+                <p className="follow-up-loop-closed">
+                  Follow-up loop marked complete. Re-improve will avoid asking more questions unless there is a critical blocker.
+                </p>
+              ) : null}
 
               <div className="bug-refine-section">
                 <h4>Environment</h4>
@@ -1370,20 +1749,44 @@ export default function Home() {
                 <h4>Answer follow-up questions</h4>
                 {bugFollowUpQuestions.length > 0 ? (
                   <div className="follow-up-question-card-list">
-                    {bugFollowUpQuestions.map((question, index) => (
-                      <label className="follow-up-question-card" key={`${question}-${index}`}>
-                        <span>Question {index + 1}</span>
-                        <strong>{question}</strong>
-                        <textarea
-                          value={bugQuestionAnswers[question] ?? ""}
-                          onChange={(event) => updateBugQuestionAnswer(question, event.target.value)}
-                          placeholder="Answer this question..."
-                        />
-                      </label>
-                    ))}
+                    {bugFollowUpQuestions.map((question, index) => {
+                      const resolution = bugQuestionResolutions[question] ?? "Still open";
+
+                      return (
+                        <div className="follow-up-question-card" key={`${question}-${index}`}>
+                          <span>Question {index + 1}</span>
+                          <strong>{question}</strong>
+                          <textarea
+                            value={bugQuestionAnswers[question] ?? ""}
+                            onChange={(event) => updateBugQuestionAnswer(question, event.target.value)}
+                            placeholder="Answer this question..."
+                          />
+
+                          <div className="follow-up-resolution-block">
+                            <p>Did this answer resolve the follow-up?</p>
+                            <div className="follow-up-resolution-actions">
+                              {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
+                                (option) => (
+                                  <button
+                                    className={resolution === option ? "active" : ""}
+                                    key={option}
+                                    type="button"
+                                    onClick={() => updateBugQuestionResolution(question, option)}
+                                  >
+                                    {option}
+                                  </button>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
-                  <p className="follow-up-answer-empty">No follow-up questions returned.</p>
+                  <p className="follow-up-answer-empty">
+                    Follow-up questions will appear here after the first bug report. You can still fill environment, repro, evidence, and tester notes before running.
+                  </p>
                 )}
               </div>
 
@@ -1413,6 +1816,8 @@ export default function Home() {
               output={output}
               evidenceFiles={[...bugScreenshotFiles, ...bugLogFiles]}
               evidenceLink={bugEvidenceLinks}
+              answeredFollowUps={bugAnsweredFollowUps}
+              onSaveBugMarkdown={handleSaveBugMarkdown}
             />
           ) : (
             <div className="output-empty">Run a tool to see QA output here.</div>

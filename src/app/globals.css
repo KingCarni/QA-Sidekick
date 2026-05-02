@@ -1267,3 +1267,321 @@ h1 {
   font-size: 0.92rem;
   line-height: 1.45;
 }
+
+
+/* QAS-37 action order polish */
+.bug-report-wrap .report-actions {
+  align-items: center;
+}
+
+
+/* QAS-38 prefill context + bug action row polish */
+.bug-report-actions {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.bug-report-actions .copy-all-button {
+  padding-left: 14px;
+  padding-right: 14px;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 980px) {
+  .bug-report-actions {
+    flex-wrap: wrap;
+  }
+
+  .bug-report-actions .copy-all-button {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
+
+
+/* QAS-39 answered follow-up history */
+.followup-history-card {
+  border-color: rgba(147, 197, 253, 0.18);
+}
+
+.followup-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.followup-history-item {
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.followup-history-item span {
+  display: block;
+  margin-bottom: 8px;
+  color: #fca5a5;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.followup-history-item strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.followup-history-item p {
+  margin: 10px 0 8px;
+  color: #f4f4f5;
+  line-height: 1.6;
+}
+
+.followup-history-item small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+
+/* QAS-40 follow-up resolution controls */
+.follow-up-resolution-block {
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.follow-up-resolution-block p {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.follow-up-resolution-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.follow-up-resolution-actions button {
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 10px;
+  color: #e5e7eb;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.follow-up-resolution-actions button:hover {
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.follow-up-resolution-actions button.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.86), rgba(153, 27, 27, 0.86));
+  border-color: rgba(248, 113, 113, 0.46);
+}
+
+.follow-up-loop-closed {
+  margin: 0;
+  padding: 12px 14px;
+  color: #dbeafe;
+  border: 1px solid rgba(147, 197, 253, 0.22);
+  border-radius: 14px;
+  background: rgba(30, 41, 59, 0.35);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.followup-history-item small {
+  display: inline-flex;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+
+/* QAS-41 editable Bug Writer report */
+.edit-report-button {
+  background: linear-gradient(135deg, #27272a, #18181b);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.edit-report-button:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.bug-markdown-editor-card {
+  position: relative;
+  z-index: 1;
+  margin: -8px 0 30px;
+  padding: 24px;
+  border: 1px solid rgba(147, 197, 253, 0.22);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.09), transparent 34%),
+    rgba(7, 7, 7, 0.88);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+}
+
+.bug-markdown-editor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.bug-markdown-editor-header p {
+  margin: 0 0 6px;
+  color: #93c5fd;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.bug-markdown-editor-header h3 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 1.05rem;
+}
+
+.bug-markdown-editor-header span {
+  max-width: 300px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.bug-markdown-editor-card textarea {
+  width: 100%;
+  min-height: 520px;
+  resize: vertical;
+  color: #f8fafc;
+  background: #050505;
+  border: 1px solid rgba(147, 197, 253, 0.18);
+  border-radius: 16px;
+  outline: none;
+  padding: 18px;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  white-space: pre;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.015),
+    inset 0 18px 44px rgba(0, 0, 0, 0.28);
+}
+
+.bug-markdown-editor-card textarea:focus {
+  border-color: rgba(147, 197, 253, 0.52);
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.11),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+}
+
+@media (max-width: 860px) {
+  .bug-markdown-editor-header {
+    flex-direction: column;
+  }
+
+  .bug-markdown-editor-header span {
+    max-width: none;
+    text-align: left;
+  }
+
+  .bug-markdown-editor-card textarea {
+    min-height: 420px;
+  }
+}
+
+
+/* QAS-42 editable report save flow */
+.report-markdown-editor-card {
+  position: relative;
+  z-index: 1;
+  margin: -8px 0 30px;
+  padding: 24px;
+  border: 1px solid rgba(147, 197, 253, 0.22);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.09), transparent 34%),
+    rgba(7, 7, 7, 0.88);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+}
+
+.report-markdown-editor-header,
+.editor-action-stack {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.report-markdown-editor-header p {
+  margin: 0 0 6px;
+  color: #93c5fd;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.report-markdown-editor-header h3 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 1.05rem;
+}
+
+.editor-action-stack {
+  align-items: flex-end;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+
+.editor-action-stack span,
+.report-markdown-editor-header > span {
+  max-width: 330px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.report-markdown-editor-card textarea,
+.bug-markdown-editor-card textarea {
+  min-height: 520px;
+}
+
+.save-edit-button {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: 1px solid rgba(147, 197, 253, 0.42);
+  box-shadow:
+    0 12px 24px rgba(37, 99, 235, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+@media (max-width: 860px) {
+  .report-markdown-editor-header,
+  .editor-action-stack {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .editor-action-stack span,
+  .report-markdown-editor-header > span {
+    max-width: none;
+    text-align: left;
+  }
+}
