@@ -101,6 +101,10 @@ function valueLines(value: unknown): string[] {
   return [String(value)];
 }
 
+function meaningfulLines(value: unknown): string[] {
+  return valueLines(value).filter((line) => line.trim() && line !== "Not specified.");
+}
+
 function arrayFromUnknown<T = unknown>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
@@ -148,9 +152,9 @@ function formatTestCase(testCase: TestCase, index: number): string {
 function formatRiskReview(review: RiskReview): string {
   const keyRisks = arrayFromUnknown<RiskItem>(review.keyRisks);
   const bottlenecks = arrayFromUnknown<BottleneckItem>(review.bottlenecks);
-  const missingCriteria = valueLines(review.missingAcceptanceCriteria);
-  const questions = valueLines(review.qaFollowUpQuestions);
-  const focus = valueLines(review.suggestedTestFocus);
+  const missingCriteria = meaningfulLines(review.missingAcceptanceCriteria);
+  const questions = meaningfulLines(review.qaFollowUpQuestions);
+  const focus = meaningfulLines(review.suggestedTestFocus);
 
   return [
     "QA Risk Review",
@@ -158,31 +162,157 @@ function formatRiskReview(review: RiskReview): string {
     `Summary: ${safeText(review.summary)}`,
     "",
     "Key Risks:",
-    ...keyRisks.flatMap((risk, index) => [
-      `${index + 1}. ${safeText(risk.title)}`,
-      `   Severity: ${safeText(risk.severity)}`,
-      `   Area: ${safeText(risk.area)}`,
-      `   Why it matters: ${safeText(risk.whyItMatters)}`,
-      `   Mitigation: ${safeText(risk.mitigation)}`,
-    ]),
+    ...(keyRisks.length
+      ? keyRisks.flatMap((risk, index) => [
+          `${index + 1}. ${safeText(risk.title)}`,
+          `   Severity: ${safeText(risk.severity)}`,
+          `   Area: ${safeText(risk.area)}`,
+          `   Why it matters: ${safeText(risk.whyItMatters)}`,
+          `   Mitigation: ${safeText(risk.mitigation)}`,
+        ])
+      : ["No key risks returned."]),
     "",
     "Bottlenecks:",
-    ...bottlenecks.flatMap((bottleneck, index) => [
-      `${index + 1}. ${safeText(bottleneck.title)}`,
-      `   Impact: ${safeText(bottleneck.impact)}`,
-      `   Owner: ${safeText(bottleneck.owner)}`,
-      `   Recommendation: ${safeText(bottleneck.recommendation)}`,
-    ]),
+    ...(bottlenecks.length
+      ? bottlenecks.flatMap((bottleneck, index) => [
+          `${index + 1}. ${safeText(bottleneck.title)}`,
+          `   Impact: ${safeText(bottleneck.impact)}`,
+          `   Owner: ${safeText(bottleneck.owner)}`,
+          `   Recommendation: ${safeText(bottleneck.recommendation)}`,
+        ])
+      : ["No bottlenecks returned."]),
     "",
     "Missing Acceptance Criteria:",
-    ...missingCriteria.map((item, index) => `${index + 1}. ${item}`),
+    ...(missingCriteria.length
+      ? missingCriteria.map((item, index) => `${index + 1}. ${item}`)
+      : ["No missing acceptance criteria returned."]),
     "",
     "QA Follow-up Questions:",
-    ...questions.map((item, index) => `${index + 1}. ${item}`),
+    ...(questions.length
+      ? questions.map((item, index) => `${index + 1}. ${item}`)
+      : ["No QA follow-up questions returned."]),
     "",
     "Suggested Test Focus:",
-    ...focus.map((item, index) => `${index + 1}. ${item}`),
+    ...(focus.length
+      ? focus.map((item, index) => `${index + 1}. ${item}`)
+      : ["No suggested test focus returned."]),
   ].join("\n");
+}
+
+
+function csvEscape(value: unknown): string {
+  const text = safeText(value).replace(/\r?\n/g, " ").trim();
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function makeCsv(rows: unknown[][]): string {
+  return rows.map((row) => row.map(csvEscape).join(",")).join("\n");
+}
+
+function buildTimestampForFilename() {
+  return new Date()
+    .toISOString()
+    .replace(/[:.]/g, "-")
+    .replace("T", "_")
+    .slice(0, 19);
+}
+
+function downloadTextFile(filename: string, content: string, mimeType: string) {
+  const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  window.setTimeout(() => URL.revokeObjectURL(url), 250);
+}
+
+function riskReviewToCsv(review: RiskReview): string {
+  const keyRisks = arrayFromUnknown<RiskItem>(review.keyRisks);
+  const bottlenecks = arrayFromUnknown<BottleneckItem>(review.bottlenecks);
+  const missingCriteria = meaningfulLines(review.missingAcceptanceCriteria);
+  const questions = meaningfulLines(review.qaFollowUpQuestions);
+  const focus = meaningfulLines(review.suggestedTestFocus);
+
+  const rows: unknown[][] = [
+    ["Section", "Item #", "Title", "Severity/Impact", "Area/Owner", "Details", "Recommendation/Mitigation"],
+    [
+      "Summary",
+      "",
+      "Overall Risk",
+      safeText(review.overallRisk),
+      "",
+      safeText(review.summary),
+      "",
+    ],
+  ];
+
+  keyRisks.forEach((risk, index) => {
+    rows.push([
+      "Key Risk",
+      index + 1,
+      risk.title,
+      risk.severity,
+      risk.area,
+      risk.whyItMatters,
+      risk.mitigation,
+    ]);
+  });
+
+  bottlenecks.forEach((bottleneck, index) => {
+    rows.push([
+      "Bottleneck",
+      index + 1,
+      bottleneck.title,
+      bottleneck.impact,
+      bottleneck.owner,
+      "",
+      bottleneck.recommendation,
+    ]);
+  });
+
+  missingCriteria.forEach((item, index) => {
+    rows.push(["Missing Acceptance Criteria", index + 1, item, "", "", item, ""]);
+  });
+
+  questions.forEach((item, index) => {
+    rows.push(["QA Follow-up Question", index + 1, item, "", "", item, ""]);
+  });
+
+  focus.forEach((item, index) => {
+    rows.push(["Suggested Test Focus", index + 1, item, "", "", item, ""]);
+  });
+
+  return makeCsv(rows);
+}
+
+
+function testCasesToCsv(testCases: TestCase[]): string {
+  const rows: unknown[][] = [
+    ["Test Case #", "Title", "Type", "Priority", "Preconditions", "Steps", "Expected Result"],
+  ];
+
+  testCases.forEach((testCase, index) => {
+    const steps = normalizeSteps(testCase.steps)
+      .map((step, stepIndex) => `${stepIndex + 1}. ${step}`)
+      .join("\n");
+
+    rows.push([
+      index + 1,
+      testCase.title,
+      testCase.type,
+      testCase.priority,
+      testCase.preconditions,
+      steps,
+      testCase.expectedResult,
+    ]);
+  });
+
+  return makeCsv(rows);
 }
 
 function badgeClass(value: unknown, kind: "type" | "priority" | "risk") {
@@ -221,14 +351,14 @@ function ValueBlock({ value }: { value: unknown }) {
   );
 }
 
-function TextList({ title, items }: { title: string; items: unknown }) {
-  const lines = valueLines(items).filter((line) => line && line !== "Not specified.");
+function RiskTextList({ title, items }: { title: string; items: unknown }) {
+  const lines = meaningfulLines(items);
 
   return (
-    <section className="test-case-card">
+    <section className="risk-section-card">
       <h3>{title}</h3>
       {lines.length > 0 ? (
-        <ul className="value-list">
+        <ul className="risk-section-list">
           {lines.map((line, index) => (
             <li key={`${title}-${line}-${index}`}>{line}</li>
           ))}
@@ -242,6 +372,7 @@ function TextList({ title, items }: { title: string; items: unknown }) {
 
 function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
   const [copied, setCopied] = useState<string | null>(null);
+  const [exported, setExported] = useState(false);
 
   const allText = useMemo(
     () => testCases.map((testCase, index) => formatTestCase(testCase, index)).join("\n\n---\n\n"),
@@ -254,6 +385,15 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
     window.setTimeout(() => setCopied(null), 1200);
   }
 
+  function handleExportCsv() {
+    const csv = testCasesToCsv(testCases);
+    const filename = `qa-sidekick-test-cases-${buildTimestampForFilename()}.csv`;
+
+    downloadTextFile(filename, csv, "text/csv");
+    setExported(true);
+    window.setTimeout(() => setExported(false), 1400);
+  }
+
   return (
     <div className="report-wrap">
       <div className="report-header">
@@ -261,9 +401,14 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
           <p className="report-kicker">Generated QA Report</p>
           <h2>{testCases.length} Test Cases</h2>
         </div>
-        <button className="copy-all-button" type="button" onClick={() => handleCopy("all", allText)}>
-          {copied === "all" ? "Copied" : "Copy All"}
-        </button>
+        <div className="report-actions">
+          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportCsv}>
+            {exported ? "Exported" : "Export CSV"}
+          </button>
+          <button className="copy-all-button" type="button" onClick={() => handleCopy("all", allText)}>
+            {copied === "all" ? "Copied" : "Copy All"}
+          </button>
+        </div>
       </div>
 
       <div className="test-card-list">
@@ -319,6 +464,7 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
 
 function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
   const [copied, setCopied] = useState(false);
+  const [exported, setExported] = useState(false);
   const keyRisks = arrayFromUnknown<RiskItem>(riskReview.keyRisks);
   const bottlenecks = arrayFromUnknown<BottleneckItem>(riskReview.bottlenecks);
 
@@ -328,20 +474,34 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
     window.setTimeout(() => setCopied(false), 1200);
   }
 
+  function handleExportCsv() {
+    const csv = riskReviewToCsv(riskReview);
+    const filename = `qa-sidekick-risk-review-${buildTimestampForFilename()}.csv`;
+
+    downloadTextFile(filename, csv, "text/csv");
+    setExported(true);
+    window.setTimeout(() => setExported(false), 1400);
+  }
+
   return (
-    <div className="report-wrap">
+    <div className="report-wrap risk-report-wrap">
       <div className="report-header">
         <div>
           <p className="report-kicker">Risk Review Report</p>
           <h2>Pre-production QA Risk Review</h2>
         </div>
-        <button className="copy-all-button" type="button" onClick={handleCopy}>
-          {copied ? "Copied" : "Copy Risk Report"}
-        </button>
+        <div className="report-actions">
+          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportCsv}>
+            {exported ? "Exported" : "Export CSV"}
+          </button>
+          <button className="copy-all-button" type="button" onClick={handleCopy}>
+            {copied ? "Copied" : "Copy Risk Report"}
+          </button>
+        </div>
       </div>
 
-      <section className="test-case-card">
-        <div className="test-case-topline">
+      <div className="risk-report-list">
+        <section className="risk-summary-card">
           <div className="badge-row">
             <span className={badgeClass(riskReview.overallRisk, "risk")}>
               Overall Risk: {safeText(riskReview.overallRisk)}
@@ -349,61 +509,68 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
           </div>
           <h3>Summary</h3>
           <p className="field-text">{safeText(riskReview.summary)}</p>
-        </div>
-      </section>
+        </section>
 
-      <div className="test-card-list">
-        {keyRisks.map((risk, index) => (
-          <article className="test-case-card" key={`${safeText(risk.title)}-${index}`}>
-            <div className="test-case-topline">
-              <div className="test-case-label-row">
-                <span className="test-case-label">Risk {index + 1}</span>
-              </div>
-              <h3>{safeText(risk.title)}</h3>
-              <div className="badge-row">
-                <span className={badgeClass(risk.severity, "risk")}>{safeText(risk.severity)}</span>
-                <span className="badge badge-type-default">{safeText(risk.area)}</span>
-              </div>
-            </div>
-
-            <div className="test-case-section">
-              <h4>Why It Matters</h4>
-              <p className="field-text">{safeText(risk.whyItMatters)}</p>
-            </div>
-
-            <div className="test-case-section expected-section">
-              <h4>Mitigation</h4>
-              <p className="field-text">{safeText(risk.mitigation)}</p>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      <section className="test-case-card">
-        <h3>Bottlenecks</h3>
-        {bottlenecks.length > 0 ? (
-          <div className="test-card-list compact-list">
-            {bottlenecks.map((bottleneck, index) => (
-              <div className="test-case-section" key={`${safeText(bottleneck.title)}-${index}`}>
-                <div className="test-case-label-row">
-                  <h4>{safeText(bottleneck.title)}</h4>
+        {keyRisks.length > 0 ? (
+          <div className="risk-card-list">
+            {keyRisks.map((risk, index) => (
+              <article className="risk-card" key={`${safeText(risk.title)}-${index}`}>
+                <div className="test-case-topline">
+                  <div className="test-case-label-row">
+                    <span className="test-case-label">Risk {index + 1}</span>
+                  </div>
+                  <h3>{safeText(risk.title)}</h3>
                   <div className="badge-row">
-                    <span className={badgeClass(bottleneck.impact, "risk")}>{safeText(bottleneck.impact)}</span>
-                    <span className="badge badge-type-default">{safeText(bottleneck.owner)}</span>
+                    <span className={badgeClass(risk.severity, "risk")}>{safeText(risk.severity)}</span>
+                    <span className="badge badge-type-default">{safeText(risk.area)}</span>
                   </div>
                 </div>
-                <p className="field-text">{safeText(bottleneck.recommendation)}</p>
-              </div>
+
+                <div className="test-case-section">
+                  <h4>Why It Matters</h4>
+                  <p className="field-text">{safeText(risk.whyItMatters)}</p>
+                </div>
+
+                <div className="test-case-section expected-section">
+                  <h4>Mitigation</h4>
+                  <p className="field-text">{safeText(risk.mitigation)}</p>
+                </div>
+              </article>
             ))}
           </div>
         ) : (
-          <p className="field-text">No bottlenecks returned.</p>
+          <section className="risk-section-card">
+            <h3>Key Risks</h3>
+            <p className="field-text">No key risks returned.</p>
+          </section>
         )}
-      </section>
 
-      <TextList title="Missing Acceptance Criteria" items={riskReview.missingAcceptanceCriteria} />
-      <TextList title="QA Follow-up Questions" items={riskReview.qaFollowUpQuestions} />
-      <TextList title="Suggested Test Focus" items={riskReview.suggestedTestFocus} />
+        <section className="risk-section-card">
+          <h3>Bottlenecks</h3>
+          {bottlenecks.length > 0 ? (
+            <div className="bottleneck-list">
+              {bottlenecks.map((bottleneck, index) => (
+                <div className="bottleneck-item" key={`${safeText(bottleneck.title)}-${index}`}>
+                  <div className="test-case-label-row bottleneck-heading">
+                    <h4>{safeText(bottleneck.title)}</h4>
+                    <div className="badge-row">
+                      <span className={badgeClass(bottleneck.impact, "risk")}>{safeText(bottleneck.impact)}</span>
+                      <span className="badge badge-type-default">{safeText(bottleneck.owner)}</span>
+                    </div>
+                  </div>
+                  <p className="field-text">{safeText(bottleneck.recommendation)}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="field-text">No bottlenecks returned.</p>
+          )}
+        </section>
+
+        <RiskTextList title="Missing Acceptance Criteria" items={riskReview.missingAcceptanceCriteria} />
+        <RiskTextList title="QA Follow-up Questions" items={riskReview.qaFollowUpQuestions} />
+        <RiskTextList title="Suggested Test Focus" items={riskReview.suggestedTestFocus} />
+      </div>
     </div>
   );
 }

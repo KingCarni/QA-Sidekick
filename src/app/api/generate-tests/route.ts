@@ -1,6 +1,6 @@
 import { jsonError, qaRequestSchema } from "@/lib/api";
 import { getOpenAIClient } from "@/lib/openai";
-import { buildRiskAnalysisPrompt } from "@/lib/qaPrompts";
+import { buildQaPrompt } from "@/lib/qaPrompts";
 
 export async function POST(req: Request) {
   try {
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "user",
-          content: buildRiskAnalysisPrompt(parsed.data.input),
+          content: buildQaPrompt("generate-tests", parsed.data.input),
         },
       ],
     });
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       result: JSON.parse(content),
     });
   } catch (error) {
-    console.error("/analyze-risk failed", error);
+    console.error("/generate-tests failed", error);
     return jsonError("QA Sidekick could not complete this request.", 500);
   }
 }

@@ -12,6 +12,7 @@ export function buildQaPrompt(mode: QaMode, input: string) {
 
   return `${base}\n\nTask: ${tasks[mode]}\n\nInput:\n${input}`;
 }
+
 export function buildRiskAnalysisPrompt(input: string) {
   return `
 You are a senior QA analyst reviewing a Jira ticket, user story, or requirements document before development begins.
