@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type ToolId = "tests" | "risk" | "bug" | "improve";
 
@@ -223,6 +223,26 @@ function getBugReportFromOutput(output: string): BugReport | null {
   return null;
 }
 
+function getTestOutputFromOutput(output: string): Record<string, unknown> | null {
+  const parsed = parseOutput(output);
+
+  if (isPlainObject(parsed) && Array.isArray(parsed.testCases)) {
+    return parsed;
+  }
+
+  return null;
+}
+
+function getRiskReviewFromOutput(output: string): RiskReview | null {
+  const parsed = parseOutput(output);
+
+  if (isPlainObject(parsed) && isPlainObject(parsed.riskReview)) {
+    return parsed.riskReview as RiskReview;
+  }
+
+  return null;
+}
+
 function normalizeSteps(steps: unknown): string[] {
   if (Array.isArray(steps)) return steps.map(safeText);
   if (typeof steps === "string") {
@@ -258,7 +278,7 @@ function extractMarkdownListSection(markdown: string, heading: string): string[]
     .filter((line) => !line.toLowerCase().startsWith("no follow-up questions"));
 }
 
-function buildTestCasesMarkdown(testCases: TestCase[]): string {
+function buildTestCasesMarkdown(testCases: TestCase[], answeredFollowUps: AnsweredFollowUp[] = []): string {
   return [
     "# Test Cases",
     "",
@@ -278,11 +298,20 @@ function buildTestCasesMarkdown(testCases: TestCase[]): string {
       safeText(testCase.expectedResult),
       "",
     ]),
+    "## Follow-up History",
+    ...(answeredFollowUps.length
+      ? answeredFollowUps.flatMap((item, index) => [
+          `${index + 1}. Q: ${item.question}`,
+          `   A: ${item.answer}`,
+          `   Type: ${item.answerType}`,
+          `   Resolution: ${item.resolution}`,
+        ])
+      : ["- No answered test follow-up questions recorded."]),
   ].join("\n");
 }
 
-function buildRiskReviewMarkdown(review: RiskReview): string {
-  return formatRiskReview(review);
+function buildRiskReviewMarkdown(review: RiskReview, answeredFollowUps: AnsweredFollowUp[] = []): string {
+  return formatRiskReview(review, answeredFollowUps);
 }
 
 function formatTestCase(testCase: TestCase, index: number): string {
@@ -300,7 +329,7 @@ function formatTestCase(testCase: TestCase, index: number): string {
   ].join("\n");
 }
 
-function formatRiskReview(review: RiskReview): string {
+function formatRiskReview(review: RiskReview, answeredFollowUps: AnsweredFollowUp[] = []): string {
   const keyRisks = arrayFromUnknown<RiskItem>(review.keyRisks);
   const bottlenecks = arrayFromUnknown<BottleneckItem>(review.bottlenecks);
   const missingCriteria = meaningfulLines(review.missingAcceptanceCriteria);
@@ -347,6 +376,16 @@ function formatRiskReview(review: RiskReview): string {
     ...(focus.length
       ? focus.map((item, index) => `${index + 1}. ${item}`)
       : ["No suggested test focus returned."]),
+    "",
+    "Follow-up History:",
+    ...(answeredFollowUps.length
+      ? answeredFollowUps.flatMap((item, index) => [
+          `${index + 1}. Q: ${item.question}`,
+          `   A: ${item.answer}`,
+          `   Type: ${item.answerType}`,
+          `   Resolution: ${item.resolution}`,
+        ])
+      : ["No answered follow-up questions recorded."]),
   ].join("\n");
 }
 
@@ -605,6 +644,71 @@ function badgeClass(value: unknown, kind: "type" | "priority" | "risk") {
   return "badge badge-type-default";
 }
 
+const severityOptions = ["Critical", "High", "Medium", "Low"];
+const priorityOptions = ["High", "Medium", "Low"];
+const riskOptions = ["High", "Medium", "Low"];
+const areaOptions = [
+  "Requirements",
+  "Data",
+  "Product",
+  "Dev",
+  "QA",
+  "Integration",
+  "UX",
+  "Accessibility",
+  "Security",
+  "Performance",
+];
+const testTypeOptions = [
+  "Functional",
+  "Negative",
+  "Edge",
+  "Regression",
+  "Accessibility",
+  "Data Integrity",
+  "AI Safety",
+  "Auth",
+  "Credits",
+];
+
+function optionValue(value: unknown, fallback: string, options: string[]) {
+  const current = safeText(value);
+  return options.includes(current) ? current : fallback;
+}
+
+function EditableBadgeSelect({
+  label,
+  value,
+  options,
+  kind,
+  onChange,
+}: {
+  label?: string;
+  value: unknown;
+  options: string[];
+  kind: "type" | "priority" | "risk";
+  onChange: (value: string) => void;
+}) {
+  const currentValue = optionValue(value, options[0] ?? "", options);
+
+  return (
+    <label className="editable-badge-select-wrap" title="Click to change this value">
+      <span className="sr-only">{label ?? "Editable badge"}</span>
+      <select
+        className={`editable-badge-select ${badgeClass(currentValue, kind)}`}
+        value={currentValue}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {label ? `${label}: ${option}` : option}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 async function copyText(text: string) {
   await navigator.clipboard.writeText(text);
 }
@@ -644,20 +748,42 @@ function RiskTextList({ title, items }: { title: string; items: unknown }) {
   );
 }
 
-function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
+function TestCaseCards({
+  testCases,
+  answeredFollowUps = [],
+}: {
+  testCases: TestCase[];
+  answeredFollowUps?: AnsweredFollowUp[];
+}) {
   const [copied, setCopied] = useState<string | null>(null);
   const [exported, setExported] = useState(false);
   const [markdownExported, setMarkdownExported] = useState(false);
   const [isEditingMarkdown, setIsEditingMarkdown] = useState(false);
   const [editedMarkdown, setEditedMarkdown] = useState("");
   const [savedMarkdown, setSavedMarkdown] = useState("");
+  const [editableTestCases, setEditableTestCases] = useState<TestCase[]>(testCases);
 
-  const generatedMarkdown = useMemo(() => buildTestCasesMarkdown(testCases), [testCases]);
+  useEffect(() => {
+    setEditableTestCases(testCases);
+    setSavedMarkdown("");
+    setEditedMarkdown("");
+  }, [testCases]);
+
+  const generatedMarkdown = useMemo(() => buildTestCasesMarkdown(editableTestCases), [editableTestCases]);
 
   const allText = useMemo(
-    () => savedMarkdown || testCases.map((testCase, index) => formatTestCase(testCase, index)).join("\n\n---\n\n"),
-    [savedMarkdown, testCases]
+    () => savedMarkdown || editableTestCases.map((testCase, index) => formatTestCase(testCase, index)).join("\n\n---\n\n"),
+    [savedMarkdown, editableTestCases]
   );
+
+  function updateTestCaseBadge(index: number, field: "type" | "priority", value: string) {
+    setEditableTestCases((current) =>
+      current.map((testCase, testCaseIndex) =>
+        testCaseIndex === index ? { ...testCase, [field]: value } : testCase
+      )
+    );
+    setSavedMarkdown("");
+  }
 
   async function handleCopy(id: string, text: string) {
     await copyText(text);
@@ -666,7 +792,7 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
   }
 
   function handleExportCsv() {
-    const csv = testCasesToCsv(testCases);
+    const csv = testCasesToCsv(editableTestCases);
     const filename = `qa-sidekick-test-cases-${buildTimestampForFilename()}.csv`;
 
     downloadTextFile(filename, csv, "text/csv");
@@ -702,9 +828,9 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
       <div className="report-header">
         <div>
           <p className="report-kicker">Generated QA Report</p>
-          <h2>{testCases.length} Test Cases</h2>
+          <h2>{editableTestCases.length} Test Cases</h2>
         </div>
-        <div className="report-actions">
+        <div className="report-actions compact-report-actions">
           <button className="copy-all-button" type="button" onClick={() => handleCopy("all", allText)}>
             {copied === "all" ? "Copied" : "Copy All"}
           </button>
@@ -720,12 +846,19 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
         </div>
       </div>
 
+      {savedMarkdown && !isEditingMarkdown ? (
+        <div className="saved-edit-notice">
+          Saved edits are active. Copy All and Export Markdown will use your edited Markdown. Cards below remain the structured AI preview.
+        </div>
+      ) : null}
+
       {isEditingMarkdown ? (
         <section className="report-markdown-editor-card">
           <div className="report-markdown-editor-header">
             <div>
               <p>Edit before export</p>
               <h3>Test Case Markdown</h3>
+              <span>Save Edits updates Copy All and Export Markdown. The cards below remain the structured AI preview for now.</span>
             </div>
             <button className="copy-all-button save-edit-button" type="button" onClick={handleSaveMarkdownEdits}>
               Save Edits
@@ -740,8 +873,24 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
         </section>
       ) : null}
 
+      {answeredFollowUps.length > 0 ? (
+        <section className="test-followup-history-card">
+          <h3>Follow-up History</h3>
+          <div className="followup-history-list">
+            {answeredFollowUps.map((item, index) => (
+              <article className="followup-history-item" key={`${item.question}-${index}`}>
+                <span>Question {index + 1}</span>
+                <strong>{item.question}</strong>
+                <p>{item.answer}</p>
+                <small>{item.answerType} · {item.resolution}</small>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <div className="test-card-list">
-        {testCases.map((testCase, index) => {
+        {editableTestCases.map((testCase, index) => {
           const copyId = `case-${index}`;
           const steps = normalizeSteps(testCase.steps);
 
@@ -760,8 +909,20 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
                 </div>
                 <h3>{safeText(testCase.title)}</h3>
                 <div className="badge-row">
-                  <span className={badgeClass(testCase.type, "type")}>{safeText(testCase.type)}</span>
-                  <span className={badgeClass(testCase.priority, "priority")}>{safeText(testCase.priority)}</span>
+                  <EditableBadgeSelect
+                    label="Type"
+                    value={testCase.type}
+                    options={testTypeOptions}
+                    kind="type"
+                    onChange={(value) => updateTestCaseBadge(index, "type", value)}
+                  />
+                  <EditableBadgeSelect
+                    label="Priority"
+                    value={testCase.priority}
+                    options={priorityOptions}
+                    kind="priority"
+                    onChange={(value) => updateTestCaseBadge(index, "priority", value)}
+                  />
                 </div>
               </div>
 
@@ -791,24 +952,75 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
   );
 }
 
-function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
+function RiskReviewCards({
+  riskReview,
+  answeredFollowUps = [],
+}: {
+  riskReview: RiskReview;
+  answeredFollowUps?: AnsweredFollowUp[];
+}) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
   const [markdownExported, setMarkdownExported] = useState(false);
   const [isEditingMarkdown, setIsEditingMarkdown] = useState(false);
   const [editedMarkdown, setEditedMarkdown] = useState("");
   const [savedMarkdown, setSavedMarkdown] = useState("");
-  const keyRisks = arrayFromUnknown<RiskItem>(riskReview.keyRisks);
-  const bottlenecks = arrayFromUnknown<BottleneckItem>(riskReview.bottlenecks);
+  const [editableRiskReview, setEditableRiskReview] = useState<RiskReview>(riskReview);
+  const keyRisks = arrayFromUnknown<RiskItem>(editableRiskReview.keyRisks);
+  const bottlenecks = arrayFromUnknown<BottleneckItem>(editableRiskReview.bottlenecks);
+
+  useEffect(() => {
+    setEditableRiskReview(riskReview);
+    setSavedMarkdown("");
+    setEditedMarkdown("");
+  }, [riskReview]);
+
+  function updateRiskReviewField(field: "overallRisk", value: string) {
+    setEditableRiskReview((current) => ({
+      ...current,
+      [field]: value,
+    }));
+    setSavedMarkdown("");
+  }
+
+  function updateRiskItemBadge(index: number, field: "severity" | "area", value: string) {
+    setEditableRiskReview((current) => {
+      const currentRisks = arrayFromUnknown<RiskItem>(current.keyRisks);
+      const nextRisks = currentRisks.map((risk, riskIndex) =>
+        riskIndex === index ? { ...risk, [field]: value } : risk
+      );
+
+      return {
+        ...current,
+        keyRisks: nextRisks,
+      };
+    });
+    setSavedMarkdown("");
+  }
+
+  function updateBottleneckBadge(index: number, field: "impact" | "owner", value: string) {
+    setEditableRiskReview((current) => {
+      const currentBottlenecks = arrayFromUnknown<BottleneckItem>(current.bottlenecks);
+      const nextBottlenecks = currentBottlenecks.map((bottleneck, bottleneckIndex) =>
+        bottleneckIndex === index ? { ...bottleneck, [field]: value } : bottleneck
+      );
+
+      return {
+        ...current,
+        bottlenecks: nextBottlenecks,
+      };
+    });
+    setSavedMarkdown("");
+  }
 
   async function handleCopy() {
-    await copyText(savedMarkdown || buildRiskReviewMarkdown(riskReview));
+    await copyText(savedMarkdown || buildRiskReviewMarkdown(editableRiskReview, answeredFollowUps));
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   }
 
   function handleExportCsv() {
-    const csv = riskReviewToCsv(riskReview);
+    const csv = riskReviewToCsv(editableRiskReview);
     const filename = `qa-sidekick-risk-review-${buildTimestampForFilename()}.csv`;
 
     downloadTextFile(filename, csv, "text/csv");
@@ -819,14 +1031,14 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
   function handleExportMarkdown() {
     const filename = `qa-sidekick-risk-review-${buildTimestampForFilename()}.md`;
 
-    downloadTextFile(filename, savedMarkdown || buildRiskReviewMarkdown(riskReview), "text/markdown");
+    downloadTextFile(filename, savedMarkdown || buildRiskReviewMarkdown(editableRiskReview, answeredFollowUps), "text/markdown");
     setMarkdownExported(true);
     window.setTimeout(() => setMarkdownExported(false), 1400);
   }
 
   function handleToggleEditMarkdown() {
     if (!isEditingMarkdown) {
-      setEditedMarkdown(savedMarkdown || buildRiskReviewMarkdown(riskReview));
+      setEditedMarkdown(savedMarkdown || buildRiskReviewMarkdown(editableRiskReview, answeredFollowUps));
       setIsEditingMarkdown(true);
       return;
     }
@@ -846,7 +1058,7 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
           <p className="report-kicker">Risk Review Report</p>
           <h2>Pre-production QA Risk Review</h2>
         </div>
-        <div className="report-actions">
+        <div className="report-actions compact-report-actions">
           <button className="copy-all-button" type="button" onClick={handleCopy}>
             {copied ? "Copied" : "Copy Risk Report"}
           </button>
@@ -862,12 +1074,19 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
         </div>
       </div>
 
+      {savedMarkdown && !isEditingMarkdown ? (
+        <div className="saved-edit-notice">
+          Saved edits are active. Copy Risk Report and Export Markdown will use your edited Markdown. Cards below remain the structured AI preview.
+        </div>
+      ) : null}
+
       {isEditingMarkdown ? (
         <section className="report-markdown-editor-card">
           <div className="report-markdown-editor-header">
             <div>
               <p>Edit before export</p>
               <h3>Risk Review Markdown</h3>
+              <span>Save Edits updates Copy Risk Report and Export Markdown. The cards below remain the structured AI preview for now.</span>
             </div>
             <button className="copy-all-button save-edit-button" type="button" onClick={handleSaveMarkdownEdits}>
               Save Edits
@@ -885,12 +1104,16 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
       <div className="risk-report-list">
         <section className="risk-summary-card">
           <div className="badge-row">
-            <span className={badgeClass(riskReview.overallRisk, "risk")}>
-              Overall Risk: {safeText(riskReview.overallRisk)}
-            </span>
+            <EditableBadgeSelect
+              label="Overall Risk"
+              value={editableRiskReview.overallRisk}
+              options={riskOptions}
+              kind="risk"
+              onChange={(value) => updateRiskReviewField("overallRisk", value)}
+            />
           </div>
           <h3>Summary</h3>
-          <p className="field-text">{safeText(riskReview.summary)}</p>
+          <p className="field-text">{safeText(editableRiskReview.summary)}</p>
         </section>
 
         {keyRisks.length > 0 ? (
@@ -903,8 +1126,20 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
                   </div>
                   <h3>{safeText(risk.title)}</h3>
                   <div className="badge-row">
-                    <span className={badgeClass(risk.severity, "risk")}>{safeText(risk.severity)}</span>
-                    <span className="badge badge-type-default">{safeText(risk.area)}</span>
+                    <EditableBadgeSelect
+                      label="Severity"
+                      value={risk.severity}
+                      options={severityOptions}
+                      kind="risk"
+                      onChange={(value) => updateRiskItemBadge(index, "severity", value)}
+                    />
+                    <EditableBadgeSelect
+                      label="Area"
+                      value={risk.area}
+                      options={areaOptions}
+                      kind="type"
+                      onChange={(value) => updateRiskItemBadge(index, "area", value)}
+                    />
                   </div>
                 </div>
 
@@ -936,8 +1171,20 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
                   <div className="test-case-label-row bottleneck-heading">
                     <h4>{safeText(bottleneck.title)}</h4>
                     <div className="badge-row">
-                      <span className={badgeClass(bottleneck.impact, "risk")}>{safeText(bottleneck.impact)}</span>
-                      <span className="badge badge-type-default">{safeText(bottleneck.owner)}</span>
+                      <EditableBadgeSelect
+                        label="Impact"
+                        value={bottleneck.impact}
+                        options={riskOptions}
+                        kind="risk"
+                        onChange={(value) => updateBottleneckBadge(index, "impact", value)}
+                      />
+                      <EditableBadgeSelect
+                        label="Owner"
+                        value={bottleneck.owner}
+                        options={areaOptions}
+                        kind="type"
+                        onChange={(value) => updateBottleneckBadge(index, "owner", value)}
+                      />
                     </div>
                   </div>
                   <p className="field-text">{safeText(bottleneck.recommendation)}</p>
@@ -949,9 +1196,25 @@ function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
           )}
         </section>
 
-        <RiskTextList title="Missing Acceptance Criteria" items={riskReview.missingAcceptanceCriteria} />
-        <RiskTextList title="QA Follow-up Questions" items={riskReview.qaFollowUpQuestions} />
-        <RiskTextList title="Suggested Test Focus" items={riskReview.suggestedTestFocus} />
+        <RiskTextList title="Missing Acceptance Criteria" items={editableRiskReview.missingAcceptanceCriteria} />
+        <RiskTextList title="QA Follow-up Questions" items={editableRiskReview.qaFollowUpQuestions} />
+        <RiskTextList title="Suggested Test Focus" items={editableRiskReview.suggestedTestFocus} />
+
+        {answeredFollowUps.length > 0 ? (
+          <section className="risk-section-card followup-history-card">
+            <h3>Follow-up History</h3>
+            <div className="followup-history-list">
+              {answeredFollowUps.map((item, index) => (
+                <article className="followup-history-item" key={`${item.question}-${index}`}>
+                  <span>Question {index + 1}</span>
+                  <strong>{item.question}</strong>
+                  <p>{item.answer}</p>
+                  <small>{item.answerType} · {item.resolution}</small>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
   );
@@ -963,6 +1226,7 @@ function BugReportCards({
   evidenceFiles = [],
   evidenceLink = "",
   answeredFollowUps = [],
+  riskAnsweredFollowUps = [],
   onSaveBugMarkdown,
   savedEditedMarkdown = "",
 }: {
@@ -970,6 +1234,7 @@ function BugReportCards({
   evidenceFiles?: UploadedEvidenceFile[];
   evidenceLink?: string;
   answeredFollowUps?: AnsweredFollowUp[];
+  riskAnsweredFollowUps?: AnsweredFollowUp[];
   onSaveBugMarkdown?: (markdown: string) => void;
   savedEditedMarkdown?: string;
 }) {
@@ -978,10 +1243,24 @@ function BugReportCards({
   const [jiraMessage, setJiraMessage] = useState("");
   const [isEditingMarkdown, setIsEditingMarkdown] = useState(false);
   const [editedMarkdown, setEditedMarkdown] = useState("");
-  const steps = normalizeSteps(bugReport.stepsToReproduce);
+  const [editableBugReport, setEditableBugReport] = useState<BugReport>(bugReport);
+
+  useEffect(() => {
+    setEditableBugReport(bugReport);
+    setEditedMarkdown("");
+  }, [bugReport]);
+
+  function updateBugReportBadge(field: "severitySuggestion" | "prioritySuggestion", value: string) {
+    setEditableBugReport((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
+  const steps = normalizeSteps(editableBugReport.stepsToReproduce);
   const screenshotEvidence = evidenceFiles.filter((file) => file.dataUrl);
   const logEvidence = evidenceFiles.filter((file) => file.textPreview);
-  const generatedMarkdown = formatBugReport(bugReport, evidenceFiles, evidenceLink, answeredFollowUps);
+  const generatedMarkdown = formatBugReport(editableBugReport, evidenceFiles, evidenceLink, answeredFollowUps);
   const exportMarkdown = isEditingMarkdown ? editedMarkdown : savedEditedMarkdown || generatedMarkdown;
 
   function handleToggleEditMarkdown() {
@@ -1025,7 +1304,7 @@ function BugReportCards({
           <p className="report-kicker">Bug Writer Report</p>
           <h2>Structured Bug Report</h2>
         </div>
-        <div className="report-actions bug-report-actions">
+        <div className="report-actions compact-report-actions bug-report-actions">
           <button className="copy-all-button jira-placeholder-button" type="button" onClick={handleCreateJiraIssue}>
             Create Jira Issue
           </button>
@@ -1043,19 +1322,23 @@ function BugReportCards({
 
       {jiraMessage ? <div className="jira-placeholder-message">{jiraMessage}</div> : null}
 
+      {savedEditedMarkdown && !isEditingMarkdown ? (
+        <div className="saved-edit-notice">
+          Saved edits are active. Copy Bug Report and Export Markdown will use your edited Markdown. Cards below remain the structured AI preview.
+        </div>
+      ) : null}
+
       {isEditingMarkdown ? (
         <section className="bug-markdown-editor-card">
           <div className="bug-markdown-editor-header">
             <div>
               <p>Edit before export</p>
               <h3>Markdown Report</h3>
+              <span>Save Edits updates Copy Bug Report and Export Markdown. Edited Follow-up Questions also sync back to the left panel.</span>
             </div>
-            <div className="editor-action-stack">
-              <span>Save Edits updates copy/export and syncs edited Follow-up Questions back to the left panel.</span>
-              <button className="copy-all-button save-edit-button" type="button" onClick={handleSaveMarkdownEdits}>
-                Save Edits
-              </button>
-            </div>
+            <button className="copy-all-button save-edit-button" type="button" onClick={handleSaveMarkdownEdits}>
+              Save Edits
+            </button>
           </div>
 
           <textarea
@@ -1069,20 +1352,28 @@ function BugReportCards({
       <div className="bug-report-list">
         <section className="bug-summary-card">
           <div className="badge-row">
-            <span className={badgeClass(bugReport.severitySuggestion, "risk")}>
-              Severity: {safeText(bugReport.severitySuggestion)}
-            </span>
-            <span className={badgeClass(bugReport.prioritySuggestion, "priority")}>
-              Priority: {safeText(bugReport.prioritySuggestion)}
-            </span>
+            <EditableBadgeSelect
+              label="Severity"
+              value={editableBugReport.severitySuggestion}
+              options={severityOptions}
+              kind="risk"
+              onChange={(value) => updateBugReportBadge("severitySuggestion", value)}
+            />
+            <EditableBadgeSelect
+              label="Priority"
+              value={editableBugReport.prioritySuggestion}
+              options={priorityOptions}
+              kind="priority"
+              onChange={(value) => updateBugReportBadge("prioritySuggestion", value)}
+            />
           </div>
-          <h3>{safeText(bugReport.title)}</h3>
-          <p className="field-text">{safeText(bugReport.summary)}</p>
+          <h3>{safeText(editableBugReport.title)}</h3>
+          <p className="field-text">{safeText(editableBugReport.summary)}</p>
         </section>
 
         <section className="bug-section-card">
           <h3>Environment</h3>
-          <p className="field-text">{safeText(bugReport.environment)}</p>
+          <p className="field-text">{safeText(editableBugReport.environment)}</p>
         </section>
 
         <section className="bug-section-card">
@@ -1097,33 +1388,33 @@ function BugReportCards({
         <section className="bug-two-column-grid">
           <article className="bug-section-card">
             <h3>Expected Result</h3>
-            <p className="field-text">{safeText(bugReport.expectedResult)}</p>
+            <p className="field-text">{safeText(editableBugReport.expectedResult)}</p>
           </article>
 
           <article className="bug-section-card bug-actual-card">
             <h3>Actual Result</h3>
-            <p className="field-text">{safeText(bugReport.actualResult)}</p>
+            <p className="field-text">{safeText(editableBugReport.actualResult)}</p>
           </article>
         </section>
 
         <section className="bug-section-card">
           <h3>Impact</h3>
-          <p className="field-text">{safeText(bugReport.impact)}</p>
+          <p className="field-text">{safeText(editableBugReport.impact)}</p>
         </section>
 
         <section className="bug-section-card">
           <h3>Missing Info</h3>
-          <ValueBlock value={bugReport.missingInfo} />
+          <ValueBlock value={editableBugReport.missingInfo} />
         </section>
 
         <section className="bug-section-card">
           <h3>Follow-up Questions</h3>
-          <ValueBlock value={bugReport.followUpQuestions} />
+          <ValueBlock value={editableBugReport.followUpQuestions} />
         </section>
 
         <section className="bug-section-card">
           <h3>QA Notes</h3>
-          <ValueBlock value={bugReport.qaNotes} />
+          <ValueBlock value={editableBugReport.qaNotes} />
         </section>
 
         {answeredFollowUps.length > 0 ? (
@@ -1188,22 +1479,36 @@ function GenericOutput({
   evidenceFiles = [],
   evidenceLink = "",
   answeredFollowUps = [],
+  riskAnsweredFollowUps = [],
+  testAnsweredFollowUps = [],
   onSaveBugMarkdown,
 }: {
   output: string;
   evidenceFiles?: UploadedEvidenceFile[];
   evidenceLink?: string;
   answeredFollowUps?: AnsweredFollowUp[];
+  riskAnsweredFollowUps?: AnsweredFollowUp[];
+  testAnsweredFollowUps?: AnsweredFollowUp[];
   onSaveBugMarkdown?: (markdown: string) => void;
 }) {
   const parsed = parseOutput(output);
 
   if (isPlainObject(parsed) && Array.isArray(parsed.testCases)) {
-    return <TestCaseCards testCases={parsed.testCases as TestCase[]} />;
+    return (
+      <TestCaseCards
+        testCases={parsed.testCases as TestCase[]}
+        answeredFollowUps={testAnsweredFollowUps}
+      />
+    );
   }
 
   if (isPlainObject(parsed) && isPlainObject(parsed.riskReview)) {
-    return <RiskReviewCards riskReview={parsed.riskReview as RiskReview} />;
+    return (
+      <RiskReviewCards
+        riskReview={parsed.riskReview as RiskReview}
+        answeredFollowUps={riskAnsweredFollowUps}
+      />
+    );
   }
 
   if (isPlainObject(parsed) && isPlainObject(parsed.bugReport)) {
@@ -1244,20 +1549,73 @@ export default function Home() {
   const [bugAnsweredFollowUpHistory, setBugAnsweredFollowUpHistory] = useState<AnsweredFollowUp[]>([]);
   const [followUpLoopClosed, setFollowUpLoopClosed] = useState(false);
   const [bugContextAnswers, setBugContextAnswers] = useState("");
+  const [riskQuestionAnswers, setRiskQuestionAnswers] = useState<Record<string, string>>({});
+  const [riskQuestionResolutions, setRiskQuestionResolutions] = useState<Record<string, FollowUpResolution>>({});
+  const [riskAnsweredFollowUpHistory, setRiskAnsweredFollowUpHistory] = useState<AnsweredFollowUp[]>([]);
+  const [riskFollowUpLoopClosed, setRiskFollowUpLoopClosed] = useState(false);
+  const [riskAdditionalContext, setRiskAdditionalContext] = useState("");
+  const [testQuestionAnswers, setTestQuestionAnswers] = useState<Record<string, string>>({});
+  const [testQuestionResolutions, setTestQuestionResolutions] = useState<Record<string, FollowUpResolution>>({});
+  const [testAnsweredFollowUpHistory, setTestAnsweredFollowUpHistory] = useState<AnsweredFollowUp[]>([]);
+  const [testFollowUpLoopClosed, setTestFollowUpLoopClosed] = useState(false);
+  const [testAdditionalContext, setTestAdditionalContext] = useState("");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
 
   const tool = tools.find((item) => item.id === activeTool) ?? tools[0];
   const currentBugReport = activeTool === "bug" ? getBugReportFromOutput(output) : null;
-  const bugFollowUpQuestions = currentBugReport ? meaningfulLines(currentBugReport.followUpQuestions) : [];
+  const rawBugFollowUpQuestions = currentBugReport ? meaningfulLines(currentBugReport.followUpQuestions) : [];
+  const bugFollowUpQuestions = rawBugFollowUpQuestions.filter(
+    (question) =>
+      !followUpLoopClosed &&
+      (bugQuestionResolutions[question] ?? "Still open") !== "Resolved" &&
+      (bugQuestionResolutions[question] ?? "Still open") !== "No more questions"
+  );
   const currentAnsweredFollowUps = buildAnsweredFollowUps(
-    bugFollowUpQuestions,
+    rawBugFollowUpQuestions,
     bugQuestionAnswers,
     bugQuestionResolutions
   );
   const bugAnsweredFollowUps = mergeAnsweredFollowUpHistory(
     bugAnsweredFollowUpHistory,
     currentAnsweredFollowUps
+  );
+  const currentRiskReview = activeTool === "risk" ? getRiskReviewFromOutput(output) : null;
+  const riskFollowUpQuestions = currentRiskReview
+    ? meaningfulLines(currentRiskReview.qaFollowUpQuestions).filter(
+        (question) =>
+          !riskFollowUpLoopClosed &&
+          (riskQuestionResolutions[question] ?? "Still open") !== "Resolved" &&
+          (riskQuestionResolutions[question] ?? "Still open") !== "No more questions"
+      )
+    : [];
+  const currentRiskAnsweredFollowUps = buildAnsweredFollowUps(
+    currentRiskReview ? meaningfulLines(currentRiskReview.qaFollowUpQuestions) : [],
+    riskQuestionAnswers,
+    riskQuestionResolutions
+  );
+  const riskAnsweredFollowUps = mergeAnsweredFollowUpHistory(
+    riskAnsweredFollowUpHistory,
+    currentRiskAnsweredFollowUps
+  );
+  const currentTestOutput = activeTool === "tests" ? getTestOutputFromOutput(output) : null;
+  const rawTestFollowUpQuestions = currentTestOutput
+    ? meaningfulLines(currentTestOutput.qaFollowUpQuestions)
+    : [];
+  const testFollowUpQuestions = rawTestFollowUpQuestions.filter(
+    (question) =>
+      !testFollowUpLoopClosed &&
+      (testQuestionResolutions[question] ?? "Still open") !== "Resolved" &&
+      (testQuestionResolutions[question] ?? "Still open") !== "No more questions"
+  );
+  const currentTestAnsweredFollowUps = buildAnsweredFollowUps(
+    rawTestFollowUpQuestions,
+    testQuestionAnswers,
+    testQuestionResolutions
+  );
+  const testAnsweredFollowUps = mergeAnsweredFollowUpHistory(
+    testAnsweredFollowUpHistory,
+    currentTestAnsweredFollowUps
   );
 
   function updateBugQuestionAnswer(question: string, answer: string) {
@@ -1280,6 +1638,53 @@ export default function Home() {
 
     if (resolution === "No more questions") {
       setFollowUpLoopClosed(true);
+    }
+  }
+
+
+  function updateRiskQuestionAnswer(question: string, answer: string) {
+    setRiskQuestionAnswers((current) => ({
+      ...current,
+      [question]: answer,
+    }));
+
+    setRiskQuestionResolutions((current) => ({
+      ...current,
+      [question]: current[question] ?? "Still open",
+    }));
+  }
+
+  function updateRiskQuestionResolution(question: string, resolution: FollowUpResolution) {
+    setRiskQuestionResolutions((current) => ({
+      ...current,
+      [question]: resolution,
+    }));
+
+    if (resolution === "No more questions") {
+      setRiskFollowUpLoopClosed(true);
+    }
+  }
+
+  function updateTestQuestionAnswer(question: string, answer: string) {
+    setTestQuestionAnswers((current) => ({
+      ...current,
+      [question]: answer,
+    }));
+
+    setTestQuestionResolutions((current) => ({
+      ...current,
+      [question]: current[question] ?? "Still open",
+    }));
+  }
+
+  function updateTestQuestionResolution(question: string, resolution: FollowUpResolution) {
+    setTestQuestionResolutions((current) => ({
+      ...current,
+      [question]: resolution,
+    }));
+
+    if (resolution === "No more questions") {
+      setTestFollowUpLoopClosed(true);
     }
   }
 
@@ -1442,11 +1847,104 @@ export default function Home() {
         bugEvidenceContext.length > 0 ||
         bugContextAnswers.trim());
 
+    const mergedRiskAnsweredFollowUps = mergeAnsweredFollowUpHistory(
+      riskAnsweredFollowUpHistory,
+      currentRiskAnsweredFollowUps
+    );
+
+    const answeredRiskFollowUps = mergedRiskAnsweredFollowUps.map(
+      (item) =>
+        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nResolution: ${item.resolution}`
+    );
+
+    const hasRiskReassessmentContext =
+      activeTool === "risk" &&
+      (answeredRiskFollowUps.length > 0 || riskAdditionalContext.trim() || riskFollowUpLoopClosed);
+
+    const mergedTestAnsweredFollowUps = mergeAnsweredFollowUpHistory(
+      testAnsweredFollowUpHistory,
+      currentTestAnsweredFollowUps
+    );
+
+    const answeredTestFollowUps = mergedTestAnsweredFollowUps.map(
+      (item) =>
+        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nResolution: ${item.resolution}`
+    );
+
+    const hasTestRegenerationContext =
+      activeTool === "tests" &&
+      (answeredTestFollowUps.length > 0 || testAdditionalContext.trim() || testFollowUpLoopClosed);
+
     if (activeTool === "bug" && mergedAnsweredFollowUps.length > bugAnsweredFollowUpHistory.length) {
       setBugAnsweredFollowUpHistory(mergedAnsweredFollowUps);
     }
 
-    const requestInput = hasBugRefinementContext
+    if (activeTool === "risk" && mergedRiskAnsweredFollowUps.length > riskAnsweredFollowUpHistory.length) {
+      setRiskAnsweredFollowUpHistory(mergedRiskAnsweredFollowUps);
+    }
+
+    if (activeTool === "tests" && mergedTestAnsweredFollowUps.length > testAnsweredFollowUpHistory.length) {
+      setTestAnsweredFollowUpHistory(mergedTestAnsweredFollowUps);
+    }
+
+    const requestInput = hasTestRegenerationContext
+      ? [
+          "Original ticket or requirements text:",
+          input.trim(),
+          "",
+          "Previous Test Cases JSON:",
+          currentTestOutput ? JSON.stringify(currentTestOutput, null, 2) : "No previous test cases available.",
+          "",
+          "Answered test follow-up questions:",
+          answeredTestFollowUps.length > 0
+            ? answeredTestFollowUps.join("\n\n")
+            : "No answered test follow-up questions supplied.",
+          "",
+          "Test follow-up loop status:",
+          testFollowUpLoopClosed
+            ? "No more test follow-up questions requested by QA. Do not generate additional test follow-up questions unless there is a critical blocker."
+            : "Test follow-up loop is still open.",
+          "",
+          "Additional test generation context:",
+          testAdditionalContext.trim() || "No additional test context supplied.",
+          "",
+          "Regeneration instructions:",
+          "- Rebuild the test cases using the original ticket plus answered follow-up context.",
+          "- Preserve useful resolved answers in preconditions, steps, expected results, or test coverage.",
+          "- Do not repeat follow-up questions that QA marked Resolved.",
+          "- If QA selected No more questions, return an empty qaFollowUpQuestions array unless a critical blocker remains.",
+          "- Keep follow-up questions low-noise and only ask questions that materially change test coverage.",
+          "- Each test case title must be specific and useful, not generic.",
+        ].join("\n")
+      : hasRiskReassessmentContext
+      ? [
+          "Original ticket or requirements text:",
+          input.trim(),
+          "",
+          "Previous Risk Review JSON:",
+          currentRiskReview ? JSON.stringify(currentRiskReview, null, 2) : "No previous risk review available.",
+          "",
+          "Answered risk follow-up questions:",
+          answeredRiskFollowUps.length > 0
+            ? answeredRiskFollowUps.join("\n\n")
+            : "No answered risk follow-up questions supplied.",
+          "",
+          "Risk follow-up loop status:",
+          riskFollowUpLoopClosed
+            ? "No more risk follow-up questions requested by QA. Do not generate additional risk follow-up questions unless there is a critical blocker."
+            : "Risk follow-up loop is still open.",
+          "",
+          "Additional risk reassessment context:",
+          riskAdditionalContext.trim() || "No additional risk context supplied.",
+          "",
+          "Re-assessment instructions:",
+          "- Rebuild the risk review using the original ticket plus answered follow-up context.",
+          "- Preserve useful resolved answers in the summary, mitigations, missing acceptance criteria, or suggested test focus.",
+          "- Do not repeat follow-up questions that QA marked Resolved.",
+          "- If QA selected No more questions, return an empty qaFollowUpQuestions array unless a critical blocker remains.",
+          "- Keep follow-up questions low-noise and only ask questions that materially change testing or implementation risk.",
+        ].join("\n")
+      : hasBugRefinementContext
       ? [
           "Original rough bug notes:",
           input.trim(),
@@ -1539,6 +2037,22 @@ export default function Home() {
                 onClick={() => {
                   setActiveTool(item.id);
                   setOutput("");
+                  if (item.id !== "risk") {
+                    setRiskQuestionAnswers({});
+                    setRiskQuestionResolutions({});
+                    setRiskAnsweredFollowUpHistory([]);
+                    setRiskFollowUpLoopClosed(false);
+                    setRiskAdditionalContext("");
+                  }
+
+                  if (item.id !== "tests") {
+                    setTestQuestionAnswers({});
+                    setTestQuestionResolutions({});
+                    setTestAnsweredFollowUpHistory([]);
+                    setTestFollowUpLoopClosed(false);
+                    setTestAdditionalContext("");
+                  }
+
                   if (item.id !== "bug") {
                     setBugDeviceType("");
                     setBugOperatingSystem("");
@@ -1570,6 +2084,146 @@ export default function Home() {
             onChange={(event) => setInput(event.target.value)}
             placeholder={tool.placeholder}
           />
+
+          {activeTool === "tests" && currentTestOutput ? (
+            <section className={`follow-up-answer-box test-follow-up-box ${testFollowUpQuestions.length > 0 ? "has-active-followups" : ""}`}>
+              <div className="follow-up-answer-header">
+                <p>Test case follow-up questions</p>
+                <span>{testFollowUpLoopClosed ? "Closed" : `${testFollowUpQuestions.length} active`}</span>
+              </div>
+
+              {testFollowUpLoopClosed ? (
+                <p className="follow-up-loop-closed">
+                  Test follow-up loop marked complete. Regenerate will avoid asking more questions unless there is a critical blocker.
+                </p>
+              ) : null}
+
+              {testFollowUpQuestions.length > 0 ? (
+                <div className="follow-up-question-list">
+                  {testFollowUpQuestions.map((question, index) => {
+                    const resolution = testQuestionResolutions[question] ?? "Still open";
+
+                    return (
+                      <div className="follow-up-question-card" key={`${question}-${index}`}>
+                        <span>Question {index + 1}</span>
+                        <strong>{question}</strong>
+                        <textarea
+                          value={testQuestionAnswers[question] ?? ""}
+                          onChange={(event) => updateTestQuestionAnswer(question, event.target.value)}
+                          placeholder="Answer this test case question..."
+                        />
+
+                        <div className="follow-up-resolution-block">
+                          <p>Did this answer resolve the follow-up?</p>
+                          <div className="follow-up-resolution-actions">
+                            {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
+                              (option) => (
+                                <button
+                                  className={resolution === option ? "active" : ""}
+                                  key={option}
+                                  type="button"
+                                  onClick={() => updateTestQuestionResolution(question, option)}
+                                >
+                                  {option}
+                                </button>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="follow-up-answer-empty">
+                  No active test case follow-up questions. You can add extra context below and regenerate if needed.
+                </p>
+              )}
+
+              <div className="bug-refine-section">
+                <h4>Additional test context</h4>
+                <p className="bug-refine-help-text">
+                  Add product answers, coverage constraints, platform scope, roles, data setup, or edge cases before regenerating.
+                </p>
+                <textarea
+                  className="follow-up-answer-textarea compact"
+                  value={testAdditionalContext}
+                  onChange={(event) => setTestAdditionalContext(event.target.value)}
+                  placeholder="Example: Import supports PDF and pasted Jira URLs only. Admin users are out of scope for MVP..."
+                />
+              </div>
+            </section>
+          ) : null}
+
+          {activeTool === "risk" && currentRiskReview ? (
+            <section className={`follow-up-answer-box risk-follow-up-box ${riskFollowUpQuestions.length > 0 ? "has-active-followups" : ""}`}>
+              <div className="follow-up-answer-header">
+                <p>Risk follow-up questions</p>
+                <span>{riskFollowUpLoopClosed ? "Closed" : `${riskFollowUpQuestions.length} active`}</span>
+              </div>
+
+              {riskFollowUpLoopClosed ? (
+                <p className="follow-up-loop-closed">
+                  Risk follow-up loop marked complete. Re-assess will avoid asking more questions unless there is a critical blocker.
+                </p>
+              ) : null}
+
+              {riskFollowUpQuestions.length > 0 ? (
+                <div className="follow-up-question-card-list">
+                  {riskFollowUpQuestions.map((question, index) => {
+                    const resolution = riskQuestionResolutions[question] ?? "Still open";
+
+                    return (
+                      <div className="follow-up-question-card" key={`${question}-${index}`}>
+                        <span>Question {index + 1}</span>
+                        <strong>{question}</strong>
+                        <textarea
+                          value={riskQuestionAnswers[question] ?? ""}
+                          onChange={(event) => updateRiskQuestionAnswer(question, event.target.value)}
+                          placeholder="Answer this risk question..."
+                        />
+
+                        <div className="follow-up-resolution-block">
+                          <p>Did this answer resolve the follow-up?</p>
+                          <div className="follow-up-resolution-actions">
+                            {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
+                              (option) => (
+                                <button
+                                  className={resolution === option ? "active" : ""}
+                                  key={option}
+                                  type="button"
+                                  onClick={() => updateRiskQuestionResolution(question, option)}
+                                >
+                                  {option}
+                                </button>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="follow-up-answer-empty">
+                  No active risk follow-ups. You can still add reassessment context below and run Re-assess Risk.
+                </p>
+              )}
+
+              <div className="bug-refine-section risk-context-section">
+                <h4>Additional risk context</h4>
+                <p className="bug-refine-help-text">
+                  Add product answers, assumptions, constraints, or decisions before re-assessing the risk review.
+                </p>
+                <textarea
+                  className="follow-up-answer-textarea compact-risk-context"
+                  value={riskAdditionalContext}
+                  onChange={(event) => setRiskAdditionalContext(event.target.value)}
+                  placeholder="Example: Import only supports Jira story and bug issue types for MVP..."
+                />
+              </div>
+            </section>
+          ) : null}
 
           {activeTool === "bug" ? (
             <section className="follow-up-answer-box">
@@ -1745,50 +2399,52 @@ export default function Home() {
                 />
               </div>
 
-              <div className="bug-refine-section">
-                <h4>Answer follow-up questions</h4>
-                {bugFollowUpQuestions.length > 0 ? (
-                  <div className="follow-up-question-card-list">
-                    {bugFollowUpQuestions.map((question, index) => {
-                      const resolution = bugQuestionResolutions[question] ?? "Still open";
+              {currentBugReport && (bugFollowUpQuestions.length > 0 || bugAnsweredFollowUps.length > 0) ? (
+                <div className={`bug-refine-section bug-followup-section ${bugFollowUpQuestions.length > 0 ? "has-active-followups" : ""}`}>
+                  <h4>Answer follow-up questions</h4>
+                  {bugFollowUpQuestions.length > 0 ? (
+                    <div className="follow-up-question-card-list">
+                      {bugFollowUpQuestions.map((question, index) => {
+                        const resolution = bugQuestionResolutions[question] ?? "Still open";
 
-                      return (
-                        <div className="follow-up-question-card" key={`${question}-${index}`}>
-                          <span>Question {index + 1}</span>
-                          <strong>{question}</strong>
-                          <textarea
-                            value={bugQuestionAnswers[question] ?? ""}
-                            onChange={(event) => updateBugQuestionAnswer(question, event.target.value)}
-                            placeholder="Answer this question..."
-                          />
+                        return (
+                          <div className="follow-up-question-card" key={`${question}-${index}`}>
+                            <span>Question {index + 1}</span>
+                            <strong>{question}</strong>
+                            <textarea
+                              value={bugQuestionAnswers[question] ?? ""}
+                              onChange={(event) => updateBugQuestionAnswer(question, event.target.value)}
+                              placeholder="Answer this question..."
+                            />
 
-                          <div className="follow-up-resolution-block">
-                            <p>Did this answer resolve the follow-up?</p>
-                            <div className="follow-up-resolution-actions">
-                              {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
-                                (option) => (
-                                  <button
-                                    className={resolution === option ? "active" : ""}
-                                    key={option}
-                                    type="button"
-                                    onClick={() => updateBugQuestionResolution(question, option)}
-                                  >
-                                    {option}
-                                  </button>
-                                )
-                              )}
+                            <div className="follow-up-resolution-block">
+                              <p>Did this answer resolve the follow-up?</p>
+                              <div className="follow-up-resolution-actions">
+                                {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
+                                  (option) => (
+                                    <button
+                                      className={`${resolution === option ? "active" : ""} resolution-${option.toLowerCase().replace(/\s+/g, "-")}`}
+                                      key={option}
+                                      type="button"
+                                      onClick={() => updateBugQuestionResolution(question, option)}
+                                    >
+                                      {option}
+                                    </button>
+                                  )
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="follow-up-answer-empty">
-                    Follow-up questions will appear here after the first bug report. You can still fill environment, repro, evidence, and tester notes before running.
-                  </p>
-                )}
-              </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="follow-up-answer-empty">
+                      No active follow-up questions. Resolved answers are preserved in Follow-up History.
+                    </p>
+                  )}
+                </div>
+              ) : null}
 
               <div className="bug-refine-section">
                 <h4>Additional tester notes</h4>
@@ -1796,7 +2452,7 @@ export default function Home() {
                   Use this for suspects, known patterns, workarounds, recent changes, or details that answer the follow-up questions.
                 </p>
                 <textarea
-                  className="follow-up-answer-textarea"
+                  className="follow-up-answer-textarea compact-tester-notes"
                   value={bugContextAnswers}
                   onChange={(event) => setBugContextAnswers(event.target.value)}
                   placeholder="Example: Item in question is Super Pistol. Crash started after latest update. Happens only when this item is in inventory..."
@@ -1806,7 +2462,15 @@ export default function Home() {
           ) : null}
 
           <button className="run-button" type="button" disabled={isRunning} onClick={runTool}>
-            {isRunning ? "Running..." : activeTool === "bug" && currentBugReport ? "Re-improve Bug Report" : tool.button}
+            {isRunning
+              ? "Running..."
+              : activeTool === "bug" && currentBugReport
+                ? "Re-improve Bug Report"
+                : activeTool === "risk" && currentRiskReview
+                  ? "Re-assess Risk"
+                  : activeTool === "tests" && currentTestOutput
+                    ? "Regenerate Test Cases"
+                    : tool.button}
           </button>
         </aside>
 
@@ -1817,6 +2481,8 @@ export default function Home() {
               evidenceFiles={[...bugScreenshotFiles, ...bugLogFiles]}
               evidenceLink={bugEvidenceLinks}
               answeredFollowUps={bugAnsweredFollowUps}
+              riskAnsweredFollowUps={riskAnsweredFollowUps}
+              testAnsweredFollowUps={testAnsweredFollowUps}
               onSaveBugMarkdown={handleSaveBugMarkdown}
             />
           ) : (

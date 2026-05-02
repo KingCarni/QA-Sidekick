@@ -4,7 +4,7 @@ export function buildQaPrompt(mode: QaMode, input: string) {
   const base = `You are QA Sidekick, a senior QA analyst. Use only the provided ticket/content. Do not invent product behavior. Mark assumptions clearly. Return valid JSON only.`;
 
   const tasks: Record<QaMode, string> = {
-    "generate-tests": `Generate practical test cases with title, type, preconditions, steps, expectedResult, and priority. Include happy path, negative, edge, and regression coverage. Return JSON with a top-level testCases array.`,
+    "generate-tests": `Generate practical test cases with title, type, preconditions, steps, expectedResult, and priority. Include happy path, negative, edge, and regression coverage. Also include qaFollowUpQuestions when ambiguity materially affects test coverage. Return JSON with a top-level testCases array and qaFollowUpQuestions array. Test case titles must be specific and useful, not generic.`,
     "analyze-risk": `Analyze QA risks and bottlenecks. Include missing acceptance criteria, unclear dependencies, likely bug areas, test data needs, and follow-up questions.`,
     "improve-bug": `Rewrite the rough bug report into a clear bug report. Do not invent missing facts. Return JSON with a top-level bugReport object.`,
     "improve-test": `Improve the provided test case or checklist. Preserve intent. Add clearer steps, expected results, edge cases, and missing preconditions.`
@@ -158,3 +158,24 @@ Rough bug notes:
 ${input}
 `;
 }
+
+
+// QAS-45 Risk reassessment follow-up handling
+// When risk review input includes "Answered risk follow-up questions", use those answers to rebuild the risk review.
+// Do not repeat questions marked Resolved. If "No more risk follow-up questions requested by QA" is present, return an empty qaFollowUpQuestions array unless a critical blocker remains.
+// Keep risk follow-up questions low-noise and only ask questions that materially affect testing scope, implementation risk, acceptance criteria, or release decision-making.
+
+
+
+// QAS-46 Test case regeneration follow-up handling
+// When generate-tests input includes "Answered test follow-up questions", use those answers to rebuild the test cases.
+// Do not repeat questions marked Resolved. If "No more test follow-up questions requested by QA" is present, return an empty qaFollowUpQuestions array unless a critical blocker remains.
+// Keep test follow-up questions low-noise and only ask questions that materially affect test coverage, test data, role/platform scope, acceptance criteria, or expected behavior.
+// Each test case title should be specific to the behavior being tested, not a generic title like "Happy Path" alone.
+
+
+
+// QAS-44 Bug Writer follow-up UX cleanup
+// For Bug Writer follow-up questions, treat Resolution: Resolved as final for that question. Do not ask that same question again.
+// Treat Resolution: No more questions as a request to stop follow-up questions unless a critical blocker remains.
+// Keep Bug Writer follow-up questions low-noise and avoid asking for details already provided in environment, repro, evidence, tester notes, or follow-up history.
