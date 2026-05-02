@@ -97,6 +97,9 @@ Use this exact JSON shape:
     "missingInfo": [
       "Specific missing detail needed to make the bug fully actionable."
     ],
+    "followUpQuestions": [
+      "Specific question QA should ask to make the bug report more actionable."
+    ],
     "qaNotes": [
       "Useful QA note, assumption, retest note, or investigation suggestion."
     ]
@@ -104,10 +107,21 @@ Use this exact JSON shape:
 }
 
 Rules:
-- Use only the information provided in the bug notes.
+- Use only the information provided in the bug notes and any additional answers/context supplied by the user.
+- If the input includes "Structured environment/context fields", use those fields to improve the Environment section and severity/priority reasoning.
+- If the input includes "Evidence attachments, screenshots, logs, or links", include useful evidence references in qaNotes and use evidence details to improve impact/repro clarity.
+- If logs are provided, summarize relevant error messages or patterns in qaNotes without dumping the entire log.
+- If screenshots are attached, use only visible screenshot evidence and do not invent unseen interactions.
+- If the input includes "Answered follow-up questions", use those answers to improve the report.
+- If the input includes "Additional freeform context", use that context to improve the report.
 - Do not invent environment, browser, user role, data state, device, frequency, or exact repro details.
 - If a detail is missing, put it in missingInfo instead of pretending it exists.
-- If steps are unclear, create the best practical step list from the notes and flag uncertainty in missingInfo or qaNotes.
+- Add practical followUpQuestions that QA/product/dev should answer before triage or retest.
+- If the user already answered a question in the structured fields, evidence notes, answered follow-ups, or additional context, incorporate the answer into the relevant report fields and do not ask that same question again unless more detail is still needed.
+- Treat answers like "no", "none", "N/A", "not applicable", "no logs", and "no workaround" as valid answers. Do not convert those into missing info or repeat the same question.
+- Distinguish "not sure" from "no": "not sure" means uncertainty and can remain a follow-up; "no" means the question was answered negatively.
+- Follow-up questions should focus on repro consistency, environment/build, logs, account/data setup, affected scope, workaround, expected behavior, and severity/priority uncertainty.
+- If steps are unclear, create the best practical step list from the notes and flag uncertainty in missingInfo, followUpQuestions, or qaNotes.
 - Keep the title specific and bug-like.
 - Severity should reflect user impact, data loss, blocking behavior, workaround availability, and affected scope.
 - Priority should reflect likely business/product urgency, but mark uncertainty if unclear.

@@ -49,7 +49,16 @@ type BugReport = {
   actualResult?: unknown;
   impact?: unknown;
   missingInfo?: unknown;
+  followUpQuestions?: unknown;
   qaNotes?: unknown;
+};
+
+type UploadedEvidenceFile = {
+  name: string;
+  type: string;
+  size: number;
+  dataUrl?: string;
+  textPreview?: string;
 };
 
 const tools: Array<{ id: ToolId; label: string; button: string; placeholder: string }> = [
@@ -119,6 +128,27 @@ function meaningfulLines(value: unknown): string[] {
   return valueLines(value).filter((line) => line.trim() && line !== "Not specified.");
 }
 
+
+function isNegativeOrNotApplicableAnswer(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+
+  if (!normalized) return false;
+
+  return [
+    "no",
+    "nope",
+    "none",
+    "n/a",
+    "na",
+    "not applicable",
+    "does not apply",
+    "nothing",
+    "no logs",
+    "no workaround",
+    "not reproduced elsewhere",
+  ].includes(normalized);
+}
+
 function arrayFromUnknown<T = unknown>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
@@ -129,6 +159,16 @@ function parseOutput(output: string): unknown {
   } catch {
     return output;
   }
+}
+
+function getBugReportFromOutput(output: string): BugReport | null {
+  const parsed = parseOutput(output);
+
+  if (isPlainObject(parsed) && isPlainObject(parsed.bugReport)) {
+    return parsed.bugReport as BugReport;
+  }
+
+  return null;
 }
 
 function normalizeSteps(steps: unknown): string[] {
@@ -217,6 +257,7 @@ function formatRiskReview(review: RiskReview): string {
 function formatBugReport(report: BugReport): string {
   const steps = normalizeSteps(report.stepsToReproduce);
   const missingInfo = meaningfulLines(report.missingInfo);
+  const followUpQuestions = meaningfulLines(report.followUpQuestions);
   const qaNotes = meaningfulLines(report.qaNotes);
 
   return [
@@ -245,6 +286,11 @@ function formatBugReport(report: BugReport): string {
     "",
     "## Missing Info",
     ...(missingInfo.length ? missingInfo.map((item) => `- ${item}`) : ["- No missing info returned."]),
+    "",
+    "## Follow-up Questions",
+    ...(followUpQuestions.length
+      ? followUpQuestions.map((item) => `- ${item}`)
+      : ["- No follow-up questions returned."]),
     "",
     "## QA Notes",
     ...(qaNotes.length ? qaNotes.map((item) => `- ${item}`) : ["- No QA notes returned."]),
@@ -281,6 +327,37 @@ function downloadTextFile(filename: string, content: string, mimeType: string) {
   link.remove();
 
   window.setTimeout(() => URL.revokeObjectURL(url), 250);
+}
+
+
+function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+
+  const units = ["B", "KB", "MB", "GB"];
+  const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  const value = bytes / 1024 ** exponent;
+
+  return `${value.toFixed(value >= 10 || exponent === 0 ? 0 : 1)} ${units[exponent]}`;
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read file."));
+    reader.readAsDataURL(file);
+  });
+}
+
+function readFileAsText(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read file."));
+    reader.readAsText(file);
+  });
 }
 
 function riskReviewToCsv(review: RiskReview): string {
@@ -716,6 +793,11 @@ function BugReportCards({ bugReport }: { bugReport: BugReport }) {
         </section>
 
         <section className="bug-section-card">
+          <h3>Follow-up Questions</h3>
+          <ValueBlock value={bugReport.followUpQuestions} />
+        </section>
+
+        <section className="bug-section-card">
           <h3>QA Notes</h3>
           <ValueBlock value={bugReport.qaNotes} />
         </section>
@@ -747,10 +829,80 @@ function GenericOutput({ output }: { output: string }) {
 export default function Home() {
   const [activeTool, setActiveTool] = useState<ToolId>("tests");
   const [input, setInput] = useState("");
+  const [bugDeviceType, setBugDeviceType] = useState("");
+  const [bugOperatingSystem, setBugOperatingSystem] = useState("");
+  const [bugAppVersion, setBugAppVersion] = useState("");
+  const [bugBuildNumber, setBugBuildNumber] = useState("");
+  const [bugPlatform, setBugPlatform] = useState("");
+  const [bugAccountRole, setBugAccountRole] = useState("");
+  const [bugEvidenceLinks, setBugEvidenceLinks] = useState("");
+  const [bugEvidenceNotes, setBugEvidenceNotes] = useState("");
+  const [bugScreenshotFiles, setBugScreenshotFiles] = useState<UploadedEvidenceFile[]>([]);
+  const [bugLogFiles, setBugLogFiles] = useState<UploadedEvidenceFile[]>([]);
+  const [bugQuestionAnswers, setBugQuestionAnswers] = useState<Record<string, string>>({});
+  const [bugContextAnswers, setBugContextAnswers] = useState("");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
 
   const tool = tools.find((item) => item.id === activeTool) ?? tools[0];
+  const currentBugReport = activeTool === "bug" ? getBugReportFromOutput(output) : null;
+  const bugFollowUpQuestions = currentBugReport ? meaningfulLines(currentBugReport.followUpQuestions) : [];
+
+  function updateBugQuestionAnswer(question: string, answer: string) {
+    setBugQuestionAnswers((current) => ({
+      ...current,
+      [question]: answer,
+    }));
+  }
+
+  async function handleScreenshotFiles(files: FileList | null) {
+    if (!files?.length) return;
+
+    const imageFiles = Array.from(files).filter((file) => file.type.startsWith("image/"));
+    const loadedFiles = await Promise.all(
+      imageFiles.map(async (file) => ({
+        name: file.name,
+        type: file.type || "image",
+        size: file.size,
+        dataUrl: await readFileAsDataUrl(file),
+      }))
+    );
+
+    setBugScreenshotFiles((current) => [...current, ...loadedFiles].slice(0, 3));
+  }
+
+  async function handleLogFiles(files: FileList | null) {
+    if (!files?.length) return;
+
+    const loadedFiles = await Promise.all(
+      Array.from(files).map(async (file) => {
+        let textPreview = "";
+
+        try {
+          textPreview = (await readFileAsText(file)).slice(0, 12000);
+        } catch {
+          textPreview = "Could not read this log file as text.";
+        }
+
+        return {
+          name: file.name,
+          type: file.type || "text/log",
+          size: file.size,
+          textPreview,
+        };
+      })
+    );
+
+    setBugLogFiles((current) => [...current, ...loadedFiles].slice(0, 5));
+  }
+
+  function removeScreenshotFile(name: string) {
+    setBugScreenshotFiles((current) => current.filter((file) => file.name !== name));
+  }
+
+  function removeLogFile(name: string) {
+    setBugLogFiles((current) => current.filter((file) => file.name !== name));
+  }
 
   async function runTool() {
     if (!input.trim()) {
@@ -770,13 +922,93 @@ export default function Home() {
             ? "/api/improve-bug"
             : "/api/improve-test";
 
+    const bugEnvironmentContext = [
+      bugDeviceType.trim() ? `Device type: ${bugDeviceType.trim()}` : "",
+      bugOperatingSystem.trim() ? `Operating system: ${bugOperatingSystem.trim()}` : "",
+      bugAppVersion.trim() ? `App/game version: ${bugAppVersion.trim()}` : "",
+      bugBuildNumber.trim() ? `Build number: ${bugBuildNumber.trim()}` : "",
+      bugPlatform.trim() ? `Browser/platform: ${bugPlatform.trim()}` : "",
+      bugAccountRole.trim() ? `Account/user role: ${bugAccountRole.trim()}` : "",
+    ].filter(Boolean);
+
+    const answeredFollowUps = bugFollowUpQuestions
+      .map((question) => {
+        const answer = bugQuestionAnswers[question]?.trim();
+
+        if (!answer) return "";
+
+        const answerType = isNegativeOrNotApplicableAnswer(answer)
+          ? "Answered negative / not applicable"
+          : "Answered";
+
+        return `Q: ${question}\nA: ${answer}\nAnswer type: ${answerType}`;
+      })
+      .filter(Boolean);
+
+    const uploadedScreenshotContext = bugScreenshotFiles.map(
+      (file, index) =>
+        `Screenshot ${index + 1}: ${file.name} (${file.type}, ${formatBytes(file.size)})`
+    );
+
+    const uploadedLogContext = bugLogFiles.map((file, index) =>
+      [
+        `Log file ${index + 1}: ${file.name} (${file.type}, ${formatBytes(file.size)})`,
+        "Log excerpt:",
+        file.textPreview || "No readable log text found.",
+      ].join("\n")
+    );
+
+    const bugEvidenceContext = [
+      bugEvidenceLinks.trim() ? `Evidence links or file references: ${bugEvidenceLinks.trim()}` : "",
+      uploadedScreenshotContext.length > 0
+        ? uploadedScreenshotContext.join("\n")
+        : "",
+      uploadedLogContext.length > 0 ? uploadedLogContext.join("\n\n") : "",
+      bugEvidenceNotes.trim() ? `Evidence notes: ${bugEvidenceNotes.trim()}` : "",
+    ].filter(Boolean);
+
+    const hasBugRefinementContext =
+      activeTool === "bug" &&
+      (bugEnvironmentContext.length > 0 ||
+        answeredFollowUps.length > 0 ||
+        bugEvidenceContext.length > 0 ||
+        bugContextAnswers.trim());
+
+    const requestInput = hasBugRefinementContext
+      ? [
+          "Original rough bug notes:",
+          input.trim(),
+          "",
+          "Structured environment/context fields:",
+          bugEnvironmentContext.length > 0
+            ? bugEnvironmentContext.join("\n")
+            : "No structured environment/context fields supplied.",
+          "",
+          "Evidence attachments, screenshots, logs, or links:",
+          bugEvidenceContext.length > 0
+            ? bugEvidenceContext.join("\n\n")
+            : "No evidence links, uploads, or notes supplied.",
+          "",
+          "Answered follow-up questions:",
+          answeredFollowUps.length > 0
+            ? answeredFollowUps.join("\n\n")
+            : "No specific follow-up question answers supplied.",
+          "",
+          "Additional freeform context:",
+          bugContextAnswers.trim() || "No additional freeform context supplied.",
+        ].join("\n")
+      : input;
+
     try {
       const response = await fetch(route, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ input }),
+        body: JSON.stringify({
+          input: requestInput,
+          screenshots: activeTool === "bug" ? bugScreenshotFiles : [],
+        }),
       });
 
       const data = await response.json();
@@ -821,6 +1053,20 @@ export default function Home() {
                 onClick={() => {
                   setActiveTool(item.id);
                   setOutput("");
+                  if (item.id !== "bug") {
+                    setBugDeviceType("");
+                    setBugOperatingSystem("");
+                    setBugAppVersion("");
+                    setBugBuildNumber("");
+                    setBugPlatform("");
+                    setBugAccountRole("");
+                    setBugEvidenceLinks("");
+                    setBugEvidenceNotes("");
+                    setBugScreenshotFiles([]);
+                    setBugLogFiles([]);
+                    setBugQuestionAnswers({});
+                    setBugContextAnswers("");
+                  }
                 }}
               >
                 {item.label}
@@ -834,8 +1080,186 @@ export default function Home() {
             placeholder={tool.placeholder}
           />
 
+          {activeTool === "bug" && currentBugReport ? (
+            <section className="follow-up-answer-box">
+              <div className="follow-up-answer-header">
+                <p>Refine bug context</p>
+                <span>{bugFollowUpQuestions.length} questions</span>
+              </div>
+
+              <div className="bug-refine-section">
+                <h4>Environment</h4>
+                <div className="bug-context-grid">
+                  <label>
+                    Device type
+                    <input
+                      value={bugDeviceType}
+                      onChange={(event) => setBugDeviceType(event.target.value)}
+                      placeholder="Pixel 7, iPhone 15, PC..."
+                    />
+                  </label>
+
+                  <label>
+                    Operating system
+                    <input
+                      value={bugOperatingSystem}
+                      onChange={(event) => setBugOperatingSystem(event.target.value)}
+                      placeholder="Android 14, iOS 17..."
+                    />
+                  </label>
+
+                  <label>
+                    App/game version
+                    <input
+                      value={bugAppVersion}
+                      onChange={(event) => setBugAppVersion(event.target.value)}
+                      placeholder="0.1.3, 1.0.0-beta..."
+                    />
+                  </label>
+
+                  <label>
+                    Build number
+                    <input
+                      value={bugBuildNumber}
+                      onChange={(event) => setBugBuildNumber(event.target.value)}
+                      placeholder="1234, qa-2026.05.02..."
+                    />
+                  </label>
+
+                  <label>
+                    Browser/platform
+                    <input
+                      value={bugPlatform}
+                      onChange={(event) => setBugPlatform(event.target.value)}
+                      placeholder="Chrome, Android app..."
+                    />
+                  </label>
+
+                  <label>
+                    Account/user role
+                    <input
+                      value={bugAccountRole}
+                      onChange={(event) => setBugAccountRole(event.target.value)}
+                      placeholder="Player, teacher, admin..."
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="bug-refine-section">
+                <h4>Screenshots and logs</h4>
+
+                <label className="file-upload-card">
+                  <span>Add screenshot</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(event) => handleScreenshotFiles(event.target.files)}
+                  />
+                  <small>PNG, JPG, or WebP. Up to 3 screenshots for now.</small>
+                </label>
+
+                {bugScreenshotFiles.length > 0 ? (
+                  <div className="screenshot-preview-list">
+                    {bugScreenshotFiles.map((file) => (
+                      <article className="screenshot-preview-card" key={file.name}>
+                        {file.dataUrl ? (
+                          <img src={file.dataUrl} alt={`Uploaded screenshot preview: ${file.name}`} />
+                        ) : (
+                          <div className="screenshot-preview-empty">No preview</div>
+                        )}
+
+                        <div className="screenshot-preview-meta">
+                          <span>{file.name}</span>
+                          <small>{formatBytes(file.size)}</small>
+                        </div>
+
+                        <button type="button" onClick={() => removeScreenshotFile(file.name)}>
+                          Remove
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                ) : null}
+
+                <label className="file-upload-card">
+                  <span>Add logs</span>
+                  <input
+                    type="file"
+                    accept=".log,.txt,.json,.csv,text/*,application/json"
+                    multiple
+                    onChange={(event) => handleLogFiles(event.target.files)}
+                  />
+                  <small>Text logs only for this pass. Up to 5 files, first 12k chars each.</small>
+                </label>
+
+                {bugLogFiles.length > 0 ? (
+                  <div className="uploaded-file-list">
+                    {bugLogFiles.map((file) => (
+                      <div className="uploaded-file-row" key={file.name}>
+                        <span>{file.name}</span>
+                        <small>{formatBytes(file.size)}</small>
+                        <button type="button" onClick={() => removeLogFile(file.name)}>
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
+                <label className="bug-evidence-field">
+                  Evidence link or file reference
+                  <input
+                    value={bugEvidenceLinks}
+                    onChange={(event) => setBugEvidenceLinks(event.target.value)}
+                    placeholder="Paste Jira attachment name, Drive link, screenshot link, or log reference..."
+                  />
+                </label>
+
+                <textarea
+                  className="follow-up-answer-textarea compact"
+                  value={bugEvidenceNotes}
+                  onChange={(event) => setBugEvidenceNotes(event.target.value)}
+                  placeholder="Describe what the screenshot shows, timestamps, log errors, or attachment notes..."
+                />
+              </div>
+
+              <div className="bug-refine-section">
+                <h4>Answer follow-up questions</h4>
+                {bugFollowUpQuestions.length > 0 ? (
+                  <div className="follow-up-question-card-list">
+                    {bugFollowUpQuestions.map((question, index) => (
+                      <label className="follow-up-question-card" key={`${question}-${index}`}>
+                        <span>Question {index + 1}</span>
+                        <strong>{question}</strong>
+                        <textarea
+                          value={bugQuestionAnswers[question] ?? ""}
+                          onChange={(event) => updateBugQuestionAnswer(question, event.target.value)}
+                          placeholder="Answer this question..."
+                        />
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="follow-up-answer-empty">No follow-up questions returned.</p>
+                )}
+              </div>
+
+              <div className="bug-refine-section">
+                <h4>Extra context</h4>
+                <textarea
+                  className="follow-up-answer-textarea"
+                  value={bugContextAnswers}
+                  onChange={(event) => setBugContextAnswers(event.target.value)}
+                  placeholder="Add any other details before re-improving the bug report..."
+                />
+              </div>
+            </section>
+          ) : null}
+
           <button className="run-button" type="button" disabled={isRunning} onClick={runTool}>
-            {isRunning ? "Running..." : tool.button}
+            {isRunning ? "Running..." : activeTool === "bug" && currentBugReport ? "Re-improve Bug Report" : tool.button}
           </button>
         </aside>
 

@@ -238,6 +238,129 @@ h1 {
   padding: 18px;
 }
 
+
+.follow-up-answer-box {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.08), transparent 38%),
+    rgba(0, 0, 0, 0.22);
+}
+
+.follow-up-answer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.follow-up-answer-header p {
+  margin: 0;
+  color: #fca5a5;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.follow-up-answer-header span {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.follow-up-answer-box ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding-left: 20px;
+  color: #f4f4f5;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.follow-up-answer-empty {
+  margin: 0 0 14px;
+  color: var(--muted-2);
+  line-height: 1.55;
+}
+
+
+.bug-context-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 14px 0 16px;
+}
+
+.bug-context-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #e7e5e4;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bug-context-grid input {
+  width: 100%;
+  color: var(--text);
+  background: #070707;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  outline: none;
+  padding: 12px 13px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.015),
+    inset 0 14px 34px rgba(0, 0, 0, 0.24);
+}
+
+.bug-context-grid input::placeholder {
+  color: rgba(212, 212, 216, 0.42);
+}
+
+.bug-context-grid input:focus {
+  border-color: rgba(239, 68, 68, 0.58);
+  box-shadow:
+    0 0 0 3px rgba(239, 68, 68, 0.11),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.follow-up-question-block {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.follow-up-question-block h4 {
+  margin: 0 0 12px;
+  color: #e7e5e4;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.follow-up-answer-textarea {
+  min-height: 140px;
+  padding: 14px;
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
 .run-button,
 .copy-all-button {
   position: relative;
@@ -658,5 +781,306 @@ h1 {
   .bottleneck-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+
+/* QAS-11 refine bug context layout pass */
+.follow-up-answer-box {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.bug-refine-section {
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.bug-refine-section h4 {
+  margin: 0 0 14px;
+  color: #fca5a5;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.bug-context-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+
+.bug-context-grid label,
+.bug-evidence-field,
+.follow-up-question-card {
+  min-width: 0;
+}
+
+.bug-context-grid label,
+.bug-evidence-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #e7e5e4;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bug-context-grid input,
+.bug-evidence-field input {
+  width: 100%;
+  min-width: 0;
+  color: var(--text);
+  background: #070707;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  outline: none;
+  padding: 12px 13px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.015),
+    inset 0 14px 34px rgba(0, 0, 0, 0.24);
+}
+
+.bug-context-grid input::placeholder,
+.bug-evidence-field input::placeholder {
+  color: rgba(212, 212, 216, 0.42);
+}
+
+.bug-context-grid input:focus,
+.bug-evidence-field input:focus,
+.follow-up-question-card textarea:focus {
+  border-color: rgba(239, 68, 68, 0.58);
+  box-shadow:
+    0 0 0 3px rgba(239, 68, 68, 0.11),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.follow-up-question-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.follow-up-question-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.follow-up-question-card span {
+  color: #fca5a5;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.follow-up-question-card strong {
+  color: #f8fafc;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.follow-up-question-card textarea,
+.follow-up-answer-textarea {
+  width: 100%;
+  min-width: 0;
+  resize: vertical;
+}
+
+.follow-up-question-card textarea {
+  min-height: 94px;
+  padding: 12px;
+  color: var(--text);
+  background: #070707;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  outline: none;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.follow-up-answer-textarea.compact {
+  min-height: 92px;
+  margin-top: 12px;
+}
+
+
+/* QAS-11 screenshot/log upload pass */
+.file-upload-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px dashed rgba(248, 113, 113, 0.28);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.file-upload-card span {
+  color: #fca5a5;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.file-upload-card input {
+  width: 100%;
+  color: #f4f4f5;
+  font-size: 0.88rem;
+}
+
+.file-upload-card small {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.uploaded-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: -4px 0 14px;
+}
+
+.uploaded-file-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.uploaded-file-row span {
+  min-width: 0;
+  overflow: hidden;
+  color: #f8fafc;
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.uploaded-file-row small {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.uploaded-file-row button {
+  padding: 7px 9px;
+  border-radius: 9px;
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.26);
+  border: 1px solid rgba(248, 113, 113, 0.24);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+
+/* QAS-11 final polish: screenshot previews */
+.screenshot-preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: -2px 0 16px;
+}
+
+.screenshot-preview-card {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.screenshot-preview-card img,
+.screenshot-preview-empty {
+  width: 92px;
+  height: 68px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #050505;
+}
+
+.screenshot-preview-empty {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.screenshot-preview-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.screenshot-preview-meta span {
+  min-width: 0;
+  overflow: hidden;
+  color: #f8fafc;
+  font-size: 0.86rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.screenshot-preview-meta small {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.screenshot-preview-card button {
+  padding: 7px 9px;
+  border-radius: 9px;
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.26);
+  border: 1px solid rgba(248, 113, 113, 0.24);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+@media (max-width: 860px) {
+  .screenshot-preview-card {
+    grid-template-columns: 78px minmax(0, 1fr);
+  }
+
+  .screenshot-preview-card img,
+  .screenshot-preview-empty {
+    width: 78px;
+    height: 58px;
+  }
+
+  .screenshot-preview-card button {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 }
