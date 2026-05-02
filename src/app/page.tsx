@@ -13,6 +13,31 @@ type TestCase = {
   priority?: unknown;
 };
 
+type RiskItem = {
+  title?: unknown;
+  severity?: unknown;
+  area?: unknown;
+  whyItMatters?: unknown;
+  mitigation?: unknown;
+};
+
+type BottleneckItem = {
+  title?: unknown;
+  impact?: unknown;
+  owner?: unknown;
+  recommendation?: unknown;
+};
+
+type RiskReview = {
+  overallRisk?: unknown;
+  summary?: unknown;
+  keyRisks?: unknown;
+  bottlenecks?: unknown;
+  missingAcceptanceCriteria?: unknown;
+  qaFollowUpQuestions?: unknown;
+  suggestedTestFocus?: unknown;
+};
+
 const tools: Array<{ id: ToolId; label: string; button: string; placeholder: string }> = [
   {
     id: "tests",
@@ -76,6 +101,10 @@ function valueLines(value: unknown): string[] {
   return [String(value)];
 }
 
+function arrayFromUnknown<T = unknown>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
+
 function parseOutput(output: string): unknown {
   try {
     return JSON.parse(output);
@@ -116,10 +145,50 @@ function formatTestCase(testCase: TestCase, index: number): string {
   ].join("\n");
 }
 
-function badgeClass(value: unknown, kind: "type" | "priority") {
+function formatRiskReview(review: RiskReview): string {
+  const keyRisks = arrayFromUnknown<RiskItem>(review.keyRisks);
+  const bottlenecks = arrayFromUnknown<BottleneckItem>(review.bottlenecks);
+  const missingCriteria = valueLines(review.missingAcceptanceCriteria);
+  const questions = valueLines(review.qaFollowUpQuestions);
+  const focus = valueLines(review.suggestedTestFocus);
+
+  return [
+    "QA Risk Review",
+    `Overall Risk: ${safeText(review.overallRisk)}`,
+    `Summary: ${safeText(review.summary)}`,
+    "",
+    "Key Risks:",
+    ...keyRisks.flatMap((risk, index) => [
+      `${index + 1}. ${safeText(risk.title)}`,
+      `   Severity: ${safeText(risk.severity)}`,
+      `   Area: ${safeText(risk.area)}`,
+      `   Why it matters: ${safeText(risk.whyItMatters)}`,
+      `   Mitigation: ${safeText(risk.mitigation)}`,
+    ]),
+    "",
+    "Bottlenecks:",
+    ...bottlenecks.flatMap((bottleneck, index) => [
+      `${index + 1}. ${safeText(bottleneck.title)}`,
+      `   Impact: ${safeText(bottleneck.impact)}`,
+      `   Owner: ${safeText(bottleneck.owner)}`,
+      `   Recommendation: ${safeText(bottleneck.recommendation)}`,
+    ]),
+    "",
+    "Missing Acceptance Criteria:",
+    ...missingCriteria.map((item, index) => `${index + 1}. ${item}`),
+    "",
+    "QA Follow-up Questions:",
+    ...questions.map((item, index) => `${index + 1}. ${item}`),
+    "",
+    "Suggested Test Focus:",
+    ...focus.map((item, index) => `${index + 1}. ${item}`),
+  ].join("\n");
+}
+
+function badgeClass(value: unknown, kind: "type" | "priority" | "risk") {
   const normalized = safeText(value).toLowerCase();
 
-  if (kind === "priority") {
+  if (kind === "priority" || kind === "risk") {
     if (normalized.includes("high")) return "badge badge-priority-high";
     if (normalized.includes("medium")) return "badge badge-priority-medium";
     if (normalized.includes("low")) return "badge badge-priority-low";
@@ -149,6 +218,25 @@ function ValueBlock({ value }: { value: unknown }) {
         <li key={`${line}-${index}`}>{line}</li>
       ))}
     </ul>
+  );
+}
+
+function TextList({ title, items }: { title: string; items: unknown }) {
+  const lines = valueLines(items).filter((line) => line && line !== "Not specified.");
+
+  return (
+    <section className="test-case-card">
+      <h3>{title}</h3>
+      {lines.length > 0 ? (
+        <ul className="value-list">
+          {lines.map((line, index) => (
+            <li key={`${title}-${line}-${index}`}>{line}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="field-text">No items returned.</p>
+      )}
+    </section>
   );
 }
 
@@ -229,11 +317,106 @@ function TestCaseCards({ testCases }: { testCases: TestCase[] }) {
   );
 }
 
+function RiskReviewCards({ riskReview }: { riskReview: RiskReview }) {
+  const [copied, setCopied] = useState(false);
+  const keyRisks = arrayFromUnknown<RiskItem>(riskReview.keyRisks);
+  const bottlenecks = arrayFromUnknown<BottleneckItem>(riskReview.bottlenecks);
+
+  async function handleCopy() {
+    await copyText(formatRiskReview(riskReview));
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1200);
+  }
+
+  return (
+    <div className="report-wrap">
+      <div className="report-header">
+        <div>
+          <p className="report-kicker">Risk Review Report</p>
+          <h2>Pre-production QA Risk Review</h2>
+        </div>
+        <button className="copy-all-button" type="button" onClick={handleCopy}>
+          {copied ? "Copied" : "Copy Risk Report"}
+        </button>
+      </div>
+
+      <section className="test-case-card">
+        <div className="test-case-topline">
+          <div className="badge-row">
+            <span className={badgeClass(riskReview.overallRisk, "risk")}>
+              Overall Risk: {safeText(riskReview.overallRisk)}
+            </span>
+          </div>
+          <h3>Summary</h3>
+          <p className="field-text">{safeText(riskReview.summary)}</p>
+        </div>
+      </section>
+
+      <div className="test-card-list">
+        {keyRisks.map((risk, index) => (
+          <article className="test-case-card" key={`${safeText(risk.title)}-${index}`}>
+            <div className="test-case-topline">
+              <div className="test-case-label-row">
+                <span className="test-case-label">Risk {index + 1}</span>
+              </div>
+              <h3>{safeText(risk.title)}</h3>
+              <div className="badge-row">
+                <span className={badgeClass(risk.severity, "risk")}>{safeText(risk.severity)}</span>
+                <span className="badge badge-type-default">{safeText(risk.area)}</span>
+              </div>
+            </div>
+
+            <div className="test-case-section">
+              <h4>Why It Matters</h4>
+              <p className="field-text">{safeText(risk.whyItMatters)}</p>
+            </div>
+
+            <div className="test-case-section expected-section">
+              <h4>Mitigation</h4>
+              <p className="field-text">{safeText(risk.mitigation)}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <section className="test-case-card">
+        <h3>Bottlenecks</h3>
+        {bottlenecks.length > 0 ? (
+          <div className="test-card-list compact-list">
+            {bottlenecks.map((bottleneck, index) => (
+              <div className="test-case-section" key={`${safeText(bottleneck.title)}-${index}`}>
+                <div className="test-case-label-row">
+                  <h4>{safeText(bottleneck.title)}</h4>
+                  <div className="badge-row">
+                    <span className={badgeClass(bottleneck.impact, "risk")}>{safeText(bottleneck.impact)}</span>
+                    <span className="badge badge-type-default">{safeText(bottleneck.owner)}</span>
+                  </div>
+                </div>
+                <p className="field-text">{safeText(bottleneck.recommendation)}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="field-text">No bottlenecks returned.</p>
+        )}
+      </section>
+
+      <TextList title="Missing Acceptance Criteria" items={riskReview.missingAcceptanceCriteria} />
+      <TextList title="QA Follow-up Questions" items={riskReview.qaFollowUpQuestions} />
+      <TextList title="Suggested Test Focus" items={riskReview.suggestedTestFocus} />
+    </div>
+  );
+}
+
 function GenericOutput({ output }: { output: string }) {
   const parsed = parseOutput(output);
 
   if (isPlainObject(parsed) && Array.isArray(parsed.testCases)) {
     return <TestCaseCards testCases={parsed.testCases as TestCase[]} />;
+  }
+
+  if (isPlainObject(parsed) && isPlainObject(parsed.riskReview)) {
+    return <RiskReviewCards riskReview={parsed.riskReview as RiskReview} />;
   }
 
   const displayText = typeof parsed === "string" ? parsed : JSON.stringify(parsed, null, 2);
@@ -337,7 +520,11 @@ export default function Home() {
         </aside>
 
         <section className="panel output-panel">
-          {output ? <GenericOutput output={output} /> : <div className="output-empty">Run a tool to see QA output here.</div>}
+          {output ? (
+            <GenericOutput output={output} />
+          ) : (
+            <div className="output-empty">Run a tool to see QA output here.</div>
+          )}
         </section>
       </section>
     </main>

@@ -299,3 +299,290 @@ h1 {
   .output-panel { min-height: 360px; }
   .report-header { flex-direction: column; }
 }
+/* QAS-10 risk report polish */
+
+.output-panel {
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+  padding-bottom: 48px;
+}
+
+.report-wrap {
+  padding-bottom: 56px;
+}
+
+.report-header {
+  align-items: flex-start;
+  gap: 24px;
+  padding-bottom: 24px;
+  margin-bottom: 28px;
+}
+
+.report-header h2 {
+  line-height: 1.2;
+}
+
+.test-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.test-case-card {
+  margin-bottom: 0;
+}
+
+.test-case-card + .test-case-card {
+  margin-top: 0;
+}
+
+.test-case-section {
+  padding-top: 18px;
+  margin-top: 18px;
+}
+
+.test-case-section:last-child {
+  padding-bottom: 4px;
+}
+
+.expected-section {
+  margin-bottom: 10px;
+}
+
+.value-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 22px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.value-list li {
+  line-height: 1.55;
+}
+
+.step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.field-text {
+  line-height: 1.65;
+  margin-top: 10px;
+}
+
+.compact-list {
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.compact-list .test-case-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 18px;
+  margin-top: 0;
+}
+
+.copy-all-button {
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .output-panel {
+    max-height: none;
+    overflow-y: visible;
+    padding-bottom: 32px;
+  }
+
+  .report-header {
+    flex-direction: column;
+  }
+
+  .copy-all-button {
+    width: 100%;
+  }
+}/* QAS-10 final layout polish */
+
+/* Let the full page scroll naturally instead of trapping the report inside the output card */
+.output-panel {
+  max-height: none;
+  overflow: visible;
+  padding-bottom: 80px;
+}
+
+/* Give both columns enough bottom breathing room */
+.workspace {
+  align-items: start;
+  padding-bottom: 96px;
+}
+
+.input-panel {
+  align-self: stretch;
+  min-height: 640px;
+}
+
+/* Report header spacing */
+.report-wrap {
+  padding-bottom: 96px;
+}
+
+.report-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  padding-bottom: 26px;
+  margin-bottom: 30px;
+}
+
+.report-header h2 {
+  margin-top: 8px;
+  line-height: 1.25;
+}
+
+/* Risk summary should breathe and not visually collide with the report title */
+.risk-summary-card,
+.report-wrap > .test-case-card:first-of-type {
+  margin-top: 8px;
+  margin-bottom: 32px;
+  padding-top: 30px;
+}
+
+.report-wrap > .test-case-card:first-of-type .badge-row {
+  margin-bottom: 18px;
+}
+
+.report-wrap > .test-case-card:first-of-type h3 {
+  margin-top: 0;
+  margin-bottom: 14px;
+}
+
+.report-wrap > .test-case-card:first-of-type .field-text {
+  margin-top: 0;
+}
+
+/* Keep cards separated consistently */
+.test-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.test-case-card {
+  padding: 30px;
+  margin-bottom: 0;
+}
+
+.test-case-card + .test-case-card {
+  margin-top: 0;
+}
+
+/* More space inside sections */
+.test-case-topline {
+  margin-bottom: 22px;
+}
+
+.test-case-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.test-case-section {
+  padding-top: 22px;
+  margin-top: 22px;
+}
+
+.test-case-section h4 {
+  margin-bottom: 14px;
+}
+
+.field-text {
+  line-height: 1.7;
+  margin-top: 10px;
+}
+
+.step-list,
+.value-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+  margin-bottom: 10px;
+}
+
+.value-list li,
+.step-list li {
+  line-height: 1.6;
+}
+
+/* Bottlenecks need spacing between internal entries */
+.compact-list {
+  gap: 22px;
+  margin-top: 20px;
+}
+
+.compact-list .test-case-section {
+  padding-top: 22px;
+  padding-bottom: 18px;
+  margin-top: 0;
+}
+
+.compact-list .test-case-section:first-child {
+  border-top: 0;
+  padding-top: 8px;
+}
+
+/* Final cards should not sit on the browser bottom */
+.report-wrap > .test-case-card:last-child {
+  margin-bottom: 72px;
+}
+
+/* Copy button should not squeeze titles */
+.copy-all-button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 860px) {
+  .workspace {
+    padding-bottom: 48px;
+  }
+
+  .input-panel {
+    min-height: auto;
+  }
+
+  .output-panel {
+    padding-bottom: 48px;
+  }
+
+  .report-wrap {
+    padding-bottom: 56px;
+  }
+
+  .report-header {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .copy-all-button {
+    width: 100%;
+  }
+
+  .test-case-card {
+    padding: 22px;
+  }
+}
