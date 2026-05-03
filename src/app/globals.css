@@ -8494,3 +8494,469 @@ button.secondary-action-button.save-report-button,
   color: rgba(255, 255, 255, 0.72);
   line-height: 1.5;
 }
+
+
+/* QAS-40.5 Buy Credits into Menu polish */
+
+.app-header-menu-wrap {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  z-index: 40;
+}
+
+.app-header-menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 142px;
+  min-height: 52px;
+  padding: 13px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  background:
+    linear-gradient(180deg, rgba(37, 99, 235, 0.7), rgba(30, 64, 175, 0.72)),
+    rgba(15, 23, 42, 0.74);
+  color: #ffffff;
+  font-weight: 950;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 32px rgba(0, 0, 0, 0.26);
+}
+
+.app-header-menu-button:hover {
+  border-color: rgba(147, 197, 253, 0.76);
+  filter: brightness(1.06);
+}
+
+.app-header-menu-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 50%;
+  transform: translateX(50%);
+  display: grid;
+  min-width: 220px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.11), transparent 38%),
+    rgba(5, 5, 5, 0.94);
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(14px);
+}
+
+.app-header-menu-popover a {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 11px 10px;
+  border-radius: 12px;
+  color: #ffffff;
+  font-weight: 950;
+  text-decoration: none;
+}
+
+.app-header-menu-popover a:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.app-header-buy-credits-standalone {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .app-header-menu-wrap,
+  .app-header-menu-button {
+    width: 100%;
+  }
+
+  .app-header-menu-popover {
+    left: 0;
+    right: 0;
+    min-width: 100%;
+    transform: none;
+  }
+}
+/* QAS-40.6 Menu dropdown hotfix */
+
+/*
+  Defensive selectors:
+  - app-header-menu-wrap / app-header-menu-popover = QAS-40.5 version
+  - app-header-menu / app-header-menu-panel = earlier menu version
+*/
+
+.app-header-menu-wrap,
+.app-header-menu {
+  position: relative !important;
+  display: inline-flex !important;
+  justify-content: center;
+  align-items: center;
+  z-index: 80 !important;
+  overflow: visible !important;
+}
+
+.app-header-menu-button {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 142px;
+  min-height: 52px;
+  padding: 13px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  background:
+    linear-gradient(180deg, rgba(37, 99, 235, 0.7), rgba(30, 64, 175, 0.72)),
+    rgba(15, 23, 42, 0.74);
+  color: #ffffff;
+  font-weight: 950;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 32px rgba(0, 0, 0, 0.26);
+}
+
+.app-header-menu-popover,
+.app-header-menu-panel {
+  position: absolute !important;
+  top: calc(100% + 12px) !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  z-index: 999 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+
+  width: 238px !important;
+  min-width: 238px !important;
+  max-width: 238px !important;
+  padding: 12px !important;
+
+  border-radius: 18px !important;
+  border: 1px solid rgba(248, 113, 113, 0.26) !important;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.13), transparent 38%),
+    rgba(5, 5, 5, 0.97) !important;
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(14px);
+}
+
+.app-header-menu-popover a,
+.app-header-menu-popover button,
+.app-header-menu-panel a,
+.app-header-menu-panel button {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 42px !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 10px 12px !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  font: inherit !important;
+  font-weight: 950 !important;
+  line-height: 1.15 !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  white-space: normal !important;
+  cursor: pointer !important;
+}
+
+.app-header-menu-popover a:hover,
+.app-header-menu-popover button:hover,
+.app-header-menu-panel a:hover,
+.app-header-menu-panel button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.app-header-buy-credits-standalone,
+.account-buy-link.app-header-buy-credits-standalone {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .app-header-menu-wrap,
+  .app-header-menu,
+  .app-header-menu-button {
+    width: 100% !important;
+  }
+
+  .app-header-menu-popover,
+  .app-header-menu-panel {
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+/* QAS-40.7 Menu clipping hotfix */
+
+/*
+  The Menu dropdown was being clipped by the hero/card container below it.
+  Open the dropdown upward so it stays inside the visible hero area.
+*/
+
+.app-header-menu-wrap,
+.app-header-menu {
+  position: relative !important;
+  display: inline-flex !important;
+  justify-content: center;
+  align-items: center;
+  z-index: 200 !important;
+  overflow: visible !important;
+}
+
+.app-header-menu-popover,
+.app-header-menu-panel {
+  top: auto !important;
+  bottom: calc(100% + 12px) !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  z-index: 9999 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+
+  width: 238px !important;
+  min-width: 238px !important;
+  max-width: 238px !important;
+  max-height: none !important;
+  overflow: visible !important;
+
+  padding: 12px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(248, 113, 113, 0.26) !important;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.13), transparent 38%),
+    rgba(5, 5, 5, 0.97) !important;
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(14px);
+}
+
+.app-header-menu-popover::after,
+.app-header-menu-panel::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
+  transform: translateX(-50%) rotate(45deg);
+  border-right: 1px solid rgba(248, 113, 113, 0.22);
+  border-bottom: 1px solid rgba(248, 113, 113, 0.22);
+  background: rgba(5, 5, 5, 0.97);
+}
+
+.app-header-menu-popover a,
+.app-header-menu-popover button,
+.app-header-menu-panel a,
+.app-header-menu-panel button {
+  position: relative;
+  z-index: 1;
+  display: flex !important;
+  width: 100% !important;
+  min-height: 42px !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 10px 12px !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  font: inherit !important;
+  font-weight: 950 !important;
+  line-height: 1.15 !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  white-space: normal !important;
+  cursor: pointer !important;
+}
+
+.app-header-menu-popover a:hover,
+.app-header-menu-popover button:hover,
+.app-header-menu-panel a:hover,
+.app-header-menu-panel button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/*
+  Allow overflow on likely hero/card containers without globally breaking layout.
+  This helps if the menu is still inside a clipped wrapper.
+*/
+.app-hero,
+.hero-card,
+.workspace-hero,
+.qatalyst-hero,
+.app-shell-hero,
+.landing-hero,
+.main-hero,
+.home-hero,
+.reports-hero {
+  overflow: visible !important;
+}
+
+@media (max-width: 760px) {
+  .app-header-menu-popover,
+  .app-header-menu-panel {
+    bottom: auto !important;
+    top: calc(100% + 12px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .app-header-menu-popover::after,
+  .app-header-menu-panel::after {
+    display: none;
+  }
+}
+/* QAS-40.8 Floating menu hotfix */
+
+/*
+  Real fix:
+  The menu now uses position: fixed with JS-calculated viewport coordinates.
+  This prevents hero/card containers from clipping it.
+*/
+
+.app-header-menu-wrap,
+.app-header-menu {
+  position: relative !important;
+  display: inline-flex !important;
+  justify-content: center;
+  align-items: center;
+  z-index: 80 !important;
+  overflow: visible !important;
+}
+
+.app-header-menu-button {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 142px;
+  min-height: 52px;
+  padding: 13px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  background:
+    linear-gradient(180deg, rgba(37, 99, 235, 0.7), rgba(30, 64, 175, 0.72)),
+    rgba(15, 23, 42, 0.74);
+  color: #ffffff;
+  font-weight: 950;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 32px rgba(0, 0, 0, 0.26);
+}
+
+.app-header-menu-button:hover {
+  border-color: rgba(147, 197, 253, 0.76);
+  filter: brightness(1.06);
+}
+
+.app-header-menu-floating,
+.app-header-menu-popover.app-header-menu-floating {
+  position: fixed !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  z-index: 99999 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+
+  width: 238px !important;
+  min-width: 238px !important;
+  max-width: 238px !important;
+  max-height: calc(100vh - 32px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  padding: 12px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(248, 113, 113, 0.26) !important;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.13), transparent 38%),
+    rgba(5, 5, 5, 0.97) !important;
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(14px);
+}
+
+.app-header-menu-floating::after,
+.app-header-menu-popover.app-header-menu-floating::after,
+.app-header-menu-panel::after {
+  display: none !important;
+}
+
+.app-header-menu-floating a,
+.app-header-menu-floating button,
+.app-header-menu-popover.app-header-menu-floating a,
+.app-header-menu-popover.app-header-menu-floating button {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 42px !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 10px 12px !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  font: inherit !important;
+  font-weight: 950 !important;
+  line-height: 1.15 !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  white-space: normal !important;
+  cursor: pointer !important;
+}
+
+.app-header-menu-floating a:hover,
+.app-header-menu-floating button:hover,
+.app-header-menu-popover.app-header-menu-floating a:hover,
+.app-header-menu-popover.app-header-menu-floating button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.app-header-buy-credits-standalone,
+.account-buy-link.app-header-buy-credits-standalone {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .app-header-menu-wrap,
+  .app-header-menu,
+  .app-header-menu-button {
+    width: 100% !important;
+  }
+
+  .app-header-menu-floating,
+  .app-header-menu-popover.app-header-menu-floating {
+    width: min(320px, calc(100vw - 32px)) !important;
+    min-width: min(320px, calc(100vw - 32px)) !important;
+    max-width: min(320px, calc(100vw - 32px)) !important;
+  }
+}

@@ -5,9 +5,10 @@ import { getJiraImportSummary, parseJiraTicket, type ParsedJiraTicket } from "@/
 
 type JiraImportPanelProps = {
   onImport: (normalizedText: string, ticket: ParsedJiraTicket) => void;
+  isVisible?: boolean;
 };
 
-export default function JiraImportPanel({ onImport }: JiraImportPanelProps) {
+export default function JiraImportPanel({ onImport, isVisible = true }: JiraImportPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [jiraText, setJiraText] = useState("");
   const [lastImported, setLastImported] = useState<ParsedJiraTicket | null>(null);
@@ -16,8 +17,13 @@ export default function JiraImportPanel({ onImport }: JiraImportPanelProps) {
   const hasInput = jiraText.trim().length > 0;
   const canImport = hasInput && Boolean(parsed.normalizedText.trim());
 
+  if (!isVisible) {
+    return null;
+  }
+
   function handleImport() {
     if (!canImport) return;
+
     setLastImported(parsed);
     onImport(parsed.normalizedText, parsed);
   }
@@ -72,12 +78,30 @@ export default function JiraImportPanel({ onImport }: JiraImportPanelProps) {
             ) : null}
 
             <dl className="jira-import-fields">
-              <div><dt>Key</dt><dd>{parsed.key || "Not found"}</dd></div>
-              <div><dt>Summary</dt><dd>{parsed.summary || "Not found"}</dd></div>
-              <div><dt>Priority</dt><dd>{parsed.priority || "Not found"}</dd></div>
-              <div><dt>Status</dt><dd>{parsed.status || "Not found"}</dd></div>
-              <div><dt>Labels</dt><dd>{parsed.labels.length ? parsed.labels.join(", ") : "Not found"}</dd></div>
-              <div><dt>Acceptance Criteria</dt><dd>{parsed.acceptanceCriteria.length}</dd></div>
+              <div>
+                <dt>Key</dt>
+                <dd>{parsed.key || "Not found"}</dd>
+              </div>
+              <div>
+                <dt>Summary</dt>
+                <dd>{parsed.summary || "Not found"}</dd>
+              </div>
+              <div>
+                <dt>Priority</dt>
+                <dd>{parsed.priority || "Not found"}</dd>
+              </div>
+              <div>
+                <dt>Status</dt>
+                <dd>{parsed.status || "Not found"}</dd>
+              </div>
+              <div>
+                <dt>Labels</dt>
+                <dd>{parsed.labels.length ? parsed.labels.join(", ") : "Not found"}</dd>
+              </div>
+              <div>
+                <dt>Acceptance Criteria</dt>
+                <dd>{parsed.acceptanceCriteria.length}</dd>
+              </div>
             </dl>
 
             {hasInput && parsed.missingFields.length > 0 ? (
@@ -100,7 +124,9 @@ export default function JiraImportPanel({ onImport }: JiraImportPanelProps) {
             </div>
 
             {lastImported ? (
-              <p className="jira-import-success">Imported {lastImported.key || "Jira source"} into the active QA tool.</p>
+              <p className="jira-import-success">
+                Imported {lastImported.key || "Jira source"} into the active QA tool.
+              </p>
             ) : null}
           </div>
         </div>

@@ -2934,10 +2934,7 @@ export default function Home() {
         <div className="hero-brand-account">
           <div className="hero-brand-top">
             <div className="hero-utility-actions" aria-label="QAtalyst purchase and support links">
-              <Link className="hero-utility-button buy-credits-link" href="/buy-credits">
-                Buy Credits
-              </Link>
-              <AppHeaderMenu isAdmin={session?.user?.email === "gitajob.com@gmail.com"} />
+              <AppHeaderMenu isSignedIn={Boolean(session?.user)} />
             </div>
 
             <img src="/qatalyst-header.png" alt="QAtalyst" className="brand-logo hero-brand-logo" />
@@ -3008,7 +3005,10 @@ export default function Home() {
             ))}
           </div>
 
-          <JiraImportPanel onImport={handleJiraTicketImport} />
+          <JiraImportPanel
+            isVisible={activeTool !== "bug"}
+            onImport={handleJiraTicketImport}
+          />
 
           <textarea
             value={input}
@@ -3019,7 +3019,7 @@ export default function Home() {
             placeholder={tool.placeholder}
           />
 
-          {importedJiraTicket ? (
+          {activeTool !== "bug" && importedJiraTicket ? (
             <div className="active-jira-source-row">
               <strong>
                 Active Jira source: {importedJiraTicket.key || "No key"} - {importedJiraTicket.summary || "No summary"}

@@ -33,7 +33,7 @@ export async function GET(req: Request): Promise<Response> {
     if (!jiraStatus.configured || !jiraStatus.config) {
       return apiError(req, {
         status: 400,
-        code: "JIRA_CONFIG_MISSING",
+        code: "VALIDATION_ERROR",
         message:
           jiraStatus.missingFields.length > 0
             ? `Jira config is missing: ${jiraStatus.missingFields.join(", ")}.`
@@ -57,7 +57,7 @@ export async function GET(req: Request): Promise<Response> {
 
       return apiError(req, {
         status: result.status >= 400 && result.status < 600 ? result.status : 502,
-        code: "JIRA_ISSUE_TYPES_FAILED",
+        code: "UPSTREAM_ERROR",
         message: result.error,
         details: { jira: result.details },
       });
