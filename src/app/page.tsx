@@ -53,6 +53,16 @@ type BugReport = {
   qaNotes?: unknown;
 };
 
+type TestImprovementReport = {
+  title?: unknown;
+  improvedTestCase?: unknown;
+  improvementsMade?: unknown;
+  addedCoverage?: unknown;
+  missingInfo?: unknown;
+  followUpQuestions?: unknown;
+  qaNotes?: unknown;
+};
+
 type UploadedEvidenceFile = {
   name: string;
   type: string;
@@ -213,6 +223,14 @@ function parseOutput(output: string): unknown {
   }
 }
 
+function unwrapQaResult(parsed: unknown): unknown {
+  if (isPlainObject(parsed) && "result" in parsed) {
+    return parsed.result;
+  }
+
+  return parsed;
+}
+
 function getBugReportFromOutput(output: string): BugReport | null {
   const parsed = parseOutput(output);
 
@@ -281,13 +299,26 @@ function extractMarkdownListSection(markdown: string, heading: string): string[]
 
 
 function extractMarkdownSection(markdown: string, heading: string): string {
-  const pattern = new RegExp(
-    `^#{2,3}\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$([\\s\\S]*?)(?=^#{2,3}\\s+|(?![\\s\\S]))`,
-    "im"
-  );
-  const match = markdown.match(pattern);
+  const lines = markdown.split(/\r?\n/);
+  const headingPattern = new RegExp(`^#{2,6}\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "i");
+  const anyHeadingPattern = /^#{2,6}\s+/;
+  const startIndex = lines.findIndex((line) => headingPattern.test(line.trim()));
 
-  return match?.[1]?.trim() ?? "";
+  if (startIndex < 0) return "";
+
+  const bodyLines: string[] = [];
+
+  for (let index = startIndex + 1; index < lines.length; index += 1) {
+    const line = lines[index];
+
+    if (anyHeadingPattern.test(line.trim())) {
+      break;
+    }
+
+    bodyLines.push(line);
+  }
+
+  return bodyLines.join("\n").trim();
 }
 
 function cleanMarkdownListText(value: string): string[] {
@@ -335,31 +366,36 @@ function parseBugReportMarkdown(markdown: string, current: BugReport): BugReport
 }
 
 function parseTestCasesMarkdown(markdown: string, current: TestCase[]): TestCase[] {
-  const matches = [...markdown.matchAll(/^##\s+(?:Test Case\s+\d+:\s*)?(.+)\s*$/gim)].filter(
-    (match) => !["Follow-up History"].includes(match[1]?.trim() ?? "")
-  );
+  const lines = markdown.split(/\r?\n/);
+  const headingIndexes = lines
+    .map((line, index) => ({ line: line.trim(), index }))
+    .filter(({ line }) => /^##\s+Test Case\s+\d+:\s+.+$/i.test(line));
 
-  if (matches.length === 0) return current;
+  if (headingIndexes.length === 0) return current;
 
-  return matches.map((match, index) => {
-    const start = (match.index ?? 0) + match[0].length;
-    const end = index + 1 < matches.length ? matches[index + 1].index ?? markdown.length : markdown.length;
-    const body = markdown.slice(start, end);
-    const title = match[1]?.trim() || current[index]?.title || `Test Case ${index + 1}`;
-    const type = parseTopLevelMarkdownValue(body, "Type") || current[index]?.type;
-    const priority = parseTopLevelMarkdownValue(body, "Priority") || current[index]?.priority;
-    const preconditions = extractMarkdownSection(body, "Preconditions");
-    const expectedResult = extractMarkdownSection(body, "Expected Result");
-    const steps = cleanMarkdownListText(extractMarkdownSection(body, "Steps"));
+  return headingIndexes.map(({ line, index }, caseIndex) => {
+    const nextHeadingIndex =
+      caseIndex + 1 < headingIndexes.length ? headingIndexes[caseIndex + 1].index : lines.length;
+    const sectionMarkdown = lines.slice(index, nextHeadingIndex).join("\n");
+    const bodyMarkdown = lines.slice(index + 1, nextHeadingIndex).join("\n");
+    const title =
+      line.replace(/^##\s+Test Case\s+\d+:\s+/i, "").trim() ||
+      current[caseIndex]?.title ||
+      `Test Case ${caseIndex + 1}`;
+    const type = parseTopLevelMarkdownValue(bodyMarkdown, "Type") || current[caseIndex]?.type;
+    const priority = parseTopLevelMarkdownValue(bodyMarkdown, "Priority") || current[caseIndex]?.priority;
+    const preconditions = extractMarkdownSection(sectionMarkdown, "Preconditions");
+    const expectedResult = extractMarkdownSection(sectionMarkdown, "Expected Result");
+    const steps = cleanMarkdownListText(extractMarkdownSection(sectionMarkdown, "Steps"));
 
     return {
-      ...current[index],
+      ...current[caseIndex],
       title,
       type,
       priority,
-      preconditions: preconditions || current[index]?.preconditions,
-      steps: steps.length > 0 ? steps : current[index]?.steps,
-      expectedResult: expectedResult || current[index]?.expectedResult,
+      preconditions: preconditions || current[caseIndex]?.preconditions,
+      steps: steps.length > 0 ? steps : current[caseIndex]?.steps,
+      expectedResult: expectedResult || current[caseIndex]?.expectedResult,
     };
   });
 }
@@ -433,6 +469,108 @@ function parseRiskReviewMarkdown(markdown: string, current: RiskReview): RiskRev
       missingAcceptanceCriteria.length > 0 ? missingAcceptanceCriteria : current.missingAcceptanceCriteria,
     qaFollowUpQuestions: qaFollowUpQuestions.length > 0 ? qaFollowUpQuestions : current.qaFollowUpQuestions,
     suggestedTestFocus: suggestedTestFocus.length > 0 ? suggestedTestFocus : current.suggestedTestFocus,
+  };
+}
+
+
+function getTestImprovementFromOutput(output: string): TestImprovementReport | null {
+  const parsed = unwrapQaResult(parseOutput(output));
+
+  if (isPlainObject(parsed) && isPlainObject(parsed.testImprovement)) {
+    return parsed.testImprovement as TestImprovementReport;
+  }
+
+  return null;
+}
+
+function buildTestImprovementMarkdown(report: TestImprovementReport): string {
+  const improved = isPlainObject(report.improvedTestCase)
+    ? (report.improvedTestCase as TestCase)
+    : ({} as TestCase);
+  const steps = normalizeSteps(improved.steps);
+  const improvementsMade = meaningfulLines(report.improvementsMade);
+  const addedCoverage = meaningfulLines(report.addedCoverage);
+  const missingInfo = meaningfulLines(report.missingInfo);
+  const followUpQuestions = meaningfulLines(report.followUpQuestions);
+  const qaNotes = meaningfulLines(report.qaNotes);
+
+  return [
+    `# ${safeText(report.title)}`,
+    "",
+    "## Improved Test Case",
+    `Title: ${safeText(improved.title)}`,
+    `Type: ${safeText(improved.type)}`,
+    `Priority: ${safeText(improved.priority)}`,
+    "",
+    "### Preconditions",
+    safeText(improved.preconditions),
+    "",
+    "### Steps",
+    ...(steps.length ? steps.map((step, index) => `${index + 1}. ${step}`) : ["1. Not specified."]),
+    "",
+    "### Expected Result",
+    safeText(improved.expectedResult),
+    "",
+    "## Improvements Made",
+    ...(improvementsMade.length ? improvementsMade.map((item) => `- ${item}`) : ["- No improvements listed."]),
+    "",
+    "## Added Coverage",
+    ...(addedCoverage.length ? addedCoverage.map((item) => `- ${item}`) : ["- No added coverage listed."]),
+    "",
+    "## Missing Info",
+    ...(missingInfo.length ? missingInfo.map((item) => `- ${item}`) : ["- No missing info returned."]),
+    "",
+    "## Follow-up Questions",
+    ...(followUpQuestions.length ? followUpQuestions.map((item) => `- ${item}`) : ["- No follow-up questions returned."]),
+    "",
+    "## QA Notes",
+    ...(qaNotes.length ? qaNotes.map((item) => `- ${item}`) : ["- No QA notes returned."]),
+  ].join("\n");
+}
+
+function parseTestImprovementMarkdown(markdown: string, current: TestImprovementReport): TestImprovementReport {
+  const titleMatch = markdown.match(/^#\s+(.+)$/m);
+  const improvedSection = extractMarkdownSection(markdown, "Improved Test Case");
+  const currentImproved = isPlainObject(current.improvedTestCase)
+    ? (current.improvedTestCase as TestCase)
+    : ({} as TestCase);
+  const improvedTestCase: TestCase = {
+    ...currentImproved,
+    title: parseTopLevelMarkdownValue(improvedSection, "Title") || currentImproved.title,
+    type: parseTopLevelMarkdownValue(improvedSection, "Type") || currentImproved.type,
+    priority: parseTopLevelMarkdownValue(improvedSection, "Priority") || currentImproved.priority,
+    preconditions: extractMarkdownSection(improvedSection, "Preconditions") || currentImproved.preconditions,
+    steps:
+      cleanMarkdownListText(extractMarkdownSection(improvedSection, "Steps")).length > 0
+        ? cleanMarkdownListText(extractMarkdownSection(improvedSection, "Steps"))
+        : currentImproved.steps,
+    expectedResult: extractMarkdownSection(improvedSection, "Expected Result") || currentImproved.expectedResult,
+  };
+
+  return {
+    ...current,
+    title: titleMatch?.[1]?.trim() || current.title,
+    improvedTestCase,
+    improvementsMade:
+      cleanMarkdownListText(extractMarkdownSection(markdown, "Improvements Made")).length > 0
+        ? cleanMarkdownListText(extractMarkdownSection(markdown, "Improvements Made"))
+        : current.improvementsMade,
+    addedCoverage:
+      cleanMarkdownListText(extractMarkdownSection(markdown, "Added Coverage")).length > 0
+        ? cleanMarkdownListText(extractMarkdownSection(markdown, "Added Coverage"))
+        : current.addedCoverage,
+    missingInfo:
+      cleanMarkdownListText(extractMarkdownSection(markdown, "Missing Info")).length > 0
+        ? cleanMarkdownListText(extractMarkdownSection(markdown, "Missing Info"))
+        : current.missingInfo,
+    followUpQuestions:
+      cleanMarkdownListText(extractMarkdownSection(markdown, "Follow-up Questions")).length > 0
+        ? cleanMarkdownListText(extractMarkdownSection(markdown, "Follow-up Questions"))
+        : current.followUpQuestions,
+    qaNotes:
+      cleanMarkdownListText(extractMarkdownSection(markdown, "QA Notes")).length > 0
+        ? cleanMarkdownListText(extractMarkdownSection(markdown, "QA Notes"))
+        : current.qaNotes,
   };
 }
 
@@ -989,6 +1127,7 @@ function TestCaseCards({
     const parsedTestCases = parseTestCasesMarkdown(editedMarkdown, editableTestCases);
     setEditableTestCases(parsedTestCases);
     setSavedMarkdown(buildTestCasesMarkdown(parsedTestCases, answeredFollowUps));
+    setEditedMarkdown(buildTestCasesMarkdown(parsedTestCases, answeredFollowUps));
     setIsEditingMarkdown(false);
   }
 
@@ -1658,6 +1797,220 @@ function BugReportCards({
   );
 }
 
+
+function TestImprovementCards({ report }: { report: TestImprovementReport }) {
+  const [copied, setCopied] = useState(false);
+  const [exported, setExported] = useState(false);
+  const [isEditingMarkdown, setIsEditingMarkdown] = useState(false);
+  const [editedMarkdown, setEditedMarkdown] = useState("");
+  const [savedMarkdown, setSavedMarkdown] = useState("");
+  const [editableReport, setEditableReport] = useState<TestImprovementReport>(report);
+
+  useEffect(() => {
+    setEditableReport(report);
+    setEditedMarkdown("");
+    setSavedMarkdown("");
+  }, [report]);
+
+  const improved = isPlainObject(editableReport.improvedTestCase)
+    ? (editableReport.improvedTestCase as TestCase)
+    : ({} as TestCase);
+  const generatedMarkdown = buildTestImprovementMarkdown(editableReport);
+  const exportMarkdown = savedMarkdown || generatedMarkdown;
+  const steps = normalizeSteps(improved.steps);
+  const improvementsMade = meaningfulLines(editableReport.improvementsMade);
+  const addedCoverage = meaningfulLines(editableReport.addedCoverage);
+  const missingInfo = meaningfulLines(editableReport.missingInfo);
+  const followUpQuestions = meaningfulLines(editableReport.followUpQuestions);
+  const qaNotes = meaningfulLines(editableReport.qaNotes);
+
+  function updateImprovedTestCaseBadge(field: "type" | "priority", value: string) {
+    setEditableReport((current) => {
+      const currentImproved = isPlainObject(current.improvedTestCase)
+        ? (current.improvedTestCase as TestCase)
+        : ({} as TestCase);
+
+      return {
+        ...current,
+        improvedTestCase: {
+          ...currentImproved,
+          [field]: value,
+        },
+      };
+    });
+    setSavedMarkdown("");
+  }
+
+  function handleToggleEditMarkdown() {
+    if (!isEditingMarkdown) {
+      setEditedMarkdown(savedMarkdown || generatedMarkdown);
+      setIsEditingMarkdown(true);
+      return;
+    }
+
+    setIsEditingMarkdown(false);
+  }
+
+  function handleLiveMarkdownEdit(nextMarkdown: string) {
+    setEditedMarkdown(nextMarkdown);
+    setEditableReport((current) => parseTestImprovementMarkdown(nextMarkdown, current));
+    setSavedMarkdown("");
+  }
+
+  function handleSaveMarkdownEdits() {
+    const parsedReport = parseTestImprovementMarkdown(editedMarkdown, editableReport);
+    const normalizedMarkdown = buildTestImprovementMarkdown(parsedReport);
+
+    setEditableReport(parsedReport);
+    setSavedMarkdown(normalizedMarkdown);
+    setEditedMarkdown(normalizedMarkdown);
+    setIsEditingMarkdown(false);
+  }
+
+  async function handleCopy() {
+    await copyText(exportMarkdown);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1200);
+  }
+
+  function handleExportMarkdown() {
+    const filename = `qa-sidekick-improved-test-${buildTimestampForFilename()}.md`;
+
+    downloadTextFile(filename, exportMarkdown, "text/markdown");
+    setExported(true);
+    window.setTimeout(() => setExported(false), 1400);
+  }
+
+  return (
+    <div className="report-wrap test-improvement-wrap">
+      <div className="report-header">
+        <div>
+          <p className="report-kicker">Test Improver Report</p>
+          <h2>{safeText(editableReport.title)}</h2>
+        </div>
+        <div className="report-actions compact-report-actions">
+          <button className="copy-all-button" type="button" onClick={handleCopy}>
+            {copied ? "Copied" : "Copy Improved Test"}
+          </button>
+          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
+            {exported ? "Exported" : "Export Markdown"}
+          </button>
+          <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
+            {isEditingMarkdown ? "Close Editor" : "Edit Report"}
+          </button>
+        </div>
+      </div>
+
+      {savedMarkdown && !isEditingMarkdown ? (
+        <div className="saved-edit-notice">
+          Saved edits are active. Copy/export will use the finalized edited version.
+        </div>
+      ) : null}
+
+      {isEditingMarkdown ? (
+        <section className="report-markdown-editor-card">
+          <div className="report-markdown-editor-header">
+            <div>
+              <p>Edit before export</p>
+              <h3>Improved Test Markdown</h3>
+              <span>Cards update live as you type. Save Edits finalizes the edited version for copy/export.</span>
+            </div>
+            <button className="copy-all-button save-edit-button" type="button" onClick={handleSaveMarkdownEdits}>
+              Save Edits
+            </button>
+          </div>
+
+          <textarea
+            value={editedMarkdown}
+            onChange={(event) => handleLiveMarkdownEdit(event.target.value)}
+            spellCheck={false}
+          />
+        </section>
+      ) : null}
+
+      <div className="test-improvement-grid">
+        <section className="test-case-card improved-test-card">
+          <div className="test-case-topline">
+            <div className="test-case-label-row">
+              <span className="test-case-label">Improved Test Case</span>
+            </div>
+            <h3>{safeText(improved.title)}</h3>
+            <div className="badge-row">
+              <EditableBadgeSelect
+                label="Type"
+                value={improved.type}
+                options={testTypeOptions}
+                kind="type"
+                onChange={(value) => updateImprovedTestCaseBadge("type", value)}
+              />
+              <EditableBadgeSelect
+                label="Priority"
+                value={improved.priority}
+                options={priorityOptions}
+                kind="priority"
+                onChange={(value) => updateImprovedTestCaseBadge("priority", value)}
+              />
+            </div>
+          </div>
+
+          <div className="test-case-section">
+            <h4>Preconditions</h4>
+            <ValueBlock value={improved.preconditions} />
+          </div>
+
+          <div className="test-case-section">
+            <h4>Steps</h4>
+            {steps.length > 0 ? (
+              <ol>
+                {steps.map((step, index) => (
+                  <li key={`${step}-${index}`}>{step}</li>
+                ))}
+              </ol>
+            ) : (
+              <p className="field-text">No steps returned.</p>
+            )}
+          </div>
+
+          <div className="test-case-section">
+            <h4>Expected Result</h4>
+            <ValueBlock value={improved.expectedResult} />
+          </div>
+        </section>
+
+        <section className="risk-section-card">
+          <h3>Improvements Made</h3>
+          {improvementsMade.length > 0 ? (
+            <ul className="risk-section-list">
+              {improvementsMade.map((item, index) => (
+                <li key={`${item}-${index}`}>{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="field-text">No improvements listed.</p>
+          )}
+        </section>
+
+        <section className="risk-section-card">
+          <h3>Added Coverage</h3>
+          {addedCoverage.length > 0 ? (
+            <ul className="risk-section-list">
+              {addedCoverage.map((item, index) => (
+                <li key={`${item}-${index}`}>{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="field-text">No added coverage listed.</p>
+          )}
+        </section>
+
+        <RiskTextList title="Missing Info" items={missingInfo} />
+        <RiskTextList title="Follow-up Questions" items={followUpQuestions} />
+        <RiskTextList title="QA Notes" items={qaNotes} />
+      </div>
+    </div>
+  );
+}
+
 function GenericOutput({
   output,
   evidenceFiles = [],
@@ -1675,7 +2028,7 @@ function GenericOutput({
   testAnsweredFollowUps?: AnsweredFollowUp[];
   onSaveBugMarkdown?: (markdown: string) => void;
 }) {
-  const parsed = parseOutput(output);
+  const parsed = unwrapQaResult(parseOutput(output));
 
   if (isPlainObject(parsed) && Array.isArray(parsed.testCases)) {
     return (
@@ -1706,6 +2059,10 @@ function GenericOutput({
         savedEditedMarkdown={typeof parsed.editedMarkdown === "string" ? parsed.editedMarkdown : ""}
       />
     );
+  }
+
+  if (isPlainObject(parsed) && isPlainObject(parsed.testImprovement)) {
+    return <TestImprovementCards report={parsed.testImprovement as TestImprovementReport} />;
   }
 
   const displayText = typeof parsed === "string" ? parsed : JSON.stringify(parsed, null, 2);
@@ -1743,6 +2100,11 @@ export default function Home() {
   const [testAnsweredFollowUpHistory, setTestAnsweredFollowUpHistory] = useState<AnsweredFollowUp[]>([]);
   const [testFollowUpLoopClosed, setTestFollowUpLoopClosed] = useState(false);
   const [testAdditionalContext, setTestAdditionalContext] = useState("");
+  const [improveQuestionAnswers, setImproveQuestionAnswers] = useState<Record<string, string>>({});
+  const [improveQuestionResolutions, setImproveQuestionResolutions] = useState<Record<string, FollowUpResolution>>({});
+  const [improveAnsweredFollowUpHistory, setImproveAnsweredFollowUpHistory] = useState<AnsweredFollowUp[]>([]);
+  const [improveFollowUpLoopClosed, setImproveFollowUpLoopClosed] = useState(false);
+  const [improveAdditionalContext, setImproveAdditionalContext] = useState("");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
 
@@ -1800,6 +2162,25 @@ export default function Home() {
   const testAnsweredFollowUps = mergeAnsweredFollowUpHistory(
     testAnsweredFollowUpHistory,
     currentTestAnsweredFollowUps
+  );
+  const currentTestImprovement = activeTool === "improve" ? getTestImprovementFromOutput(output) : null;
+  const rawImproveFollowUpQuestions = currentTestImprovement
+    ? meaningfulLines(currentTestImprovement.followUpQuestions)
+    : [];
+  const improveFollowUpQuestions = rawImproveFollowUpQuestions.filter(
+    (question) =>
+      !improveFollowUpLoopClosed &&
+      (improveQuestionResolutions[question] ?? "Still open") !== "Resolved" &&
+      (improveQuestionResolutions[question] ?? "Still open") !== "No more questions"
+  );
+  const currentImproveAnsweredFollowUps = buildAnsweredFollowUps(
+    rawImproveFollowUpQuestions,
+    improveQuestionAnswers,
+    improveQuestionResolutions
+  );
+  const improveAnsweredFollowUps = mergeAnsweredFollowUpHistory(
+    improveAnsweredFollowUpHistory,
+    currentImproveAnsweredFollowUps
   );
 
   function updateBugQuestionAnswer(question: string, answer: string) {
@@ -1869,6 +2250,29 @@ export default function Home() {
 
     if (resolution === "No more questions") {
       setTestFollowUpLoopClosed(true);
+    }
+  }
+
+  function updateImproveQuestionAnswer(question: string, answer: string) {
+    setImproveQuestionAnswers((current) => ({
+      ...current,
+      [question]: answer,
+    }));
+
+    setImproveQuestionResolutions((current) => ({
+      ...current,
+      [question]: current[question] ?? "Still open",
+    }));
+  }
+
+  function updateImproveQuestionResolution(question: string, resolution: FollowUpResolution) {
+    setImproveQuestionResolutions((current) => ({
+      ...current,
+      [question]: resolution,
+    }));
+
+    if (resolution === "No more questions") {
+      setImproveFollowUpLoopClosed(true);
     }
   }
 
@@ -2055,6 +2459,20 @@ export default function Home() {
       activeTool === "tests" &&
       (answeredTestFollowUps.length > 0 || testAdditionalContext.trim() || testFollowUpLoopClosed);
 
+    const mergedImproveAnsweredFollowUps = mergeAnsweredFollowUpHistory(
+      improveAnsweredFollowUpHistory,
+      currentImproveAnsweredFollowUps
+    );
+
+    const answeredImproveFollowUps = mergedImproveAnsweredFollowUps.map(
+      (item) =>
+        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nResolution: ${item.resolution}`
+    );
+
+    const hasImproveFollowUpContext =
+      activeTool === "improve" &&
+      (answeredImproveFollowUps.length > 0 || improveAdditionalContext.trim() || improveFollowUpLoopClosed);
+
     if (activeTool === "bug" && mergedAnsweredFollowUps.length > bugAnsweredFollowUpHistory.length) {
       setBugAnsweredFollowUpHistory(mergedAnsweredFollowUps);
     }
@@ -2067,7 +2485,41 @@ export default function Home() {
       setTestAnsweredFollowUpHistory(mergedTestAnsweredFollowUps);
     }
 
-    const requestInput = hasTestRegenerationContext
+    if (activeTool === "improve" && mergedImproveAnsweredFollowUps.length > improveAnsweredFollowUpHistory.length) {
+      setImproveAnsweredFollowUpHistory(mergedImproveAnsweredFollowUps);
+    }
+
+    const requestInput = hasImproveFollowUpContext
+      ? [
+          "Original test case or checklist:",
+          input.trim(),
+          "",
+          "Previous Test Improvement JSON:",
+          currentTestImprovement
+            ? JSON.stringify({ testImprovement: currentTestImprovement }, null, 2)
+            : "No previous test improvement available.",
+          "",
+          "Answered Test Improver follow-up questions:",
+          answeredImproveFollowUps.length > 0
+            ? answeredImproveFollowUps.join("\n\n")
+            : "No answered Test Improver follow-up questions supplied.",
+          "",
+          "Test Improver follow-up loop status:",
+          improveFollowUpLoopClosed
+            ? "No more Test Improver follow-up questions requested by QA. Do not generate additional follow-up questions unless there is a critical blocker."
+            : "Test Improver follow-up loop is still open.",
+          "",
+          "Additional Test Improver context:",
+          improveAdditionalContext.trim() || "No additional Test Improver context supplied.",
+          "",
+          "Re-improvement instructions:",
+          "- Rebuild the improved test case using the original test plus answered follow-up context.",
+          "- Preserve useful resolved answers in preconditions, steps, expected results, improvements made, added coverage, missing info, or QA notes.",
+          "- Do not repeat follow-up questions that QA marked Resolved.",
+          "- If QA selected No more questions, return an empty followUpQuestions array unless a critical blocker remains.",
+          "- Keep follow-up questions low-noise and only ask questions that materially improve the test.",
+        ].join("\n")
+      : hasTestRegenerationContext
       ? [
           "Original ticket or requirements text:",
           input.trim(),
@@ -2233,6 +2685,14 @@ export default function Home() {
                     setTestAdditionalContext("");
                   }
 
+                  if (item.id !== "improve") {
+                    setImproveQuestionAnswers({});
+                    setImproveQuestionResolutions({});
+                    setImproveAnsweredFollowUpHistory([]);
+                    setImproveFollowUpLoopClosed(false);
+                    setImproveAdditionalContext("");
+                  }
+
                   if (item.id !== "bug") {
                     setBugDeviceType("");
                     setBugOperatingSystem("");
@@ -2330,6 +2790,76 @@ export default function Home() {
                   value={testAdditionalContext}
                   onChange={(event) => setTestAdditionalContext(event.target.value)}
                   placeholder="Example: Import supports PDF and pasted Jira URLs only. Admin users are out of scope for MVP..."
+                />
+              </div>
+            </section>
+          ) : null}
+
+          {activeTool === "improve" && currentTestImprovement ? (
+            <section className={`follow-up-answer-box test-follow-up-box ${improveFollowUpQuestions.length > 0 ? "has-active-followups" : ""}`}>
+              <div className="follow-up-answer-header">
+                <p>Test Improver follow-up questions</p>
+                <span>{improveFollowUpLoopClosed ? "Closed" : `${improveFollowUpQuestions.length} active`}</span>
+              </div>
+
+              {improveFollowUpLoopClosed ? (
+                <p className="follow-up-loop-closed">
+                  Test Improver follow-up loop marked complete. Re-improve will avoid asking more questions unless there is a critical blocker.
+                </p>
+              ) : null}
+
+              {improveFollowUpQuestions.length > 0 ? (
+                <div className="follow-up-question-card-list">
+                  {improveFollowUpQuestions.map((question, index) => {
+                    const resolution = improveQuestionResolutions[question] ?? "Still open";
+
+                    return (
+                      <div className="follow-up-question-card" key={`${question}-${index}`}>
+                        <span>Question {index + 1}</span>
+                        <strong>{question}</strong>
+                        <textarea
+                          value={improveQuestionAnswers[question] ?? ""}
+                          onChange={(event) => updateImproveQuestionAnswer(question, event.target.value)}
+                          placeholder="Answer this Test Improver question..."
+                        />
+
+                        <div className="follow-up-resolution-block">
+                          <p>Did this answer resolve the follow-up?</p>
+                          <div className="follow-up-resolution-actions">
+                            {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
+                              (option) => (
+                                <button
+                                  className={`${resolution === option ? "active" : ""} resolution-${option.toLowerCase().replace(/\s+/g, "-")}`}
+                                  key={option}
+                                  type="button"
+                                  onClick={() => updateImproveQuestionResolution(question, option)}
+                                >
+                                  {option}
+                                </button>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="follow-up-answer-empty">
+                  No active Test Improver follow-up questions. You can add extra context below and re-improve if needed.
+                </p>
+              )}
+
+              <div className="bug-refine-section">
+                <h4>Additional Test Improver context</h4>
+                <p className="bug-refine-help-text">
+                  Add product answers, scope notes, validation rules, edge cases, roles, data setup, or expected behavior before re-improving.
+                </p>
+                <textarea
+                  className="follow-up-answer-textarea compact"
+                  value={improveAdditionalContext}
+                  onChange={(event) => setImproveAdditionalContext(event.target.value)}
+                  placeholder="Example: Valid stage data requires a unique stage ID, enemy group reference, reward table, and unlock condition..."
                 />
               </div>
             </section>
@@ -2650,7 +3180,9 @@ export default function Home() {
                   ? "Re-assess Risk"
                   : activeTool === "tests" && currentTestOutput
                     ? "Regenerate Test Cases"
-                    : tool.button}
+                    : activeTool === "improve" && currentTestImprovement
+                      ? "Re-improve Test Case"
+                      : tool.button}
           </button>
         </aside>
 

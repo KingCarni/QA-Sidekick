@@ -7,7 +7,7 @@ export function buildQaPrompt(mode: QaMode, input: string) {
     "generate-tests": `Generate practical test cases with title, type, preconditions, steps, expectedResult, and priority. Include happy path, negative, edge, and regression coverage. Also include qaFollowUpQuestions when ambiguity materially affects test coverage. Return JSON with a top-level testCases array and qaFollowUpQuestions array. Test case titles must be specific and useful, not generic.`,
     "analyze-risk": `Analyze QA risks and bottlenecks. Include missing acceptance criteria, unclear dependencies, likely bug areas, test data needs, and follow-up questions.`,
     "improve-bug": `Rewrite the rough bug report into a clear bug report. Do not invent missing facts. Return JSON with a top-level bugReport object.`,
-    "improve-test": `Improve the provided test case or checklist. Preserve intent. Add clearer steps, expected results, edge cases, and missing preconditions.`
+    "improve-test": `Improve the provided test case or checklist. Preserve intent. Return JSON with a top-level testImprovement object. Include a rewritten improvedTestCase with title, type, priority, preconditions, steps, and expectedResult. Also include improvementsMade, addedCoverage, missingInfo, followUpQuestions, and qaNotes arrays. Do not invent product behavior as fact. Mark assumptions clearly.`
   };
 
   return `${base}\n\nTask: ${tasks[mode]}\n\nInput:\n${input}`;
@@ -175,7 +175,31 @@ ${input}
 
 
 
-// QAS-44 Bug Writer follow-up UX cleanup
-// For Bug Writer follow-up questions, treat Resolution: Resolved as final for that question. Do not ask that same question again.
-// Treat Resolution: No more questions as a request to stop follow-up questions unless a critical blocker remains.
-// Keep Bug Writer follow-up questions low-noise and avoid asking for details already provided in environment, repro, evidence, tester notes, or follow-up history.
+// QAS-48 Test Improver structured output
+// Use this exact JSON shape for improve-test responses:
+// {
+//   "testImprovement": {
+//     "title": "Concise title for the improved test",
+//     "improvedTestCase": {
+//       "title": "Specific improved test title",
+//       "type": "Functional | Negative | Edge | Regression | Accessibility | Data Integrity | AI Safety | Auth | Credits",
+//       "priority": "High | Medium | Low",
+//       "preconditions": "Clear preconditions for the test",
+//       "steps": ["Step 1", "Step 2"],
+//       "expectedResult": "Clear expected result"
+//     },
+//     "improvementsMade": ["What was clarified or improved"],
+//     "addedCoverage": ["Coverage added, such as edge cases, negative paths, data checks, or regression scope"],
+//     "missingInfo": ["Missing details that still matter"],
+//     "followUpQuestions": ["Low-noise follow-up questions that materially improve the test"],
+//     "qaNotes": ["Assumptions, retest notes, or QA reasoning"]
+//   }
+// }
+// Do not invent product behavior as fact. Preserve the original test intent.
+
+
+
+// QAS-48 Test Improver follow-up handling
+// When improve-test input includes "Answered Test Improver follow-up questions", use those answers to rebuild the improved test case.
+// Do not repeat questions marked Resolved. If "No more Test Improver follow-up questions requested by QA" is present, return an empty followUpQuestions array unless a critical blocker remains.
+// Keep Test Improver follow-up questions low-noise and only ask questions that materially improve the test's preconditions, steps, expected result, added coverage, missing info, or QA notes.

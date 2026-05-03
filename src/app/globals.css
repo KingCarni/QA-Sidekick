@@ -1921,3 +1921,28 @@ h1 {
 .follow-up-answer-textarea.compact-tester-notes {
   min-height: 96px;
 }
+
+
+/* QAS-48 Test Improver structured report */
+.test-improvement-grid {
+  display: grid;
+  gap: 22px;
+}
+
+.improved-test-card {
+  border-color: rgba(34, 197, 94, 0.16);
+}
+
+.test-improvement-wrap .risk-section-card {
+  margin-bottom: 0;
+}
+
+
+/* QAS-48 Test Improver follow-up loop */
+.test-improver-follow-up-box.has-active-followups,
+.test-follow-up-box.has-active-followups {
+  box-shadow:
+    0 0 0 1px rgba(251, 146, 60, 0.18),
+    0 0 34px rgba(251, 146, 60, 0.11),
+    0 22px 58px rgba(0, 0, 0, 0.22);
+}

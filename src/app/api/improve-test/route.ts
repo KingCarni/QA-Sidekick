@@ -13,7 +13,7 @@ export async function POST(req: Request) {
       model: "gpt-4o-mini",
       temperature: 0.2,
       response_format: { type: "json_object" },
-      messages: [{ role: "user", content: buildQaPrompt("improve-test" as any, parsed.data.input) }],
+      messages: [{ role: "user", content: buildQaPrompt("improve-test", parsed.data.input) }],
     });
 
     const content = response.choices[0]?.message?.content;
