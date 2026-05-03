@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import Stripe from "stripe";
 import { getServerSession } from "next-auth";
+import { apiError, apiOk, getErrorMessage, readJsonBody } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
+import { getAppBaseUrl, requireStripeSecretKey } from "@/lib/env";
+import { durationSince, nowMs, serverLog } from "@/lib/server-log";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -25,17 +27,6 @@ function toJsonObject(value: Record<string, unknown>): Prisma.InputJsonObject {
   return value as Prisma.InputJsonObject;
 }
 
-function getAppUrl(req: Request) {
-  const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
-  if (envUrl) return envUrl.replace(/\/$/, "");
-
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
-  const proto = req.headers.get("x-forwarded-proto") || "http";
-  if (!host) return "http://localhost:3000";
-
-  return `${proto}://${host}`;
-}
-
 function normalizePack(value: unknown): Pack {
   const pack = String(value ?? "").trim().toLowerCase();
 
@@ -47,25 +38,33 @@ function normalizePack(value: unknown): Pack {
 }
 
 export async function POST(req: Request) {
+  const startedAt = nowMs();
+  const route = "/api/stripe/checkout";
+
   try {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
     const email = session?.user?.email;
 
     if (!userId || !email) {
-      return NextResponse.json({ ok: false, error: "Please sign in before buying credits." }, { status: 401 });
+      serverLog.warn("Credit checkout blocked: unauthenticated user.", {
+        route,
+        status: 401,
+        durationMs: durationSince(startedAt),
+      });
+
+      return apiError(req, {
+        status: 401,
+        code: "UNAUTHORIZED",
+        message: "Please sign in before buying credits.",
+      });
     }
 
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-
-    if (!stripeSecretKey) {
-      return NextResponse.json({ ok: false, error: "Missing STRIPE_SECRET_KEY." }, { status: 500 });
-    }
-
-    const body = (await req.json().catch(() => ({}))) as ReqBody;
+    const stripeSecretKey = requireStripeSecretKey();
+    const body = await readJsonBody<ReqBody>(req);
     const pack = normalizePack(body.pack);
     const packInfo = PACKS[pack];
-    const appUrl = getAppUrl(req);
+    const appUrl = getAppBaseUrl(req);
 
     const dbUser = await prisma.user.findUnique({
       where: { id: userId },
@@ -73,7 +72,18 @@ export async function POST(req: Request) {
     });
 
     if (!dbUser) {
-      return NextResponse.json({ ok: false, error: "User not found." }, { status: 401 });
+      serverLog.warn("Credit checkout blocked: user not found.", {
+        route,
+        userId,
+        status: 401,
+        durationMs: durationSince(startedAt),
+      });
+
+      return apiError(req, {
+        status: 401,
+        code: "UNAUTHORIZED",
+        message: "User not found.",
+      });
     }
 
     const stripe = new Stripe(stripeSecretKey);
@@ -118,13 +128,34 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ ok: true, url: checkout.url });
-  } catch (error) {
-    console.error("/api/stripe/checkout failed", error);
+    serverLog.info("Credit checkout created.", {
+      route,
+      userId: dbUser.id,
+      status: 200,
+      durationMs: durationSince(startedAt),
+      meta: {
+        pack,
+        credits: packInfo.credits,
+        amountCents: packInfo.amountCents,
+        stripeSessionId: checkout.id,
+      },
+    });
 
-    return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Checkout failed." },
-      { status: 500 }
-    );
+    return apiOk(req, { url: checkout.url });
+  } catch (error) {
+    const message = getErrorMessage(error, "Checkout failed.");
+
+    serverLog.error("Credit checkout failed.", {
+      route,
+      status: 500,
+      durationMs: durationSince(startedAt),
+      error,
+    });
+
+    return apiError(req, {
+      status: 500,
+      code: message.includes("environment variable") ? "CONFIG_ERROR" : "INTERNAL_ERROR",
+      message,
+    });
   }
 }

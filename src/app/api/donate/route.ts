@@ -1,5 +1,7 @@
-import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { apiError, apiOk, getErrorMessage, readJsonBody } from "@/lib/api-response";
+import { getAppBaseUrl, requireStripeSecretKey } from "@/lib/env";
+import { durationSince, nowMs, serverLog } from "@/lib/server-log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,37 +14,32 @@ function toCents(amountCad: number) {
   return Math.round(amountCad * 100);
 }
 
-function getAppUrl(req: Request) {
-  const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
-  if (envUrl) return envUrl.replace(/\/$/, "");
-
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
-  const proto = req.headers.get("x-forwarded-proto") || "http";
-  if (!host) return "http://localhost:3000";
-
-  return `${proto}://${host}`;
-}
-
 export async function POST(req: Request) {
+  const startedAt = nowMs();
+  const route = "/api/donate";
+
   try {
-    const secretKey = process.env.STRIPE_SECRET_KEY;
-
-    if (!secretKey) {
-      return NextResponse.json({ ok: false, error: "Missing STRIPE_SECRET_KEY." }, { status: 500 });
-    }
-
-    const body = (await req.json().catch(() => ({}))) as ReqBody;
+    const secretKey = requireStripeSecretKey();
+    const body = await readJsonBody<ReqBody>(req);
     const amountCad = Number(body.amountCad);
 
     if (!Number.isFinite(amountCad) || amountCad < 1 || amountCad > 250) {
-      return NextResponse.json(
-        { ok: false, error: "Invalid amount. Use a value between 1 and 250 CAD." },
-        { status: 400 }
-      );
+      serverLog.warn("Donation checkout blocked: invalid amount.", {
+        route,
+        status: 400,
+        durationMs: durationSince(startedAt),
+        meta: { amountCad: body.amountCad },
+      });
+
+      return apiError(req, {
+        status: 400,
+        code: "VALIDATION_ERROR",
+        message: "Invalid amount. Use a value between 1 and 250 CAD.",
+      });
     }
 
     const stripe = new Stripe(secretKey);
-    const appUrl = getAppUrl(req);
+    const appUrl = getAppBaseUrl(req);
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -66,13 +63,28 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ ok: true, url: session.url });
-  } catch (error) {
-    console.error("/api/donate failed", error);
+    serverLog.info("Donation checkout created.", {
+      route,
+      status: 200,
+      durationMs: durationSince(startedAt),
+      meta: { amountCad, stripeSessionId: session.id },
+    });
 
-    return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Failed to create checkout session." },
-      { status: 500 }
-    );
+    return apiOk(req, { url: session.url });
+  } catch (error) {
+    const message = getErrorMessage(error, "Failed to create checkout session.");
+
+    serverLog.error("Donation checkout failed.", {
+      route,
+      status: 500,
+      durationMs: durationSince(startedAt),
+      error,
+    });
+
+    return apiError(req, {
+      status: 500,
+      code: message.includes("environment variable") ? "CONFIG_ERROR" : "INTERNAL_ERROR",
+      message,
+    });
   }
 }

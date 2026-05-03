@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
+import { getOptionalEnv, isGoogleAuthConfigured } from "@/lib/env";
 
 const SIGNUP_BONUS = 25;
 const DAILY_LOGIN_BONUS = 10;
@@ -95,22 +96,24 @@ async function ensureUserBonuses(user: unknown) {
   });
 }
 
-const providers = [];
+const providers: NextAuthOptions["providers"] = [];
 
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+if (isGoogleAuthConfigured()) {
   providers.push(
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: getOptionalEnv("GOOGLE_CLIENT_ID"),
+      clientSecret: getOptionalEnv("GOOGLE_CLIENT_SECRET"),
     })
   );
+} else if (process.env.NODE_ENV !== "production") {
+  console.warn("[auth] Google OAuth is not configured. Sign-in will be unavailable until GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set.");
 }
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
   providers,
   session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: getOptionalEnv("NEXTAUTH_SECRET") || undefined,
 
   callbacks: {
     async jwt({ token, user }) {

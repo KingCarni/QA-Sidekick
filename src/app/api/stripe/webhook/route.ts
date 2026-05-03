@@ -1,20 +1,16 @@
-import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import Stripe from "stripe";
+import { apiError, apiOk, getErrorMessage } from "@/lib/api-response";
+import {
+  getExpectedStripeLiveMode,
+  requireStripeSecretKey,
+  requireStripeWebhookSecret,
+} from "@/lib/env";
+import { durationSince, nowMs, serverLog } from "@/lib/server-log";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function noStore(payload: unknown, init?: ResponseInit) {
-  return NextResponse.json(payload, {
-    ...init,
-    headers: {
-      "Cache-Control": "no-store, max-age=0",
-      ...(init?.headers ?? {}),
-    },
-  });
-}
 
 function toPositiveInt(value: unknown) {
   const parsed = Number(String(value ?? "").trim());
@@ -28,12 +24,6 @@ function toJsonObject(value: Record<string, unknown>): Prisma.InputJsonObject {
 
 function cleanString(value: unknown) {
   return String(value ?? "").trim();
-}
-
-function getExpectedLiveMode() {
-  if (process.env.STRIPE_EXPECT_LIVEMODE === "true") return true;
-  if (process.env.STRIPE_EXPECT_LIVEMODE === "false") return false;
-  return null;
 }
 
 async function markStripeEventIfNew(args: { id: string; type: string; livemode: boolean }) {
@@ -184,26 +174,51 @@ async function handleDonation(args: {
   return { ok: true, donationRecorded: true, amountTotal, currency };
 }
 
-export async function GET() {
-  return noStore({ ok: true, route: "/api/stripe/webhook" });
+export async function GET(req: Request) {
+  return apiOk(req, { route: "/api/stripe/webhook" });
 }
 
 export async function POST(req: Request) {
-  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const startedAt = nowMs();
+  const route = "/api/stripe/webhook";
 
-  if (!stripeSecretKey) {
-    return noStore({ ok: false, error: "Missing STRIPE_SECRET_KEY." }, { status: 500 });
-  }
+  let stripeSecretKey = "";
+  let webhookSecret = "";
 
-  if (!webhookSecret) {
-    return noStore({ ok: false, error: "Missing STRIPE_WEBHOOK_SECRET." }, { status: 500 });
+  try {
+    stripeSecretKey = requireStripeSecretKey();
+    webhookSecret = requireStripeWebhookSecret();
+  } catch (error) {
+    const message = getErrorMessage(error, "Stripe webhook is not configured.");
+
+    serverLog.error("Stripe webhook config failed.", {
+      route,
+      status: 500,
+      durationMs: durationSince(startedAt),
+      error,
+    });
+
+    return apiError(req, {
+      status: 500,
+      code: "CONFIG_ERROR",
+      message,
+    });
   }
 
   const signature = req.headers.get("stripe-signature");
 
   if (!signature) {
-    return noStore({ ok: false, error: "Missing stripe-signature header." }, { status: 400 });
+    serverLog.warn("Stripe webhook missing signature.", {
+      route,
+      status: 400,
+      durationMs: durationSince(startedAt),
+    });
+
+    return apiError(req, {
+      status: 400,
+      code: "BAD_REQUEST",
+      message: "Missing stripe-signature header.",
+    });
   }
 
   const rawBody = await req.text();
@@ -214,19 +229,35 @@ export async function POST(req: Request) {
   try {
     event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
   } catch (error) {
-    console.error("[stripe-webhook] signature verification failed", error);
-    return noStore({ ok: false, error: "Invalid Stripe signature." }, { status: 400 });
-  }
-
-  const expectedLiveMode = getExpectedLiveMode();
-  if (typeof expectedLiveMode === "boolean" && event.livemode !== expectedLiveMode) {
-    console.error("[stripe-webhook] livemode mismatch", {
-      expectedLiveMode,
-      actualLivemode: event.livemode,
-      eventId: event.id,
+    serverLog.warn("Stripe webhook signature verification failed.", {
+      route,
+      status: 400,
+      durationMs: durationSince(startedAt),
+      error,
     });
 
-    return noStore({ ok: true, ignored: "livemode_mismatch" });
+    return apiError(req, {
+      status: 400,
+      code: "BAD_REQUEST",
+      message: "Invalid Stripe signature.",
+    });
+  }
+
+  const expectedLiveMode = getExpectedStripeLiveMode();
+  if (typeof expectedLiveMode === "boolean" && event.livemode !== expectedLiveMode) {
+    serverLog.warn("Stripe webhook livemode mismatch.", {
+      route,
+      status: 200,
+      durationMs: durationSince(startedAt),
+      meta: {
+        expectedLiveMode,
+        actualLivemode: event.livemode,
+        stripeEventId: event.id,
+        type: event.type,
+      },
+    });
+
+    return apiOk(req, { ignored: "livemode_mismatch" });
   }
 
   const isNewEvent = await markStripeEventIfNew({
@@ -236,18 +267,24 @@ export async function POST(req: Request) {
   });
 
   if (!isNewEvent) {
-    return noStore({ ok: true, alreadyProcessedEvent: event.id });
+    serverLog.info("Stripe webhook duplicate event ignored.", {
+      route,
+      status: 200,
+      durationMs: durationSince(startedAt),
+      meta: { stripeEventId: event.id, type: event.type },
+    });
+
+    return apiOk(req, { alreadyProcessedEvent: event.id });
   }
 
   if (event.type !== "checkout.session.completed") {
-    return noStore({ ok: true, ignored: event.type });
+    return apiOk(req, { ignored: event.type });
   }
 
   const session = event.data.object as Stripe.Checkout.Session;
 
   if (session.payment_status && session.payment_status !== "paid") {
-    return noStore({
-      ok: true,
+    return apiOk(req, {
       ignored: `payment_status=${session.payment_status}`,
       stripeSessionId: session.id,
     });
@@ -259,12 +296,36 @@ export async function POST(req: Request) {
   try {
     if (type === "credit_purchase") {
       const result = await handleCreditPurchase({ event, session, stripeSessionId });
-      return noStore(result);
+
+      serverLog.info("Stripe credit purchase webhook handled.", {
+        route,
+        status: 200,
+        durationMs: durationSince(startedAt),
+        meta: {
+          stripeEventId: event.id,
+          stripeSessionId,
+          result,
+        },
+      });
+
+      return apiOk(req, result);
     }
 
     if (type === "donation") {
       const result = await handleDonation({ event, session, stripeSessionId });
-      return noStore(result);
+
+      serverLog.info("Stripe donation webhook handled.", {
+        route,
+        status: 200,
+        durationMs: durationSince(startedAt),
+        meta: {
+          stripeEventId: event.id,
+          stripeSessionId,
+          result,
+        },
+      });
+
+      return apiOk(req, result);
     }
 
     await prisma.event.create({
@@ -279,13 +340,33 @@ export async function POST(req: Request) {
       },
     });
 
-    return noStore({ ok: true, ignored: "unhandled_checkout_metadata_type", type });
-  } catch (error) {
-    console.error("[stripe-webhook] handler failed", error);
+    serverLog.warn("Stripe checkout completed with unhandled metadata type.", {
+      route,
+      status: 200,
+      durationMs: durationSince(startedAt),
+      meta: { stripeEventId: event.id, stripeSessionId, type },
+    });
 
-    return noStore(
-      { ok: false, error: error instanceof Error ? error.message : "Stripe webhook handler failed." },
-      { status: 500 }
-    );
+    return apiOk(req, { ignored: "unhandled_checkout_metadata_type", type });
+  } catch (error) {
+    const message = getErrorMessage(error, "Stripe webhook handler failed.");
+
+    serverLog.error("Stripe webhook handler failed.", {
+      route,
+      status: 500,
+      durationMs: durationSince(startedAt),
+      error,
+      meta: {
+        stripeEventId: event.id,
+        stripeSessionId,
+        type,
+      },
+    });
+
+    return apiError(req, {
+      status: 500,
+      code: "INTERNAL_ERROR",
+      message,
+    });
   }
 }
