@@ -6,6 +6,27 @@ import AuthStatus from "@/components/AuthStatus";
 
 type ToolId = "tests" | "risk" | "bug" | "improve";
 
+type SaveReportStatus = "idle" | "saving" | "saved" | "error";
+
+type SaveReportResponse = {
+  ok?: boolean;
+  error?: string;
+  report?: {
+    id: string;
+  };
+};
+
+type SaveReportControlProps = {
+  saveReportStatus: SaveReportStatus;
+  saveReportMessage: string;
+  savedReportId: string;
+  onSaveReport: (markdown: string) => void;
+};
+
+type SaveReportButtonProps = Omit<SaveReportControlProps, "onSaveReport"> & {
+  onSaveReport: () => void;
+};
+
 type TestCase = {
   title?: unknown;
   type?: unknown;
@@ -1011,6 +1032,35 @@ async function copyText(text: string) {
   await navigator.clipboard.writeText(text);
 }
 
+function SaveReportControl({
+  saveReportStatus,
+  saveReportMessage,
+  savedReportId,
+  onSaveReport,
+}: SaveReportButtonProps) {
+  return (
+    <>
+      <button
+        className="copy-all-button secondary-action-button"
+        disabled={saveReportStatus === "saving"}
+        onClick={onSaveReport}
+        type="button"
+      >
+        {saveReportStatus === "saving" ? "Saving..." : saveReportStatus === "saved" ? "Saved" : "Save Report"}
+      </button>
+
+      {saveReportMessage ? (
+        <span className={saveReportStatus === "error" ? "save-report-message save-report-message-error" : "save-report-message"}>
+          {saveReportMessage}
+          {saveReportStatus === "saved" ? (
+            <Link href={savedReportId ? `/reports/${savedReportId}` : "/reports"}>View report</Link>
+          ) : null}
+        </span>
+      ) : null}
+    </>
+  );
+}
+
 function ValueBlock({ value }: { value: unknown }) {
   const lines = valueLines(value);
 
@@ -1049,10 +1099,14 @@ function RiskTextList({ title, items }: { title: string; items: unknown }) {
 function TestCaseCards({
   testCases,
   answeredFollowUps = [],
+  saveReportStatus,
+  saveReportMessage,
+  savedReportId,
+  onSaveReport,
 }: {
   testCases: TestCase[];
   answeredFollowUps?: AnsweredFollowUp[];
-}) {
+} & SaveReportControlProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const [exported, setExported] = useState(false);
   const [markdownExported, setMarkdownExported] = useState(false);
@@ -1150,6 +1204,12 @@ function TestCaseCards({
           <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportCsv}>
             {exported ? "Exported" : "Export CSV"}
           </button>
+          <SaveReportControl
+            saveReportStatus={saveReportStatus}
+            saveReportMessage={saveReportMessage}
+            savedReportId={savedReportId}
+            onSaveReport={() => onSaveReport(savedMarkdown || generatedMarkdown)}
+          />
           <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
             {isEditingMarkdown ? "Close Editor" : "Edit Report"}
           </button>
@@ -1265,10 +1325,14 @@ function TestCaseCards({
 function RiskReviewCards({
   riskReview,
   answeredFollowUps = [],
+  saveReportStatus,
+  saveReportMessage,
+  savedReportId,
+  onSaveReport,
 }: {
   riskReview: RiskReview;
   answeredFollowUps?: AnsweredFollowUp[];
-}) {
+} & SaveReportControlProps) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
   const [markdownExported, setMarkdownExported] = useState(false);
@@ -1386,6 +1450,12 @@ function RiskReviewCards({
           <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportCsv}>
             {exported ? "Exported" : "Export CSV"}
           </button>
+          <SaveReportControl
+            saveReportStatus={saveReportStatus}
+            saveReportMessage={saveReportMessage}
+            savedReportId={savedReportId}
+            onSaveReport={() => onSaveReport(savedMarkdown || buildRiskReviewMarkdown(editableRiskReview, answeredFollowUps))}
+          />
           <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
             {isEditingMarkdown ? "Close Editor" : "Edit Report"}
           </button>
@@ -1547,6 +1617,10 @@ function BugReportCards({
   riskAnsweredFollowUps = [],
   onSaveBugMarkdown,
   savedEditedMarkdown = "",
+  saveReportStatus,
+  saveReportMessage,
+  savedReportId,
+  onSaveReport,
 }: {
   bugReport: BugReport;
   evidenceFiles?: UploadedEvidenceFile[];
@@ -1555,7 +1629,7 @@ function BugReportCards({
   riskAnsweredFollowUps?: AnsweredFollowUp[];
   onSaveBugMarkdown?: (markdown: string) => void;
   savedEditedMarkdown?: string;
-}) {
+} & SaveReportControlProps) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
   const [jiraMessage, setJiraMessage] = useState("");
@@ -1639,6 +1713,12 @@ function BugReportCards({
           <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
             {exported ? "Exported" : "Export Markdown"}
           </button>
+          <SaveReportControl
+            saveReportStatus={saveReportStatus}
+            saveReportMessage={saveReportMessage}
+            savedReportId={savedReportId}
+            onSaveReport={() => onSaveReport(exportMarkdown)}
+          />
           <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
             {isEditingMarkdown ? "Close Editor" : "Edit Report"}
           </button>
@@ -1800,7 +1880,13 @@ function BugReportCards({
 }
 
 
-function TestImprovementCards({ report }: { report: TestImprovementReport }) {
+function TestImprovementCards({
+  report,
+  saveReportStatus,
+  saveReportMessage,
+  savedReportId,
+  onSaveReport,
+}: { report: TestImprovementReport } & SaveReportControlProps) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
   const [isEditingMarkdown, setIsEditingMarkdown] = useState(false);
@@ -1897,6 +1983,12 @@ function TestImprovementCards({ report }: { report: TestImprovementReport }) {
           <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
             {exported ? "Exported" : "Export Markdown"}
           </button>
+          <SaveReportControl
+            saveReportStatus={saveReportStatus}
+            saveReportMessage={saveReportMessage}
+            savedReportId={savedReportId}
+            onSaveReport={() => onSaveReport(exportMarkdown)}
+          />
           <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
             {isEditingMarkdown ? "Close Editor" : "Edit Report"}
           </button>
@@ -2021,6 +2113,10 @@ function GenericOutput({
   riskAnsweredFollowUps = [],
   testAnsweredFollowUps = [],
   onSaveBugMarkdown,
+  saveReportStatus,
+  saveReportMessage,
+  savedReportId,
+  onSaveReport,
 }: {
   output: string;
   evidenceFiles?: UploadedEvidenceFile[];
@@ -2029,7 +2125,7 @@ function GenericOutput({
   riskAnsweredFollowUps?: AnsweredFollowUp[];
   testAnsweredFollowUps?: AnsweredFollowUp[];
   onSaveBugMarkdown?: (markdown: string) => void;
-}) {
+} & SaveReportControlProps) {
   const parsed = unwrapQaResult(parseOutput(output));
 
   if (isPlainObject(parsed) && Array.isArray(parsed.testCases)) {
@@ -2037,6 +2133,10 @@ function GenericOutput({
       <TestCaseCards
         testCases={parsed.testCases as TestCase[]}
         answeredFollowUps={testAnsweredFollowUps}
+        saveReportStatus={saveReportStatus}
+        saveReportMessage={saveReportMessage}
+        savedReportId={savedReportId}
+        onSaveReport={onSaveReport}
       />
     );
   }
@@ -2046,6 +2146,10 @@ function GenericOutput({
       <RiskReviewCards
         riskReview={parsed.riskReview as RiskReview}
         answeredFollowUps={riskAnsweredFollowUps}
+        saveReportStatus={saveReportStatus}
+        saveReportMessage={saveReportMessage}
+        savedReportId={savedReportId}
+        onSaveReport={onSaveReport}
       />
     );
   }
@@ -2059,12 +2163,24 @@ function GenericOutput({
         answeredFollowUps={answeredFollowUps}
         onSaveBugMarkdown={onSaveBugMarkdown}
         savedEditedMarkdown={typeof parsed.editedMarkdown === "string" ? parsed.editedMarkdown : ""}
+        saveReportStatus={saveReportStatus}
+        saveReportMessage={saveReportMessage}
+        savedReportId={savedReportId}
+        onSaveReport={onSaveReport}
       />
     );
   }
 
   if (isPlainObject(parsed) && isPlainObject(parsed.testImprovement)) {
-    return <TestImprovementCards report={parsed.testImprovement as TestImprovementReport} />;
+    return (
+      <TestImprovementCards
+        report={parsed.testImprovement as TestImprovementReport}
+        saveReportStatus={saveReportStatus}
+        saveReportMessage={saveReportMessage}
+        savedReportId={savedReportId}
+        onSaveReport={onSaveReport}
+      />
+    );
   }
 
   const displayText = typeof parsed === "string" ? parsed : JSON.stringify(parsed, null, 2);
@@ -2109,6 +2225,9 @@ export default function Home() {
   const [improveAdditionalContext, setImproveAdditionalContext] = useState("");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [saveReportStatus, setSaveReportStatus] = useState<SaveReportStatus>("idle");
+  const [saveReportMessage, setSaveReportMessage] = useState("");
+  const [savedReportId, setSavedReportId] = useState("");
 
   const tool = tools.find((item) => item.id === activeTool) ?? tools[0];
   const currentBugReport = activeTool === "bug" ? getBugReportFromOutput(output) : null;
@@ -2184,6 +2303,12 @@ export default function Home() {
     improveAnsweredFollowUpHistory,
     currentImproveAnsweredFollowUps
   );
+
+  useEffect(() => {
+    setSaveReportStatus("idle");
+    setSaveReportMessage("");
+    setSavedReportId("");
+  }, [activeTool, input, output]);
 
   function updateBugQuestionAnswer(question: string, answer: string) {
     setBugQuestionAnswers((current) => ({
@@ -2303,6 +2428,71 @@ export default function Home() {
     if (editedFollowUps.length > 0) {
       setBugQuestionAnswers({});
       setBugQuestionResolutions({});
+    }
+  }
+
+  function getCurrentStructuredReport() {
+    if (!output.trim()) return null;
+
+    try {
+      return JSON.parse(output);
+    } catch {
+      return { rawOutput: output };
+    }
+  }
+
+  function getCurrentReportTitle(markdown: string) {
+    const explicitTitle = markdown.match(/^#\s+(.+)$/m)?.[1]?.trim();
+    if (explicitTitle) return explicitTitle.slice(0, 140);
+
+    if (activeTool === "tests") return "Test Cases";
+    if (activeTool === "risk") return "Risk Review";
+    if (activeTool === "bug") return "Bug Report";
+    if (activeTool === "improve") return "Test Improvement";
+
+    return "QA Report";
+  }
+
+  async function handleSaveReport(markdown: string) {
+    const reportMarkdown = markdown.trim();
+
+    if (!reportMarkdown) {
+      setSaveReportStatus("error");
+      setSaveReportMessage("Generate or edit a report before saving.");
+      return;
+    }
+
+    setSaveReportStatus("saving");
+    setSaveReportMessage("");
+    setSavedReportId("");
+
+    try {
+      const response = await fetch("/api/reports", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: activeTool,
+          title: getCurrentReportTitle(reportMarkdown),
+          markdown: reportMarkdown,
+          structuredData: getCurrentStructuredReport(),
+          sourceInput: input,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as SaveReportResponse | null;
+
+      if (!response.ok || payload?.ok === false) {
+        throw new Error(payload?.error || "Could not save report.");
+      }
+
+      setSaveReportStatus("saved");
+      setSaveReportMessage("Saved to Reports.");
+      setSavedReportId(payload?.report?.id ?? "");
+    } catch (error) {
+      setSaveReportStatus("error");
+      setSaveReportMessage(error instanceof Error ? error.message : "Could not save report.");
     }
   }
 
@@ -2668,6 +2858,9 @@ export default function Home() {
               </Link>
               <Link className="hero-utility-button donate-link" href="/donate">
                 Donate
+              </Link>
+              <Link className="account-back-link" href="/reports">
+                Saved Reports
               </Link>
             </div>
 
@@ -3216,6 +3409,10 @@ export default function Home() {
               riskAnsweredFollowUps={riskAnsweredFollowUps}
               testAnsweredFollowUps={testAnsweredFollowUps}
               onSaveBugMarkdown={handleSaveBugMarkdown}
+              saveReportStatus={saveReportStatus}
+              saveReportMessage={saveReportMessage}
+              savedReportId={savedReportId}
+              onSaveReport={handleSaveReport}
             />
           ) : (
             <div className="output-empty">Run a tool to see QA output here.</div>

@@ -40,7 +40,7 @@ export default async function AccountPage() {
     );
   }
 
-  const [balance, recentLedger, recentEvents] = await Promise.all([
+  const [balance, recentLedger, recentEvents, recentReportsCount] = await Promise.all([
     getCreditBalance(userId),
     prisma.creditsLedger.findMany({
       where: { userId },
@@ -51,6 +51,9 @@ export default async function AccountPage() {
       where: { userId },
       orderBy: { createdAt: "desc" },
       take: 10,
+    }),
+    prisma.qAReport.count({
+      where: { userId },
     }),
   ]);
 
@@ -68,6 +71,9 @@ export default async function AccountPage() {
           </div>
 
           <div className="account-header-actions">
+            <Link className="account-buy-link" href="/reports">
+              Saved Reports
+            </Link>
             <Link className="account-buy-link" href="/buy-credits">
               Buy Credits
             </Link>
@@ -83,8 +89,8 @@ export default async function AccountPage() {
             <strong>{balance}</strong>
           </div>
           <div className="account-stat-card">
-            <span>Recent ledger entries</span>
-            <strong>{recentLedger.length}</strong>
+            <span>Saved reports</span>
+            <strong>{recentReportsCount}</strong>
           </div>
           <div className="account-stat-card">
             <span>Recent events</span>
@@ -95,6 +101,19 @@ export default async function AccountPage() {
             <strong>{purchaseCount}</strong>
           </div>
         </div>
+      </section>
+
+      <section className="account-card">
+        <div className="account-section-heading">
+          <div>
+            <p className="report-kicker">Reports</p>
+            <h2>Saved QA reports</h2>
+          </div>
+          <Link className="account-buy-link" href="/reports">
+            View Reports
+          </Link>
+        </div>
+        <p>Save generated test cases, risk reviews, bug reports, and test improvements from the app.</p>
       </section>
 
       <section className="account-card">
