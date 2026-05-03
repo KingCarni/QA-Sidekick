@@ -4302,3 +4302,1190 @@ body {
     width: 100%;
   }
 }
+
+/* QAtalyst landing page UI polish
+   Append this to the VERY bottom of src/app/globals.css. */
+
+.landing-page {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 30px 0 96px;
+}
+
+.landing-page a {
+  text-decoration: none;
+}
+
+.landing-hero,
+.landing-section,
+.landing-panel,
+.landing-final-cta {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(16, 16, 16, 0.98), rgba(20, 12, 12, 0.94));
+  box-shadow:
+    0 24px 70px var(--shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.landing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  align-items: center;
+  gap: 42px;
+  padding: 46px;
+  border-radius: 30px;
+}
+
+.landing-hero::after,
+.landing-section::after,
+.landing-panel::after,
+.landing-final-cta::after {
+  content: "";
+  position: absolute;
+  right: -130px;
+  top: -140px;
+  width: 390px;
+  height: 390px;
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.16), transparent 66%);
+  pointer-events: none;
+}
+
+.landing-hero-copy,
+.landing-preview-card,
+.landing-section-heading,
+.landing-feature-grid,
+.landing-panel > *,
+.landing-final-cta > * {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-logo {
+  display: block;
+  width: clamp(180px, 19vw, 300px);
+  height: auto;
+  margin: 0 0 26px -4px;
+  filter:
+    drop-shadow(0 16px 28px rgba(0, 0, 0, 0.3))
+    drop-shadow(0 0 18px rgba(220, 38, 38, 0.16));
+}
+
+.landing-hero h1 {
+  max-width: 760px;
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(3rem, 6.1vw, 5.8rem);
+  line-height: 0.92;
+  letter-spacing: -0.08em;
+}
+
+.landing-hero-subtitle {
+  max-width: 700px;
+  margin: 24px 0 0;
+  color: var(--muted-2);
+  font-size: 1.08rem;
+  line-height: 1.65;
+}
+
+.landing-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.landing-primary-cta,
+.landing-secondary-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-weight: 950;
+  transition:
+    transform 0.16s ease,
+    filter 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.landing-primary-cta {
+  border: 1px solid rgba(248, 113, 113, 0.42);
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  color: #fff;
+  box-shadow: 0 16px 34px rgba(220, 38, 38, 0.22);
+}
+
+.landing-secondary-cta {
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035)),
+    rgba(7, 7, 7, 0.44);
+  color: #f8fafc;
+}
+
+.landing-primary-cta:hover,
+.landing-secondary-cta:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.landing-preview-card {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(18, 18, 18, 0.94), rgba(8, 8, 8, 0.96)),
+    rgba(0, 0, 0, 0.4);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+}
+
+.landing-preview-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-preview-top span,
+.landing-preview-block small {
+  color: #fca5a5;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.landing-preview-top strong {
+  color: #fff;
+}
+
+.landing-preview-block {
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.026);
+}
+
+.landing-preview-block-red {
+  border-color: rgba(248, 113, 113, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.12), transparent 42%),
+    rgba(255, 255, 255, 0.026);
+}
+
+.landing-preview-block p {
+  margin: 8px 0 0;
+  color: #f4f4f5;
+  line-height: 1.55;
+}
+
+.landing-section,
+.landing-split-section,
+.landing-final-cta {
+  margin-top: 24px;
+}
+
+.landing-section,
+.landing-panel,
+.landing-final-cta {
+  padding: 32px;
+  border-radius: 26px;
+}
+
+.landing-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.landing-section h2,
+.landing-panel h2,
+.landing-final-cta h2 {
+  max-width: 720px;
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.065em;
+}
+
+.landing-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.landing-feature-card {
+  min-height: 220px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.095);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.032);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.landing-feature-card h3 {
+  margin: 0 0 12px;
+  color: #fff;
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+
+.landing-feature-card p,
+.landing-panel p {
+  margin: 0;
+  color: var(--muted-2);
+  line-height: 1.65;
+}
+
+.landing-split-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.landing-audience-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.landing-audience-grid span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(248, 113, 113, 0.16);
+  border-radius: 999px;
+  background: rgba(220, 38, 38, 0.07);
+  color: #fee2e2;
+  font-weight: 900;
+}
+
+.landing-panel-link {
+  margin-top: 22px;
+}
+
+.landing-final-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+@media (max-width: 980px) {
+  .landing-hero,
+  .landing-split-section {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .landing-final-cta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 620px) {
+  .landing-page {
+    width: min(100% - 24px, 1180px);
+    padding-top: 16px;
+  }
+
+  .landing-hero,
+  .landing-section,
+  .landing-panel,
+  .landing-final-cta {
+    padding: 24px;
+  }
+
+  .landing-logo {
+    width: min(230px, 78vw);
+  }
+
+  .landing-feature-grid,
+  .landing-audience-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-primary-cta,
+  .landing-secondary-cta {
+    width: 100%;
+  }
+}
+
+/* QAtalyst landing font + triage messaging polish
+   Append this to the VERY bottom of src/app/globals.css. */
+
+/* Pull the largest white type down slightly so the page feels less oversized. */
+.landing-hero h1 {
+  max-width: 760px !important;
+  font-size: clamp(2.65rem, 5.15vw, 4.95rem) !important;
+  line-height: 0.96 !important;
+  letter-spacing: -0.075em !important;
+}
+
+.landing-section h2,
+.landing-panel h2,
+.landing-final-cta h2 {
+  font-size: clamp(1.85rem, 3.25vw, 3rem) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.058em !important;
+}
+
+.landing-hero-subtitle {
+  max-width: 690px !important;
+  margin-top: 22px !important;
+}
+
+.landing-hero-note {
+  max-width: 680px;
+  margin: 14px 0 0;
+  padding-left: 14px;
+  border-left: 3px solid rgba(248, 113, 113, 0.45);
+  color: #f4f4f5;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+/* Add a dedicated follow-up / triage section. */
+.landing-triage-section {
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.2), transparent 34%),
+    radial-gradient(circle at bottom left, rgba(127, 29, 29, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(18, 18, 18, 0.98), rgba(16, 9, 9, 0.96)) !important;
+}
+
+.landing-triage-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.landing-triage-card {
+  min-height: 190px;
+  padding: 20px;
+  border: 1px solid rgba(248, 113, 113, 0.14);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.11), transparent 42%),
+    rgba(255, 255, 255, 0.032);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.landing-triage-card h3 {
+  margin: 0 0 12px;
+  color: #fff;
+  font-size: 1.12rem;
+  line-height: 1.25;
+}
+
+.landing-triage-card p {
+  margin: 0;
+  color: var(--muted-2);
+  line-height: 1.65;
+}
+
+/* Slightly reduce feature card height to match the less oversized typography. */
+.landing-feature-card {
+  min-height: 200px !important;
+}
+
+/* Keep the preview readable after the copy changes. */
+.landing-preview-block p {
+  font-size: 0.98rem;
+}
+
+@media (max-width: 980px) {
+  .landing-triage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-hero h1 {
+    font-size: clamp(2.55rem, 9vw, 4.2rem) !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .landing-hero-note {
+    padding-left: 12px;
+  }
+
+  .landing-section h2,
+  .landing-panel h2,
+  .landing-final-cta h2 {
+    font-size: clamp(1.8rem, 9vw, 2.55rem) !important;
+  }
+}
+
+/* QAtalyst landing layout adjustment pass
+   Append this to the VERY bottom of src/app/globals.css. */
+
+/* Hero: reduce empty space and move the logo into the right-side column. */
+.landing-hero-refined {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 455px) !important;
+  align-items: start !important;
+  gap: 42px !important;
+  padding: 38px 44px 42px !important;
+}
+
+.landing-hero-refined .landing-hero-copy {
+  align-self: start !important;
+  padding-top: 118px !important;
+}
+
+.landing-hero-side {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: end;
+  gap: 26px;
+  align-self: start;
+}
+
+.landing-logo-side {
+  display: block;
+  width: clamp(185px, 15vw, 265px) !important;
+  height: auto;
+  margin: 0 26px 0 0 !important;
+  filter:
+    drop-shadow(0 16px 28px rgba(0, 0, 0, 0.3))
+    drop-shadow(0 0 18px rgba(220, 38, 38, 0.16));
+}
+
+/* QA Output card starts lower, closer to the QATALYST kicker/title line instead of floating too high. */
+.landing-hero-side .landing-preview-card {
+  width: 100%;
+  margin-top: 18px !important;
+}
+
+/* Keep the hero title strong, but avoid overly tall empty area. */
+.landing-hero-refined .landing-hero h1,
+.landing-hero-refined h1 {
+  max-width: 730px !important;
+  font-size: clamp(2.75rem, 5.25vw, 5.05rem) !important;
+  line-height: 0.95 !important;
+  letter-spacing: -0.076em !important;
+}
+
+.landing-hero-refined .landing-hero-subtitle {
+  margin-top: 24px !important;
+  max-width: 690px !important;
+}
+
+.landing-hero-refined .landing-cta-row {
+  margin-top: 28px !important;
+}
+
+/* Section headings: bring large titles closer to the left label instead of living too far right. */
+.landing-section-heading-left {
+  display: grid !important;
+  grid-template-columns: 230px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 34px !important;
+  margin-bottom: 22px !important;
+}
+
+.landing-section-heading-left .report-kicker {
+  padding-top: 14px !important;
+}
+
+.landing-section-heading-left h2 {
+  max-width: 760px !important;
+  justify-self: start !important;
+  text-align: left !important;
+}
+
+/* Give the tool and triage cards a little less top dead-space. */
+.landing-tools-section,
+.landing-triage-section {
+  padding-top: 28px !important;
+}
+
+/* Triage section title specifically should sit closer to left label too. */
+.landing-triage-section .landing-section-heading-left {
+  grid-template-columns: 230px minmax(0, 1fr) !important;
+}
+
+/* Credits card: move the detail paragraph down slightly. */
+.landing-credits-copy {
+  margin-top: 18px !important;
+}
+
+/* Keep button below the lowered credits copy looking intentional. */
+.landing-credits-panel .landing-panel-link {
+  margin-top: 28px !important;
+}
+
+/* Slightly tighten lower card heading size so the layout breathes. */
+.landing-section h2,
+.landing-panel h2,
+.landing-final-cta h2 {
+  font-size: clamp(1.85rem, 3.2vw, 2.95rem) !important;
+}
+
+/* The final CTA should not become too tall after previous overrides. */
+.landing-final-cta {
+  min-height: 126px;
+}
+
+@media (max-width: 980px) {
+  .landing-hero-refined {
+    grid-template-columns: 1fr !important;
+    padding: 28px !important;
+  }
+
+  .landing-hero-refined .landing-hero-copy {
+    order: 2;
+    padding-top: 0 !important;
+  }
+
+  .landing-hero-side {
+    order: 1;
+    justify-items: start;
+    width: 100%;
+  }
+
+  .landing-logo-side {
+    width: min(240px, 70vw) !important;
+    margin-right: 0 !important;
+  }
+
+  .landing-hero-side .landing-preview-card {
+    margin-top: 8px !important;
+  }
+
+  .landing-section-heading-left {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .landing-section-heading-left .report-kicker {
+    padding-top: 0 !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .landing-hero-refined h1 {
+    font-size: clamp(2.5rem, 11vw, 3.6rem) !important;
+  }
+}
+
+/* QAtalyst landing final touchups
+   Append this to the VERY bottom of src/app/globals.css. */
+
+/* HERO: less top dead-space, logo right, output card still lower/right. */
+.landing-hero-refined {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 455px) !important;
+  align-items: start !important;
+  gap: 42px !important;
+  padding: 38px 44px 42px !important;
+}
+
+.landing-hero-refined .landing-hero-copy {
+  align-self: start !important;
+  padding-top: 78px !important;
+}
+
+.landing-hero-side {
+  position: relative;
+  z-index: 1;
+  display: grid !important;
+  justify-items: end !important;
+  align-self: start !important;
+  gap: 24px !important;
+}
+
+.landing-logo-side {
+  display: block !important;
+  width: clamp(185px, 15vw, 265px) !important;
+  height: auto !important;
+  margin: 0 30px 0 0 !important;
+  filter:
+    drop-shadow(0 16px 28px rgba(0, 0, 0, 0.3))
+    drop-shadow(0 0 18px rgba(220, 38, 38, 0.16));
+}
+
+/* QA Output down enough to visually line up with the QATALYST/title area. */
+.landing-hero-side .landing-preview-card {
+  width: 100% !important;
+  margin-top: 36px !important;
+}
+
+/* Main hero type stays bold but controlled. */
+.landing-hero-refined h1 {
+  max-width: 735px !important;
+  font-size: clamp(2.75rem, 5.18vw, 4.95rem) !important;
+  line-height: 0.95 !important;
+  letter-spacing: -0.076em !important;
+}
+
+.landing-hero-refined .landing-hero-subtitle {
+  margin-top: 24px !important;
+  max-width: 690px !important;
+}
+
+.landing-hero-refined .landing-hero-note {
+  max-width: 680px !important;
+  margin-top: 18px !important;
+}
+
+.landing-hero-refined .landing-cta-row {
+  margin-top: 28px !important;
+}
+
+/* SECTION HEADINGS: move h2 closer left to the label. */
+.landing-section-heading-left {
+  display: grid !important;
+  grid-template-columns: 164px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 18px !important;
+  margin-bottom: 24px !important;
+}
+
+.landing-section-heading-left .report-kicker {
+  padding-top: 11px !important;
+}
+
+.landing-section-heading-left h2 {
+  max-width: none !important;
+  justify-self: start !important;
+  text-align: left !important;
+}
+
+/* The tools section heading can sit slightly closer/tighter. */
+.landing-tools-section {
+  padding-top: 28px !important;
+}
+
+.landing-tools-section .landing-section-heading-left h2 {
+  font-size: clamp(1.9rem, 3.05vw, 2.85rem) !important;
+}
+
+/* TRIAGE: move title left and make it a touch smaller so it does not stretch too far right. */
+.landing-triage-section {
+  padding-top: 30px !important;
+}
+
+.landing-triage-heading {
+  grid-template-columns: 164px minmax(0, 1fr) !important;
+  gap: 18px !important;
+}
+
+.landing-triage-heading h2 {
+  max-width: 780px !important;
+  font-size: clamp(1.9rem, 2.92vw, 2.72rem) !important;
+  line-height: 1.02 !important;
+}
+
+/* General lower headings still slightly smaller than the first landing pass. */
+.landing-section h2,
+.landing-panel h2,
+.landing-final-cta h2 {
+  font-size: clamp(1.85rem, 3.05vw, 2.85rem) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.058em !important;
+}
+
+/* Credits: detail text moved down slightly. */
+.landing-credits-copy {
+  margin-top: 22px !important;
+}
+
+.landing-credits-panel .landing-panel-link {
+  margin-top: 28px !important;
+}
+
+/* Keep final CTA tidy. */
+.landing-final-cta {
+  min-height: 126px !important;
+}
+
+/* Responsive reset. */
+@media (max-width: 980px) {
+  .landing-hero-refined {
+    grid-template-columns: 1fr !important;
+    padding: 28px !important;
+  }
+
+  .landing-hero-refined .landing-hero-copy {
+    order: 2;
+    padding-top: 0 !important;
+  }
+
+  .landing-hero-side {
+    order: 1;
+    justify-items: start !important;
+    width: 100% !important;
+  }
+
+  .landing-logo-side {
+    width: min(240px, 70vw) !important;
+    margin-right: 0 !important;
+  }
+
+  .landing-hero-side .landing-preview-card {
+    margin-top: 8px !important;
+  }
+
+  .landing-section-heading-left,
+  .landing-triage-heading {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .landing-section-heading-left .report-kicker {
+    padding-top: 0 !important;
+  }
+
+  .landing-triage-heading h2 {
+    max-width: none !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .landing-hero-refined h1 {
+    font-size: clamp(2.5rem, 11vw, 3.6rem) !important;
+  }
+}
+
+/* QAtalyst landing final alignment pass
+   Append this to the VERY bottom of src/app/globals.css. */
+
+/* Hero: align the left QATALYST/title block with the top of the logo. */
+.landing-hero-refined {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 455px) !important;
+  align-items: start !important;
+  gap: 42px !important;
+  padding: 38px 44px 42px !important;
+}
+
+.landing-hero-refined .landing-hero-copy {
+  align-self: start !important;
+  padding-top: 28px !important;
+}
+
+.landing-hero-side {
+  position: relative;
+  z-index: 1;
+  display: grid !important;
+  justify-items: end !important;
+  align-self: start !important;
+  gap: 24px !important;
+}
+
+.landing-logo-side {
+  display: block !important;
+  width: clamp(185px, 15vw, 265px) !important;
+  height: auto !important;
+  margin: 0 30px 0 0 !important;
+  filter:
+    drop-shadow(0 16px 28px rgba(0, 0, 0, 0.3))
+    drop-shadow(0 0 18px rgba(220, 38, 38, 0.16));
+}
+
+/* Keep QA Output visually lower than the logo while the copy moves up. */
+.landing-hero-side .landing-preview-card {
+  width: 100% !important;
+  margin-top: 36px !important;
+}
+
+/* Hero title sizing stays controlled. */
+.landing-hero-refined h1 {
+  max-width: 735px !important;
+  font-size: clamp(2.75rem, 5.18vw, 4.95rem) !important;
+  line-height: 0.95 !important;
+  letter-spacing: -0.076em !important;
+}
+
+.landing-hero-refined .landing-hero-subtitle {
+  margin-top: 24px !important;
+  max-width: 690px !important;
+}
+
+.landing-hero-refined .landing-hero-note {
+  max-width: 680px !important;
+  margin-top: 18px !important;
+}
+
+.landing-hero-refined .landing-cta-row {
+  margin-top: 28px !important;
+}
+
+/* Section headings: keep big title closer to left label. */
+.landing-section-heading-left {
+  display: grid !important;
+  grid-template-columns: 154px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 14px !important;
+  margin-bottom: 24px !important;
+}
+
+.landing-section-heading-left .report-kicker {
+  padding-top: 11px !important;
+}
+
+.landing-section-heading-left h2 {
+  max-width: none !important;
+  justify-self: start !important;
+  text-align: left !important;
+}
+
+.landing-tools-section .landing-section-heading-left h2 {
+  font-size: clamp(1.9rem, 3.05vw, 2.85rem) !important;
+}
+
+/* Triage: bring heading left and keep "sprint" on the same line on desktop. */
+.landing-triage-heading {
+  grid-template-columns: 154px minmax(0, 1fr) !important;
+  gap: 14px !important;
+}
+
+.landing-triage-heading h2 {
+  max-width: 900px !important;
+  font-size: clamp(1.85rem, 2.62vw, 2.48rem) !important;
+  line-height: 1.03 !important;
+  white-space: nowrap !important;
+}
+
+/* General lower heading scale. */
+.landing-section h2,
+.landing-panel h2,
+.landing-final-cta h2 {
+  font-size: clamp(1.85rem, 3.05vw, 2.85rem) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.058em !important;
+}
+
+/* Credits: detail text slightly lower. */
+.landing-credits-copy {
+  margin-top: 22px !important;
+}
+
+.landing-credits-panel .landing-panel-link {
+  margin-top: 28px !important;
+}
+
+@media (max-width: 980px) {
+  .landing-hero-refined {
+    grid-template-columns: 1fr !important;
+    padding: 28px !important;
+  }
+
+  .landing-hero-refined .landing-hero-copy {
+    order: 2;
+    padding-top: 0 !important;
+  }
+
+  .landing-hero-side {
+    order: 1;
+    justify-items: start !important;
+    width: 100% !important;
+  }
+
+  .landing-logo-side {
+    width: min(240px, 70vw) !important;
+    margin-right: 0 !important;
+  }
+
+  .landing-hero-side .landing-preview-card {
+    margin-top: 8px !important;
+  }
+
+  .landing-section-heading-left,
+  .landing-triage-heading {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .landing-section-heading-left .report-kicker {
+    padding-top: 0 !important;
+  }
+
+  .landing-triage-heading h2 {
+    max-width: none !important;
+    white-space: normal !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .landing-hero-refined h1 {
+    font-size: clamp(2.5rem, 11vw, 3.6rem) !important;
+  }
+}
+
+/* QAtalyst landing final alignment pass
+   Append this to the VERY bottom of src/app/globals.css. */
+
+/* Hero: align the left QATALYST/title block with the top of the logo. */
+.landing-hero-refined {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 455px) !important;
+  align-items: start !important;
+  gap: 42px !important;
+  padding: 38px 44px 42px !important;
+}
+
+.landing-hero-refined .landing-hero-copy {
+  align-self: start !important;
+  padding-top: 28px !important;
+}
+
+.landing-hero-side {
+  position: relative;
+  z-index: 1;
+  display: grid !important;
+  justify-items: end !important;
+  align-self: start !important;
+  gap: 24px !important;
+}
+
+.landing-logo-side {
+  display: block !important;
+  width: clamp(185px, 15vw, 265px) !important;
+  height: auto !important;
+  margin: 0 30px 0 0 !important;
+  filter:
+    drop-shadow(0 16px 28px rgba(0, 0, 0, 0.3))
+    drop-shadow(0 0 18px rgba(220, 38, 38, 0.16));
+}
+
+/* Keep QA Output visually lower than the logo while the copy moves up. */
+.landing-hero-side .landing-preview-card {
+  width: 100% !important;
+  margin-top: 36px !important;
+}
+
+/* Hero title sizing stays controlled. */
+.landing-hero-refined h1 {
+  max-width: 735px !important;
+  font-size: clamp(2.75rem, 5.18vw, 4.95rem) !important;
+  line-height: 0.95 !important;
+  letter-spacing: -0.076em !important;
+}
+
+.landing-hero-refined .landing-hero-subtitle {
+  margin-top: 24px !important;
+  max-width: 690px !important;
+}
+
+.landing-hero-refined .landing-hero-note {
+  max-width: 680px !important;
+  margin-top: 18px !important;
+}
+
+.landing-hero-refined .landing-cta-row {
+  margin-top: 28px !important;
+}
+
+/* Section headings: keep big title closer to left label. */
+.landing-section-heading-left {
+  display: grid !important;
+  grid-template-columns: 154px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 14px !important;
+  margin-bottom: 24px !important;
+}
+
+.landing-section-heading-left .report-kicker {
+  padding-top: 11px !important;
+}
+
+.landing-section-heading-left h2 {
+  max-width: none !important;
+  justify-self: start !important;
+  text-align: left !important;
+}
+
+.landing-tools-section .landing-section-heading-left h2 {
+  font-size: clamp(1.9rem, 3.05vw, 2.85rem) !important;
+}
+
+/* Triage: bring heading left and keep "sprint" on the same line on desktop. */
+.landing-triage-heading {
+  grid-template-columns: 154px minmax(0, 1fr) !important;
+  gap: 14px !important;
+}
+
+.landing-triage-heading h2 {
+  max-width: 900px !important;
+  font-size: clamp(1.85rem, 2.62vw, 2.48rem) !important;
+  line-height: 1.03 !important;
+  white-space: nowrap !important;
+}
+
+/* General lower heading scale. */
+.landing-section h2,
+.landing-panel h2,
+.landing-final-cta h2 {
+  font-size: clamp(1.85rem, 3.05vw, 2.85rem) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.058em !important;
+}
+
+/* Credits: detail text slightly lower. */
+.landing-credits-copy {
+  margin-top: 22px !important;
+}
+
+.landing-credits-panel .landing-panel-link {
+  margin-top: 28px !important;
+}
+
+@media (max-width: 980px) {
+  .landing-hero-refined {
+    grid-template-columns: 1fr !important;
+    padding: 28px !important;
+  }
+
+  .landing-hero-refined .landing-hero-copy {
+    order: 2;
+    padding-top: 0 !important;
+  }
+
+  .landing-hero-side {
+    order: 1;
+    justify-items: start !important;
+    width: 100% !important;
+  }
+
+  .landing-logo-side {
+    width: min(240px, 70vw) !important;
+    margin-right: 0 !important;
+  }
+
+  .landing-hero-side .landing-preview-card {
+    margin-top: 8px !important;
+  }
+
+  .landing-section-heading-left,
+  .landing-triage-heading {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .landing-section-heading-left .report-kicker {
+    padding-top: 0 !important;
+  }
+
+  .landing-triage-heading h2 {
+    max-width: none !important;
+    white-space: normal !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .landing-hero-refined h1 {
+    font-size: clamp(2.5rem, 11vw, 3.6rem) !important;
+  }
+}
+
+/* QAtalyst landing micro-alignment pass
+   Append this to the VERY bottom of src/app/globals.css. */
+
+/* Hero: move QATALYST/title block up to align with the top of the right-side logo. */
+.landing-hero-refined .landing-hero-copy {
+  padding-top: 0 !important;
+}
+
+/* Keep the logo right-side placement stable. */
+.landing-hero-side {
+  align-self: start !important;
+  justify-items: end !important;
+}
+
+.landing-logo-side {
+  margin-top: 0 !important;
+}
+
+/* Keep the preview card lower than the logo after moving the copy up. */
+.landing-hero-side .landing-preview-card {
+  margin-top: 36px !important;
+}
+
+/* Force What it does and Triage loop headings to share the same title start line. */
+.landing-section-heading-left,
+.landing-tools-section .landing-section-heading-left,
+.landing-triage-section .landing-section-heading-left,
+.landing-triage-heading {
+  display: grid !important;
+  grid-template-columns: 154px minmax(0, 1fr) !important;
+  gap: 14px !important;
+  align-items: start !important;
+}
+
+/* Keep the left kicker labels consistent. */
+.landing-section-heading-left .report-kicker,
+.landing-tools-section .landing-section-heading-left .report-kicker,
+.landing-triage-section .landing-section-heading-left .report-kicker,
+.landing-triage-heading .report-kicker {
+  padding-top: 11px !important;
+}
+
+/* Remove any inherited offset so Triage title aligns with Four QA tools title. */
+.landing-tools-section .landing-section-heading-left h2,
+.landing-triage-section .landing-section-heading-left h2,
+.landing-triage-heading h2 {
+  margin-left: 0 !important;
+  transform: none !important;
+  justify-self: start !important;
+  text-align: left !important;
+}
+
+/* Triage heading: one line on desktop. */
+.landing-triage-heading h2 {
+  max-width: none !important;
+  font-size: clamp(1.78rem, 2.48vw, 2.34rem) !important;
+  line-height: 1.03 !important;
+  white-space: nowrap !important;
+}
+
+/* Make the tools title use the same visual start and comfortable scale. */
+.landing-tools-section .landing-section-heading-left h2 {
+  font-size: clamp(1.9rem, 3.05vw, 2.85rem) !important;
+}
+
+/* Responsive reset: allow normal stacking/wrapping on smaller screens. */
+@media (max-width: 980px) {
+  .landing-hero-refined .landing-hero-copy {
+    padding-top: 0 !important;
+  }
+
+  .landing-section-heading-left,
+  .landing-tools-section .landing-section-heading-left,
+  .landing-triage-section .landing-section-heading-left,
+  .landing-triage-heading {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .landing-section-heading-left .report-kicker,
+  .landing-tools-section .landing-section-heading-left .report-kicker,
+  .landing-triage-section .landing-section-heading-left .report-kicker,
+  .landing-triage-heading .report-kicker {
+    padding-top: 0 !important;
+  }
+
+  .landing-triage-heading h2 {
+    white-space: normal !important;
+    font-size: clamp(1.85rem, 6.2vw, 2.75rem) !important;
+  }
+}
