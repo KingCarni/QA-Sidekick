@@ -262,7 +262,7 @@ function formatValueForClipboard(value: unknown, indent = ""): string {
 
 function extractMarkdownListSection(markdown: string, heading: string): string[] {
   const pattern = new RegExp(
-    `^##\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$([\\s\\S]*?)(?=^##\\s+|\\z)`,
+    `^##\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$([\\s\\S]*?)(?=^##\\s+|$)`,
     "im"
   );
   const match = markdown.match(pattern);
@@ -276,6 +276,160 @@ function extractMarkdownListSection(markdown: string, heading: string): string[]
     .map((line) => line.replace(/^[-*]\s+/, "").replace(/^\d+[.)]\s+/, "").trim())
     .filter(Boolean)
     .filter((line) => !line.toLowerCase().startsWith("no follow-up questions"));
+}
+
+
+function extractMarkdownSection(markdown: string, heading: string): string {
+  const pattern = new RegExp(
+    `^##\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$([\\s\\S]*?)(?=^##\\s+|$)`,
+    "im"
+  );
+  const match = markdown.match(pattern);
+
+  return match?.[1]?.trim() ?? "";
+}
+
+function cleanMarkdownListText(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.replace(/^[-*]\s+/, "").replace(/^\d+[.)]\s+/, "").trim())
+    .filter(Boolean)
+    .filter((line) => !/^no .+ returned\.?$/i.test(line))
+    .filter((line) => !/^not specified\.?$/i.test(line));
+}
+
+function parseTopLevelMarkdownValue(markdown: string, label: string): string | null {
+  const pattern = new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}:\\s*(.+)$`, "im");
+  const match = markdown.match(pattern);
+
+  return match?.[1]?.trim() ?? null;
+}
+
+function parseBugReportMarkdown(markdown: string, current: BugReport): BugReport {
+  const titleMatch = markdown.match(/^#\s+(.+)$/m);
+  const severity = parseTopLevelMarkdownValue(markdown, "Severity");
+  const priority = parseTopLevelMarkdownValue(markdown, "Priority");
+  const steps = cleanMarkdownListText(extractMarkdownSection(markdown, "Steps to Reproduce"));
+  const missingInfo = cleanMarkdownListText(extractMarkdownSection(markdown, "Missing Info"));
+  const followUpQuestions = cleanMarkdownListText(extractMarkdownSection(markdown, "Follow-up Questions"));
+  const qaNotes = cleanMarkdownListText(extractMarkdownSection(markdown, "QA Notes"));
+
+  return {
+    ...current,
+    title: titleMatch?.[1]?.trim() || current.title,
+    severitySuggestion: severity || current.severitySuggestion,
+    prioritySuggestion: priority || current.prioritySuggestion,
+    summary: extractMarkdownSection(markdown, "Summary") || current.summary,
+    environment: extractMarkdownSection(markdown, "Environment") || current.environment,
+    stepsToReproduce: steps.length > 0 ? steps : current.stepsToReproduce,
+    expectedResult: extractMarkdownSection(markdown, "Expected Result") || current.expectedResult,
+    actualResult: extractMarkdownSection(markdown, "Actual Result") || current.actualResult,
+    impact: extractMarkdownSection(markdown, "Impact") || current.impact,
+    missingInfo: missingInfo.length > 0 ? missingInfo : current.missingInfo,
+    followUpQuestions: followUpQuestions.length > 0 ? followUpQuestions : current.followUpQuestions,
+    qaNotes: qaNotes.length > 0 ? qaNotes : current.qaNotes,
+  };
+}
+
+function parseTestCasesMarkdown(markdown: string, current: TestCase[]): TestCase[] {
+  const sections = markdown
+    .split(/^##\s+Test Case\s+\d+:\s+/im)
+    .slice(1);
+
+  if (sections.length === 0) return current;
+
+  return sections.map((section, index) => {
+    const lines = section.split(/\r?\n/);
+    const title = lines[0]?.trim() || current[index]?.title || `Test Case ${index + 1}`;
+    const body = lines.slice(1).join("\n");
+    const type = parseTopLevelMarkdownValue(body, "Type") || current[index]?.type;
+    const priority = parseTopLevelMarkdownValue(body, "Priority") || current[index]?.priority;
+    const steps = cleanMarkdownListText(extractMarkdownSection(body, "Steps"));
+
+    return {
+      ...current[index],
+      title,
+      type,
+      priority,
+      preconditions: extractMarkdownSection(body, "Preconditions") || current[index]?.preconditions,
+      steps: steps.length > 0 ? steps : current[index]?.steps,
+      expectedResult: extractMarkdownSection(body, "Expected Result") || current[index]?.expectedResult,
+    };
+  });
+}
+
+function parseRiskReviewMarkdown(markdown: string, current: RiskReview): RiskReview {
+  const overallRisk = parseTopLevelMarkdownValue(markdown, "Overall Risk") || current.overallRisk;
+  const summaryMatch = markdown.match(/^Summary:\s*(.+)$/im);
+  const keyRisksSection =
+    markdown.match(/Key Risks:\s*([\s\S]*?)(?=\n\s*Bottlenecks:|\n\s*Missing Acceptance Criteria:|$)/i)?.[1] ?? "";
+  const bottlenecksSection =
+    markdown.match(/Bottlenecks:\s*([\s\S]*?)(?=\n\s*Missing Acceptance Criteria:|\n\s*QA Follow-up Questions:|$)/i)?.[1] ?? "";
+  const keyRiskChunks = keyRisksSection
+    .split(/\n(?=\d+\.\s+)/)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean);
+  const bottleneckChunks = bottlenecksSection
+    .split(/\n(?=\d+\.\s+)/)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean);
+
+  const currentRisks = arrayFromUnknown<RiskItem>(current.keyRisks);
+  const currentBottlenecks = arrayFromUnknown<BottleneckItem>(current.bottlenecks);
+
+  const keyRisks = keyRiskChunks.length
+    ? keyRiskChunks.map((chunk, index) => {
+        const title = chunk.match(/^\d+\.\s*(.+)$/m)?.[1]?.trim();
+        return {
+          ...currentRisks[index],
+          title: title || currentRisks[index]?.title,
+          severity: chunk.match(/Severity:\s*(.+)$/im)?.[1]?.trim() || currentRisks[index]?.severity,
+          area: chunk.match(/Area:\s*(.+)$/im)?.[1]?.trim() || currentRisks[index]?.area,
+          whyItMatters:
+            chunk.match(/Why it matters:\s*(.+)$/im)?.[1]?.trim() || currentRisks[index]?.whyItMatters,
+          mitigation: chunk.match(/Mitigation:\s*(.+)$/im)?.[1]?.trim() || currentRisks[index]?.mitigation,
+        };
+      })
+    : current.keyRisks;
+
+  const bottlenecks = bottleneckChunks.length
+    ? bottleneckChunks.map((chunk, index) => {
+        const title = chunk.match(/^\d+\.\s*(.+)$/m)?.[1]?.trim();
+        return {
+          ...currentBottlenecks[index],
+          title: title || currentBottlenecks[index]?.title,
+          impact: chunk.match(/Impact:\s*(.+)$/im)?.[1]?.trim() || currentBottlenecks[index]?.impact,
+          owner: chunk.match(/Owner:\s*(.+)$/im)?.[1]?.trim() || currentBottlenecks[index]?.owner,
+          recommendation:
+            chunk.match(/Recommendation:\s*(.+)$/im)?.[1]?.trim() ||
+            currentBottlenecks[index]?.recommendation,
+        };
+      })
+    : current.bottlenecks;
+
+  const missingAcceptanceCriteria = cleanMarkdownListText(
+    markdown.match(/Missing Acceptance Criteria:\s*([\s\S]*?)(?=\n\s*QA Follow-up Questions:|$)/i)?.[1] ?? ""
+  );
+  const qaFollowUpQuestions = cleanMarkdownListText(
+    markdown.match(/QA Follow-up Questions:\s*([\s\S]*?)(?=\n\s*Suggested Test Focus:|$)/i)?.[1] ?? ""
+  );
+  const suggestedTestFocus = cleanMarkdownListText(
+    markdown.match(/Suggested Test Focus:\s*([\s\S]*?)(?=\n\s*Follow-up History:|$)/i)?.[1] ?? ""
+  );
+
+  return {
+    ...current,
+    overallRisk,
+    summary: summaryMatch?.[1]?.trim() || current.summary,
+    keyRisks,
+    bottlenecks,
+    missingAcceptanceCriteria:
+      missingAcceptanceCriteria.length > 0 ? missingAcceptanceCriteria : current.missingAcceptanceCriteria,
+    qaFollowUpQuestions: qaFollowUpQuestions.length > 0 ? qaFollowUpQuestions : current.qaFollowUpQuestions,
+    suggestedTestFocus: suggestedTestFocus.length > 0 ? suggestedTestFocus : current.suggestedTestFocus,
+  };
 }
 
 function buildTestCasesMarkdown(testCases: TestCase[], answeredFollowUps: AnsweredFollowUp[] = []): string {
@@ -819,6 +973,8 @@ function TestCaseCards({
   }
 
   function handleSaveMarkdownEdits() {
+    const parsedTestCases = parseTestCasesMarkdown(editedMarkdown, editableTestCases);
+    setEditableTestCases(parsedTestCases);
     setSavedMarkdown(editedMarkdown);
     setIsEditingMarkdown(false);
   }
@@ -848,7 +1004,7 @@ function TestCaseCards({
 
       {savedMarkdown && !isEditingMarkdown ? (
         <div className="saved-edit-notice">
-          Saved edits are active. Copy All and Export Markdown will use your edited Markdown. Cards below remain the structured AI preview.
+          Saved edits are active. Copy All and Export Markdown will use your edited Markdown. Cards below have been updated from your saved edits.
         </div>
       ) : null}
 
@@ -858,7 +1014,7 @@ function TestCaseCards({
             <div>
               <p>Edit before export</p>
               <h3>Test Case Markdown</h3>
-              <span>Save Edits updates Copy All and Export Markdown. The cards below remain the structured AI preview for now.</span>
+              <span>Save Edits updates Copy All and Export Markdown. Cards below have been updated from your saved edits.</span>
             </div>
             <button className="copy-all-button save-edit-button" type="button" onClick={handleSaveMarkdownEdits}>
               Save Edits
@@ -1047,6 +1203,8 @@ function RiskReviewCards({
   }
 
   function handleSaveMarkdownEdits() {
+    const parsedRiskReview = parseRiskReviewMarkdown(editedMarkdown, editableRiskReview);
+    setEditableRiskReview(parsedRiskReview);
     setSavedMarkdown(editedMarkdown);
     setIsEditingMarkdown(false);
   }
@@ -1076,7 +1234,7 @@ function RiskReviewCards({
 
       {savedMarkdown && !isEditingMarkdown ? (
         <div className="saved-edit-notice">
-          Saved edits are active. Copy Risk Report and Export Markdown will use your edited Markdown. Cards below remain the structured AI preview.
+          Saved edits are active. Copy Risk Report and Export Markdown will use your edited Markdown. Cards below have been updated from your saved edits.
         </div>
       ) : null}
 
@@ -1086,7 +1244,7 @@ function RiskReviewCards({
             <div>
               <p>Edit before export</p>
               <h3>Risk Review Markdown</h3>
-              <span>Save Edits updates Copy Risk Report and Export Markdown. The cards below remain the structured AI preview for now.</span>
+              <span>Save Edits updates Copy Risk Report and Export Markdown. Cards below have been updated from your saved edits.</span>
             </div>
             <button className="copy-all-button save-edit-button" type="button" onClick={handleSaveMarkdownEdits}>
               Save Edits
@@ -1324,7 +1482,7 @@ function BugReportCards({
 
       {savedEditedMarkdown && !isEditingMarkdown ? (
         <div className="saved-edit-notice">
-          Saved edits are active. Copy Bug Report and Export Markdown will use your edited Markdown. Cards below remain the structured AI preview.
+          Saved edits are active. Copy Bug Report and Export Markdown will use your edited Markdown. Cards below have been updated from your saved edits.
         </div>
       ) : null}
 
@@ -1695,12 +1853,8 @@ export default function Home() {
       return;
     }
 
-    const editedFollowUps = extractMarkdownListSection(markdown, "Follow-up Questions");
-
-    const nextBugReport = {
-      ...parsed.bugReport,
-      followUpQuestions: editedFollowUps.length > 0 ? editedFollowUps : parsed.bugReport.followUpQuestions,
-    };
+    const nextBugReport = parseBugReportMarkdown(markdown, parsed.bugReport as BugReport);
+    const editedFollowUps = meaningfulLines(nextBugReport.followUpQuestions);
 
     setOutput(
       JSON.stringify(
