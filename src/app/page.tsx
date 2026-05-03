@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import AuthStatus from "@/components/AuthStatus";
 
 type ToolId = "tests" | "risk" | "bug" | "improve";
 
@@ -2649,13 +2651,31 @@ export default function Home() {
 
   return (
     <main>
-      <section className="hero">
-        <p className="brand">QA SIDEKICK</p>
-        <h1>Review tickets like a senior QA before anything breaks.</h1>
-        <p>
-          Generate test cases, expose risks, improve bug reports, and turn vague tickets into
-          actionable QA plans.
-        </p>
+      <section className="hero hero-split">
+        <div className="hero-copy">
+          <h1>Review tickets like a senior QA before anything breaks.</h1>
+          <p>
+            Generate test cases, expose risks, improve bug reports, and turn vague tickets into
+            actionable QA plans.
+          </p>
+        </div>
+
+        <div className="hero-brand-account">
+          <div className="hero-brand-top">
+            <div className="hero-utility-actions" aria-label="QAtalyst purchase and support links">
+              <Link className="hero-utility-button buy-credits-link" href="/buy-credits">
+                Buy Credits
+              </Link>
+              <Link className="hero-utility-button donate-link" href="/donate">
+                Donate
+              </Link>
+            </div>
+
+            <img src="/qatalyst-header.png" alt="QAtalyst" className="brand-logo hero-brand-logo" />
+          </div>
+
+          <AuthStatus />
+        </div>
       </section>
 
       <section className="workspace">

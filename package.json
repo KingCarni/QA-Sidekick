@@ -1,1 +1,36 @@
-{"scripts":{"dev":"next dev","build":"next build","start":"next start","lint":"next lint","prisma:generate":"prisma generate","prisma:push":"prisma db push","prisma:studio":"prisma studio"},"dependencies":{"@prisma/client":"latest","next":"latest","next-auth":"latest","openai":"latest","react":"latest","react-dom":"latest","zod":"latest"},"devDependencies":{"@tailwindcss/postcss":"^4.2.4","@types/node":"latest","@types/react":"latest","@types/react-dom":"latest","autoprefixer":"latest","eslint":"latest","eslint-config-next":"latest","postcss":"latest","prisma":"latest","tailwindcss":"latest","typescript":"latest"}}
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.11.1",
+    "@prisma/client": "6.19.0",
+    "next": "latest",
+    "next-auth": "latest",
+    "openai": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "stripe": "^20.3.1",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.4",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "autoprefixer": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "postcss": "latest",
+    "prisma": "6.19.0",
+    "tailwindcss": "latest",
+    "typescript": "latest"
+  }
+}
