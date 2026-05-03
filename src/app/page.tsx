@@ -279,9 +279,10 @@ function extractMarkdownListSection(markdown: string, heading: string): string[]
 }
 
 
+
 function extractMarkdownSection(markdown: string, heading: string): string {
   const pattern = new RegExp(
-    `^##\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$([\\s\\S]*?)(?=^##\\s+|$)`,
+    `^#{2,3}\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$([\\s\\S]*?)(?=^#{2,3}\\s+|$)`,
     "im"
   );
   const match = markdown.match(pattern);
@@ -334,16 +335,15 @@ function parseBugReportMarkdown(markdown: string, current: BugReport): BugReport
 }
 
 function parseTestCasesMarkdown(markdown: string, current: TestCase[]): TestCase[] {
-  const sections = markdown
-    .split(/^##\s+Test Case\s+\d+:\s+/im)
-    .slice(1);
+  const matches = [...markdown.matchAll(/^##\s+Test Case\s+\d+:\s+(.+)\s*$/gim)];
 
-  if (sections.length === 0) return current;
+  if (matches.length === 0) return current;
 
-  return sections.map((section, index) => {
-    const lines = section.split(/\r?\n/);
-    const title = lines[0]?.trim() || current[index]?.title || `Test Case ${index + 1}`;
-    const body = lines.slice(1).join("\n");
+  return matches.map((match, index) => {
+    const start = (match.index ?? 0) + match[0].length;
+    const end = index + 1 < matches.length ? matches[index + 1].index ?? markdown.length : markdown.length;
+    const body = markdown.slice(start, end);
+    const title = match[1]?.trim() || current[index]?.title || `Test Case ${index + 1}`;
     const type = parseTopLevelMarkdownValue(body, "Type") || current[index]?.type;
     const priority = parseTopLevelMarkdownValue(body, "Priority") || current[index]?.priority;
     const steps = cleanMarkdownListText(extractMarkdownSection(body, "Steps"));
@@ -923,7 +923,10 @@ function TestCaseCards({
     setEditedMarkdown("");
   }, [testCases]);
 
-  const generatedMarkdown = useMemo(() => buildTestCasesMarkdown(editableTestCases), [editableTestCases]);
+  const generatedMarkdown = useMemo(
+    () => buildTestCasesMarkdown(editableTestCases, answeredFollowUps),
+    [editableTestCases, answeredFollowUps]
+  );
 
   const allText = useMemo(
     () => savedMarkdown || editableTestCases.map((testCase, index) => formatTestCase(testCase, index)).join("\n\n---\n\n"),
@@ -972,10 +975,16 @@ function TestCaseCards({
     setIsEditingMarkdown(false);
   }
 
+  function handleLiveMarkdownEdit(nextMarkdown: string) {
+    setEditedMarkdown(nextMarkdown);
+    setEditableTestCases((current) => parseTestCasesMarkdown(nextMarkdown, current));
+    setSavedMarkdown("");
+  }
+
   function handleSaveMarkdownEdits() {
     const parsedTestCases = parseTestCasesMarkdown(editedMarkdown, editableTestCases);
     setEditableTestCases(parsedTestCases);
-    setSavedMarkdown(editedMarkdown);
+    setSavedMarkdown(buildTestCasesMarkdown(parsedTestCases, answeredFollowUps));
     setIsEditingMarkdown(false);
   }
 
@@ -1004,7 +1013,7 @@ function TestCaseCards({
 
       {savedMarkdown && !isEditingMarkdown ? (
         <div className="saved-edit-notice">
-          Saved edits are active. Copy All and Export Markdown will use your edited Markdown. Cards below have been updated from your saved edits.
+          Saved edits are active. Copy/export will use the finalized edited version.
         </div>
       ) : null}
 
@@ -1023,7 +1032,7 @@ function TestCaseCards({
 
           <textarea
             value={editedMarkdown}
-            onChange={(event) => setEditedMarkdown(event.target.value)}
+            onChange={(event) => handleLiveMarkdownEdit(event.target.value)}
             spellCheck={false}
           />
         </section>
@@ -1202,10 +1211,16 @@ function RiskReviewCards({
     setIsEditingMarkdown(false);
   }
 
+  function handleLiveMarkdownEdit(nextMarkdown: string) {
+    setEditedMarkdown(nextMarkdown);
+    setEditableRiskReview((current) => parseRiskReviewMarkdown(nextMarkdown, current));
+    setSavedMarkdown("");
+  }
+
   function handleSaveMarkdownEdits() {
     const parsedRiskReview = parseRiskReviewMarkdown(editedMarkdown, editableRiskReview);
     setEditableRiskReview(parsedRiskReview);
-    setSavedMarkdown(editedMarkdown);
+    setSavedMarkdown(buildRiskReviewMarkdown(parsedRiskReview, answeredFollowUps));
     setIsEditingMarkdown(false);
   }
 
@@ -1234,7 +1249,7 @@ function RiskReviewCards({
 
       {savedMarkdown && !isEditingMarkdown ? (
         <div className="saved-edit-notice">
-          Saved edits are active. Copy Risk Report and Export Markdown will use your edited Markdown. Cards below have been updated from your saved edits.
+          Saved edits are active. Copy/export will use the finalized edited version.
         </div>
       ) : null}
 
@@ -1253,7 +1268,7 @@ function RiskReviewCards({
 
           <textarea
             value={editedMarkdown}
-            onChange={(event) => setEditedMarkdown(event.target.value)}
+            onChange={(event) => handleLiveMarkdownEdit(event.target.value)}
             spellCheck={false}
           />
         </section>
@@ -1431,8 +1446,15 @@ function BugReportCards({
     setIsEditingMarkdown(false);
   }
 
+  function handleLiveMarkdownEdit(nextMarkdown: string) {
+    setEditedMarkdown(nextMarkdown);
+    setEditableBugReport((current) => parseBugReportMarkdown(nextMarkdown, current));
+  }
+
   function handleSaveMarkdownEdits() {
-    onSaveBugMarkdown?.(editedMarkdown);
+    const parsedBugReport = parseBugReportMarkdown(editedMarkdown, editableBugReport);
+    setEditableBugReport(parsedBugReport);
+    onSaveBugMarkdown?.(formatBugReport(parsedBugReport, evidenceFiles, evidenceLink, answeredFollowUps));
     setIsEditingMarkdown(false);
   }
 
@@ -1482,7 +1504,7 @@ function BugReportCards({
 
       {savedEditedMarkdown && !isEditingMarkdown ? (
         <div className="saved-edit-notice">
-          Saved edits are active. Copy Bug Report and Export Markdown will use your edited Markdown. Cards below have been updated from your saved edits.
+          Saved edits are active. Copy/export will use the finalized edited version.
         </div>
       ) : null}
 
@@ -1492,7 +1514,7 @@ function BugReportCards({
             <div>
               <p>Edit before export</p>
               <h3>Markdown Report</h3>
-              <span>Save Edits updates Copy Bug Report and Export Markdown. Edited Follow-up Questions also sync back to the left panel.</span>
+              <span>Cards update live as you type. Save Edits finalizes copy/export and syncs edited Follow-up Questions back to the left panel.</span>
             </div>
             <button className="copy-all-button save-edit-button" type="button" onClick={handleSaveMarkdownEdits}>
               Save Edits
@@ -1501,7 +1523,7 @@ function BugReportCards({
 
           <textarea
             value={editedMarkdown}
-            onChange={(event) => setEditedMarkdown(event.target.value)}
+            onChange={(event) => handleLiveMarkdownEdit(event.target.value)}
             spellCheck={false}
           />
         </section>
