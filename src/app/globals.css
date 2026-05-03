@@ -3267,3 +3267,540 @@ h1 {
     width: 100%;
   }
 }
+
+/* QAS-14 hero buttons + red background polish
+   Append this at the bottom of globals.css.
+   Does not replace AuthStatus.tsx or CreditsPill.tsx. */
+
+/* Force buy/donate, credits, account, and sign out to share the same footprint. */
+:root {
+  --qatalyst-hero-action-width: 126px;
+  --qatalyst-hero-action-height: 38px;
+  --qatalyst-hero-action-gap: 10px;
+}
+
+.hero-brand-account {
+  width: min(100%, calc((var(--qatalyst-hero-action-width) * 3) + (var(--qatalyst-hero-action-gap) * 2) + 36px));
+  align-items: stretch;
+}
+
+.hero-brand-top {
+  display: grid;
+  grid-template-columns: var(--qatalyst-hero-action-width) 1fr;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+
+.hero-utility-actions {
+  display: grid;
+  gap: var(--qatalyst-hero-action-gap);
+  width: var(--qatalyst-hero-action-width);
+}
+
+.hero-utility-button,
+.hero-brand-account .qa-auth-secondary-button,
+.hero-brand-account .qa-auth-ghost-button,
+.hero-brand-account .qa-credits-pill {
+  width: var(--qatalyst-hero-action-width);
+  min-width: var(--qatalyst-hero-action-width);
+  max-width: var(--qatalyst-hero-action-width);
+  height: var(--qatalyst-hero-action-height);
+  min-height: var(--qatalyst-hero-action-height);
+  padding: 0 12px;
+  box-sizing: border-box;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.hero-brand-account .qa-auth-widget {
+  width: 100%;
+  max-width: 100%;
+}
+
+.hero-brand-account .qa-auth-card {
+  width: 100%;
+  min-width: 0;
+  min-height: 108px;
+  padding: 14px 18px;
+  border-radius: 24px;
+}
+
+.hero-brand-account .qa-auth-card-signed-in {
+  min-width: 0;
+}
+
+.hero-brand-account .qa-auth-action-row {
+  display: grid;
+  grid-template-columns: repeat(3, var(--qatalyst-hero-action-width));
+  justify-content: center;
+  gap: var(--qatalyst-hero-action-gap);
+  width: 100%;
+}
+
+.hero-brand-account .qa-credits-pill {
+  gap: 7px;
+}
+
+.hero-brand-account .qa-credits-pill span {
+  font-size: 0.62rem;
+}
+
+.hero-brand-account .qa-credits-pill strong {
+  min-width: 16px;
+  font-size: 0.86rem;
+}
+
+.hero-brand-account .qa-auth-copy-under {
+  align-self: stretch;
+  justify-items: end;
+  padding-top: 6px;
+  text-align: right;
+}
+
+.hero-brand-account .qa-auth-copy-under .qa-auth-kicker {
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+}
+
+.hero-brand-account .qa-auth-copy-under strong {
+  max-width: 100%;
+  font-size: 0.82rem;
+}
+
+/* Keep the logo balanced in the right column after the account card grows. */
+.hero-brand-logo {
+  justify-self: end;
+  width: clamp(178px, 14vw, 235px);
+}
+
+/* Remove the odd blue glow on purchase/support pages and keep the background red/black. */
+.account-page {
+  background:
+    radial-gradient(circle at top left, rgba(220, 38, 38, 0.2), transparent 30%),
+    radial-gradient(circle at top right, rgba(185, 28, 28, 0.16), transparent 36%),
+    radial-gradient(circle at 78% 10%, rgba(127, 29, 29, 0.12), transparent 26%),
+    #050505;
+}
+
+/* Purchase cards should stay in the same black/red language. */
+.purchase-panel {
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.16), transparent 34%),
+    radial-gradient(circle at 72% 12%, rgba(127, 29, 29, 0.12), transparent 30%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)),
+    rgba(10, 10, 10, 0.84);
+}
+
+/* Make the buy credits CTA less bright green so it fits the palette better. */
+.purchase-primary-button {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  box-shadow: 0 16px 34px rgba(220, 38, 38, 0.18);
+}
+
+.purchase-primary-button:hover:not(:disabled) {
+  box-shadow: 0 18px 38px rgba(220, 38, 38, 0.26);
+}
+
+/* Keep the existing green credits button, but size-matched with the rest. */
+.buy-credits-link {
+  color: #dcfce7;
+}
+
+@media (max-width: 980px) {
+  .hero-brand-account {
+    width: min(100%, 430px);
+    align-items: flex-start;
+  }
+
+  .hero-brand-top {
+    grid-template-columns: var(--qatalyst-hero-action-width) minmax(0, 1fr);
+  }
+
+  .hero-brand-account .qa-auth-action-row {
+    justify-content: start;
+  }
+
+  .hero-brand-account .qa-auth-copy-under {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .hero-brand-logo {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 620px) {
+  .hero-brand-top {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-utility-actions {
+    width: 100%;
+  }
+
+  .hero-utility-button,
+  .hero-brand-account .qa-auth-secondary-button,
+  .hero-brand-account .qa-auth-ghost-button,
+  .hero-brand-account .qa-credits-pill {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .hero-brand-account .qa-auth-action-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* QAS-14 final hero/account alignment + remove all blue page glows
+   Append this to the VERY bottom of src/app/globals.css.
+   Do not replace AuthStatus.tsx or CreditsPill.tsx. */
+
+/* Global red/black app background override. Removes old blue right-side glow. */
+html,
+body {
+  background:
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.42), transparent 31%),
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.24), transparent 34%),
+    radial-gradient(circle at 82% 8%, rgba(220, 38, 38, 0.12), transparent 28%),
+    #050505 !important;
+}
+
+/* Account / Buy Credits / Donate pages: force all blue accents to red. */
+.account-page {
+  background:
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.34), transparent 31%),
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.24), transparent 35%),
+    radial-gradient(circle at 78% 10%, rgba(220, 38, 38, 0.12), transparent 28%),
+    #050505 !important;
+}
+
+.account-page::before,
+.account-page::after,
+.purchase-panel::before,
+.purchase-panel::after,
+.account-card::before,
+.account-card::after {
+  background:
+    radial-gradient(circle, rgba(220, 38, 38, 0.18), transparent 62%) !important;
+  box-shadow: none !important;
+}
+
+/* Remove any old blue-ish radial bleed from reusable cards. */
+.account-card,
+.purchase-panel {
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.16), transparent 36%),
+    radial-gradient(circle at 80% 12%, rgba(220, 38, 38, 0.09), transparent 28%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)),
+    rgba(10, 10, 10, 0.86) !important;
+}
+
+/* Keep the large buy button on-brand red instead of green. */
+.purchase-primary-button {
+  background: linear-gradient(135deg, #dc2626, #991b1b) !important;
+  box-shadow: 0 16px 34px rgba(220, 38, 38, 0.2) !important;
+}
+
+/* Hero right-side sizing math.
+   Goal:
+   - Buy Credits / Donate / Credits / Account / Sign out same size.
+   - Buy Credits, Donate, and Credits are vertically aligned.
+   - Account card is closer to the mockup size. */
+:root {
+  --qatalyst-action-w: 144px;
+  --qatalyst-action-h: 42px;
+  --qatalyst-action-gap: 14px;
+  --qatalyst-card-pad-x: 22px;
+  --qatalyst-card-w: calc((var(--qatalyst-action-w) * 3) + (var(--qatalyst-action-gap) * 2) + (var(--qatalyst-card-pad-x) * 2));
+}
+
+/* Keep headline/subtitle side roomy while right column is predictable. */
+.hero.hero-split {
+  grid-template-columns: minmax(0, 1fr) var(--qatalyst-card-w) !important;
+  gap: 36px !important;
+}
+
+.hero-copy p {
+  max-width: 735px !important;
+}
+
+/* Right side: buttons/logo row above account card. */
+.hero-brand-account {
+  width: var(--qatalyst-card-w) !important;
+  max-width: var(--qatalyst-card-w) !important;
+  align-items: stretch !important;
+  gap: 16px !important;
+}
+
+/* The top row is the same width as the account card.
+   Padding matches account card padding so Buy/Donate align with Credits. */
+.hero-brand-top {
+  display: grid !important;
+  grid-template-columns: var(--qatalyst-action-w) minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 20px !important;
+  width: 100% !important;
+  padding-inline: var(--qatalyst-card-pad-x) !important;
+  box-sizing: border-box !important;
+}
+
+.hero-utility-actions {
+  display: grid !important;
+  gap: var(--qatalyst-action-gap) !important;
+  width: var(--qatalyst-action-w) !important;
+}
+
+/* All five buttons share same dimensions. */
+.hero-utility-button,
+.hero-brand-account .qa-credits-pill,
+.hero-brand-account .qa-auth-secondary-button,
+.hero-brand-account .qa-auth-ghost-button {
+  width: var(--qatalyst-action-w) !important;
+  min-width: var(--qatalyst-action-w) !important;
+  max-width: var(--qatalyst-action-w) !important;
+  height: var(--qatalyst-action-h) !important;
+  min-height: var(--qatalyst-action-h) !important;
+  padding: 0 14px !important;
+  box-sizing: border-box !important;
+  border-radius: 12px !important;
+  font-size: 0.8rem !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+/* Match mockup: Donate is a stronger red button. */
+.donate-link {
+  background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+  border-color: rgba(248, 113, 113, 0.42) !important;
+  color: #fff !important;
+}
+
+/* Account card: larger, wider, and mockup-like. */
+.hero-brand-account .qa-auth-widget {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.hero-brand-account .qa-auth-card {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 126px !important;
+  padding: 18px var(--qatalyst-card-pad-x) 16px !important;
+  border-radius: 24px !important;
+  box-sizing: border-box !important;
+}
+
+/* Button row inside account card: three equal columns. */
+.hero-brand-account .qa-auth-action-row {
+  display: grid !important;
+  grid-template-columns: repeat(3, var(--qatalyst-action-w)) !important;
+  justify-content: start !important;
+  gap: var(--qatalyst-action-gap) !important;
+  width: 100% !important;
+}
+
+/* Credits text size should match the others while keeping the green style. */
+.hero-brand-account .qa-credits-pill {
+  gap: 8px !important;
+}
+
+.hero-brand-account .qa-credits-pill span {
+  font-size: 0.66rem !important;
+  letter-spacing: 0.1em !important;
+}
+
+.hero-brand-account .qa-credits-pill strong {
+  min-width: 18px !important;
+  font-size: 0.88rem !important;
+}
+
+/* Signed in/email area: closer to mockup — right aligned and under buttons. */
+.hero-brand-account .qa-auth-copy-under {
+  align-self: stretch !important;
+  justify-items: end !important;
+  padding: 12px 4px 0 0 !important;
+  text-align: right !important;
+}
+
+.hero-brand-account .qa-auth-copy-under .qa-auth-kicker {
+  color: #fca5a5 !important;
+  font-size: 0.66rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.16em !important;
+}
+
+.hero-brand-account .qa-auth-copy-under strong {
+  max-width: 100% !important;
+  color: #fff !important;
+  font-size: 0.82rem !important;
+  font-weight: 950 !important;
+}
+
+/* Logo stays right of Buy/Donate but centered in its column. */
+.hero-brand-logo {
+  justify-self: center !important;
+  width: clamp(184px, 14vw, 236px) !important;
+  margin: 0 !important;
+}
+
+/* Mobile: stack safely, still no blue. */
+@media (max-width: 1100px) {
+  .hero.hero-split {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hero-brand-account {
+    width: min(100%, var(--qatalyst-card-w)) !important;
+    max-width: 100% !important;
+    align-items: flex-start !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-brand-account {
+    width: 100% !important;
+  }
+
+  .hero-brand-top {
+    grid-template-columns: 1fr !important;
+    padding-inline: 0 !important;
+  }
+
+  .hero-utility-actions {
+    width: 100% !important;
+  }
+
+  .hero-utility-button,
+  .hero-brand-account .qa-credits-pill,
+  .hero-brand-account .qa-auth-secondary-button,
+  .hero-brand-account .qa-auth-ghost-button {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .hero-brand-account .qa-auth-action-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hero-brand-account .qa-auth-copy-under {
+    justify-items: start !important;
+    text-align: left !important;
+  }
+
+  .hero-brand-logo {
+    justify-self: start !important;
+  }
+}
+
+/* QAS-14 output panel height alignment
+   CSS-only. Append to the VERY bottom of src/app/globals.css.
+   Does not change page.tsx, AuthStatus.tsx, or CreditsPill.tsx. */
+
+/* Keep the main workspace columns visually aligned. */
+.workspace {
+  align-items: stretch !important;
+}
+
+/* Left input panel and right output panel should share the same minimum visual height. */
+.input-panel,
+.output-panel,
+.report-panel,
+.report-wrap {
+  min-height: 690px !important;
+}
+
+/* The blank "Run a tool..." state should fill the right panel instead of stopping early. */
+.output-panel.empty-state,
+.empty-output,
+.placeholder-output,
+.report-empty-state {
+  min-height: 690px !important;
+}
+
+/* Common empty state card inside the output panel. */
+.output-panel > .empty-card,
+.output-panel > .placeholder-card,
+.output-panel > .empty-state-card,
+.report-panel > .empty-card,
+.report-panel > .placeholder-card,
+.report-panel > .empty-state-card {
+  min-height: 118px;
+}
+
+/* If the right panel has an inner content wrapper, let it stretch downward. */
+.output-panel,
+.report-panel {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.output-panel > *,
+.report-panel > * {
+  flex-shrink: 0;
+}
+
+/* Generated report areas should be allowed to fill the available output panel height. */
+.output-panel .report-wrap,
+.report-panel .report-wrap,
+.report-wrap {
+  flex: 1 1 auto !important;
+}
+
+/* Keep generated cards from looking cramped when the panel grows. */
+.report-content,
+.report-body,
+.report-card-list,
+.generated-report,
+.generated-output {
+  flex: 1 1 auto !important;
+}
+
+/* Specific fallback for the visible blank QA output box in the current shell. */
+.workspace > section:last-child,
+.workspace > div:last-child {
+  min-height: 690px !important;
+}
+
+/* Keep desktop layout balanced. */
+@media (min-width: 981px) {
+  .workspace {
+    grid-template-columns: minmax(330px, 420px) minmax(0, 1fr) !important;
+  }
+
+  .input-panel,
+  .output-panel,
+  .report-panel,
+  .report-wrap,
+  .workspace > section:last-child,
+  .workspace > div:last-child {
+    min-height: 690px !important;
+  }
+}
+
+/* On smaller screens, do not force massive height. */
+@media (max-width: 980px) {
+  .input-panel,
+  .output-panel,
+  .report-panel,
+  .report-wrap,
+  .workspace > section:last-child,
+  .workspace > div:last-child {
+    min-height: 520px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .input-panel,
+  .output-panel,
+  .report-panel,
+  .report-wrap,
+  .workspace > section:last-child,
+  .workspace > div:last-child {
+    min-height: 420px !important;
+  }
+}

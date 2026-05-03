@@ -2655,7 +2655,7 @@ export default function Home() {
         <div className="hero-copy">
           <h1>Review tickets like a senior QA before anything breaks.</h1>
           <p>
-            Generate test cases, expose risks, improve bug reports, and turn vague tickets into
+            Generate test cases, expose risks, improve bug reports, and turn vague tickets into<br />
             actionable QA plans.
           </p>
         </div>
