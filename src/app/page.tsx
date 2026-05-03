@@ -262,7 +262,7 @@ function formatValueForClipboard(value: unknown, indent = ""): string {
 
 function extractMarkdownListSection(markdown: string, heading: string): string[] {
   const pattern = new RegExp(
-    `^##\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$([\\s\\S]*?)(?=^##\\s+|$)`,
+    `^##\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$([\\s\\S]*?)(?=^##\\s+|(?![\\s\\S]))`,
     "im"
   );
   const match = markdown.match(pattern);
@@ -282,7 +282,7 @@ function extractMarkdownListSection(markdown: string, heading: string): string[]
 
 function extractMarkdownSection(markdown: string, heading: string): string {
   const pattern = new RegExp(
-    `^#{2,3}\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$([\\s\\S]*?)(?=^#{2,3}\\s+|$)`,
+    `^#{2,3}\\s+${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$([\\s\\S]*?)(?=^#{2,3}\\s+|(?![\\s\\S]))`,
     "im"
   );
   const match = markdown.match(pattern);
@@ -335,7 +335,9 @@ function parseBugReportMarkdown(markdown: string, current: BugReport): BugReport
 }
 
 function parseTestCasesMarkdown(markdown: string, current: TestCase[]): TestCase[] {
-  const matches = [...markdown.matchAll(/^##\s+Test Case\s+\d+:\s+(.+)\s*$/gim)];
+  const matches = [...markdown.matchAll(/^##\s+(?:Test Case\s+\d+:\s*)?(.+)\s*$/gim)].filter(
+    (match) => !["Follow-up History"].includes(match[1]?.trim() ?? "")
+  );
 
   if (matches.length === 0) return current;
 
@@ -346,6 +348,8 @@ function parseTestCasesMarkdown(markdown: string, current: TestCase[]): TestCase
     const title = match[1]?.trim() || current[index]?.title || `Test Case ${index + 1}`;
     const type = parseTopLevelMarkdownValue(body, "Type") || current[index]?.type;
     const priority = parseTopLevelMarkdownValue(body, "Priority") || current[index]?.priority;
+    const preconditions = extractMarkdownSection(body, "Preconditions");
+    const expectedResult = extractMarkdownSection(body, "Expected Result");
     const steps = cleanMarkdownListText(extractMarkdownSection(body, "Steps"));
 
     return {
@@ -353,9 +357,9 @@ function parseTestCasesMarkdown(markdown: string, current: TestCase[]): TestCase
       title,
       type,
       priority,
-      preconditions: extractMarkdownSection(body, "Preconditions") || current[index]?.preconditions,
+      preconditions: preconditions || current[index]?.preconditions,
       steps: steps.length > 0 ? steps : current[index]?.steps,
-      expectedResult: extractMarkdownSection(body, "Expected Result") || current[index]?.expectedResult,
+      expectedResult: expectedResult || current[index]?.expectedResult,
     };
   });
 }
