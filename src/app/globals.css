@@ -5646,3 +5646,2851 @@ body {
     padding: 22px;
   }
 }
+
+
+/* QAS-13 UI tidy pass */
+
+/* Header Saved Reports button: match the rest of the QAtalyst action style */
+.saved-reports-nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 138px;
+  padding: 11px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(248, 113, 113, 0.42);
+  background: rgba(12, 12, 12, 0.72);
+  color: #ffffff;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 30px rgba(0, 0, 0, 0.24);
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.saved-reports-nav-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(248, 113, 113, 0.74);
+  background: rgba(127, 29, 29, 0.28);
+}
+
+/* Report toolbar layout: keep buttons inside the output panel */
+.report-action-stack {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.report-action-row,
+.report-actions {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.report-action-row > *,
+.report-actions > * {
+  flex: 0 0 auto;
+}
+
+/* Save Report lives below the main action row, aligned right */
+.save-report-row {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.save-report-button {
+  flex: 0 0 auto;
+  border-color: rgba(248, 113, 113, 0.48);
+}
+
+.save-report-status-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: min(100%, 360px);
+  min-height: 42px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.42);
+  background: rgba(20, 83, 45, 0.22);
+  color: #dcfce7;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.25;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
+}
+
+.save-report-status-card a {
+  color: #ffffff;
+  font-weight: 950;
+  text-decoration: underline;
+  text-decoration-color: rgba(134, 239, 172, 0.85);
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.save-report-status-card-error {
+  border-color: rgba(248, 113, 113, 0.58);
+  background: rgba(127, 29, 29, 0.26);
+  color: #fecaca;
+}
+
+/* Backward compatibility for the old inline message class if any instance remains */
+.save-report-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #dcfce7;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.save-report-message a {
+  color: #ffffff;
+  font-weight: 950;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.save-report-message-error {
+  color: #fecaca;
+}
+
+/* Saved Reports page button polish */
+.delete-report-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.delete-report-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 15px;
+  border-radius: 999px;
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  background: rgba(12, 12, 12, 0.78);
+  color: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.delete-report-button:hover:not(:disabled) {
+  border-color: rgba(248, 113, 113, 0.78);
+  background: rgba(127, 29, 29, 0.3);
+}
+
+.delete-report-button:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+/* Make saved report action buttons line up neatly */
+.saved-report-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.saved-report-actions .account-buy-link,
+.saved-report-actions .account-back-link,
+.saved-report-actions .secondary-action-button,
+.saved-report-actions .delete-report-button {
+  min-height: 42px;
+  border-radius: 999px;
+}
+
+/* Mobile/tablet safety */
+@media (max-width: 900px) {
+  .report-action-row,
+  .report-actions,
+  .save-report-row {
+    justify-content: flex-start;
+  }
+
+  .save-report-status-card {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .saved-reports-nav-link {
+    width: 100%;
+  }
+}
+
+
+/* QAS-13 UI tidy pass 2 */
+
+/* Saved Reports hero button: blue, same footprint as Buy Credits / Donate */
+.saved-reports-nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  width: 154px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.46);
+  background: linear-gradient(180deg, rgba(30, 64, 175, 0.82), rgba(30, 41, 59, 0.92));
+  color: #ffffff;
+  font-weight: 950;
+  text-align: center;
+  text-decoration: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 34px rgba(0, 0, 0, 0.28),
+    0 0 28px rgba(59, 130, 246, 0.13);
+  transition: transform 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
+}
+
+.saved-reports-nav-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(147, 197, 253, 0.78);
+  filter: brightness(1.08);
+}
+
+/* Main report action area:
+   - first row holds Copy / Export / CSV / Edit
+   - Save row stays below and right-aligned
+*/
+.report-action-stack {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.report-action-row,
+.report-actions {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.report-action-row > *,
+.report-actions > * {
+  flex: 0 0 auto;
+}
+
+/* Keep the standard four buttons compact enough to fit on one row on desktop */
+.report-action-row .copy-all-button,
+.report-action-row .secondary-action-button,
+.report-actions .copy-all-button,
+.report-actions .secondary-action-button {
+  min-height: 48px;
+  white-space: nowrap;
+}
+
+/* The Edit button belongs with the other export/copy buttons, not the save row */
+.report-action-row .edit-report-button,
+.report-actions .edit-report-button {
+  order: 40;
+}
+
+/* Save area stays below, right side */
+.save-report-row {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.save-report-button {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding-inline: 16px;
+  border-radius: 12px;
+  border-color: rgba(248, 113, 113, 0.48);
+}
+
+/* Hide the awkward standalone "Saved" button state after success.
+   The green confirmation card already communicates the saved state. */
+.save-report-button:disabled {
+  opacity: 0.68;
+}
+
+.save-report-row .save-report-button:disabled:not(:first-child) {
+  display: inline-flex;
+}
+
+.save-report-status-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  max-width: min(100%, 370px);
+  min-height: 42px;
+  padding: 10px 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.52);
+  background: linear-gradient(180deg, rgba(20, 83, 45, 0.42), rgba(6, 78, 59, 0.24));
+  color: #dcfce7;
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1.25;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 34px rgba(0, 0, 0, 0.24);
+}
+
+.save-report-status-card a {
+  color: #ffffff;
+  font-weight: 950;
+  text-decoration: underline;
+  text-decoration-color: rgba(134, 239, 172, 0.9);
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.save-report-status-card-error {
+  border-color: rgba(248, 113, 113, 0.62);
+  background: rgba(127, 29, 29, 0.28);
+  color: #fecaca;
+}
+
+/* If old inline message class remains, make it less ugly */
+.save-report-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.48);
+  background: rgba(20, 83, 45, 0.24);
+  color: #dcfce7;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.save-report-message a {
+  color: #ffffff;
+  font-weight: 950;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.save-report-message-error {
+  border-color: rgba(248, 113, 113, 0.62);
+  background: rgba(127, 29, 29, 0.28);
+  color: #fecaca;
+}
+
+@media (max-width: 1100px) {
+  .report-action-row,
+  .report-actions,
+  .save-report-row {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .saved-reports-nav-link {
+    width: 100%;
+  }
+
+  .report-action-row .copy-all-button,
+  .report-action-row .secondary-action-button,
+  .report-actions .copy-all-button,
+  .report-actions .secondary-action-button,
+  .save-report-button,
+  .save-report-status-card {
+    width: 100%;
+  }
+
+  .save-report-status-card {
+    justify-content: space-between;
+  }
+}
+
+
+/* QAS-13 UI tidy pass 3 */
+
+/* Slightly smaller Saved Reports button to match Buy Credits / Donate */
+.saved-reports-nav-link {
+  width: 144px;
+  min-width: 144px;
+  min-height: 43px;
+  padding: 10px 16px;
+  border-radius: 11px;
+  font-size: 0.92rem;
+  line-height: 1.1;
+}
+
+/* Force the report toolbar into two real columns:
+   left = Copy / Export / CSV / Edit
+   right/below = Save Report or saved status
+*/
+.report-action-stack {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.report-action-row,
+.report-actions {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(4, max-content);
+  justify-content: end;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Keep Edit Report in the top row as button #4 */
+.report-action-row .edit-report-button,
+.report-actions .edit-report-button,
+.report-action-row button:has(+ .save-report-button),
+.report-actions button:has(+ .save-report-button) {
+  grid-column: auto;
+}
+
+/* Save Report row is separate and right-aligned */
+.save-report-row {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.save-report-button {
+  min-height: 42px;
+  padding: 10px 16px;
+  border-radius: 12px;
+}
+
+/* If Save Report accidentally remains inside the top row, push it to its own row. */
+.report-action-row > .save-report-button,
+.report-actions > .save-report-button {
+  grid-column: 4;
+  justify-self: end;
+}
+
+/* Tablet safety: allow wrapping when the panel truly gets narrow */
+@media (max-width: 1180px) {
+  .report-action-row,
+  .report-actions {
+    grid-template-columns: repeat(3, max-content);
+  }
+}
+
+@media (max-width: 900px) {
+  .saved-reports-nav-link {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .report-action-row,
+  .report-actions {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .report-action-row > *,
+  .report-actions > *,
+  .save-report-row > * {
+    width: 100%;
+  }
+
+  .save-report-row {
+    justify-content: stretch;
+  }
+}
+
+
+/* QAS-16 Coverage scoring */
+
+.coverage-score-card {
+  margin: 24px 0;
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.16), transparent 38%),
+    rgba(10, 10, 10, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 42px rgba(0, 0, 0, 0.28);
+}
+
+.coverage-score-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.coverage-score-top h3 {
+  margin: 4px 0 8px;
+  color: #ffffff;
+  font-size: clamp(1.35rem, 2vw, 2rem);
+  line-height: 1;
+}
+
+.coverage-score-top p {
+  max-width: 680px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.76);
+  line-height: 1.55;
+}
+
+.coverage-score-number {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  min-width: 126px;
+  padding: 16px 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 15, 15, 0.92);
+}
+
+.coverage-score-number strong {
+  color: #ffffff;
+  font-size: clamp(2.1rem, 4vw, 3.4rem);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+}
+
+.coverage-score-number span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.coverage-score-number-strong {
+  border-color: rgba(34, 197, 94, 0.56);
+  box-shadow: 0 0 34px rgba(34, 197, 94, 0.14);
+}
+
+.coverage-score-number-good {
+  border-color: rgba(59, 130, 246, 0.54);
+  box-shadow: 0 0 34px rgba(59, 130, 246, 0.14);
+}
+
+.coverage-score-number-warn {
+  border-color: rgba(245, 158, 11, 0.56);
+  box-shadow: 0 0 34px rgba(245, 158, 11, 0.12);
+}
+
+.coverage-score-number-weak {
+  border-color: rgba(248, 113, 113, 0.62);
+  box-shadow: 0 0 34px rgba(248, 113, 113, 0.12);
+}
+
+.coverage-score-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.coverage-score-section {
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.coverage-score-section h4 {
+  margin: 0 0 12px;
+  color: #fecaca;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.coverage-score-section ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.coverage-score-section li {
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.45;
+}
+
+.coverage-dimension-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.coverage-dimension-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.coverage-dimension-row strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #ffffff;
+}
+
+.coverage-dimension-row span {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.coverage-dimension-score {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  gap: 10px;
+  align-items: center;
+}
+
+.coverage-dimension-score small {
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 900;
+  text-align: right;
+}
+
+.coverage-dimension-meter {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.coverage-dimension-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(220, 38, 38, 0.9), rgba(248, 113, 113, 0.9));
+}
+
+@media (max-width: 900px) {
+  .coverage-score-top {
+    flex-direction: column;
+  }
+
+  .coverage-score-number {
+    width: 100%;
+  }
+
+  .coverage-score-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .coverage-dimension-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* QAS-16.1 coverage/risk + button polish */
+
+/* Keep Save Report visually consistent with action buttons */
+.save-report-button,
+.report-action-save-button {
+  min-height: 48px;
+  min-width: 132px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+/* Optional row for Bug Writer secondary actions: Create Jira + Save Report */
+.bug-secondary-action-row {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.bug-secondary-action-row .save-report-row {
+  width: auto;
+  margin: 0;
+}
+
+.bug-secondary-action-row .save-report-status-card {
+  min-height: 48px;
+}
+
+/* Score number stack now includes coverage and risk */
+.score-number-stack {
+  display: grid;
+  gap: 12px;
+  min-width: 132px;
+}
+
+.risk-score-number {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 132px;
+  padding: 14px 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 15, 15, 0.92);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.risk-score-number strong {
+  color: #ffffff;
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.risk-score-number span {
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.risk-score-number-low {
+  border-color: rgba(34, 197, 94, 0.52);
+  box-shadow: 0 0 30px rgba(34, 197, 94, 0.12);
+}
+
+.risk-score-number-medium {
+  border-color: rgba(245, 158, 11, 0.58);
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.12);
+}
+
+.risk-score-number-high {
+  border-color: rgba(248, 113, 113, 0.66);
+  box-shadow: 0 0 30px rgba(248, 113, 113, 0.14);
+}
+
+.risk-breakdown-card {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.risk-breakdown-heading {
+  margin-bottom: 14px;
+}
+
+.risk-breakdown-heading h4 {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.risk-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.risk-breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 88px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.risk-breakdown-item strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #ffffff;
+}
+
+.risk-breakdown-item span {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.risk-breakdown-item em {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  font-style: normal;
+  font-weight: 950;
+  color: #ffffff;
+}
+
+.risk-breakdown-item-low {
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+.risk-breakdown-item-medium {
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+.risk-breakdown-item-high {
+  border-color: rgba(248, 113, 113, 0.34);
+}
+
+@media (max-width: 900px) {
+  .score-number-stack {
+    width: 100%;
+  }
+
+  .risk-score-number {
+    width: 100%;
+  }
+
+  .risk-breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bug-secondary-action-row,
+  .bug-secondary-action-row .save-report-row {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .bug-secondary-action-row > *,
+  .bug-secondary-action-row .save-report-row > * {
+    width: 100%;
+  }
+}
+/* QAS-16.2 risk donut + Save Report sizing */
+
+/* Hard override: Save Report must match the other report action buttons */
+button.save-report-button,
+.save-report-button,
+.report-action-save-button,
+.save-report-row > button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 132px !important;
+  min-height: 48px !important;
+  height: 48px !important;
+  padding: 12px 18px !important;
+  border-radius: 12px !important;
+  font-size: 0.95rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+/* Keep second row actions aligned neatly */
+.save-report-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Risk donut card replaces the rough risk list */
+.risk-donut-card {
+  margin-top: 18px;
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(248, 113, 113, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.18), transparent 38%),
+    rgba(0, 0, 0, 0.26);
+}
+
+.risk-donut-copy h4 {
+  margin: 6px 0 8px;
+  color: #ffffff;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.risk-donut-copy p {
+  margin: 0;
+  max-width: 760px;
+  color: rgba(255, 255, 255, 0.66);
+  line-height: 1.5;
+}
+
+.risk-donut-layout {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 22px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.risk-donut-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.risk-donut {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 18px 44px rgba(0, 0, 0, 0.28);
+}
+
+.risk-donut::before {
+  content: "";
+  position: absolute;
+  inset: 27px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.05), transparent 45%),
+    #080808;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.risk-donut > div {
+  position: absolute;
+  inset: 36px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.risk-donut strong {
+  color: #ffffff;
+  font-size: 2rem;
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+
+.risk-donut span {
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.7rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.risk-donut-legend {
+  display: grid;
+  gap: 10px;
+}
+
+.risk-donut-legend-item {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.risk-donut-legend-item > span {
+  width: 12px;
+  height: 12px;
+  margin-top: 4px;
+  border-radius: 999px;
+}
+
+.risk-donut-legend-item strong {
+  display: block;
+  color: #ffffff;
+  font-size: 0.92rem;
+}
+
+.risk-donut-legend-item small {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.35;
+}
+
+.risk-donut-legend-item-1 > span {
+  background: rgba(248, 113, 113, 0.95);
+}
+
+.risk-donut-legend-item-2 > span {
+  background: rgba(245, 158, 11, 0.95);
+}
+
+.risk-donut-legend-item-3 > span {
+  background: rgba(59, 130, 246, 0.95);
+}
+
+.risk-donut-legend-item-4 > span {
+  background: rgba(168, 85, 247, 0.95);
+}
+
+.risk-donut-legend-item-5 > span {
+  background: rgba(34, 197, 94, 0.95);
+}
+
+/* Hide old risk breakdown UI if the previous component/CSS left it around */
+.risk-breakdown-card {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .risk-donut-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .risk-donut-wrap {
+    justify-content: flex-start;
+  }
+
+  button.save-report-button,
+  .save-report-button,
+  .report-action-save-button,
+  .save-report-row > button {
+    width: 100% !important;
+  }
+}
+/* QAS-16.3 risk detail interactions */
+
+/* Bug Writer no longer renders risk score/breakdown via component logic. */
+
+/* Make clickable risk legend items look like premium controls, not default buttons. */
+.risk-donut-legend-item {
+  width: 100%;
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.risk-donut-legend-item:hover,
+.risk-donut-legend-item:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(248, 113, 113, 0.36);
+  background: rgba(255, 255, 255, 0.055);
+  outline: none;
+}
+
+.risk-donut-legend-item-active {
+  border-color: rgba(248, 113, 113, 0.52);
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.14), transparent 42%),
+    rgba(255, 255, 255, 0.065);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.risk-detail-card {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  background:
+    radial-gradient(circle at top left, rgba(248, 113, 113, 0.1), transparent 38%),
+    rgba(0, 0, 0, 0.3);
+}
+
+.risk-detail-card-heading {
+  margin-bottom: 14px;
+}
+
+.risk-detail-card-heading h4 {
+  margin: 5px 0 0;
+  color: #ffffff;
+  font-size: 1.08rem;
+}
+
+.risk-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.risk-detail-grid > div {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.risk-detail-grid strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #fecaca;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.risk-detail-grid p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.45;
+  font-size: 0.92rem;
+}
+
+/* Keep the coverage score number aligned nicely when risk is hidden for Bug Writer. */
+.score-number-stack {
+  align-content: start;
+}
+
+/* Stronger save button override in case old CSS is still winning somewhere. */
+button.secondary-action-button.save-report-button,
+.secondary-action-button.save-report-button,
+.save-report-row button.secondary-action-button {
+  min-width: 132px !important;
+  min-height: 48px !important;
+  height: 48px !important;
+  padding: 12px 18px !important;
+  border-radius: 12px !important;
+  font-size: 0.95rem !important;
+  font-weight: 900 !important;
+}
+
+@media (max-width: 980px) {
+  .risk-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* QAS-16.4 risk detail refinement */
+
+.risk-donut-legend-item-zero {
+  opacity: 0.76;
+}
+
+.risk-donut-legend-item-zero small {
+  color: rgba(187, 247, 208, 0.76);
+}
+
+.risk-donut-legend-item-zero.risk-donut-legend-item-active {
+  border-color: rgba(34, 197, 94, 0.42);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.11), transparent 42%),
+    rgba(255, 255, 255, 0.045);
+}
+
+.risk-detail-card-zero {
+  border-color: rgba(34, 197, 94, 0.32);
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.09), transparent 38%),
+    rgba(0, 0, 0, 0.3);
+}
+
+.risk-detail-card-zero .risk-detail-grid strong {
+  color: #bbf7d0;
+}
+
+/* Small polish so Selected Risk reads better */
+.risk-detail-card-heading h4 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.risk-detail-grid p {
+  font-size: 0.94rem;
+}
+
+
+/* QAS-17 Jira manual import */
+
+.jira-import-panel {
+  margin-bottom: 18px;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 38%),
+    rgba(10, 10, 10, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 16px 38px rgba(0, 0, 0, 0.24);
+}
+
+.jira-import-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.jira-import-header h3 {
+  margin: 4px 0 6px;
+  color: #ffffff;
+  font-size: 1.2rem;
+}
+
+.jira-import-header p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.45;
+}
+
+.jira-import-toggle {
+  flex: 0 0 auto;
+  border-color: rgba(96, 165, 250, 0.42);
+}
+
+.jira-import-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.jira-import-textarea {
+  width: 100%;
+  min-height: 180px;
+  resize: vertical;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background: rgba(0, 0, 0, 0.72);
+  color: #ffffff;
+  font: inherit;
+  line-height: 1.45;
+  outline: none;
+}
+
+.jira-import-textarea:focus {
+  border-color: rgba(96, 165, 250, 0.64);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.jira-import-preview {
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.jira-import-preview-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.jira-import-preview-top strong {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  line-height: 1.35;
+}
+
+.jira-confidence-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 0.74rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.jira-confidence-high {
+  border-color: rgba(34, 197, 94, 0.44);
+  background: rgba(20, 83, 45, 0.28);
+}
+
+.jira-confidence-medium {
+  border-color: rgba(245, 158, 11, 0.46);
+  background: rgba(120, 53, 15, 0.26);
+}
+
+.jira-confidence-low,
+.jira-confidence-idle {
+  border-color: rgba(248, 113, 113, 0.38);
+  background: rgba(127, 29, 29, 0.2);
+}
+
+.jira-import-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.jira-import-fields div {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.jira-import-fields dt {
+  margin-bottom: 4px;
+  color: #fecaca;
+  font-size: 0.7rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.jira-import-fields dd {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.jira-import-warning {
+  margin-top: 12px;
+  padding: 11px 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(245, 158, 11, 0.36);
+  background: rgba(120, 53, 15, 0.18);
+  color: #fde68a;
+  line-height: 1.4;
+}
+
+.jira-normalized-preview {
+  margin-top: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.jira-normalized-preview summary {
+  cursor: pointer;
+  padding: 12px 14px;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.jira-normalized-preview pre {
+  max-height: 260px;
+  overflow: auto;
+  margin: 0;
+  padding: 0 14px 14px;
+  color: rgba(255, 255, 255, 0.82);
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.jira-import-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.jira-import-success {
+  margin: 12px 0 0;
+  color: #bbf7d0;
+  font-weight: 800;
+}
+
+@media (max-width: 800px) {
+  .jira-import-header,
+  .jira-import-preview-top {
+    flex-direction: column;
+  }
+
+  .jira-import-toggle,
+  .jira-import-actions > button {
+    width: 100%;
+  }
+
+  .jira-import-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* QAS-39 Jira config foundation */
+
+.jira-settings-card {
+  max-width: 980px;
+  margin: 28px auto;
+  padding: 26px;
+  border-radius: 28px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 38%),
+    rgba(10, 10, 10, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 44px rgba(0, 0, 0, 0.28);
+}
+
+.jira-settings-status-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.jira-settings-status-row h2 {
+  margin: 6px 0 8px;
+  color: #ffffff;
+  font-size: clamp(1.6rem, 3vw, 2.5rem);
+  letter-spacing: -0.05em;
+}
+
+.jira-settings-status-row p {
+  max-width: 680px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+}
+
+.jira-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 132px;
+  min-height: 42px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.jira-status-ready {
+  border: 1px solid rgba(34, 197, 94, 0.42);
+  background: rgba(20, 83, 45, 0.26);
+  color: #bbf7d0;
+}
+
+.jira-status-missing {
+  border: 1px solid rgba(245, 158, 11, 0.42);
+  background: rgba(120, 53, 15, 0.22);
+  color: #fde68a;
+}
+
+.jira-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.jira-settings-grid label {
+  display: grid;
+  gap: 8px;
+}
+
+.jira-settings-grid span {
+  color: #fecaca;
+  font-size: 0.76rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.jira-settings-grid input {
+  width: 100%;
+  min-height: 50px;
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background: rgba(0, 0, 0, 0.62);
+  color: #ffffff;
+  font: inherit;
+  outline: none;
+}
+
+.jira-settings-grid input:focus {
+  border-color: rgba(96, 165, 250, 0.62);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.jira-settings-note {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background: rgba(30, 64, 175, 0.14);
+  color: rgba(255, 255, 255, 0.74);
+  line-height: 1.5;
+}
+
+.jira-settings-note strong {
+  color: #bfdbfe;
+}
+
+.jira-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.jira-settings-message {
+  margin: 14px 0 0;
+  color: #bbf7d0;
+  font-weight: 900;
+}
+
+.jira-settings-message-error {
+  color: #fecaca;
+}
+
+/* QAS-17 carry-forward: active Jira source clear button */
+.active-jira-source-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+  padding: 11px 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.24);
+  background: rgba(20, 83, 45, 0.12);
+}
+
+.active-jira-source-row strong {
+  color: #bbf7d0;
+  overflow-wrap: anywhere;
+}
+
+.clear-jira-source-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(248, 113, 113, 0.38);
+  background: rgba(127, 29, 29, 0.18);
+  color: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.clear-jira-source-button:hover {
+  border-color: rgba(248, 113, 113, 0.68);
+  background: rgba(127, 29, 29, 0.32);
+}
+
+@media (max-width: 800px) {
+  .jira-settings-status-row {
+    flex-direction: column;
+  }
+
+  .jira-settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jira-settings-actions > button,
+  .jira-status-pill {
+    width: 100%;
+  }
+}
+/* QAS-39.1 Jira settings polish */
+
+.jira-settings-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.jira-settings-card-polished {
+  overflow: hidden;
+}
+
+.jira-settings-status-row-polished {
+  align-items: stretch;
+}
+
+.jira-settings-heading-copy {
+  align-self: center;
+}
+
+.jira-settings-brand-panel {
+  flex: 0 0 220px;
+  display: grid;
+  align-content: center;
+  justify-items: end;
+  gap: 16px;
+  min-height: 150px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  background:
+    radial-gradient(circle at 40% 20%, rgba(248, 113, 113, 0.16), transparent 30%),
+    radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.18), transparent 34%),
+    rgba(0, 0, 0, 0.28);
+}
+
+.qatalyst-mini-logo {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.qatalyst-mini-logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 82px;
+  height: 64px;
+  border-radius: 22px;
+  border: 1px solid rgba(248, 113, 113, 0.34);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 38%),
+    rgba(0, 0, 0, 0.52);
+  color: #ffffff;
+  font-size: 2.2rem;
+  font-weight: 950;
+  letter-spacing: -0.14em;
+  text-shadow: 14px 0 0 rgba(239, 68, 68, 0.95);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 18px 42px rgba(0, 0, 0, 0.28);
+}
+
+.qatalyst-mini-logo strong {
+  color: #ffffff;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+}
+
+.qatalyst-mini-logo strong::first-letter {
+  color: #ef4444;
+}
+
+.jira-insight-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(96, 165, 250, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 36%),
+    rgba(15, 23, 42, 0.34);
+}
+
+.jira-insight-panel h3 {
+  margin: 6px 0 6px;
+  color: #ffffff;
+  font-size: 1.14rem;
+}
+
+.jira-insight-panel p {
+  max-width: 660px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.48;
+}
+
+.jira-insight-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.jira-link-button {
+  min-height: 46px;
+  white-space: nowrap;
+  text-decoration: none;
+  border-color: rgba(96, 165, 250, 0.34);
+}
+
+.jira-link-button-disabled {
+  pointer-events: none;
+  opacity: 0.46;
+}
+
+.jira-settings-actions-polished {
+  align-items: center;
+}
+
+.jira-primary-action,
+.jira-danger-action,
+.jira-settings-actions-polished > button {
+  min-height: 48px;
+  min-width: 154px;
+  border-radius: 13px;
+}
+
+.jira-danger-action {
+  border-color: rgba(248, 113, 113, 0.38);
+}
+
+@media (max-width: 980px) {
+  .jira-settings-hero,
+  .jira-settings-status-row-polished,
+  .jira-insight-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .jira-settings-brand-panel {
+    flex: none;
+    justify-items: start;
+  }
+
+  .qatalyst-mini-logo {
+    justify-items: start;
+  }
+
+  .jira-insight-actions,
+  .jira-insight-actions > a,
+  .jira-settings-actions-polished > button {
+    width: 100%;
+  }
+}
+/* QAS-39.2 Settings + Jira link polish */
+
+.jira-settings-card-v2 {
+  max-width: 1020px;
+}
+
+.jira-settings-status-row-v2 {
+  align-items: center;
+}
+
+.jira-settings-status-row-v2 .jira-status-pill {
+  flex: 0 0 auto;
+}
+
+.jira-settings-status-row-v2 .jira-settings-heading-copy {
+  max-width: 720px;
+}
+
+.jira-insight-panel-v2 {
+  align-items: center;
+}
+
+.jira-insight-actions-v2 {
+  gap: 12px;
+}
+
+.jira-open-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  min-width: 142px;
+  padding: 12px 18px;
+  border-radius: 13px;
+  border: 1px solid rgba(34, 197, 94, 0.42);
+  background: linear-gradient(180deg, rgba(20, 83, 45, 0.72), rgba(6, 78, 59, 0.52));
+  color: #ffffff;
+  font-weight: 950;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 30px rgba(0, 0, 0, 0.24);
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.jira-open-link-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(74, 222, 128, 0.72);
+  filter: brightness(1.08);
+}
+
+.jira-open-link-button-blue {
+  border-color: rgba(96, 165, 250, 0.42);
+  background: linear-gradient(180deg, rgba(30, 64, 175, 0.78), rgba(30, 41, 59, 0.88));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 30px rgba(0, 0, 0, 0.24),
+    0 0 26px rgba(59, 130, 246, 0.1);
+}
+
+.jira-open-link-button-blue:hover {
+  border-color: rgba(147, 197, 253, 0.72);
+}
+
+.jira-link-button-disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.jira-primary-action,
+.jira-danger-action,
+.jira-settings-actions-polished > button {
+  min-height: 48px;
+  min-width: 154px;
+  border-radius: 13px;
+}
+
+/* Remove old logo panel if stale CSS/JSX is still hanging around */
+.jira-settings-brand-panel {
+  display: none !important;
+}
+
+@media (max-width: 980px) {
+  .jira-settings-status-row-v2,
+  .jira-insight-panel-v2 {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .jira-open-link-button,
+  .jira-settings-actions-polished > button {
+    width: 100%;
+  }
+}
+
+
+/* QAS-54 Settings, Jira source, nav cleanup */
+
+.settings-hero-v2 {
+  align-items: flex-end;
+}
+
+.settings-hero-v2 h1 {
+  margin-bottom: 8px;
+}
+
+.settings-hero-v2 p {
+  margin-top: 0;
+}
+
+.settings-layout-grid {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 22px;
+  max-width: 1180px;
+  margin: 28px auto 0;
+}
+
+.settings-sidebar-card,
+.settings-module-card {
+  border-radius: 24px;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  background: rgba(10, 10, 10, 0.68);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 42px rgba(0, 0, 0, 0.24);
+}
+
+.settings-sidebar-card {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+}
+
+.settings-sidebar-card a {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  padding: 9px 12px;
+  border-radius: 12px;
+  color: #ffffff;
+  font-weight: 900;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.settings-sidebar-card a:hover {
+  border-color: rgba(248, 113, 113, 0.42);
+  background: rgba(127, 29, 29, 0.2);
+}
+
+.settings-main-stack {
+  display: grid;
+  gap: 20px;
+}
+
+.settings-module-card {
+  padding: 22px;
+}
+
+.settings-module-card h2 {
+  margin: 6px 0 8px;
+  color: #ffffff;
+  font-size: 1.55rem;
+}
+
+.settings-module-card p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+}
+
+.settings-coming-soon-card {
+  border-color: rgba(96, 165, 250, 0.24);
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.11), transparent 34%), rgba(10, 10, 10, 0.62);
+}
+
+.admin-debug-card {
+  border-color: rgba(245, 158, 11, 0.32);
+  background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.1), transparent 34%), rgba(10, 10, 10, 0.64);
+}
+
+.admin-debug-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.admin-debug-grid code {
+  display: block;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fde68a;
+  overflow-wrap: anywhere;
+}
+
+.linked-jira-ticket-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 38%), rgba(15, 23, 42, 0.32);
+}
+
+.linked-jira-ticket-card strong {
+  display: block;
+  margin: 4px 0;
+  color: #ffffff;
+  font-size: 1.16rem;
+}
+
+.linked-jira-ticket-card span {
+  display: block;
+  color: rgba(255, 255, 255, 0.66);
+  line-height: 1.4;
+}
+
+.linked-jira-ticket-card a {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.42);
+  background: rgba(30, 64, 175, 0.42);
+  color: #ffffff;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.jira-import-actions-single {
+  justify-content: flex-end;
+}
+
+.jira-import-actions-single .copy-all-button {
+  min-width: 160px;
+}
+
+.app-header-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.app-header-menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  min-width: 116px;
+  padding: 12px 18px;
+  border-radius: 13px;
+  border: 1px solid rgba(96, 165, 250, 0.42);
+  background: linear-gradient(180deg, rgba(30, 64, 175, 0.78), rgba(30, 41, 59, 0.88));
+  color: #ffffff;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.app-header-menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  z-index: 50;
+  display: grid;
+  min-width: 210px;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(248, 113, 113, 0.24);
+  background: rgba(10, 10, 10, 0.96);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.36);
+}
+
+.app-header-menu-panel a,
+.app-header-menu-panel button {
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 900;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.app-header-menu-panel a:hover,
+.app-header-menu-panel button:hover {
+  background: rgba(127, 29, 29, 0.28);
+}
+
+/* Make old vertical Jira Settings button read consistently if still used */
+.saved-reports-nav-link[href="/jira/settings"] {
+  font-size: 0;
+}
+
+.saved-reports-nav-link[href="/jira/settings"]::after {
+  content: "Settings";
+  font-size: 0.92rem;
+}
+
+@media (max-width: 980px) {
+  .settings-layout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-sidebar-card {
+    position: static;
+  }
+
+  .linked-jira-ticket-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .linked-jira-ticket-card a {
+    width: 100%;
+  }
+}
+/* QAS-54.1 Settings spacing polish */
+
+.settings-hero-v2 {
+  padding-bottom: 28px;
+}
+
+.settings-hero-v2 h1 {
+  margin-bottom: 12px;
+}
+
+.settings-hero-v2 p {
+  margin-bottom: 0;
+  max-width: 760px;
+}
+
+.settings-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.settings-hero-actions .account-buy-link,
+.settings-hero-actions .account-back-link {
+  margin: 0;
+}
+
+.settings-layout-grid-compact {
+  margin-top: 24px;
+}
+
+.settings-sidebar-card {
+  gap: 12px;
+}
+
+@media (max-width: 760px) {
+  .settings-hero-actions {
+    width: 100%;
+  }
+
+  .settings-hero-actions a {
+    width: 100%;
+  }
+}
+/* QAS-54.2 Settings mockup alignment */
+
+/* Hero layout closer to the provided mockup */
+.settings-hero-mockup {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  padding-top: 26px;
+  padding-bottom: 26px;
+}
+
+.settings-hero-copy {
+  min-width: 0;
+}
+
+.settings-hero-copy h1 {
+  margin: 0 0 14px;
+  color: #ffffff;
+  font-size: clamp(3rem, 6vw, 4.9rem);
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+}
+
+.settings-hero-copy p {
+  max-width: 760px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 1.02rem;
+  line-height: 1.45;
+}
+
+.settings-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+
+.settings-hero-actions .account-buy-link,
+.settings-hero-actions .account-back-link {
+  margin: 0;
+}
+
+/* Top-right logo area */
+.settings-hero-logo {
+  flex: 0 0 auto;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  min-width: 230px;
+  min-height: 130px;
+  margin-top: 2px;
+  border-radius: 28px;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  background:
+    radial-gradient(circle at center, rgba(248, 113, 113, 0.13), transparent 54%),
+    rgba(0, 0, 0, 0.12);
+}
+
+.settings-logo-mark {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 4rem;
+  font-weight: 950;
+  line-height: 0.82;
+  letter-spacing: -0.16em;
+  text-shadow:
+    -26px 8px 0 rgba(239, 68, 68, 0.22),
+    -39px 8px 0 rgba(239, 68, 68, 0.16);
+}
+
+.settings-logo-mark span {
+  color: #ef4444;
+  font-size: 2.2rem;
+  letter-spacing: -0.08em;
+}
+
+.settings-hero-logo strong {
+  margin-top: 8px;
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 950;
+  letter-spacing: 0.01em;
+}
+
+.settings-hero-logo strong::first-letter {
+  color: #ef4444;
+}
+
+/* Layout: sidebar + Jira panel, no empty Product Defaults card */
+.settings-layout-grid-mockup {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 26px;
+  max-width: 1180px;
+  margin: 18px auto 0;
+}
+
+.settings-layout-grid-mockup .settings-sidebar-card {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+
+/* Make Jira card sit higher and line up like the mockup */
+.settings-layout-grid-mockup .jira-settings-card {
+  margin-top: 0;
+}
+
+/* Slight sidebar tightening */
+.settings-sidebar-card {
+  gap: 12px;
+}
+
+.settings-sidebar-card a {
+  min-height: 48px;
+}
+
+/* Keep old Main Settings hidden if stale markup/CSS remains during hot reload */
+.settings-sidebar-card a[href="#main-settings"],
+#main-settings {
+  display: none !important;
+}
+
+@media (max-width: 980px) {
+  .settings-hero-mockup {
+    flex-direction: column;
+  }
+
+  .settings-hero-logo {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .settings-layout-grid-mockup {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-layout-grid-mockup .settings-sidebar-card {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .settings-hero-actions,
+  .settings-hero-actions a {
+    width: 100%;
+  }
+
+  .settings-hero-copy h1 {
+    font-size: 3.1rem;
+  }
+}
+/* QAS-54.3 Settings wide panel + real logo */
+
+/* Real logo hero */
+.settings-hero-real-logo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  padding-top: 28px;
+  padding-bottom: 30px;
+}
+
+.settings-hero-copy {
+  min-width: 0;
+}
+
+.settings-hero-copy h1 {
+  margin: 0 0 14px;
+  color: #ffffff;
+  font-size: clamp(3.15rem, 6vw, 5rem);
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+}
+
+.settings-hero-copy p {
+  max-width: 780px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 1.02rem;
+  line-height: 1.45;
+}
+
+.settings-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+
+.settings-hero-actions .account-buy-link,
+.settings-hero-actions .account-back-link {
+  margin: 0;
+}
+
+.settings-real-logo-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(300px, 26vw);
+  min-width: 220px;
+  min-height: 150px;
+  padding: 8px;
+}
+
+.settings-real-logo {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 22px 44px rgba(0, 0, 0, 0.36));
+}
+
+/* One wide settings panel */
+.settings-wide-panel {
+  max-width: 1180px;
+  margin: 10px auto 0;
+  padding: 26px;
+  border-radius: 30px;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 34%),
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.16), transparent 30%),
+    rgba(10, 10, 10, 0.68);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 24px 54px rgba(0, 0, 0, 0.28);
+}
+
+.settings-area-strip {
+  margin-bottom: 24px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-area-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.settings-area-tabs a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  background: rgba(255, 255, 255, 0.045);
+  color: #ffffff;
+  font-weight: 950;
+  text-decoration: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.settings-area-tabs a:hover {
+  border-color: rgba(248, 113, 113, 0.48);
+  background: rgba(127, 29, 29, 0.22);
+}
+
+.settings-wide-section {
+  scroll-margin-top: 24px;
+}
+
+.settings-wide-section + .settings-wide-section {
+  margin-top: 24px;
+}
+
+/* Flatten JiraSettingsForm so the page reads as one wide panel, not nested panels */
+.settings-wide-panel .jira-settings-card {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.settings-wide-panel .jira-settings-status-row,
+.settings-wide-panel .jira-settings-status-row-v2 {
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-wide-panel .jira-settings-grid {
+  margin-top: 22px;
+}
+
+.settings-wide-panel .jira-insight-panel,
+.settings-wide-panel .jira-insight-panel-v2 {
+  margin-top: 22px;
+}
+
+.settings-wide-panel .jira-settings-actions {
+  margin-top: 22px;
+}
+
+.settings-wide-panel .settings-module-card {
+  max-width: none;
+}
+
+/* Hide stale old two-column settings layout if hot reload keeps old CSS around */
+.settings-layout-grid,
+.settings-layout-grid-mockup,
+.settings-layout-grid-compact {
+  display: block;
+}
+
+.settings-sidebar-card {
+  display: none;
+}
+
+.settings-hero-logo {
+  display: none !important;
+}
+
+@media (max-width: 980px) {
+  .settings-hero-real-logo {
+    flex-direction: column;
+  }
+
+  .settings-real-logo-wrap {
+    width: 260px;
+    min-width: 0;
+    justify-content: flex-start;
+  }
+
+  .settings-wide-panel {
+    padding: 20px;
+  }
+
+  .settings-area-tabs a {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .settings-hero-actions,
+  .settings-hero-actions a {
+    width: 100%;
+  }
+
+  .settings-hero-copy h1 {
+    font-size: 3.15rem;
+  }
+}
+/* QAS-54.4 Transparent logo hotfix */
+
+/* Make sure the logo never renders inside a black/card box */
+.settings-real-logo-wrap {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0;
+}
+
+.settings-real-logo {
+  background: transparent !important;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 22px 44px rgba(0, 0, 0, 0.22));
+}
+
+/* Keep the one-wide-panel settings layout from QAS-54.3 */
+.settings-wide-panel {
+  max-width: 1180px;
+  margin: 10px auto 0;
+  padding: 26px;
+  border-radius: 30px;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 34%),
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.16), transparent 30%),
+    rgba(10, 10, 10, 0.68);
+}
+
+.settings-area-strip {
+  margin-bottom: 24px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-area-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.settings-area-tabs a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  background: rgba(255, 255, 255, 0.045);
+  color: #ffffff;
+  font-weight: 950;
+  text-decoration: none;
+}
+
+.settings-wide-panel .jira-settings-card {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+/* QAS-54.5 Settings logo scale polish */
+
+/* Slightly scale down the real Settings logo so it feels branded, not dominant. */
+.settings-real-logo-wrap {
+  width: min(235px, 21vw) !important;
+  min-width: 185px !important;
+  min-height: 118px !important;
+  padding: 0 !important;
+  align-self: flex-start;
+}
+
+.settings-real-logo {
+  max-width: 235px !important;
+  width: 100% !important;
+  height: auto !important;
+  object-fit: contain;
+}
+
+/* Keep mobile readable without making the logo huge. */
+@media (max-width: 980px) {
+  .settings-real-logo-wrap {
+    width: 210px !important;
+    min-width: 0 !important;
+    min-height: auto !important;
+  }
+
+  .settings-real-logo {
+    max-width: 210px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .settings-real-logo-wrap {
+    width: 180px !important;
+  }
+
+  .settings-real-logo {
+    max-width: 180px !important;
+  }
+}
+/* QAS-54.6 Settings logo position polish */
+
+/* Nudge the Settings logo left so it does not hug the right edge. */
+.settings-real-logo-wrap {
+  margin-right: clamp(34px, 5vw, 78px) !important;
+  transform: translateX(-18px);
+}
+
+/* Keep tablet/mobile from over-shifting the logo. */
+@media (max-width: 980px) {
+  .settings-real-logo-wrap {
+    margin-right: 0 !important;
+    transform: none;
+  }
+}
+/* QAS-54.7 Settings hero nudge */
+
+/* Move the Settings title/subtitle/buttons slightly right to better balance with the logo. */
+.settings-hero-copy {
+  padding-left: clamp(18px, 2.4vw, 42px) !important;
+}
+
+/* Keep mobile from feeling indented. */
+@media (max-width: 760px) {
+  .settings-hero-copy {
+    padding-left: 0 !important;
+  }
+}
+/* QAS-54.8 Settings logo scale match */
+
+/* Match the Settings hero logo closer to the main app hero logo size. */
+.settings-real-logo-wrap {
+  width: min(205px, 18vw) !important;
+  min-width: 165px !important;
+  min-height: 100px !important;
+  margin-right: clamp(42px, 6vw, 92px) !important;
+  transform: translateX(-18px);
+}
+
+.settings-real-logo {
+  max-width: 205px !important;
+  width: 100% !important;
+  height: auto !important;
+  object-fit: contain;
+}
+
+/* Keep tablet/mobile from over-shrinking or over-shifting. */
+@media (max-width: 980px) {
+  .settings-real-logo-wrap {
+    width: 190px !important;
+    min-width: 0 !important;
+    min-height: auto !important;
+    margin-right: 0 !important;
+    transform: none;
+  }
+
+  .settings-real-logo {
+    max-width: 190px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .settings-real-logo-wrap {
+    width: 165px !important;
+  }
+
+  .settings-real-logo {
+    max-width: 165px !important;
+  }
+}
+
+
+/* QAS-40 Create Jira Issue */
+
+.jira-create-issue-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.jira-create-issue-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  min-width: 158px;
+  padding: 12px 18px;
+  border-radius: 13px;
+  border: 1px solid rgba(96, 165, 250, 0.42);
+  background: linear-gradient(180deg, rgba(30, 64, 175, 0.82), rgba(30, 41, 59, 0.92));
+  color: #ffffff;
+  font-weight: 950;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 34px rgba(0, 0, 0, 0.25);
+}
+
+.jira-create-issue-button:hover:not(:disabled) {
+  border-color: rgba(147, 197, 253, 0.72);
+  filter: brightness(1.07);
+}
+
+.jira-create-issue-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+.jira-create-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 197, 94, 0.32);
+  background: rgba(20, 83, 45, 0.18);
+  color: #bbf7d0;
+  font-size: 0.92rem;
+  font-weight: 850;
+}
+
+.jira-create-message a {
+  color: #ffffff;
+  font-weight: 950;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.jira-create-message-error {
+  border-color: rgba(248, 113, 113, 0.38);
+  background: rgba(127, 29, 29, 0.2);
+  color: #fecaca;
+}
+
+@media (max-width: 760px) {
+  .jira-create-issue-control,
+  .jira-create-issue-button,
+  .jira-create-message {
+    width: 100%;
+  }
+
+  .jira-create-message {
+    border-radius: 14px;
+    justify-content: space-between;
+  }
+}
+
+
+/* QAS-40.1 Jira issue type dropdown hotfix */
+
+.jira-settings-grid select {
+  width: 100%;
+  min-height: 50px;
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background: rgba(0, 0, 0, 0.72);
+  color: #ffffff;
+  font: inherit;
+  outline: none;
+}
+
+.jira-settings-grid select:focus {
+  border-color: rgba(96, 165, 250, 0.62);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.jira-settings-grid option {
+  background: #050505;
+  color: #ffffff;
+}
+
+.jira-issue-type-helper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background: rgba(15, 23, 42, 0.26);
+}
+
+.jira-issue-type-helper div {
+  display: grid;
+  gap: 4px;
+}
+
+.jira-issue-type-helper strong {
+  color: #ffffff;
+}
+
+.jira-issue-type-helper span {
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.4;
+}
+
+.jira-issue-type-helper button {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  .jira-issue-type-helper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .jira-issue-type-helper button {
+    width: 100%;
+  }
+}
+
+
+/* QAS-40.2 Bug Writer readiness cleanup */
+
+.bug-readiness-card {
+  margin: 22px 0;
+  padding: 22px;
+  border-radius: 22px;
+  border: 1px solid rgba(34, 197, 94, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.1), transparent 34%),
+    rgba(10, 10, 10, 0.62);
+}
+
+.bug-readiness-card h3 {
+  margin: 6px 0 8px;
+  color: #ffffff;
+  font-size: 1.55rem;
+}
+
+.bug-readiness-card p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.5;
+}

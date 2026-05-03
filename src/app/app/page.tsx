@@ -1,8 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
+import AppHeaderMenu from "@/components/AppHeaderMenu";
 import AuthStatus from "@/components/AuthStatus";
+import CoverageScorePanel from "@/components/CoverageScorePanel";
+import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
+import JiraImportPanel from "@/components/JiraImportPanel";
+import type { ParsedJiraTicket } from "@/lib/jira-ticket";
 
 type ToolId = "tests" | "risk" | "bug" | "improve";
 
@@ -21,6 +27,11 @@ type SaveReportControlProps = {
   saveReportMessage: string;
   savedReportId: string;
   onSaveReport: (markdown: string) => void;
+};
+
+type CoverageScoreProps = {
+  reportType: ToolId;
+  sourceInput: string;
 };
 
 type SaveReportButtonProps = Omit<SaveReportControlProps, "onSaveReport"> & {
@@ -1039,25 +1050,33 @@ function SaveReportControl({
   onSaveReport,
 }: SaveReportButtonProps) {
   return (
-    <>
-      <button
-        className="copy-all-button secondary-action-button"
-        disabled={saveReportStatus === "saving"}
-        onClick={onSaveReport}
-        type="button"
-      >
-        {saveReportStatus === "saving" ? "Saving..." : saveReportStatus === "saved" ? "Saved" : "Save Report"}
-      </button>
+    <div className="save-report-row">
+      {saveReportStatus !== "saved" ? (
+        <button
+          className="secondary-action-button save-report-button"
+          disabled={saveReportStatus === "saving"}
+          onClick={onSaveReport}
+          type="button"
+        >
+          {saveReportStatus === "saving" ? "Saving..." : "Save Report"}
+        </button>
+      ) : null}
 
       {saveReportMessage ? (
-        <span className={saveReportStatus === "error" ? "save-report-message save-report-message-error" : "save-report-message"}>
-          {saveReportMessage}
+        <div
+          className={
+            saveReportStatus === "error"
+              ? "save-report-status-card save-report-status-card-error"
+              : "save-report-status-card"
+          }
+        >
+          <span>{saveReportMessage}</span>
           {saveReportStatus === "saved" ? (
             <Link href={savedReportId ? `/reports/${savedReportId}` : "/reports"}>View report</Link>
           ) : null}
-        </span>
+        </div>
       ) : null}
-    </>
+    </div>
   );
 }
 
@@ -1099,6 +1118,8 @@ function RiskTextList({ title, items }: { title: string; items: unknown }) {
 function TestCaseCards({
   testCases,
   answeredFollowUps = [],
+  reportType,
+  sourceInput,
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -1106,7 +1127,7 @@ function TestCaseCards({
 }: {
   testCases: TestCase[];
   answeredFollowUps?: AnsweredFollowUp[];
-} & SaveReportControlProps) {
+} & CoverageScoreProps & SaveReportControlProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const [exported, setExported] = useState(false);
   const [markdownExported, setMarkdownExported] = useState(false);
@@ -1194,25 +1215,27 @@ function TestCaseCards({
           <p className="report-kicker">Generated QA Report</p>
           <h2>{editableTestCases.length} Test Cases</h2>
         </div>
-        <div className="report-actions compact-report-actions">
-          <button className="copy-all-button" type="button" onClick={() => handleCopy("all", allText)}>
-            {copied === "all" ? "Copied" : "Copy All"}
-          </button>
-          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
-            {markdownExported ? "Exported" : "Export Markdown"}
-          </button>
-          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportCsv}>
-            {exported ? "Exported" : "Export CSV"}
-          </button>
+        <div className="report-action-stack">
+          <div className="report-actions compact-report-actions report-action-row">
+            <button className="copy-all-button" type="button" onClick={() => handleCopy("all", allText)}>
+              {copied === "all" ? "Copied" : "Copy All"}
+            </button>
+            <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
+              {markdownExported ? "Exported" : "Export Markdown"}
+            </button>
+            <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportCsv}>
+              {exported ? "Exported" : "Export CSV"}
+            </button>
+            <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
+              {isEditingMarkdown ? "Close Editor" : "Edit Report"}
+            </button>
+          </div>
           <SaveReportControl
             saveReportStatus={saveReportStatus}
             saveReportMessage={saveReportMessage}
             savedReportId={savedReportId}
             onSaveReport={() => onSaveReport(savedMarkdown || generatedMarkdown)}
           />
-          <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
-            {isEditingMarkdown ? "Close Editor" : "Edit Report"}
-          </button>
         </div>
       </div>
 
@@ -1221,6 +1244,13 @@ function TestCaseCards({
           Saved edits are active. Copy/export will use the finalized edited version.
         </div>
       ) : null}
+
+      <CoverageScorePanel
+        reportType={reportType}
+        sourceInput={sourceInput}
+        markdown={savedMarkdown || generatedMarkdown}
+        structuredData={{ testCases: editableTestCases }}
+      />
 
       {isEditingMarkdown ? (
         <section className="report-markdown-editor-card">
@@ -1325,6 +1355,8 @@ function TestCaseCards({
 function RiskReviewCards({
   riskReview,
   answeredFollowUps = [],
+  reportType,
+  sourceInput,
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -1332,7 +1364,7 @@ function RiskReviewCards({
 }: {
   riskReview: RiskReview;
   answeredFollowUps?: AnsweredFollowUp[];
-} & SaveReportControlProps) {
+} & CoverageScoreProps & SaveReportControlProps) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
   const [markdownExported, setMarkdownExported] = useState(false);
@@ -1440,25 +1472,24 @@ function RiskReviewCards({
           <p className="report-kicker">Risk Review Report</p>
           <h2>Pre-production QA Risk Review</h2>
         </div>
-        <div className="report-actions compact-report-actions">
-          <button className="copy-all-button" type="button" onClick={handleCopy}>
-            {copied ? "Copied" : "Copy Risk Report"}
-          </button>
-          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
-            {markdownExported ? "Exported" : "Export Markdown"}
-          </button>
-          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportCsv}>
-            {exported ? "Exported" : "Export CSV"}
-          </button>
+        <div className="report-action-stack">
+          <div className="report-actions compact-report-actions report-action-row">
+            <button className="copy-all-button" type="button" onClick={handleCopy}>
+              {copied ? "Copied" : "Copy Risk Report"}
+            </button>
+            <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
+              {markdownExported ? "Exported" : "Export Markdown"}
+            </button>
+            <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
+              {isEditingMarkdown ? "Close Editor" : "Edit Report"}
+            </button>
+          </div>
           <SaveReportControl
             saveReportStatus={saveReportStatus}
             saveReportMessage={saveReportMessage}
             savedReportId={savedReportId}
             onSaveReport={() => onSaveReport(savedMarkdown || buildRiskReviewMarkdown(editableRiskReview, answeredFollowUps))}
           />
-          <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
-            {isEditingMarkdown ? "Close Editor" : "Edit Report"}
-          </button>
         </div>
       </div>
 
@@ -1467,6 +1498,13 @@ function RiskReviewCards({
           Saved edits are active. Copy/export will use the finalized edited version.
         </div>
       ) : null}
+
+      <CoverageScorePanel
+        reportType={reportType}
+        sourceInput={sourceInput}
+        markdown={savedMarkdown || buildRiskReviewMarkdown(editableRiskReview, answeredFollowUps)}
+        structuredData={editableRiskReview}
+      />
 
       {isEditingMarkdown ? (
         <section className="report-markdown-editor-card">
@@ -1617,6 +1655,8 @@ function BugReportCards({
   riskAnsweredFollowUps = [],
   onSaveBugMarkdown,
   savedEditedMarkdown = "",
+  reportType,
+  sourceInput,
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -1629,10 +1669,9 @@ function BugReportCards({
   riskAnsweredFollowUps?: AnsweredFollowUp[];
   onSaveBugMarkdown?: (markdown: string) => void;
   savedEditedMarkdown?: string;
-} & SaveReportControlProps) {
+} & CoverageScoreProps & SaveReportControlProps) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
-  const [jiraMessage, setJiraMessage] = useState("");
   const [isEditingMarkdown, setIsEditingMarkdown] = useState(false);
   const [editedMarkdown, setEditedMarkdown] = useState("");
   const [editableBugReport, setEditableBugReport] = useState<BugReport>(bugReport);
@@ -1691,11 +1730,6 @@ function BugReportCards({
     window.setTimeout(() => setExported(false), 1400);
   }
 
-  function handleCreateJiraIssue() {
-    setJiraMessage("Jira issue creation is coming soon. For now, use Copy Bug Report or Export Markdown.");
-    window.setTimeout(() => setJiraMessage(""), 3200);
-  }
-
   return (
     <div className="report-wrap bug-report-wrap">
       <div className="report-header">
@@ -1703,35 +1737,49 @@ function BugReportCards({
           <p className="report-kicker">Bug Writer Report</p>
           <h2>Structured Bug Report</h2>
         </div>
-        <div className="report-actions compact-report-actions bug-report-actions">
-          <button className="copy-all-button jira-placeholder-button" type="button" onClick={handleCreateJiraIssue}>
-            Create Jira Issue
-          </button>
-          <button className="copy-all-button" type="button" onClick={handleCopy}>
-            {copied ? "Copied" : "Copy Bug Report"}
-          </button>
-          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
-            {exported ? "Exported" : "Export Markdown"}
-          </button>
-          <SaveReportControl
-            saveReportStatus={saveReportStatus}
-            saveReportMessage={saveReportMessage}
-            savedReportId={savedReportId}
-            onSaveReport={() => onSaveReport(exportMarkdown)}
-          />
-          <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
-            {isEditingMarkdown ? "Close Editor" : "Edit Report"}
-          </button>
+        <div className="report-action-stack">
+          <div className="report-actions compact-report-actions bug-report-actions report-action-row">
+            <button className="copy-all-button" type="button" onClick={handleCopy}>
+              {copied ? "Copied" : "Copy Bug Report"}
+            </button>
+            <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
+              {exported ? "Exported" : "Export Markdown"}
+            </button>
+            <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
+              {isEditingMarkdown ? "Close Editor" : "Edit Report"}
+            </button>
+          </div>
+          <div className="bug-secondary-action-row">
+            <SaveReportControl
+              saveReportStatus={saveReportStatus}
+              saveReportMessage={saveReportMessage}
+              savedReportId={savedReportId}
+              onSaveReport={() => onSaveReport(exportMarkdown)}
+            />
+            <JiraCreateIssueButton
+              reportType="bug"
+              markdown={exportMarkdown}
+              sourceInput={sourceInput}
+              structuredData={editableBugReport}
+            />
+          </div>
         </div>
       </div>
-
-      {jiraMessage ? <div className="jira-placeholder-message">{jiraMessage}</div> : null}
 
       {savedEditedMarkdown && !isEditingMarkdown ? (
         <div className="saved-edit-notice">
           Saved edits are active. Copy/export will use the finalized edited version.
         </div>
       ) : null}
+
+      <section className="bug-readiness-card">
+        <p className="report-kicker">Bug Report Readiness</p>
+        <h3>Ready for triage</h3>
+        <p>
+          This bug report has enough structure to create a Jira issue. Add screenshots, logs, device details,
+          build/version, and repro rate when available.
+        </p>
+      </section>
 
       {isEditingMarkdown ? (
         <section className="bug-markdown-editor-card">
@@ -1882,11 +1930,13 @@ function BugReportCards({
 
 function TestImprovementCards({
   report,
+  reportType,
+  sourceInput,
   saveReportStatus,
   saveReportMessage,
   savedReportId,
   onSaveReport,
-}: { report: TestImprovementReport } & SaveReportControlProps) {
+}: { report: TestImprovementReport } & CoverageScoreProps & SaveReportControlProps) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
   const [isEditingMarkdown, setIsEditingMarkdown] = useState(false);
@@ -1976,22 +2026,24 @@ function TestImprovementCards({
           <p className="report-kicker">Test Improver Report</p>
           <h2>{safeText(editableReport.title)}</h2>
         </div>
-        <div className="report-actions compact-report-actions">
-          <button className="copy-all-button" type="button" onClick={handleCopy}>
-            {copied ? "Copied" : "Copy Improved Test"}
-          </button>
-          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
-            {exported ? "Exported" : "Export Markdown"}
-          </button>
+        <div className="report-action-stack">
+          <div className="report-actions compact-report-actions report-action-row">
+            <button className="copy-all-button" type="button" onClick={handleCopy}>
+              {copied ? "Copied" : "Copy Improved Test"}
+            </button>
+            <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
+              {exported ? "Exported" : "Export Markdown"}
+            </button>
+            <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
+              {isEditingMarkdown ? "Close Editor" : "Edit Report"}
+            </button>
+          </div>
           <SaveReportControl
             saveReportStatus={saveReportStatus}
             saveReportMessage={saveReportMessage}
             savedReportId={savedReportId}
             onSaveReport={() => onSaveReport(exportMarkdown)}
           />
-          <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
-            {isEditingMarkdown ? "Close Editor" : "Edit Report"}
-          </button>
         </div>
       </div>
 
@@ -2000,6 +2052,13 @@ function TestImprovementCards({
           Saved edits are active. Copy/export will use the finalized edited version.
         </div>
       ) : null}
+
+      <CoverageScorePanel
+        reportType={reportType}
+        sourceInput={sourceInput}
+        markdown={exportMarkdown}
+        structuredData={editableReport}
+      />
 
       {isEditingMarkdown ? (
         <section className="report-markdown-editor-card">
@@ -2113,6 +2172,8 @@ function GenericOutput({
   riskAnsweredFollowUps = [],
   testAnsweredFollowUps = [],
   onSaveBugMarkdown,
+  reportType,
+  sourceInput,
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -2125,7 +2186,7 @@ function GenericOutput({
   riskAnsweredFollowUps?: AnsweredFollowUp[];
   testAnsweredFollowUps?: AnsweredFollowUp[];
   onSaveBugMarkdown?: (markdown: string) => void;
-} & SaveReportControlProps) {
+} & CoverageScoreProps & SaveReportControlProps) {
   const parsed = unwrapQaResult(parseOutput(output));
 
   if (isPlainObject(parsed) && Array.isArray(parsed.testCases)) {
@@ -2133,6 +2194,8 @@ function GenericOutput({
       <TestCaseCards
         testCases={parsed.testCases as TestCase[]}
         answeredFollowUps={testAnsweredFollowUps}
+        reportType={reportType}
+        sourceInput={sourceInput}
         saveReportStatus={saveReportStatus}
         saveReportMessage={saveReportMessage}
         savedReportId={savedReportId}
@@ -2146,6 +2209,8 @@ function GenericOutput({
       <RiskReviewCards
         riskReview={parsed.riskReview as RiskReview}
         answeredFollowUps={riskAnsweredFollowUps}
+        reportType={reportType}
+        sourceInput={sourceInput}
         saveReportStatus={saveReportStatus}
         saveReportMessage={saveReportMessage}
         savedReportId={savedReportId}
@@ -2163,6 +2228,8 @@ function GenericOutput({
         answeredFollowUps={answeredFollowUps}
         onSaveBugMarkdown={onSaveBugMarkdown}
         savedEditedMarkdown={typeof parsed.editedMarkdown === "string" ? parsed.editedMarkdown : ""}
+        reportType={reportType}
+        sourceInput={sourceInput}
         saveReportStatus={saveReportStatus}
         saveReportMessage={saveReportMessage}
         savedReportId={savedReportId}
@@ -2175,6 +2242,8 @@ function GenericOutput({
     return (
       <TestImprovementCards
         report={parsed.testImprovement as TestImprovementReport}
+        reportType={reportType}
+        sourceInput={sourceInput}
         saveReportStatus={saveReportStatus}
         saveReportMessage={saveReportMessage}
         savedReportId={savedReportId}
@@ -2189,6 +2258,7 @@ function GenericOutput({
 }
 
 export default function Home() {
+  const { data: session } = useSession();
   const [activeTool, setActiveTool] = useState<ToolId>("tests");
   const [input, setInput] = useState("");
   const [bugDeviceType, setBugDeviceType] = useState("");
@@ -2225,6 +2295,7 @@ export default function Home() {
   const [improveAdditionalContext, setImproveAdditionalContext] = useState("");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [importedJiraTicket, setImportedJiraTicket] = useState<ParsedJiraTicket | null>(null);
   const [saveReportStatus, setSaveReportStatus] = useState<SaveReportStatus>("idle");
   const [saveReportMessage, setSaveReportMessage] = useState("");
   const [savedReportId, setSavedReportId] = useState("");
@@ -2429,6 +2500,16 @@ export default function Home() {
       setBugQuestionAnswers({});
       setBugQuestionResolutions({});
     }
+  }
+
+  function handleJiraTicketImport(normalizedText: string, ticket: ParsedJiraTicket) {
+    setInput(normalizedText);
+    setImportedJiraTicket(ticket);
+  }
+
+  function handleClearJiraTicket() {
+    setImportedJiraTicket(null);
+    setInput("");
   }
 
   function getCurrentStructuredReport() {
@@ -2856,12 +2937,7 @@ export default function Home() {
               <Link className="hero-utility-button buy-credits-link" href="/buy-credits">
                 Buy Credits
               </Link>
-              <Link className="hero-utility-button donate-link" href="/donate">
-                Donate
-              </Link>
-              <Link className="account-back-link" href="/reports">
-                Saved Reports
-              </Link>
+              <AppHeaderMenu isAdmin={session?.user?.email === "gitajob.com@gmail.com"} />
             </div>
 
             <img src="/qatalyst-header.png" alt="QAtalyst" className="brand-logo hero-brand-logo" />
@@ -2932,11 +3008,28 @@ export default function Home() {
             ))}
           </div>
 
+          <JiraImportPanel onImport={handleJiraTicketImport} />
+
           <textarea
             value={input}
-            onChange={(event) => setInput(event.target.value)}
+            onChange={(event) => {
+              setInput(event.target.value);
+              setImportedJiraTicket(null);
+            }}
             placeholder={tool.placeholder}
           />
+
+          {importedJiraTicket ? (
+            <div className="active-jira-source-row">
+              <strong>
+                Active Jira source: {importedJiraTicket.key || "No key"} - {importedJiraTicket.summary || "No summary"}
+              </strong>
+
+              <button className="clear-jira-source-button" onClick={handleClearJiraTicket} type="button">
+                Remove Ticket
+              </button>
+            </div>
+          ) : null}
 
           {activeTool === "tests" && currentTestOutput ? (
             <section className={`follow-up-answer-box test-follow-up-box ${testFollowUpQuestions.length > 0 ? "has-active-followups" : ""}`}>
@@ -3409,6 +3502,8 @@ export default function Home() {
               riskAnsweredFollowUps={riskAnsweredFollowUps}
               testAnsweredFollowUps={testAnsweredFollowUps}
               onSaveBugMarkdown={handleSaveBugMarkdown}
+              reportType={activeTool}
+              sourceInput={input}
               saveReportStatus={saveReportStatus}
               saveReportMessage={saveReportMessage}
               savedReportId={savedReportId}

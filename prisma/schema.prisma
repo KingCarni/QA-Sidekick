@@ -23,6 +23,7 @@ model User {
   events        Event[]
   projects      QAProject[]
   reports       QAReport[]
+  jiraConfigs   JiraConfig[]
 }
 
 model Account {
@@ -113,6 +114,24 @@ model QAProject {
 
   @@unique([userId, name])
   @@index([userId, createdAt])
+}
+
+model JiraConfig {
+  id                  String   @id @default(cuid())
+  userId              String
+  siteUrl             String
+  projectKey          String
+  defaultIssueType    String   @default("Task")
+  defaultBugIssueType String   @default("Bug")
+  fieldMapping        Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+  @@index([projectKey])
+  @@index([createdAt])
 }
 
 model QAReport {

@@ -47,10 +47,10 @@ export default function DeleteReportButton({ reportId, redirectTo }: DeleteRepor
 
   return (
     <span className="delete-report-control">
-      <button className="secondary-action-button" disabled={isDeleting} onClick={handleDelete} type="button">
+      <button className="delete-report-button" disabled={isDeleting} onClick={handleDelete} type="button">
         {isDeleting ? "Deleting..." : "Delete"}
       </button>
-      {error ? <small className="save-report-message save-report-message-error">{error}</small> : null}
+      {error ? <small className="save-report-status-card save-report-status-card-error">{error}</small> : null}
     </span>
   );
 }
