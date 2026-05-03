@@ -91,6 +91,15 @@ model Event {
   @@index([type, createdAt])
 }
 
+model StripeEvent {
+  id        String   @id
+  type      String
+  livemode  Boolean
+  createdAt DateTime @default(now())
+
+  @@index([type, createdAt])
+}
+
 model QAProject {
   id          String   @id @default(cuid())
   userId      String

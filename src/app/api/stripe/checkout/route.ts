@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import Stripe from "stripe";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -19,6 +20,10 @@ const PACKS: Record<Pack, { credits: number; amountCents: number; label: string 
   pro: { label: "Pro", credits: 150, amountCents: 1500 },
   premium: { label: "Premium", credits: 500, amountCents: 2500 },
 };
+
+function toJsonObject(value: Record<string, unknown>): Prisma.InputJsonObject {
+  return value as Prisma.InputJsonObject;
+}
 
 function getAppUrl(req: Request) {
   const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
@@ -77,12 +82,12 @@ export async function POST(req: Request) {
       data: {
         userId: dbUser.id,
         type: "credit_checkout_started",
-        metaJson: {
+        metaJson: toJsonObject({
           app: "QAtalyst",
           pack,
           credits: packInfo.credits,
           amountCents: packInfo.amountCents,
-        },
+        }),
       },
     });
 
