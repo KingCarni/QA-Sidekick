@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import AppHeaderMenu from "@/components/AppHeaderMenu";
 import AuthStatus from "@/components/AuthStatus";
-import AutomationReadinessPanel from "@/components/AutomationReadinessPanel";
+import AutomationExportPanel from "@/components/AutomationExportPanel";
 import BugEvidencePanel, {
   EMPTY_BUG_EVIDENCE,
   appendBugEvidenceToMarkdown,
@@ -21,6 +21,11 @@ import {
   getAutomationCaseTextFromObject,
   getAutomationReadinessCardClass,
 } from "@/lib/automation-readiness";
+import {
+  buildGenerationFingerprint,
+  buildOutputGenerationKey,
+  shouldReuseGeneratedTestCases,
+} from "@/lib/regeneration-guard";
 import type { ParsedJiraTicket } from "@/lib/jira-ticket";
 
 type ToolId = "tests" | "risk" | "bug" | "improve";
@@ -45,6 +50,7 @@ type SaveReportControlProps = {
 type CoverageScoreProps = {
   reportType: ToolId;
   sourceInput: string;
+  testCaseGenerationKey?: string;
 };
 
 type SaveReportButtonProps = Omit<SaveReportControlProps, "onSaveReport"> & {
@@ -1133,6 +1139,7 @@ function TestCaseCards({
   answeredFollowUps = [],
   reportType,
   sourceInput,
+  testCaseGenerationKey = "",
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -1155,7 +1162,7 @@ function TestCaseCards({
     setSavedMarkdown("");
     setEditedMarkdown("");
     setEditingTestCaseIndex(null);
-  }, [testCases]);
+  }, [testCaseGenerationKey, testCases]);
 
   const generatedMarkdown = useMemo(
     () => buildTestCasesMarkdown(editableTestCases, answeredFollowUps),
@@ -1271,8 +1278,13 @@ function TestCaseCards({
         structuredData={{ testCases: editableTestCases }}
       />
 
-      {reportType === "tests" && (savedMarkdown || generatedMarkdown).trim() ? (
-        <AutomationReadinessPanel sourceText={savedMarkdown || generatedMarkdown} />
+      {reportType === "tests" && editableTestCases.length > 0 ? (
+        <AutomationExportPanel
+          key={`automation-export-${testCaseGenerationKey}`}
+          generationKey={testCaseGenerationKey}
+          testCases={editableTestCases}
+          bundleName="QAtalyst automation export"
+        />
       ) : null}
 
       {isEditingMarkdown ? (
@@ -1459,6 +1471,7 @@ function TestCaseCards({
           );
         })}
       </div>
+
     </div>
   );
 }
@@ -1769,6 +1782,7 @@ function BugReportCards({
   bugEvidence,
   reportType,
   sourceInput,
+  testCaseGenerationKey,
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -2295,6 +2309,7 @@ function GenericOutput({
   bugEvidence,
   reportType,
   sourceInput,
+  testCaseGenerationKey,
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -2318,6 +2333,7 @@ function GenericOutput({
         answeredFollowUps={testAnsweredFollowUps}
         reportType={reportType}
         sourceInput={sourceInput}
+        testCaseGenerationKey={testCaseGenerationKey}
         saveReportStatus={saveReportStatus}
         saveReportMessage={saveReportMessage}
         savedReportId={savedReportId}
@@ -2423,6 +2439,8 @@ export default function Home() {
   const [saveReportStatus, setSaveReportStatus] = useState<SaveReportStatus>("idle");
   const [saveReportMessage, setSaveReportMessage] = useState("");
   const [savedReportId, setSavedReportId] = useState("");
+  const [lastTestGenerationFingerprint, setLastTestGenerationFingerprint] = useState("");
+  const [lastTestGenerationNotice, setLastTestGenerationNotice] = useState("");
 
   const tool = tools.find((item) => item.id === activeTool) ?? tools[0];
   const currentBugReport = activeTool === "bug" ? getBugReportFromOutput(output) : null;
@@ -2498,6 +2516,22 @@ export default function Home() {
     improveAnsweredFollowUpHistory,
     currentImproveAnsweredFollowUps
   );
+  const currentTestFingerprint = buildGenerationFingerprint({
+    activeTool,
+    sourceText: input,
+    jiraKey: importedJiraTicket?.key,
+    jiraUrl: importedJiraTicket?.url,
+    additionalContext: testAdditionalContext,
+    answeredFollowUps: testAnsweredFollowUps,
+  });
+  const testCaseGenerationKey = useMemo(() => {
+    return buildOutputGenerationKey({
+      activeTool,
+      inputFingerprint: currentTestFingerprint,
+      outputText: output,
+      testCaseCount: currentTestOutput?.testCases?.length ?? 0,
+    });
+  }, [activeTool, currentTestFingerprint, currentTestOutput?.testCases?.length, output]);
 
   useEffect(() => {
     setSaveReportStatus("idle");
@@ -2757,7 +2791,6 @@ export default function Home() {
     }
 
     setIsRunning(true);
-    setOutput("");
 
     const route =
       activeTool === "tests"
@@ -2898,6 +2931,31 @@ export default function Home() {
       setImproveAnsweredFollowUpHistory(mergedImproveAnsweredFollowUps);
     }
 
+    const runTestFingerprint = buildGenerationFingerprint({
+      activeTool,
+      sourceText: input,
+      jiraKey: importedJiraTicket?.key,
+      jiraUrl: importedJiraTicket?.url,
+      additionalContext: testAdditionalContext,
+      answeredFollowUps: answeredTestFollowUps,
+    });
+
+    if (
+      shouldReuseGeneratedTestCases({
+        activeTool,
+        currentFingerprint: runTestFingerprint,
+        lastGeneratedFingerprint: lastTestGenerationFingerprint,
+        existingTestCaseCount: currentTestOutput?.testCases?.length ?? 0,
+        forceFreshGeneration: false,
+      })
+    ) {
+      setLastTestGenerationNotice(
+        "No source changes detected. Keeping the current generated test cases and refreshing scoring/export."
+      );
+      setIsRunning(false);
+      return;
+    }
+
     const requestInput = hasImproveFollowUpContext
       ? [
           "Original test case or checklist:",
@@ -3025,6 +3083,7 @@ export default function Home() {
       : input;
 
     try {
+      setOutput("");
       const response = await fetch(route, {
         method: "POST",
         headers: {
@@ -3049,6 +3108,10 @@ export default function Home() {
           : JSON.stringify(data?.result ?? data, null, 2);
 
       setOutput(result);
+      if (activeTool === "tests") {
+        setLastTestGenerationFingerprint(runTestFingerprint);
+        setLastTestGenerationNotice("");
+      }
     } catch (error) {
       setOutput(error instanceof Error ? error.message : "Something went wrong.");
     } finally {
@@ -3531,6 +3594,10 @@ export default function Home() {
                       ? "Re-improve Test Case"
                       : tool.button}
           </button>
+
+          {lastTestGenerationNotice && activeTool === "tests" ? (
+            <p className="generation-consistency-note">{lastTestGenerationNotice}</p>
+          ) : null}
         </aside>
 
         <section className="panel output-panel">
@@ -3546,6 +3613,7 @@ export default function Home() {
               bugEvidence={bugEvidence}
               reportType={activeTool}
               sourceInput={input}
+              testCaseGenerationKey={testCaseGenerationKey}
               saveReportStatus={saveReportStatus}
               saveReportMessage={saveReportMessage}
               savedReportId={savedReportId}

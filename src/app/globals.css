@@ -11340,3 +11340,813 @@ button.secondary-action-button.save-report-button,
     grid-template-columns: 1fr;
   }
 }
+
+
+/* QAS-64 Automation export bundle */
+
+.automation-export-card {
+  margin: 24px 0;
+  padding: 24px;
+  border-radius: 26px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.18), transparent 35%),
+    radial-gradient(circle at bottom left, rgba(34, 197, 94, 0.1), transparent 28%),
+    rgba(7, 8, 12, 0.82);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.automation-export-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.automation-export-header h3 {
+  margin: 4px 0 6px;
+  color: #ffffff;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  line-height: 1;
+}
+
+.automation-export-header p {
+  max-width: 720px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.55;
+}
+
+.automation-export-score {
+  flex: 0 0 auto;
+  display: grid;
+  min-width: 128px;
+  justify-items: center;
+  padding: 14px 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(34, 197, 94, 0.42);
+  background: rgba(0, 0, 0, 0.58);
+  box-shadow: 0 18px 48px rgba(34, 197, 94, 0.12);
+}
+
+.automation-export-score strong {
+  color: #ffffff;
+  font-size: 3.1rem;
+  line-height: 0.95;
+}
+
+.automation-export-score span {
+  color: #bbf7d0;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.automation-export-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.automation-export-stats div {
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.automation-export-stats strong {
+  display: block;
+  color: #ffffff;
+  font-size: 1.55rem;
+}
+
+.automation-export-stats span {
+  color: rgba(255, 255, 255, 0.64);
+  font-weight: 850;
+}
+
+.automation-export-options {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  background: rgba(37, 99, 235, 0.07);
+}
+
+.automation-export-options label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 850;
+  line-height: 1.4;
+}
+
+.automation-export-options input {
+  width: 18px;
+  height: 18px;
+  accent-color: #22c55e;
+}
+
+.automation-export-file-list {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.automation-export-file-list ul {
+  display: grid;
+  gap: 8px;
+  max-height: 220px;
+  margin: 10px 0 0;
+  padding-left: 18px;
+  overflow: auto;
+}
+
+.automation-export-file-list code {
+  color: #bfdbfe;
+  overflow-wrap: anywhere;
+}
+
+.automation-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.automation-export-actions button {
+  min-height: 46px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  background:
+    linear-gradient(180deg, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.92)),
+    rgba(17, 24, 39, 0.88);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.automation-export-actions button:first-child {
+  border-color: rgba(248, 113, 113, 0.48);
+  background:
+    linear-gradient(180deg, rgba(220, 38, 38, 0.96), rgba(153, 27, 27, 0.94)),
+    rgba(153, 27, 27, 0.88);
+  box-shadow: 0 14px 34px rgba(220, 38, 38, 0.18);
+}
+
+.automation-export-actions button:nth-child(2) {
+  border-color: rgba(34, 197, 94, 0.42);
+  background:
+    linear-gradient(180deg, rgba(22, 101, 52, 0.94), rgba(20, 83, 45, 0.92)),
+    rgba(20, 83, 45, 0.88);
+}
+
+.automation-export-actions button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(147, 197, 253, 0.68);
+}
+
+.automation-export-note {
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+  .automation-export-header {
+    flex-direction: column;
+  }
+
+  .automation-export-score {
+    width: 100%;
+  }
+
+  .automation-export-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .automation-export-actions {
+    justify-content: stretch;
+  }
+
+  .automation-export-actions button {
+    width: 100%;
+  }
+}
+
+
+/* QAS-64 Automation export bundle */
+
+.automation-export-card {
+  margin: 24px 0;
+  padding: 24px;
+  border-radius: 26px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.18), transparent 35%),
+    radial-gradient(circle at bottom left, rgba(34, 197, 94, 0.1), transparent 28%),
+    rgba(7, 8, 12, 0.82);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.automation-export-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.automation-export-header h3 {
+  margin: 4px 0 6px;
+  color: #ffffff;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  line-height: 1;
+}
+
+.automation-export-header p {
+  max-width: 720px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.55;
+}
+
+.automation-export-score {
+  flex: 0 0 auto;
+  display: grid;
+  min-width: 128px;
+  justify-items: center;
+  padding: 14px 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(34, 197, 94, 0.42);
+  background: rgba(0, 0, 0, 0.58);
+  box-shadow: 0 18px 48px rgba(34, 197, 94, 0.12);
+}
+
+.automation-export-score strong {
+  color: #ffffff;
+  font-size: 3.1rem;
+  line-height: 0.95;
+}
+
+.automation-export-score span {
+  color: #bbf7d0;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.automation-export-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.automation-export-stats div {
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.automation-export-stats strong {
+  display: block;
+  color: #ffffff;
+  font-size: 1.55rem;
+}
+
+.automation-export-stats span {
+  color: rgba(255, 255, 255, 0.64);
+  font-weight: 850;
+}
+
+.automation-export-options {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  background: rgba(37, 99, 235, 0.07);
+}
+
+.automation-export-options label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 850;
+  line-height: 1.4;
+}
+
+.automation-export-options input {
+  width: 18px;
+  height: 18px;
+  accent-color: #22c55e;
+}
+
+.automation-export-file-list {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.automation-export-file-list ul {
+  display: grid;
+  gap: 8px;
+  max-height: 220px;
+  margin: 10px 0 0;
+  padding-left: 18px;
+  overflow: auto;
+}
+
+.automation-export-file-list code {
+  color: #bfdbfe;
+  overflow-wrap: anywhere;
+}
+
+.automation-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.automation-export-actions button {
+  min-height: 46px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  background:
+    linear-gradient(180deg, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.92)),
+    rgba(17, 24, 39, 0.88);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.automation-export-actions button:first-child {
+  border-color: rgba(248, 113, 113, 0.48);
+  background:
+    linear-gradient(180deg, rgba(220, 38, 38, 0.96), rgba(153, 27, 27, 0.94)),
+    rgba(153, 27, 27, 0.88);
+  box-shadow: 0 14px 34px rgba(220, 38, 38, 0.18);
+}
+
+.automation-export-actions button:nth-child(2) {
+  border-color: rgba(34, 197, 94, 0.42);
+  background:
+    linear-gradient(180deg, rgba(22, 101, 52, 0.94), rgba(20, 83, 45, 0.92)),
+    rgba(20, 83, 45, 0.88);
+}
+
+.automation-export-actions button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(147, 197, 253, 0.68);
+}
+
+.automation-export-note {
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+  .automation-export-header {
+    flex-direction: column;
+  }
+
+  .automation-export-score {
+    width: 100%;
+  }
+
+  .automation-export-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .automation-export-actions {
+    justify-content: stretch;
+  }
+
+  .automation-export-actions button {
+    width: 100%;
+  }
+}
+
+
+/* QAS-64.1 Replace report-level readiness with Automation Export */
+
+.automation-readiness-card-compact {
+  display: none !important;
+}
+
+.automation-export-card-primary,
+.automation-export-card {
+  width: 100%;
+  margin: 24px 0;
+  padding: 24px;
+  border-radius: 26px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.18), transparent 35%),
+    radial-gradient(circle at bottom left, rgba(34, 197, 94, 0.1), transparent 28%),
+    rgba(7, 8, 12, 0.86);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.automation-export-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.automation-export-header h3 {
+  margin: 4px 0 6px;
+  color: #ffffff;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  line-height: 1;
+}
+
+.automation-export-header p {
+  max-width: 720px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.55;
+}
+
+.automation-export-score {
+  flex: 0 0 auto;
+  display: grid;
+  min-width: 128px;
+  justify-items: center;
+  padding: 14px 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(34, 197, 94, 0.42);
+  background: rgba(0, 0, 0, 0.58);
+  box-shadow: 0 18px 48px rgba(34, 197, 94, 0.12);
+}
+
+.automation-export-score strong {
+  color: #ffffff;
+  font-size: 3.1rem;
+  line-height: 0.95;
+}
+
+.automation-export-score span {
+  color: #bbf7d0;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.automation-export-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.automation-export-stats div {
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.automation-export-stats strong {
+  display: block;
+  color: #ffffff;
+  font-size: 1.55rem;
+}
+
+.automation-export-stats span {
+  color: rgba(255, 255, 255, 0.64);
+  font-weight: 850;
+}
+
+.automation-export-stat-ready {
+  border-color: rgba(34, 197, 94, 0.24) !important;
+  background: rgba(20, 83, 45, 0.14) !important;
+}
+
+.automation-export-stat-partial {
+  border-color: rgba(251, 191, 36, 0.24) !important;
+  background: rgba(120, 53, 15, 0.14) !important;
+}
+
+.automation-export-stat-manual {
+  border-color: rgba(96, 165, 250, 0.24) !important;
+  background: rgba(30, 64, 175, 0.12) !important;
+}
+
+.automation-export-stat-blocked {
+  border-color: rgba(248, 113, 113, 0.24) !important;
+  background: rgba(127, 29, 29, 0.12) !important;
+}
+
+.automation-export-warning {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(251, 191, 36, 0.38);
+  background: rgba(120, 53, 15, 0.2);
+  color: #fde68a;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.automation-export-options {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  background: rgba(37, 99, 235, 0.07);
+}
+
+.automation-export-options label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 850;
+  line-height: 1.4;
+}
+
+.automation-export-options input {
+  width: 18px;
+  height: 18px;
+  accent-color: #22c55e;
+}
+
+.automation-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.automation-export-actions button {
+  min-height: 46px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  background:
+    linear-gradient(180deg, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.92)),
+    rgba(17, 24, 39, 0.88);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.automation-export-actions button:first-child {
+  border-color: rgba(248, 113, 113, 0.48);
+  background:
+    linear-gradient(180deg, rgba(220, 38, 38, 0.96), rgba(153, 27, 27, 0.94)),
+    rgba(153, 27, 27, 0.88);
+  box-shadow: 0 14px 34px rgba(220, 38, 38, 0.18);
+}
+
+.automation-export-actions button:nth-child(2) {
+  border-color: rgba(34, 197, 94, 0.42);
+  background:
+    linear-gradient(180deg, rgba(22, 101, 52, 0.94), rgba(20, 83, 45, 0.92)),
+    rgba(20, 83, 45, 0.88);
+}
+
+.automation-export-secondary-button {
+  border-color: rgba(96, 165, 250, 0.36) !important;
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.92), rgba(30, 41, 59, 0.92)),
+    rgba(30, 64, 175, 0.76) !important;
+}
+
+.automation-export-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
+.automation-export-actions button:not(:disabled):hover {
+  transform: translateY(-1px);
+  border-color: rgba(147, 197, 253, 0.68);
+}
+
+.automation-export-file-list {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.automation-export-file-list ul {
+  display: grid;
+  gap: 8px;
+  max-height: 220px;
+  margin: 10px 0 0;
+  padding-left: 18px;
+  overflow: auto;
+}
+
+.automation-export-file-list code {
+  color: #bfdbfe;
+  overflow-wrap: anywhere;
+}
+
+.automation-export-note {
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+  .automation-export-header {
+    flex-direction: column;
+  }
+
+  .automation-export-score {
+    width: 100%;
+  }
+
+  .automation-export-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .automation-export-actions {
+    justify-content: stretch;
+  }
+
+  .automation-export-actions button {
+    width: 100%;
+  }
+}
+/* QAS-64.2 Gradient score bar + score-aligned card tint */
+
+/*
+  The bar is intentionally always red -> orange -> yellow -> green.
+  The filled length shows the score. The card tone follows the score, not the other way around.
+*/
+
+.automation-score-meter-track span,
+.automation-score-meter-good .automation-score-meter-track span,
+.automation-score-meter-warn .automation-score-meter-track span,
+.automation-score-meter-bad .automation-score-meter-track span {
+  background: linear-gradient(90deg, #ef4444 0%, #f97316 34%, #facc15 62%, #22c55e 100%) !important;
+}
+
+.test-case-automation-good,
+.test-case-card-automation-good,
+.report-card.test-case-card-automation-good,
+.generated-test-card.test-case-card-automation-good {
+  border-color: rgba(34, 197, 94, 0.34) !important;
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.11), transparent 34%),
+    rgba(7, 12, 9, 0.78) !important;
+}
+
+.test-case-automation-warn,
+.test-case-card-automation-warn,
+.report-card.test-case-card-automation-warn,
+.generated-test-card.test-case-card-automation-warn {
+  border-color: rgba(251, 191, 36, 0.38) !important;
+  background:
+    radial-gradient(circle at top right, rgba(251, 191, 36, 0.13), transparent 34%),
+    rgba(15, 12, 6, 0.78) !important;
+}
+
+.test-case-automation-bad,
+.test-case-card-automation-bad,
+.report-card.test-case-card-automation-bad,
+.generated-test-card.test-case-card-automation-bad {
+  border-color: rgba(248, 113, 113, 0.38) !important;
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.13), transparent 34%),
+    rgba(15, 7, 7, 0.78) !important;
+}
+
+.automation-score-meter-track {
+  position: relative;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.automation-score-meter-track::after {
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.055);
+}
+
+.automation-score-meter-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 180ms ease;
+}
+
+.automation-score-meter strong {
+  min-width: 58px;
+  text-align: right;
+}
+
+
+/* QAS-64.3 Regeneration consistency + clearer export counts */
+
+.automation-export-score span {
+  text-align: center;
+}
+
+.automation-export-substats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.automation-export-substats span {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  background: rgba(15, 23, 42, 0.72);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.88rem;
+  font-weight: 850;
+}
+
+.automation-export-warning {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(251, 191, 36, 0.38);
+  background: rgba(120, 53, 15, 0.2);
+  color: #fde68a;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+
+/* QAS-64.4 generation consistency notice */
+
+.generation-consistency-note {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  background: rgba(20, 83, 45, 0.18);
+  color: #bbf7d0;
+  font-size: 0.95rem;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.generation-fresh-button {
+  min-height: 44px;
+  padding: 11px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.9), rgba(30, 41, 59, 0.92)),
+    rgba(30, 64, 175, 0.7);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
