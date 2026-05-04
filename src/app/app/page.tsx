@@ -5,9 +5,22 @@ import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import AppHeaderMenu from "@/components/AppHeaderMenu";
 import AuthStatus from "@/components/AuthStatus";
+import AutomationReadinessPanel from "@/components/AutomationReadinessPanel";
+import BugEvidencePanel, {
+  EMPTY_BUG_EVIDENCE,
+  appendBugEvidenceToMarkdown,
+  type BugEvidenceState,
+} from "@/components/BugEvidencePanel";
+import BugEvidencePreview from "@/components/BugEvidencePreview";
 import CoverageScorePanel from "@/components/CoverageScorePanel";
 import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
 import JiraImportPanel from "@/components/JiraImportPanel";
+import TestCaseAutomationReadiness from "@/components/TestCaseAutomationReadiness";
+import {
+  evaluateAutomationReadinessCase,
+  getAutomationCaseTextFromObject,
+  getAutomationReadinessCardClass,
+} from "@/lib/automation-readiness";
 import type { ParsedJiraTicket } from "@/lib/jira-ticket";
 
 type ToolId = "tests" | "risk" | "bug" | "improve";
@@ -1135,11 +1148,13 @@ function TestCaseCards({
   const [editedMarkdown, setEditedMarkdown] = useState("");
   const [savedMarkdown, setSavedMarkdown] = useState("");
   const [editableTestCases, setEditableTestCases] = useState<TestCase[]>(testCases);
+  const [editingTestCaseIndex, setEditingTestCaseIndex] = useState<number | null>(null);
 
   useEffect(() => {
     setEditableTestCases(testCases);
     setSavedMarkdown("");
     setEditedMarkdown("");
+    setEditingTestCaseIndex(null);
   }, [testCases]);
 
   const generatedMarkdown = useMemo(
@@ -1153,9 +1168,13 @@ function TestCaseCards({
   );
 
   function updateTestCaseBadge(index: number, field: "type" | "priority", value: string) {
+    updateEditableTestCase(index, { [field]: value });
+  }
+
+  function updateEditableTestCase(index: number, patch: Partial<TestCase>) {
     setEditableTestCases((current) =>
       current.map((testCase, testCaseIndex) =>
-        testCaseIndex === index ? { ...testCase, [field]: value } : testCase
+        testCaseIndex === index ? { ...testCase, ...patch } : testCase
       )
     );
     setSavedMarkdown("");
@@ -1252,6 +1271,10 @@ function TestCaseCards({
         structuredData={{ testCases: editableTestCases }}
       />
 
+      {reportType === "tests" && (savedMarkdown || generatedMarkdown).trim() ? (
+        <AutomationReadinessPanel sourceText={savedMarkdown || generatedMarkdown} />
+      ) : null}
+
       {isEditingMarkdown ? (
         <section className="report-markdown-editor-card">
           <div className="report-markdown-editor-header">
@@ -1293,12 +1316,46 @@ function TestCaseCards({
         {editableTestCases.map((testCase, index) => {
           const copyId = `case-${index}`;
           const steps = normalizeSteps(testCase.steps);
+          const safeTitle = safeText(testCase.title);
+          const displayTitle = safeTitle !== "Not specified." ? safeTitle : `Test Case ${index + 1}`;
+          const readiness = evaluateAutomationReadinessCase(getAutomationCaseTextFromObject(testCase), index);
+          const stableKey = `test-case-${index}`;
 
           return (
-            <article className="test-case-card" key={`${safeText(testCase.title)}-${index}`}>
-              <div className="test-case-topline">
-                <div className="test-case-label-row">
-                  <span className="test-case-label">Test Case {index + 1}</span>
+            <article
+              className={`test-case-card ${getAutomationReadinessCardClass(readiness.score, readiness.readiness)}`}
+              key={stableKey}
+            >
+              <div className="test-case-title-action-row">
+                <div className="test-case-title-meta">
+                  <p className="report-kicker">Test Case {index + 1}</p>
+                  <h3>{displayTitle}</h3>
+                  <div className="test-case-title-meta-row">
+                    <EditableBadgeSelect
+                      label="Type"
+                      value={testCase.type}
+                      options={testTypeOptions}
+                      kind="type"
+                      onChange={(value) => updateTestCaseBadge(index, "type", value)}
+                    />
+                    <EditableBadgeSelect
+                      label="Priority"
+                      value={testCase.priority}
+                      options={priorityOptions}
+                      kind="priority"
+                      onChange={(value) => updateTestCaseBadge(index, "priority", value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="test-case-card-action-row">
+                  <button
+                    className="test-case-edit-button"
+                    type="button"
+                    onClick={() => setEditingTestCaseIndex(index)}
+                  >
+                    Edit
+                  </button>
                   <button
                     className="copy-case-button"
                     type="button"
@@ -1307,24 +1364,76 @@ function TestCaseCards({
                     {copied === copyId ? "Copied" : "Copy"}
                   </button>
                 </div>
-                <h3>{safeText(testCase.title)}</h3>
-                <div className="badge-row">
-                  <EditableBadgeSelect
-                    label="Type"
-                    value={testCase.type}
-                    options={testTypeOptions}
-                    kind="type"
-                    onChange={(value) => updateTestCaseBadge(index, "type", value)}
-                  />
-                  <EditableBadgeSelect
-                    label="Priority"
-                    value={testCase.priority}
-                    options={priorityOptions}
-                    kind="priority"
-                    onChange={(value) => updateTestCaseBadge(index, "priority", value)}
-                  />
-                </div>
               </div>
+
+              {editingTestCaseIndex === index ? (
+                <div className="test-case-inline-editor">
+                  <label>
+                    Title
+                    <input
+                      value={safeTitle === "Not specified." ? "" : safeTitle}
+                      onChange={(event) => updateEditableTestCase(index, { title: event.target.value })}
+                    />
+                  </label>
+
+                  <label>
+                    Type
+                    <input
+                      value={safeText(testCase.type) === "Not specified." ? "" : safeText(testCase.type)}
+                      onChange={(event) => updateEditableTestCase(index, { type: event.target.value })}
+                    />
+                  </label>
+
+                  <label>
+                    Priority
+                    <input
+                      value={safeText(testCase.priority) === "Not specified." ? "" : safeText(testCase.priority)}
+                      onChange={(event) => updateEditableTestCase(index, { priority: event.target.value })}
+                    />
+                  </label>
+
+                  <label>
+                    Preconditions
+                    <textarea
+                      value={safeText(testCase.preconditions)}
+                      onChange={(event) => updateEditableTestCase(index, { preconditions: event.target.value })}
+                    />
+                  </label>
+
+                  <label>
+                    Steps
+                    <textarea
+                      value={steps.join("\n")}
+                      onChange={(event) => {
+                        updateEditableTestCase(index, {
+                          steps: event.target.value
+                            .split(/\n+/)
+                            .map((item) => item.trim())
+                            .filter(Boolean),
+                        });
+                      }}
+                    />
+                  </label>
+
+                  <label>
+                    Expected Result
+                    <textarea
+                      value={safeText(testCase.expectedResult)}
+                      onChange={(event) => updateEditableTestCase(index, { expectedResult: event.target.value })}
+                    />
+                  </label>
+
+                  <div className="test-case-inline-editor-actions">
+                    <button
+                      className="secondary-action-button"
+                      type="button"
+                      onClick={() => setEditingTestCaseIndex(null)}
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              ) : null}
 
               <div className="test-case-section">
                 <h4>Preconditions</h4>
@@ -1344,6 +1453,8 @@ function TestCaseCards({
                 <h4>Expected Result</h4>
                 <ValueBlock value={testCase.expectedResult} />
               </div>
+
+              <TestCaseAutomationReadiness testCase={testCase} index={index} />
             </article>
           );
         })}
@@ -1655,6 +1766,7 @@ function BugReportCards({
   riskAnsweredFollowUps = [],
   onSaveBugMarkdown,
   savedEditedMarkdown = "",
+  bugEvidence,
   reportType,
   sourceInput,
   saveReportStatus,
@@ -1669,6 +1781,7 @@ function BugReportCards({
   riskAnsweredFollowUps?: AnsweredFollowUp[];
   onSaveBugMarkdown?: (markdown: string) => void;
   savedEditedMarkdown?: string;
+  bugEvidence: BugEvidenceState;
 } & CoverageScoreProps & SaveReportControlProps) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
@@ -1693,6 +1806,7 @@ function BugReportCards({
   const logEvidence = evidenceFiles.filter((file) => file.textPreview);
   const generatedMarkdown = formatBugReport(editableBugReport, evidenceFiles, evidenceLink, answeredFollowUps);
   const exportMarkdown = isEditingMarkdown ? editedMarkdown : savedEditedMarkdown || generatedMarkdown;
+  const evidenceAwareBugMarkdown = appendBugEvidenceToMarkdown(exportMarkdown, bugEvidence);
 
   function handleToggleEditMarkdown() {
     if (!isEditingMarkdown) {
@@ -1717,7 +1831,7 @@ function BugReportCards({
   }
 
   async function handleCopy() {
-    await copyText(exportMarkdown);
+    await copyText(evidenceAwareBugMarkdown);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   }
@@ -1725,7 +1839,7 @@ function BugReportCards({
   function handleExportMarkdown() {
     const filename = `qa-sidekick-bug-report-${buildTimestampForFilename()}.md`;
 
-    downloadTextFile(filename, exportMarkdown, "text/markdown");
+    downloadTextFile(filename, evidenceAwareBugMarkdown, "text/markdown");
     setExported(true);
     window.setTimeout(() => setExported(false), 1400);
   }
@@ -1754,13 +1868,15 @@ function BugReportCards({
               saveReportStatus={saveReportStatus}
               saveReportMessage={saveReportMessage}
               savedReportId={savedReportId}
-              onSaveReport={() => onSaveReport(exportMarkdown)}
+              onSaveReport={() => onSaveReport(evidenceAwareBugMarkdown)}
             />
             <JiraCreateIssueButton
               reportType="bug"
-              markdown={exportMarkdown}
+              markdown={evidenceAwareBugMarkdown}
               sourceInput={sourceInput}
               structuredData={editableBugReport}
+              evidenceFiles={bugEvidence.files}
+              logText={bugEvidence.logText}
             />
           </div>
         </div>
@@ -1921,6 +2037,10 @@ function BugReportCards({
               </div>
             ) : null}
           </section>
+        ) : null}
+
+        {reportType === "bug" ? (
+          <BugEvidencePreview evidence={bugEvidence} />
         ) : null}
       </div>
     </div>
@@ -2172,6 +2292,7 @@ function GenericOutput({
   riskAnsweredFollowUps = [],
   testAnsweredFollowUps = [],
   onSaveBugMarkdown,
+  bugEvidence,
   reportType,
   sourceInput,
   saveReportStatus,
@@ -2186,6 +2307,7 @@ function GenericOutput({
   riskAnsweredFollowUps?: AnsweredFollowUp[];
   testAnsweredFollowUps?: AnsweredFollowUp[];
   onSaveBugMarkdown?: (markdown: string) => void;
+  bugEvidence: BugEvidenceState;
 } & CoverageScoreProps & SaveReportControlProps) {
   const parsed = unwrapQaResult(parseOutput(output));
 
@@ -2228,6 +2350,7 @@ function GenericOutput({
         answeredFollowUps={answeredFollowUps}
         onSaveBugMarkdown={onSaveBugMarkdown}
         savedEditedMarkdown={typeof parsed.editedMarkdown === "string" ? parsed.editedMarkdown : ""}
+        bugEvidence={bugEvidence}
         reportType={reportType}
         sourceInput={sourceInput}
         saveReportStatus={saveReportStatus}
@@ -2273,6 +2396,7 @@ export default function Home() {
   const [bugEvidenceNotes, setBugEvidenceNotes] = useState("");
   const [bugScreenshotFiles, setBugScreenshotFiles] = useState<UploadedEvidenceFile[]>([]);
   const [bugLogFiles, setBugLogFiles] = useState<UploadedEvidenceFile[]>([]);
+  const [bugEvidence, setBugEvidence] = useState<BugEvidenceState>(EMPTY_BUG_EVIDENCE);
   const [bugQuestionAnswers, setBugQuestionAnswers] = useState<Record<string, string>>({});
   const [bugQuestionResolutions, setBugQuestionResolutions] = useState<Record<string, FollowUpResolution>>({});
   const [bugAnsweredFollowUpHistory, setBugAnsweredFollowUpHistory] = useState<AnsweredFollowUp[]>([]);
@@ -2504,7 +2628,7 @@ export default function Home() {
 
   function handleJiraTicketImport(normalizedText: string, ticket: ParsedJiraTicket) {
     setInput(normalizedText);
-    setImportedJiraTicket(ticket);
+    setImportedJiraTicket(ticket.key ? ticket : null);
   }
 
   function handleClearJiraTicket() {
@@ -2665,29 +2789,41 @@ export default function Home() {
         `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nResolution: ${item.resolution}`
     );
 
-    const uploadedScreenshotContext = bugScreenshotFiles.map(
+    const uploadedScreenshotContext = bugEvidence.files
+      .filter((file) => file.type.startsWith("image/"))
+      .map(
       (file, index) =>
         `Screenshot ${index + 1}: ${file.name} (${file.type}, ${formatBytes(file.size)})`
     );
 
-    const uploadedLogContext = bugLogFiles.map((file, index) =>
+    const uploadedLogContext = bugEvidence.logText.trim()
+      ? [
+          [
+            "Pasted log output:",
+            bugEvidence.logText.trim().slice(0, 12000),
+          ].join("\n"),
+        ]
+      : [];
+    const uploadedFileContext = bugEvidence.files
+      .filter((file) => !file.type.startsWith("image/"))
+      .map((file, index) =>
       [
-        `Log file ${index + 1}: ${file.name} (${file.type}, ${formatBytes(file.size)})`,
-        "Log excerpt:",
-        file.textPreview || "No readable log text found.",
+        `Evidence file ${index + 1}: ${file.name} (${file.type || "unknown"}, ${formatBytes(file.size)})`,
       ].join("\n")
     );
 
     const bugEvidenceContext = [
-      bugEvidenceLinks.trim() ? `Evidence links or file references: ${bugEvidenceLinks.trim()}` : "",
+      bugEvidence.evidenceReference.trim() ? `Evidence links or file references: ${bugEvidence.evidenceReference.trim()}` : "",
       uploadedScreenshotContext.length > 0
         ? uploadedScreenshotContext.join("\n")
         : "",
+      uploadedFileContext.length > 0 ? uploadedFileContext.join("\n\n") : "",
       uploadedLogContext.length > 0 ? uploadedLogContext.join("\n\n") : "",
-      bugEvidenceNotes.trim() ? `Evidence notes: ${bugEvidenceNotes.trim()}` : "",
+      bugEvidence.evidenceNotes.trim() ? `Evidence notes: ${bugEvidence.evidenceNotes.trim()}` : "",
     ].filter(Boolean);
 
-    const testerNotesContext = bugContextAnswers.trim()
+    const testerNotes = bugEvidence.testerNotes.trim();
+    const testerNotesContext = testerNotes
       ? [
           "Tester notes interpretation rules:",
           "- Treat tester notes as direct QA-provided facts or suspects.",
@@ -2702,7 +2838,7 @@ export default function Home() {
       (bugEnvironmentContext.length > 0 ||
         answeredFollowUps.length > 0 ||
         bugEvidenceContext.length > 0 ||
-        bugContextAnswers.trim());
+        testerNotes);
 
     const mergedRiskAnsweredFollowUps = mergeAnsweredFollowUpHistory(
       riskAnsweredFollowUpHistory,
@@ -2882,7 +3018,7 @@ export default function Home() {
             : "Follow-up loop is still open.",
           "",
           "CRITICAL TESTER NOTES - treat as direct answers/context, not optional background:",
-          bugContextAnswers.trim() || "No critical tester notes supplied.",
+          testerNotes || "No critical tester notes supplied.",
           "",
           testerNotesContext,
         ].join("\n")
@@ -2896,7 +3032,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           input: requestInput,
-          screenshots: activeTool === "bug" ? bugScreenshotFiles : [],
+          screenshots: [],
         }),
       });
 
@@ -3010,26 +3146,20 @@ export default function Home() {
             onImport={handleJiraTicketImport}
           />
 
-          <textarea
-            value={input}
-            onChange={(event) => {
-              setInput(event.target.value);
-              setImportedJiraTicket(null);
-            }}
-            placeholder={tool.placeholder}
-          />
-
-          {activeTool !== "bug" && importedJiraTicket ? (
-            <div className="active-jira-source-row">
-              <strong>
-                Active Jira source: {importedJiraTicket.key || "No key"} - {importedJiraTicket.summary || "No summary"}
-              </strong>
-
-              <button className="clear-jira-source-button" onClick={handleClearJiraTicket} type="button">
-                Remove Ticket
-              </button>
-            </div>
-          ) : null}
+          {activeTool !== "bug" && importedJiraTicket?.key ? (
+            <p className="active-jira-source-note">
+              Active Jira source: {importedJiraTicket.key}. Use Remove Source in the Jira panel to clear it.
+            </p>
+          ) : (
+            <textarea
+              value={input}
+              onChange={(event) => {
+                setInput(event.target.value);
+                setImportedJiraTicket(null);
+              }}
+              placeholder={tool.placeholder}
+            />
+          )}
 
           {activeTool === "tests" && currentTestOutput ? (
             <section className={`follow-up-answer-box test-follow-up-box ${testFollowUpQuestions.length > 0 ? "has-active-followups" : ""}`}>
@@ -3336,84 +3466,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="bug-refine-section">
-                <h4>Screenshots and logs</h4>
-
-                <label className="file-upload-card">
-                  <span>Add screenshot</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(event) => handleScreenshotFiles(event.target.files)}
-                  />
-                  <small>PNG, JPG, or WebP. Up to 3 screenshots for now.</small>
-                </label>
-
-                {bugScreenshotFiles.length > 0 ? (
-                  <div className="screenshot-preview-list">
-                    {bugScreenshotFiles.map((file) => (
-                      <article className="screenshot-preview-card" key={file.name}>
-                        {file.dataUrl ? (
-                          <img src={file.dataUrl} alt={`Uploaded screenshot preview: ${file.name}`} />
-                        ) : (
-                          <div className="screenshot-preview-empty">No preview</div>
-                        )}
-
-                        <div className="screenshot-preview-meta">
-                          <span>{file.name}</span>
-                          <small>{formatBytes(file.size)}</small>
-                        </div>
-
-                        <button type="button" onClick={() => removeScreenshotFile(file.name)}>
-                          Remove
-                        </button>
-                      </article>
-                    ))}
-                  </div>
-                ) : null}
-
-                <label className="file-upload-card">
-                  <span>Add logs</span>
-                  <input
-                    type="file"
-                    accept=".log,.txt,.json,.csv,text/*,application/json"
-                    multiple
-                    onChange={(event) => handleLogFiles(event.target.files)}
-                  />
-                  <small>Text logs only for this pass. Up to 5 files, first 12k chars each.</small>
-                </label>
-
-                {bugLogFiles.length > 0 ? (
-                  <div className="uploaded-file-list">
-                    {bugLogFiles.map((file) => (
-                      <div className="uploaded-file-row" key={file.name}>
-                        <span>{file.name}</span>
-                        <small>{formatBytes(file.size)}</small>
-                        <button type="button" onClick={() => removeLogFile(file.name)}>
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-
-                <label className="bug-evidence-field">
-                  Evidence link or file reference
-                  <input
-                    value={bugEvidenceLinks}
-                    onChange={(event) => setBugEvidenceLinks(event.target.value)}
-                    placeholder="Paste Jira attachment name, Drive link, screenshot link, or log reference..."
-                  />
-                </label>
-
-                <textarea
-                  className="follow-up-answer-textarea compact"
-                  value={bugEvidenceNotes}
-                  onChange={(event) => setBugEvidenceNotes(event.target.value)}
-                  placeholder="Describe what the screenshot shows, timestamps, log errors, or attachment notes..."
-                />
-              </div>
+              <BugEvidencePanel value={bugEvidence} onChange={setBugEvidence} />
 
               {currentBugReport && (bugFollowUpQuestions.length > 0 || bugAnsweredFollowUps.length > 0) ? (
                 <div className={`bug-refine-section bug-followup-section ${bugFollowUpQuestions.length > 0 ? "has-active-followups" : ""}`}>
@@ -3462,18 +3515,6 @@ export default function Home() {
                 </div>
               ) : null}
 
-              <div className="bug-refine-section">
-                <h4>Additional tester notes</h4>
-                <p className="bug-refine-help-text">
-                  Use this for suspects, known patterns, workarounds, recent changes, or details that answer the follow-up questions.
-                </p>
-                <textarea
-                  className="follow-up-answer-textarea compact-tester-notes"
-                  value={bugContextAnswers}
-                  onChange={(event) => setBugContextAnswers(event.target.value)}
-                  placeholder="Example: Item in question is Super Pistol. Crash started after latest update. Happens only when this item is in inventory..."
-                />
-              </div>
             </section>
           ) : null}
 
@@ -3496,12 +3537,13 @@ export default function Home() {
           {output ? (
             <GenericOutput
               output={output}
-              evidenceFiles={[...bugScreenshotFiles, ...bugLogFiles]}
-              evidenceLink={bugEvidenceLinks}
+              evidenceFiles={[]}
+              evidenceLink=""
               answeredFollowUps={bugAnsweredFollowUps}
               riskAnsweredFollowUps={riskAnsweredFollowUps}
               testAnsweredFollowUps={testAnsweredFollowUps}
               onSaveBugMarkdown={handleSaveBugMarkdown}
+              bugEvidence={bugEvidence}
               reportType={activeTool}
               sourceInput={input}
               saveReportStatus={saveReportStatus}
