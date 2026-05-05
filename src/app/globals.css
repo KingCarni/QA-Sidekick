@@ -13456,429 +13456,620 @@ button.secondary-action-button.save-report-button,
 }
 
 
+/* Compact Project + Jira controls pass */
 
-/* UI pass: hero/project context dock cleanup */
-
-.app-hero-context-dock {
+.compact-source-controls {
   display: grid;
-  grid-template-columns: minmax(210px, 0.75fr) minmax(260px, 1fr) minmax(260px, 1fr);
-  gap: 16px;
-  align-items: stretch;
-  width: min(100%, 760px);
-  margin-top: 18px;
-}
-
-.app-hero-project-panel,
-.app-hero-memory-panel,
-.app-hero-source-panel {
-  min-height: 88px;
-  border-radius: 18px;
-  border: 1px solid rgba(96, 165, 250, 0.22);
-  background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.1), transparent 35%),
-    rgba(0, 0, 0, 0.22);
-}
-
-.app-hero-project-panel {
-  padding: 14px;
-}
-
-.app-hero-project-panel .report-kicker {
-  margin-bottom: 8px;
-}
-
-.app-hero-context-dock .project-picker,
-.app-hero-context-dock select {
-  width: 100%;
-}
-
-.app-hero-context-dock .project-context-indicator,
-.app-hero-context-dock .source-relevance-selector {
-  height: 100%;
-  min-height: 88px;
-  margin: 0;
-  padding: 14px 16px;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.app-hero-context-dock .project-context-main,
-.app-hero-context-dock .source-relevance-main {
-  height: 100%;
-}
-
-.app-hero-context-dock .project-context-indicator strong,
-.app-hero-context-dock .source-relevance-selector strong {
-  font-size: 1rem;
-}
-
-.app-hero-context-dock .project-context-indicator span,
-.app-hero-context-dock .source-relevance-selector span {
-  font-size: 0.92rem;
-}
-
-.app-hero-context-dock .project-context-indicator button,
-.app-hero-context-dock .source-relevance-actions button {
-  min-height: 40px;
-  padding: 8px 12px;
-  white-space: nowrap;
-}
-
-.app-hero-context-dock .source-relevance-actions {
-  justify-content: flex-end;
-}
-
-.app-hero-context-dock .source-relevance-drawer,
-.app-hero-context-dock .project-context-preview {
-  position: absolute;
-  z-index: 30;
-  width: min(620px, calc(100vw - 40px));
-  margin-top: 12px;
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
-}
-
-.app-hero-source-panel,
-.app-hero-memory-panel {
-  position: relative;
-}
-
-/* Hide old sidebar project/context/source blocks after moving them into the hero dock.
-   Add app-sidebar-project-memory-retired to old wrappers during the integration step. */
-.app-sidebar-project-memory-retired {
-  display: none !important;
-}
-
-/* Header balance cleanup */
-.qatalyst-app-hero,
-.app-hero,
-.hero-card,
-.reports-hero.app-hero {
-  align-items: flex-start;
-}
-
-.qatalyst-app-hero h1,
-.app-hero h1,
-.hero-card h1,
-.reports-hero.app-hero h1 {
-  margin-top: 0;
-}
-
-.qatalyst-app-hero .app-header-menu-wrap,
-.app-hero .app-header-menu-wrap,
-.hero-card .app-header-menu-wrap {
-  transform: translateY(-10px);
-}
-
-.qatalyst-app-hero .qatalyst-hero-logo,
-.app-hero .qatalyst-hero-logo,
-.hero-card .qatalyst-hero-logo {
-  transform: translateY(-8px) scale(0.94);
-  transform-origin: top center;
-}
-
-.qatalyst-app-hero .auth-status-card,
-.app-hero .auth-status-card,
-.hero-card .auth-status-card {
-  margin-top: 14px;
-  transform: translateY(10px);
-}
-
-/* Trim the empty dead space under the hero before the tools grid. */
-.app-main-grid,
-.qa-tool-layout,
-.app-tool-grid {
-  margin-top: 22px;
-}
-
-@media (max-width: 1120px) {
-  .app-hero-context-dock {
-    grid-template-columns: 1fr;
-    width: 100%;
-  }
-
-  .app-hero-context-dock .project-context-main,
-  .app-hero-context-dock .source-relevance-main {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .app-hero-context-dock .project-context-indicator button,
-  .app-hero-context-dock .source-relevance-actions button {
-    width: 100%;
-  }
-
-  .app-hero-context-dock .source-relevance-drawer,
-  .app-hero-context-dock .project-context-preview {
-    position: static;
-    width: 100%;
-  }
-}
-
-@media (max-width: 760px) {
-  .qatalyst-app-hero .app-header-menu-wrap,
-  .app-hero .app-header-menu-wrap,
-  .hero-card .app-header-menu-wrap,
-  .qatalyst-app-hero .qatalyst-hero-logo,
-  .app-hero .qatalyst-hero-logo,
-  .hero-card .qatalyst-hero-logo,
-  .qatalyst-app-hero .auth-status-card,
-  .app-hero .auth-status-card,
-  .hero-card .auth-status-card {
-    transform: none;
-  }
-}
-/* UI FIX: sane hero project/context dock.
-   This intentionally overrides the previous hero-dock pass. */
-
-.app-hero-context-dock {
-  display: none !important;
-}
-
-.app-hero-context-dock-fixed {
-  display: grid;
-  grid-template-columns: minmax(190px, 0.8fr) minmax(230px, 1fr) minmax(230px, 1fr);
-  gap: 14px;
-  width: 100%;
-  max-width: 760px;
-  margin-top: 18px;
-  clear: both;
-}
-
-.hero-context-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
-  min-height: 104px;
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px solid rgba(96, 165, 250, 0.24);
-  background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.10), transparent 34%),
-    rgba(0, 0, 0, 0.28);
-  overflow: hidden;
+  margin: 16px 0;
 }
 
-.hero-project-card {
-  display: block;
-}
-
-.hero-project-card .project-picker,
-.hero-project-card select {
-  width: 100%;
-  margin-top: 8px;
-}
-
-.hero-context-card .report-kicker {
-  margin: 0 0 6px;
-}
-
-.hero-context-card strong {
-  display: block;
-  color: #ffffff;
-  font-size: 1rem;
-  line-height: 1.25;
-}
-
-.hero-context-card span {
-  display: block;
-  margin-top: 5px;
-  color: rgba(255, 255, 255, 0.66);
-  line-height: 1.35;
-  font-size: 0.92rem;
-}
-
-.hero-source-actions {
+.compact-source-field {
   display: grid;
   gap: 8px;
-  min-width: 108px;
+  min-width: 0;
 }
 
-.hero-context-secondary-button,
-.hero-context-green-button,
-.hero-context-expanded button {
-  min-height: 38px;
-  padding: 8px 12px;
-  border-radius: 13px;
+.compact-source-field label {
+  margin: 0;
+}
+
+.compact-source-field label span {
+  display: block;
+  color: #fecdd3;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.compact-source-field select,
+.compact-source-field input {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 14px;
   border: 1px solid rgba(96, 165, 250, 0.34);
+  background: rgba(0, 0, 0, 0.66);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 850;
+  padding: 0 14px;
+  outline: none;
+}
+
+.compact-source-field select:focus,
+.compact-source-field input:focus {
+  border-color: rgba(96, 165, 250, 0.76);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
+}
+
+.compact-source-field .project-picker {
+  width: 100%;
+}
+
+.compact-jira-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 82px;
+  gap: 8px;
+}
+
+.compact-jira-input-row button {
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.42);
   background:
-    linear-gradient(180deg, rgba(30, 64, 175, 0.88), rgba(30, 41, 59, 0.94)),
+    linear-gradient(180deg, rgba(30, 64, 175, 0.92), rgba(30, 41, 59, 0.95)),
     rgba(30, 64, 175, 0.72);
   color: #ffffff;
   font: inherit;
   font-weight: 950;
   cursor: pointer;
-  white-space: nowrap;
 }
 
-.hero-context-green-button {
-  border-color: rgba(34, 197, 94, 0.38);
-  background:
-    linear-gradient(180deg, rgba(22, 101, 52, 0.88), rgba(20, 83, 45, 0.94)),
-    rgba(20, 83, 45, 0.72);
-}
-
-.hero-context-secondary-button:disabled,
-.hero-context-green-button:disabled,
-.hero-context-expanded button:disabled {
+.compact-jira-input-row button:disabled {
   cursor: not-allowed;
-  opacity: 0.48;
+  opacity: 0.55;
 }
 
-.hero-context-expanded {
+.compact-source-status {
   grid-column: 1 / -1;
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px solid rgba(96, 165, 250, 0.24);
-  background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.10), transparent 34%),
-    rgba(0, 0, 0, 0.72);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-}
-
-.hero-context-expanded-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.hero-context-expanded-header strong {
-  display: block;
-  color: #ffffff;
-  margin-top: 4px;
-}
-
-.hero-context-preview-fixed pre {
-  max-height: 260px;
-  overflow: auto;
-  margin: 0;
-  padding: 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.64);
-  color: rgba(255, 255, 255, 0.74);
-  white-space: pre-wrap;
-  line-height: 1.5;
-}
-
-.hero-source-toolbar {
-  display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.hero-source-list-fixed {
-  display: grid;
   gap: 10px;
+  min-height: 38px;
+  padding: 9px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  background: rgba(20, 83, 45, 0.18);
+  color: #bbf7d0;
+  font-size: 0.9rem;
+  font-weight: 850;
 }
 
-.hero-source-row-fixed {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
+.compact-source-status-error {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.18);
+  color: #fecaca;
+}
+
+.compact-source-status a,
+.compact-source-status button {
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  background: rgba(30, 64, 175, 0.28);
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 950;
+  text-decoration: none;
   cursor: pointer;
 }
 
-.hero-source-row-fixed-selected {
-  border-color: rgba(34, 197, 94, 0.34);
-  background:
-    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 35%),
-    rgba(20, 83, 45, 0.16);
+.compact-source-status button {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.24);
 }
 
-.hero-source-row-fixed input {
-  margin-top: 4px;
-}
-
-.hero-source-row-fixed strong,
-.hero-source-row-fixed small,
-.hero-source-row-fixed em {
-  display: block;
-}
-
-.hero-source-row-fixed strong {
-  color: #ffffff;
-}
-
-.hero-source-row-fixed small,
-.hero-source-row-fixed em {
-  margin-top: 4px;
-  color: rgba(255, 255, 255, 0.62);
-  line-height: 1.4;
-  font-style: normal;
-}
-
-/* Undo the last pass's aggressive header nudges. */
-.qatalyst-app-hero .app-header-menu-wrap,
-.app-hero .app-header-menu-wrap,
-.hero-card .app-header-menu-wrap,
-.qatalyst-app-hero .qatalyst-hero-logo,
-.app-hero .qatalyst-hero-logo,
-.hero-card .qatalyst-hero-logo,
-.qatalyst-app-hero .auth-status-card,
-.app-hero .auth-status-card,
-.hero-card .auth-status-card {
-  transform: none !important;
-}
-
-/* Give the right-side header/account cluster breathing room. */
-.app-header-menu-wrap {
-  position: relative;
-  z-index: 5;
-}
-
-.auth-status-card {
-  position: relative;
-  z-index: 5;
-  margin-top: 16px;
-}
-
-.qatalyst-hero-logo {
-  position: relative;
-  z-index: 4;
-}
-
-/* Keep old sidebar memory blocks hidden if they were left in place. */
-.app-sidebar-project-memory-retired {
+/* Hide retired project memory and large Jira source panels if left in place during integration. */
+.app-sidebar-project-memory-retired,
+.app-sidebar-jira-source-retired {
   display: none !important;
 }
 
-@media (max-width: 1180px) {
-  .app-hero-context-dock-fixed {
-    grid-template-columns: 1fr;
-    max-width: 100%;
-  }
-
-  .hero-context-card {
-    min-height: auto;
-  }
-}
-
 @media (max-width: 760px) {
-  .hero-context-card,
-  .hero-context-expanded-header {
+  .compact-source-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-source-status {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .hero-source-actions,
-  .hero-source-toolbar {
+  .compact-source-status a,
+  .compact-source-status button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+
+
+/* Compact Project + Jira sizing fix */
+
+.compact-source-controls-balanced {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 88px;
+  gap: 10px;
+  align-items: end;
+  margin: 16px 0 14px;
+}
+
+.compact-source-controls-balanced .compact-source-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.compact-source-label {
+  margin: 0;
+  color: #fecdd3;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.compact-project-picker-wrap {
+  min-width: 0;
+}
+
+.compact-project-picker-wrap .project-picker,
+.compact-project-picker-wrap select,
+.compact-source-controls-balanced .compact-jira-field input {
+  width: 100%;
+  height: 46px;
+  min-height: 46px;
+  max-height: 46px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  background: rgba(0, 0, 0, 0.66);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 850;
+  padding: 0 14px;
+  outline: none;
+}
+
+.compact-project-picker-wrap .project-picker {
+  display: block;
+}
+
+.compact-project-picker-wrap .project-picker label,
+.compact-project-picker-wrap .project-picker p,
+.compact-project-picker-wrap .project-picker .report-kicker {
+  display: none !important;
+}
+
+.compact-project-picker-wrap .project-picker select:focus,
+.compact-source-controls-balanced .compact-jira-field input:focus {
+  border-color: rgba(96, 165, 250, 0.76);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
+}
+
+.compact-jira-fetch-button {
+  width: 88px;
+  height: 46px;
+  min-height: 46px;
+  max-height: 46px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.42);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.92), rgba(30, 41, 59, 0.95)),
+    rgba(30, 64, 175, 0.72);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.compact-jira-fetch-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.compact-source-status {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 38px;
+  padding: 9px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  background: rgba(20, 83, 45, 0.18);
+  color: #bbf7d0;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.compact-source-status-error {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.18);
+  color: #fecaca;
+}
+
+.compact-source-status a,
+.compact-source-status button {
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  background: rgba(30, 64, 175, 0.28);
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 950;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.compact-source-status button {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.24);
+}
+
+/* Retired/sidebar leftovers remain hidden if still present. */
+.app-sidebar-project-memory-retired,
+.app-sidebar-jira-source-retired,
+.app-hero-context-dock,
+.app-hero-context-dock-fixed,
+.app-hero-memory-strip {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .compact-source-controls-balanced {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-jira-fetch-button {
     width: 100%;
   }
 
-  .hero-context-secondary-button,
-  .hero-context-green-button,
-  .hero-context-expanded button {
+  .compact-source-status {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .compact-source-status a,
+  .compact-source-status button {
     width: 100%;
+    text-align: center;
+  }
+}
+/* Compact Project + Jira polish pass */
+
+.compact-source-controls-polished {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  margin: 16px 0 16px;
+}
+
+.compact-control-card {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.compact-control-label {
+  margin: 0;
+  color: #fecdd3;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.compact-project-picker-wrap {
+  min-width: 0;
+}
+
+/* Hide the nested ProjectPicker label so the card only says Project once. */
+.compact-project-picker-wrap .report-kicker,
+.compact-project-picker-wrap label,
+.compact-project-picker-wrap p {
+  display: none !important;
+}
+
+.compact-project-picker-wrap .project-picker {
+  display: block;
+  width: 100%;
+}
+
+.compact-project-picker-wrap .project-picker select,
+.compact-control-card-jira input {
+  width: 100%;
+  height: 46px;
+  min-height: 46px;
+  max-height: 46px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  background: rgba(0, 0, 0, 0.66);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 850;
+  padding: 0 14px;
+  outline: none;
+}
+
+.compact-project-picker-wrap .project-picker select:focus,
+.compact-control-card-jira input:focus {
+  border-color: rgba(96, 165, 250, 0.76);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
+}
+
+.compact-control-card-jira {
+  align-self: start;
+}
+
+.compact-jira-fetch-button {
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.42);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.92), rgba(30, 41, 59, 0.95)),
+    rgba(30, 64, 175, 0.72);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.compact-jira-fetch-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.compact-source-status {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 38px;
+  padding: 9px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  background: rgba(20, 83, 45, 0.18);
+  color: #bbf7d0;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.compact-source-status-error {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.18);
+  color: #fecaca;
+}
+
+.compact-source-status a,
+.compact-source-status button {
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  background: rgba(30, 64, 175, 0.28);
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 950;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.compact-source-status button {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.24);
+}
+
+/* Keep retired/failed UI sections out of the layout. */
+.app-sidebar-project-memory-retired,
+.app-sidebar-jira-source-retired,
+.app-hero-context-dock,
+.app-hero-context-dock-fixed,
+.app-hero-memory-strip {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .compact-source-controls-polished {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-source-status {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .compact-source-status a,
+  .compact-source-status button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+
+
+/* Stacked Project + Jira controls.
+   Order in left pane:
+   Four tools
+   Project dropdown
+   Jira Ticket + Fetch
+   Main text blob
+*/
+
+.stacked-source-controls {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.stacked-source-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.stacked-source-field label {
+  margin: 0;
+  color: #fecdd3;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.stacked-source-field select,
+.stacked-source-field input {
+  width: 100%;
+  height: 46px;
+  min-height: 46px;
+  max-height: 46px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  background: rgba(0, 0, 0, 0.66);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 850;
+  padding: 0 14px;
+  outline: none;
+}
+
+.stacked-source-field select:focus,
+.stacked-source-field input:focus {
+  border-color: rgba(96, 165, 250, 0.76);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
+}
+
+.stacked-jira-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  gap: 10px;
+  align-items: center;
+}
+
+.stacked-fetch-button {
+  width: 96px;
+  height: 46px;
+  min-height: 46px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.42);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.92), rgba(30, 41, 59, 0.95)),
+    rgba(30, 64, 175, 0.72);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.stacked-fetch-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.stacked-source-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 38px;
+  padding: 9px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  background: rgba(20, 83, 45, 0.18);
+  color: #bbf7d0;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.stacked-source-status-error {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.18);
+  color: #fecaca;
+}
+
+.stacked-source-status a,
+.stacked-source-status button {
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  background: rgba(30, 64, 175, 0.28);
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 950;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.stacked-source-status button {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.24);
+}
+
+/* Hide failed/retired compact/hero versions if they still exist. */
+.dead-simple-source-row,
+.compact-source-controls,
+.compact-source-controls-balanced,
+.compact-source-controls-polished,
+.app-sidebar-project-memory-retired,
+.app-sidebar-jira-source-retired,
+.app-hero-context-dock,
+.app-hero-context-dock-fixed,
+.app-hero-memory-strip {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .stacked-jira-row {
+    grid-template-columns: 1fr;
+  }
+
+  .stacked-fetch-button {
+    width: 100%;
+  }
+
+  .stacked-source-status {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .stacked-source-status a,
+  .stacked-source-status button {
+    width: 100%;
+    text-align: center;
   }
 }
 

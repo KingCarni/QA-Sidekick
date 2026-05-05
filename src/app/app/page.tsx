@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import AppHeaderMenu from "@/components/AppHeaderMenu";
-import AppHeroProjectContextDock from "@/components/AppHeroProjectContextDock";
 import AuthStatus from "@/components/AuthStatus";
 import AutomationExportPanel from "@/components/AutomationExportPanel";
 import BugEvidencePanel, {
@@ -15,7 +14,7 @@ import BugEvidencePanel, {
 import BugEvidencePreview from "@/components/BugEvidencePreview";
 import CoverageScorePanel from "@/components/CoverageScorePanel";
 import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
-import JiraImportPanel from "@/components/JiraImportPanel";
+import StackedProjectJiraControls from "@/components/StackedProjectJiraControls";
 import type { ActiveProjectContext } from "@/components/ProjectContextIndicator";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
 import TestCaseAutomationReadiness from "@/components/TestCaseAutomationReadiness";
@@ -2638,13 +2637,12 @@ export default function Home() {
       return;
     }
 
-    const enabledIds = activeProjectContext.sources
-      .filter((source) => source.isEnabled)
-      .slice(0, 4)
-      .map((source) => source.id);
+    const enabledSources = activeProjectContext.sources.filter((source) => source.isEnabled);
+    const defaultSourceIds = enabledSources.slice(0, 4).map((source) => source.id);
 
-    setSelectedProjectSourceIds(enabledIds);
-  }, [activeProjectContext?.project?.id, activeProjectContext?.enabledSourceCount]);
+    setSelectedProjectSourceIds(defaultSourceIds);
+    setSelectedProjectContextBlock(defaultSourceIds.length > 0 ? activeProjectContext.contextBlock : "");
+  }, [activeProjectContext]);
 
   function updateBugQuestionAnswer(question: string, answer: string) {
     setBugQuestionAnswers((current) => ({
@@ -3255,19 +3253,6 @@ export default function Home() {
             Generate test cases, expose risks, improve bug reports, and turn vague tickets<br />
             into actionable QA plans.
           </p>
-
-          <AppHeroProjectContextDock
-            activeProject={activeProject}
-            onActiveProjectChange={setActiveProject}
-            activeProjectContext={activeProjectContext}
-            isProjectContextLoading={isProjectContextLoading}
-            projectContextError={projectContextError}
-            sourceInput={input}
-            toolId={activeTool}
-            selectedProjectSourceIds={selectedProjectSourceIds}
-            onSelectedProjectSourceIdsChange={setSelectedProjectSourceIds}
-            onSelectedProjectContextBlockChange={setSelectedProjectContextBlock}
-          />
         </div>
 
         <div className="hero-brand-account">
@@ -3344,25 +3329,20 @@ export default function Home() {
             ))}
           </div>
 
-          <JiraImportPanel
-            isVisible={activeTool !== "bug"}
-            onImport={handleJiraTicketImport}
+          <StackedProjectJiraControls
+            activeProject={activeProject}
+            onActiveProjectChange={setActiveProject}
+            onJiraImport={handleJiraTicketImport}
           />
 
-          {activeTool !== "bug" && importedJiraTicket?.key ? (
-            <p className="active-jira-source-note">
-              Active Jira source: {importedJiraTicket.key}. Use Remove Source in the Jira panel to clear it.
-            </p>
-          ) : (
-            <textarea
-              value={input}
-              onChange={(event) => {
-                setInput(event.target.value);
-                setImportedJiraTicket(null);
-              }}
-              placeholder={tool.placeholder}
-            />
-          )}
+          <textarea
+            value={input}
+            onChange={(event) => {
+              setInput(event.target.value);
+              setImportedJiraTicket(null);
+            }}
+            placeholder={tool.placeholder}
+          />
 
           {activeTool === "tests" && currentTestOutput ? (
             <section className={`follow-up-answer-box test-follow-up-box ${testFollowUpQuestions.length > 0 ? "has-active-followups" : ""}`}>
