@@ -106,14 +106,34 @@ model QAProject {
   userId      String
   name        String
   description String?
+  productType String   @default("other")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   reports QAReport[]
+  sources QAProjectSource[]
 
   @@unique([userId, name])
   @@index([userId, createdAt])
+}
+
+model QAProjectSource {
+  id         String   @id @default(cuid())
+  projectId  String
+  title      String
+  sourceType String   @default("other")
+  body       String
+  tags       String[] @default([])
+  isEnabled  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  project QAProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, isEnabled])
+  @@index([projectId, updatedAt])
+  @@index([sourceType])
 }
 
 model JiraConfig {

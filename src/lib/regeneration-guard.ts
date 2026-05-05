@@ -11,10 +11,6 @@ export type GenerationFingerprintInput = {
   answeredFollowUps?: unknown;
 };
 
-/**
- * Stable stringify for small UI state objects.
- * Avoid JSON.stringify directly because object key order can drift.
- */
 export function stableStringify(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (typeof value !== "object") return String(value);
@@ -38,10 +34,6 @@ export function normalizeForFingerprint(value: unknown): string {
     .trim();
 }
 
-/**
- * Tiny deterministic hash for browser state keys.
- * This is not security-sensitive. It is only for detecting input changes.
- */
 export function hashFingerprint(value: string): string {
   let hash = 2166136261;
 

@@ -12150,3 +12150,707 @@ button.secondary-action-button.save-report-button,
   font-weight: 950;
   cursor: pointer;
 }
+
+
+/* QAS-64.5 Refresh vs Fresh AI Regenerate */
+
+.generation-consistency-note {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(20, 83, 45, 0.18);
+  color: #bbf7d0;
+  font-size: 0.95rem;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.generation-actions-row {
+  display: grid;
+  gap: 10px;
+}
+
+.generation-actions-row button {
+  width: 100%;
+}
+
+.fresh-ai-regenerate-button {
+  min-height: 46px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.88), rgba(30, 41, 59, 0.92)),
+    rgba(30, 64, 175, 0.72);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.fresh-ai-regenerate-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.refresh-current-button-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* QAS-65 Large test suite display controls */
+
+.test-case-display-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin: 22px 0;
+  padding: 18px 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 34%),
+    rgba(7, 8, 12, 0.78);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+}
+
+.test-case-display-controls strong {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 1.08rem;
+}
+
+.test-case-display-controls span {
+  display: block;
+  max-width: 640px;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.45;
+}
+
+.test-case-display-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.test-case-display-actions button {
+  min-height: 44px;
+  padding: 11px 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.88), rgba(30, 41, 59, 0.92)),
+    rgba(30, 64, 175, 0.72);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.test-case-display-actions button:first-child {
+  border-color: rgba(34, 197, 94, 0.36);
+  background:
+    linear-gradient(180deg, rgba(22, 101, 52, 0.92), rgba(20, 83, 45, 0.92)),
+    rgba(20, 83, 45, 0.78);
+}
+
+.test-case-display-actions button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(147, 197, 253, 0.68);
+}
+
+@media (max-width: 780px) {
+  .test-case-display-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .test-case-display-actions {
+    justify-content: stretch;
+  }
+
+  .test-case-display-actions button {
+    width: 100%;
+  }
+}
+
+
+/* QAS-65.1 Paged test case navigation + Jira source cleanup */
+
+.test-case-display-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin: 26px 0 0;
+  padding: 18px 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 34%),
+    rgba(7, 8, 12, 0.78);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+}
+
+.test-case-display-controls strong {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 1.08rem;
+}
+
+.test-case-display-controls span {
+  display: block;
+  max-width: 660px;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.45;
+}
+
+.test-case-display-actions,
+.test-case-pager-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.test-case-display-actions button {
+  min-height: 44px;
+  padding: 11px 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.88), rgba(30, 41, 59, 0.92)),
+    rgba(30, 64, 175, 0.72);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.test-case-display-actions button:nth-child(3) {
+  border-color: rgba(34, 197, 94, 0.36);
+  background:
+    linear-gradient(180deg, rgba(22, 101, 52, 0.92), rgba(20, 83, 45, 0.92)),
+    rgba(20, 83, 45, 0.78);
+}
+
+.test-case-display-actions button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(147, 197, 253, 0.68);
+}
+
+.test-case-display-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+  transform: none;
+}
+
+.jira-import-preview-top-no-pill {
+  display: block;
+}
+
+.jira-import-preview-top-no-pill .jira-confidence-pill {
+  display: none !important;
+}
+
+@media (max-width: 780px) {
+  .test-case-display-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .test-case-display-actions {
+    justify-content: stretch;
+  }
+
+  .test-case-display-actions button {
+    width: 100%;
+  }
+}
+
+
+/* QAS-65 Projects Foundation */
+
+.project-settings-panel {
+  width: 100%;
+  padding: 26px;
+  border-radius: 28px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 32%),
+    radial-gradient(circle at bottom left, rgba(248, 113, 113, 0.08), transparent 28%),
+    rgba(7, 8, 12, 0.82);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.project-settings-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.project-settings-header h2 {
+  margin: 4px 0 8px;
+  color: #ffffff;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1;
+}
+
+.project-settings-header p {
+  max-width: 780px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.55;
+}
+
+.project-settings-header button,
+.project-editor-actions button {
+  min-height: 46px;
+  padding: 12px 16px;
+  border-radius: 15px;
+  border: 1px solid rgba(248, 113, 113, 0.42);
+  background:
+    linear-gradient(180deg, rgba(220, 38, 38, 0.96), rgba(153, 27, 27, 0.94)),
+    rgba(153, 27, 27, 0.88);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.project-settings-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.project-list-card,
+.project-editor-card {
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.project-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.project-list-item {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  min-height: 62px;
+  padding: 12px 14px;
+  text-align: left;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.project-list-item-active {
+  border-color: rgba(96, 165, 250, 0.48);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.38), rgba(15, 23, 42, 0.72)),
+    rgba(30, 64, 175, 0.22);
+}
+
+.project-list-item span,
+.project-empty-text {
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.project-editor-card {
+  display: grid;
+  gap: 14px;
+}
+
+.project-editor-card label {
+  display: grid;
+  gap: 8px;
+  color: #fecdd3;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.project-editor-card input,
+.project-editor-card select,
+.project-editor-card textarea {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background: rgba(0, 0, 0, 0.64);
+  color: #ffffff;
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  padding: 13px 14px;
+}
+
+.project-editor-card textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.project-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.project-editor-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.project-danger-button {
+  border-color: rgba(248, 113, 113, 0.34) !important;
+  background:
+    linear-gradient(180deg, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.92)),
+    rgba(17, 24, 39, 0.88) !important;
+}
+
+.project-settings-message,
+.project-settings-error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.project-settings-message {
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  background: rgba(20, 83, 45, 0.18);
+  color: #bbf7d0;
+}
+
+.project-settings-error {
+  border: 1px solid rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.18);
+  color: #fecaca;
+}
+
+.project-picker {
+  display: inline-grid;
+  gap: 6px;
+  min-width: 220px;
+  color: #fecdd3;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.project-picker select {
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  background: rgba(0, 0, 0, 0.62);
+  color: #ffffff;
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  padding: 10px 12px;
+}
+
+.project-picker-empty {
+  min-height: 44px;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  background: rgba(15, 23, 42, 0.56);
+}
+
+@media (max-width: 860px) {
+  .project-settings-header {
+    flex-direction: column;
+  }
+
+  .project-settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-editor-actions,
+  .project-settings-header button {
+    width: 100%;
+  }
+
+  .project-editor-actions button {
+    width: 100%;
+  }
+}
+
+
+
+/* QAS-66 Project Source Vault */
+
+.project-source-vault-panel {
+  width: 100%;
+  padding: 26px;
+  border-radius: 28px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 32%),
+    radial-gradient(circle at bottom left, rgba(248, 113, 113, 0.08), transparent 28%),
+    rgba(7, 8, 12, 0.82);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.project-source-vault-empty h2,
+.source-vault-header h2 {
+  margin: 4px 0 8px;
+  color: #ffffff;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1;
+}
+
+.project-source-vault-empty p,
+.source-vault-header p {
+  max-width: 780px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.55;
+}
+
+.source-vault-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.source-vault-header button,
+.source-editor-actions button {
+  min-height: 46px;
+  padding: 12px 16px;
+  border-radius: 15px;
+  border: 1px solid rgba(248, 113, 113, 0.42);
+  background: linear-gradient(180deg, rgba(220, 38, 38, 0.96), rgba(153, 27, 27, 0.94));
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.source-vault-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.source-vault-stats div,
+.source-list-card,
+.source-editor-card {
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.source-vault-stats div {
+  padding: 16px;
+}
+
+.source-vault-stats strong {
+  display: block;
+  color: #ffffff;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.source-vault-stats span,
+.source-list-item span,
+.source-list-item small,
+.source-empty-text {
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.source-vault-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.source-list-card,
+.source-editor-card {
+  padding: 18px;
+}
+
+.source-list,
+.source-editor-card {
+  display: grid;
+  gap: 14px;
+}
+
+.source-list {
+  margin-top: 12px;
+}
+
+.source-list-item {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.source-list-item-active {
+  border-color: rgba(96, 165, 250, 0.48);
+  background: linear-gradient(180deg, rgba(30, 64, 175, 0.38), rgba(15, 23, 42, 0.72));
+}
+
+.source-list-item button:first-child {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 6px;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.source-enabled-toggle {
+  min-height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(248, 113, 113, 0.34);
+  background: rgba(127, 29, 29, 0.2);
+  color: #fecaca;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.source-enabled-toggle-on {
+  border-color: rgba(34, 197, 94, 0.34);
+  background: rgba(20, 83, 45, 0.22);
+  color: #bbf7d0;
+}
+
+.source-editor-card label {
+  display: grid;
+  gap: 8px;
+  color: #fecdd3;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.source-editor-card input,
+.source-editor-card select,
+.source-editor-card textarea {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background: rgba(0, 0, 0, 0.64);
+  color: #ffffff;
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  padding: 13px 14px;
+}
+
+.source-editor-card textarea {
+  min-height: 280px;
+  resize: vertical;
+}
+
+.source-enabled-checkbox {
+  display: flex !important;
+  align-items: center;
+  gap: 10px !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.source-enabled-checkbox input {
+  width: auto;
+  min-width: 18px;
+}
+
+.source-editor-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.9rem;
+}
+
+.source-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.source-danger-button {
+  border-color: rgba(248, 113, 113, 0.34) !important;
+  background: linear-gradient(180deg, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.92)) !important;
+}
+
+.source-settings-message,
+.source-settings-error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.source-settings-message {
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  background: rgba(20, 83, 45, 0.18);
+  color: #bbf7d0;
+}
+
+.source-settings-error {
+  border: 1px solid rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.18);
+  color: #fecaca;
+}
+
+@media (max-width: 900px) {
+  .source-vault-header,
+  .source-editor-actions {
+    flex-direction: column;
+  }
+
+  .source-vault-grid,
+  .source-vault-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .source-vault-header button,
+  .source-editor-actions button {
+    width: 100%;
+  }
+}
+

@@ -16,6 +16,7 @@ import CoverageScorePanel from "@/components/CoverageScorePanel";
 import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
 import JiraImportPanel from "@/components/JiraImportPanel";
 import TestCaseAutomationReadiness from "@/components/TestCaseAutomationReadiness";
+import TestCaseDisplayControls from "@/components/TestCaseDisplayControls";
 import {
   evaluateAutomationReadinessCase,
   getAutomationCaseTextFromObject,
@@ -24,7 +25,6 @@ import {
 import {
   buildGenerationFingerprint,
   buildOutputGenerationKey,
-  shouldReuseGeneratedTestCases,
 } from "@/lib/regeneration-guard";
 import type { ParsedJiraTicket } from "@/lib/jira-ticket";
 
@@ -159,6 +159,8 @@ const tools: Array<{ id: ToolId; label: string; button: string; placeholder: str
     placeholder: "Paste an existing test case or checklist you want improved...",
   },
 ];
+
+const DEFAULT_VISIBLE_TEST_CASE_LIMIT = 10;
 
 function humanizeKey(key: string) {
   return key
@@ -1156,6 +1158,7 @@ function TestCaseCards({
   const [savedMarkdown, setSavedMarkdown] = useState("");
   const [editableTestCases, setEditableTestCases] = useState<TestCase[]>(testCases);
   const [editingTestCaseIndex, setEditingTestCaseIndex] = useState<number | null>(null);
+  const [testCasePageIndex, setTestCasePageIndex] = useState(0);
 
   useEffect(() => {
     setEditableTestCases(testCases);
@@ -1163,6 +1166,10 @@ function TestCaseCards({
     setEditedMarkdown("");
     setEditingTestCaseIndex(null);
   }, [testCaseGenerationKey, testCases]);
+
+  useEffect(() => {
+    setTestCasePageIndex(0);
+  }, [testCaseGenerationKey]);
 
   const generatedMarkdown = useMemo(
     () => buildTestCasesMarkdown(editableTestCases, answeredFollowUps),
@@ -1172,6 +1179,17 @@ function TestCaseCards({
   const allText = useMemo(
     () => savedMarkdown || editableTestCases.map((testCase, index) => formatTestCase(testCase, index)).join("\n\n---\n\n"),
     [savedMarkdown, editableTestCases]
+  );
+  const renderedTestCases = editableTestCases.length ? editableTestCases : testCases;
+  const totalTestCasePages = Math.max(
+    1,
+    Math.ceil(renderedTestCases.length / DEFAULT_VISIBLE_TEST_CASE_LIMIT)
+  );
+  const safeTestCasePageIndex = Math.min(testCasePageIndex, totalTestCasePages - 1);
+  const visibleTestCaseStartIndex = safeTestCasePageIndex * DEFAULT_VISIBLE_TEST_CASE_LIMIT;
+  const visibleTestCases = renderedTestCases.slice(
+    visibleTestCaseStartIndex,
+    visibleTestCaseStartIndex + DEFAULT_VISIBLE_TEST_CASE_LIMIT
   );
 
   function updateTestCaseBadge(index: number, field: "type" | "priority", value: string) {
@@ -1282,7 +1300,7 @@ function TestCaseCards({
         <AutomationExportPanel
           key={`automation-export-${testCaseGenerationKey}`}
           generationKey={testCaseGenerationKey}
-          testCases={editableTestCases}
+          testCases={renderedTestCases}
           bundleName="QAtalyst automation export"
         />
       ) : null}
@@ -1325,7 +1343,8 @@ function TestCaseCards({
       ) : null}
 
       <div className="test-card-list">
-        {editableTestCases.map((testCase, index) => {
+        {visibleTestCases.map((testCase, visibleIndex) => {
+          const index = visibleTestCaseStartIndex + visibleIndex;
           const copyId = `case-${index}`;
           const steps = normalizeSteps(testCase.steps);
           const safeTitle = safeText(testCase.title);
@@ -1471,6 +1490,18 @@ function TestCaseCards({
           );
         })}
       </div>
+
+      <TestCaseDisplayControls
+        totalCount={renderedTestCases.length}
+        pageIndex={safeTestCasePageIndex}
+        pageSize={DEFAULT_VISIBLE_TEST_CASE_LIMIT}
+        onFirstPage={() => setTestCasePageIndex(0)}
+        onPreviousPage={() => setTestCasePageIndex((value) => Math.max(0, value - 1))}
+        onNextPage={() =>
+          setTestCasePageIndex((value) => Math.min(totalTestCasePages - 1, value + 1))
+        }
+        onLastPage={() => setTestCasePageIndex(totalTestCasePages - 1)}
+      />
 
     </div>
   );
@@ -2440,7 +2471,8 @@ export default function Home() {
   const [saveReportMessage, setSaveReportMessage] = useState("");
   const [savedReportId, setSavedReportId] = useState("");
   const [lastTestGenerationFingerprint, setLastTestGenerationFingerprint] = useState("");
-  const [lastTestGenerationNotice, setLastTestGenerationNotice] = useState("");
+  const [testCaseRefreshNonce, setTestCaseRefreshNonce] = useState(0);
+  const [testGenerationNotice, setTestGenerationNotice] = useState("");
 
   const tool = tools.find((item) => item.id === activeTool) ?? tools[0];
   const currentBugReport = activeTool === "bug" ? getBugReportFromOutput(output) : null;
@@ -2520,18 +2552,21 @@ export default function Home() {
     activeTool,
     sourceText: input,
     jiraKey: importedJiraTicket?.key,
-    jiraUrl: importedJiraTicket?.url,
     additionalContext: testAdditionalContext,
     answeredFollowUps: testAnsweredFollowUps,
   });
   const testCaseGenerationKey = useMemo(() => {
+    const currentTestCaseCount = Array.isArray(currentTestOutput?.testCases)
+      ? currentTestOutput.testCases.length
+      : 0;
+
     return buildOutputGenerationKey({
       activeTool,
-      inputFingerprint: currentTestFingerprint,
+      inputFingerprint: `${currentTestFingerprint}:${testCaseRefreshNonce}`,
       outputText: output,
-      testCaseCount: currentTestOutput?.testCases?.length ?? 0,
+      testCaseCount: currentTestCaseCount,
     });
-  }, [activeTool, currentTestFingerprint, currentTestOutput?.testCases?.length, output]);
+  }, [activeTool, currentTestFingerprint, currentTestOutput, output, testCaseRefreshNonce]);
 
   useEffect(() => {
     setSaveReportStatus("idle");
@@ -2784,9 +2819,28 @@ export default function Home() {
     setBugLogFiles((current) => current.filter((file) => file.name !== name));
   }
 
-  async function runTool() {
+  function handleRefreshCurrentTestCases(): void {
+    setTestCaseRefreshNonce((value) => value + 1);
+    setTestGenerationNotice(
+      "No source changes detected. Refreshed scoring and export from the current generated test cases."
+    );
+  }
+
+  async function runTool(options?: { forceFreshGeneration?: boolean }) {
+    const forceFreshGeneration = options?.forceFreshGeneration ?? false;
+
     if (!input.trim()) {
       setOutput("Paste a ticket, bug report, or test case first.");
+      return;
+    }
+
+    if (
+      activeTool === "tests" &&
+      !forceFreshGeneration &&
+      (Array.isArray(currentTestOutput?.testCases) ? currentTestOutput.testCases.length : 0) > 0 &&
+      currentTestFingerprint === lastTestGenerationFingerprint
+    ) {
+      handleRefreshCurrentTestCases();
       return;
     }
 
@@ -2929,31 +2983,6 @@ export default function Home() {
 
     if (activeTool === "improve" && mergedImproveAnsweredFollowUps.length > improveAnsweredFollowUpHistory.length) {
       setImproveAnsweredFollowUpHistory(mergedImproveAnsweredFollowUps);
-    }
-
-    const runTestFingerprint = buildGenerationFingerprint({
-      activeTool,
-      sourceText: input,
-      jiraKey: importedJiraTicket?.key,
-      jiraUrl: importedJiraTicket?.url,
-      additionalContext: testAdditionalContext,
-      answeredFollowUps: answeredTestFollowUps,
-    });
-
-    if (
-      shouldReuseGeneratedTestCases({
-        activeTool,
-        currentFingerprint: runTestFingerprint,
-        lastGeneratedFingerprint: lastTestGenerationFingerprint,
-        existingTestCaseCount: currentTestOutput?.testCases?.length ?? 0,
-        forceFreshGeneration: false,
-      })
-    ) {
-      setLastTestGenerationNotice(
-        "No source changes detected. Keeping the current generated test cases and refreshing scoring/export."
-      );
-      setIsRunning(false);
-      return;
     }
 
     const requestInput = hasImproveFollowUpContext
@@ -3109,8 +3138,8 @@ export default function Home() {
 
       setOutput(result);
       if (activeTool === "tests") {
-        setLastTestGenerationFingerprint(runTestFingerprint);
-        setLastTestGenerationNotice("");
+        setLastTestGenerationFingerprint(currentTestFingerprint);
+        setTestGenerationNotice("");
       }
     } catch (error) {
       setOutput(error instanceof Error ? error.message : "Something went wrong.");
@@ -3581,7 +3610,7 @@ export default function Home() {
             </section>
           ) : null}
 
-          <button className="run-button" type="button" disabled={isRunning} onClick={runTool}>
+          <button className="run-button" type="button" disabled={isRunning} onClick={() => runTool()}>
             {isRunning
               ? "Running..."
               : activeTool === "bug" && currentBugReport
@@ -3589,15 +3618,16 @@ export default function Home() {
                 : activeTool === "risk" && currentRiskReview
                   ? "Re-assess Risk"
                   : activeTool === "tests" && currentTestOutput
-                    ? "Regenerate Test Cases"
+                    ? "Refresh Scores/Export"
                     : activeTool === "improve" && currentTestImprovement
                       ? "Re-improve Test Case"
                       : tool.button}
           </button>
 
-          {lastTestGenerationNotice && activeTool === "tests" ? (
-            <p className="generation-consistency-note">{lastTestGenerationNotice}</p>
+          {testGenerationNotice ? (
+            <p className="generation-consistency-note">{testGenerationNotice}</p>
           ) : null}
+
         </aside>
 
         <section className="panel output-panel">

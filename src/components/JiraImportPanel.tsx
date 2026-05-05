@@ -125,15 +125,11 @@ export default function JiraImportPanel({ onImport, isVisible = true }: JiraImpo
 
           {hasFetchedTicket ? (
             <div className="jira-import-preview jira-import-preview-compact jira-import-preview-fetched">
-              <div className="jira-import-preview-top">
+              <div className="jira-import-preview-top jira-import-preview-top-no-pill">
                 <div>
                   <p className="report-kicker">Parsed Jira Source</p>
                   <strong>{getJiraImportSummary(parsed)}</strong>
                 </div>
-
-                <span className={`jira-confidence-pill jira-confidence-${parsed.confidence}`}>
-                  {parsed.confidence}
-                </span>
               </div>
 
               <div className="jira-linked-mini-row">
