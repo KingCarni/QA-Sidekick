@@ -14073,3 +14073,335 @@ button.secondary-action-button.save-report-button,
   }
 }
 
+
+
+/* QAS-71 scoring legitimacy pass */
+
+.coverage-score-method {
+  max-width: 720px;
+  margin-top: 10px !important;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+
+
+/* QAS-70 follow-up: scoring comparison + cleaner Jira fetched summary */
+
+.score-comparison-card {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.score-comparison-card > div {
+  min-height: 104px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 38%),
+    rgba(0, 0, 0, 0.34);
+}
+
+.score-comparison-card strong {
+  display: block;
+  margin-top: 8px;
+  color: #ffffff;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.score-comparison-card span {
+  display: block;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.score-delta {
+  color: #e5e7eb !important;
+}
+
+.score-delta-good,
+.score-delta-strong {
+  color: #86efac !important;
+}
+
+.score-delta-down {
+  color: #fca5a5 !important;
+}
+
+.coverage-score-number small {
+  display: block;
+  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.coverage-score-method {
+  max-width: 720px;
+  margin-top: 10px !important;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.jira-fetched-summary-card {
+  margin: 12px 0 16px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(34, 197, 94, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 40%),
+    rgba(0, 0, 0, 0.34);
+}
+
+.jira-fetched-summary-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.jira-fetched-summary-top h4 {
+  margin: 4px 0 0;
+  color: #ffffff;
+}
+
+.jira-fetched-summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.jira-fetched-summary-actions a,
+.jira-fetched-summary-actions button {
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  background: rgba(30, 64, 175, 0.28);
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 950;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.jira-fetched-summary-actions button {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.24);
+}
+
+.jira-fetched-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.jira-fetched-summary-grid > div {
+  min-width: 0;
+  padding: 11px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.jira-fetched-summary-grid span {
+  display: block;
+  margin-bottom: 6px;
+  color: #fecdd3;
+  font-size: 0.7rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.jira-fetched-summary-grid strong {
+  display: block;
+  color: #ffffff;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .score-comparison-card,
+  .jira-fetched-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jira-fetched-summary-top {
+    flex-direction: column;
+  }
+
+  .jira-fetched-summary-actions,
+  .jira-fetched-summary-actions a,
+  .jira-fetched-summary-actions button {
+    width: 100%;
+  }
+
+  .jira-fetched-summary-actions a,
+  .jira-fetched-summary-actions button {
+    text-align: center;
+  }
+}
+
+
+
+/* QAS-70 follow-up 2 */
+
+.coverage-score-number small,
+.coverage-score-number .coverage-score-number-label {
+  display: none !important;
+}
+
+.score-comparison-card {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.score-comparison-card > div {
+  min-height: 104px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 38%),
+    rgba(0, 0, 0, 0.34);
+}
+
+.score-comparison-card strong {
+  display: block;
+  margin-top: 8px;
+  color: #ffffff;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.score-comparison-card span {
+  display: block;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.score-delta {
+  color: #e5e7eb !important;
+}
+
+.score-delta-good,
+.score-delta-strong {
+  color: #86efac !important;
+}
+
+.score-delta-down {
+  color: #fca5a5 !important;
+}
+
+.coverage-score-method {
+  max-width: 720px;
+  margin-top: 10px !important;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.jira-fetched-summary-card {
+  margin: 12px 0 16px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(34, 197, 94, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 40%),
+    rgba(0, 0, 0, 0.34);
+}
+
+.jira-fetched-summary-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.jira-fetched-summary-top h4 {
+  margin: 4px 0 0;
+  color: #ffffff;
+}
+
+.jira-fetched-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.jira-fetched-summary-grid > div {
+  min-width: 0;
+  padding: 11px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.jira-fetched-summary-grid span {
+  display: block;
+  margin-bottom: 6px;
+  color: #fecdd3;
+  font-size: 0.7rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.jira-fetched-summary-grid strong {
+  display: block;
+  color: #ffffff;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .score-comparison-card,
+  .jira-fetched-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+/* QAS-73 scoring/source quality polish */
+
+.source-quality-signal-card {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.12), transparent 42%),
+    rgba(0, 0, 0, 0.28);
+}
+
+.source-quality-signal-card ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.source-quality-signal-card li + li {
+  margin-top: 4px;
+}
+
+.coverage-score-number small,
+.coverage-score-number .coverage-score-number-label {
+  display: none !important;
+}
+

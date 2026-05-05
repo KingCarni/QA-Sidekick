@@ -179,14 +179,14 @@ ${withProjectContext(input, options.projectContext)}
 }
 
 
-// QAS-45 Risk reassessment follow-up handling
+// Risk reassessment follow-up handling
 // When risk review input includes "Answered risk follow-up questions", use those answers to rebuild the risk review.
 // Do not repeat questions marked Resolved. If "No more risk follow-up questions requested by QA" is present, return an empty qaFollowUpQuestions array unless a critical blocker remains.
 // Keep risk follow-up questions low-noise and only ask questions that materially affect testing scope, implementation risk, acceptance criteria, or release decision-making.
 
 
 
-// QAS-46 Test case regeneration follow-up handling
+//   Test case regeneration follow-up handling
 // When generate-tests input includes "Answered test follow-up questions", use those answers to rebuild the test cases.
 // Do not repeat questions marked Resolved. If "No more test follow-up questions requested by QA" is present, return an empty qaFollowUpQuestions array unless a critical blocker remains.
 // Keep test follow-up questions low-noise and only ask questions that materially affect test coverage, test data, role/platform scope, acceptance criteria, or expected behavior.
@@ -194,7 +194,7 @@ ${withProjectContext(input, options.projectContext)}
 
 
 
-// QAS-48 Test Improver structured output
+//  Test Improver structured output
 // Use this exact JSON shape for improve-test responses:
 // {
 //   "testImprovement": {
@@ -218,7 +218,7 @@ ${withProjectContext(input, options.projectContext)}
 
 
 
-// QAS-48 Test Improver follow-up handling
+// Test Improver follow-up handling
 // When improve-test input includes "Answered Test Improver follow-up questions", use those answers to rebuild the improved test case.
 // Do not repeat questions marked Resolved. If "No more Test Improver follow-up questions requested by QA" is present, return an empty followUpQuestions array unless a critical blocker remains.
 // Keep Test Improver follow-up questions low-noise and only ask questions that materially improve the test's preconditions, steps, expected result, added coverage, missing info, or QA notes.

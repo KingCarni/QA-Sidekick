@@ -36,6 +36,12 @@ function extractJiraKeyOrUrl(value: string) {
   return key?.toUpperCase() ?? "";
 }
 
+function fieldValue(value: unknown) {
+  if (value === null || value === undefined || value === "") return "Not provided.";
+  if (Array.isArray(value)) return value.length ? value.join(", ") : "Not provided.";
+  return String(value);
+}
+
 export default function StackedProjectJiraControls({
   activeProject,
   onActiveProjectChange,
@@ -47,6 +53,7 @@ export default function StackedProjectJiraControls({
   const [fetchState, setFetchState] = useState<"idle" | "fetching" | "fetched" | "error">("idle");
   const [fetchMessage, setFetchMessage] = useState("");
   const [fetchedBrowseUrl, setFetchedBrowseUrl] = useState("");
+  const [fetchedTicket, setFetchedTicket] = useState<ParsedJiraTicket | null>(null);
 
   const jiraKeyOrUrl = useMemo(() => extractJiraKeyOrUrl(jiraQuery), [jiraQuery]);
   const canFetch = Boolean(jiraKeyOrUrl) && fetchState !== "fetching";
@@ -92,6 +99,7 @@ export default function StackedProjectJiraControls({
     setFetchState("fetching");
     setFetchMessage("");
     setFetchedBrowseUrl("");
+    setFetchedTicket(null);
 
     try {
       const response = await fetch(`/api/jira/issues/${encodeURIComponent(jiraKeyOrUrl)}`, {
@@ -107,6 +115,7 @@ export default function StackedProjectJiraControls({
       setFetchState("fetched");
       setFetchMessage(`Fetched ${payload.issue.key}`);
       setFetchedBrowseUrl(payload.issue.browseUrl || "");
+      setFetchedTicket(payload.issue.parsedTicket);
       onJiraImport(payload.issue.normalizedText, payload.issue.parsedTicket);
     } catch (error) {
       setFetchState("error");
@@ -119,6 +128,7 @@ export default function StackedProjectJiraControls({
     setFetchState("idle");
     setFetchMessage("");
     setFetchedBrowseUrl("");
+    setFetchedTicket(null);
     onJiraImport("", parseJiraTicket(""));
   }
 
@@ -146,34 +156,33 @@ export default function StackedProjectJiraControls({
       <div className="stacked-source-field">
         <label htmlFor="stacked-jira-input">Jira Ticket</label>
 
-        <div className="stacked-jira-row">
-          <input
-            id="stacked-jira-input"
-            value={jiraQuery}
-            placeholder="QAS-61 or Jira URL"
-            onChange={(event) => {
-              setJiraQuery(event.target.value);
-              setFetchState("idle");
-              setFetchMessage("");
-              setFetchedBrowseUrl("");
-            }}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                void handleFetchFromJira();
-              }
-            }}
-          />
+        <input
+          id="stacked-jira-input"
+          value={jiraQuery}
+          placeholder="QAS-61 or Jira URL"
+          onChange={(event) => {
+            setJiraQuery(event.target.value);
+            setFetchState("idle");
+            setFetchMessage("");
+            setFetchedBrowseUrl("");
+            setFetchedTicket(null);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              void handleFetchFromJira();
+            }
+          }}
+        />
 
-          <button
-            className="stacked-fetch-button"
-            type="button"
-            disabled={!canFetch}
-            onClick={handleFetchFromJira}
-          >
-            {fetchState === "fetching" ? "Fetching..." : "Fetch"}
-          </button>
-        </div>
+        <button
+          className="stacked-fetch-button"
+          type="button"
+          disabled={!canFetch}
+          onClick={handleFetchFromJira}
+        >
+          {fetchState === "fetching" ? "Fetching..." : "Fetch Jira Ticket"}
+        </button>
       </div>
 
       {projectError ? (
@@ -198,6 +207,49 @@ export default function StackedProjectJiraControls({
             </button>
           ) : null}
         </div>
+      ) : null}
+
+      {fetchedTicket?.key ? (
+        <section className="jira-fetched-summary-card" aria-label="Fetched Jira ticket summary">
+          <div className="jira-fetched-summary-top">
+            <div>
+              <p className="report-kicker">Fetched Jira Ticket</p>
+              <h4>{fetchedTicket.key}</h4>
+            </div>
+          </div>
+
+          <div className="jira-fetched-summary-grid">
+            <div>
+              <span>Summary</span>
+              <strong>{fieldValue(fetchedTicket.summary)}</strong>
+            </div>
+
+            <div>
+              <span>Issue Type</span>
+              <strong>{fieldValue(fetchedTicket.issueType)}</strong>
+            </div>
+
+            <div>
+              <span>Status</span>
+              <strong>{fieldValue(fetchedTicket.status)}</strong>
+            </div>
+
+            <div>
+              <span>Priority</span>
+              <strong>{fieldValue(fetchedTicket.priority)}</strong>
+            </div>
+
+            <div>
+              <span>Labels</span>
+              <strong>{fieldValue(fetchedTicket.labels)}</strong>
+            </div>
+
+            <div>
+              <span>Acceptance Criteria</span>
+              <strong>{Array.isArray(fetchedTicket.acceptanceCriteria) ? fetchedTicket.acceptanceCriteria.length : 0}</strong>
+            </div>
+          </div>
+        </section>
       ) : null}
     </section>
   );

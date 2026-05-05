@@ -110,7 +110,7 @@ export default function CompactProjectJiraControls({
               void handleFetchFromJira();
             }
           }}
-          placeholder="QAS-61"
+          placeholder="JIRA-01 or https://yourdomain.atlassian.net/browse/JIRA-01"
           value={jiraQuery}
         />
 
