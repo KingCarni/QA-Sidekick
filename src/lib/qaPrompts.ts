@@ -1,7 +1,20 @@
 export type QaMode = "generate-tests" | "analyze-risk" | "improve-bug" | "improve-test";
 
-export function buildQaPrompt(mode: QaMode, input: string) {
-  const base = `You are QA Sidekick, a senior QA analyst. Use only the provided ticket/content. Do not invent product behavior. Mark assumptions clearly. Return valid JSON only.`;
+export type ProjectContextPromptOptions = {
+  projectContext?: string;
+};
+
+function withProjectContext(input: string, projectContext = "") {
+  const context = projectContext.trim();
+
+  return `${context ? `PROJECT CONTEXT MEMORY:\n${context}\n\n` : ""}CURRENT USER SOURCE:\n${input}`;
+}
+
+export function buildQaPrompt(mode: QaMode, input: string, options: ProjectContextPromptOptions = {}) {
+  const base = `You are QA Sidekick, a senior QA analyst. Use only the provided ticket/content. Do not invent product behavior. Mark assumptions clearly. Return valid JSON only.
+
+Project context may be provided. Use it as background memory for terminology, platform rules, known risks, QA standards, and product behavior. The current ticket/source input remains primary. Do not invent facts. If project context conflicts with current input, call out the conflict. If project context fills in helpful background, use it and keep assumptions visible.
+When project context is supplied, it may be a selected subset of enabled project sources for this run. Use the selected context as the relevant memory for this generation. Do not assume unselected project sources apply unless the current user input explicitly states the same facts.`;
 
   const tasks: Record<QaMode, string> = {
     "generate-tests": `Generate practical test cases with title, type, preconditions, steps, expectedResult, and priority. Include happy path, negative, edge, and regression coverage. Also include qaFollowUpQuestions when ambiguity materially affects test coverage. Return JSON with a top-level testCases array and qaFollowUpQuestions array. Test case titles must be specific and useful, not generic.`,
@@ -10,12 +23,16 @@ export function buildQaPrompt(mode: QaMode, input: string) {
     "improve-test": `Improve the provided test case or checklist. Preserve intent. Return JSON with a top-level testImprovement object. Include a rewritten improvedTestCase with title, type, priority, preconditions, steps, and expectedResult. Also include improvementsMade, addedCoverage, missingInfo, followUpQuestions, and qaNotes arrays. Do not invent product behavior as fact. Mark assumptions clearly.`
   };
 
-  return `${base}\n\nTask: ${tasks[mode]}\n\nInput:\n${input}`;
+  return `${base}\n\nTask: ${tasks[mode]}\n\n${withProjectContext(input, options.projectContext)}`;
 }
 
-export function buildRiskAnalysisPrompt(input: string) {
+export function buildRiskAnalysisPrompt(input: string, options: ProjectContextPromptOptions = {}) {
   return `
 You are a senior QA analyst reviewing a Jira ticket, user story, or requirements document before development begins.
+
+Project context may be provided. Use it as background memory for terminology, platform rules, known risks, QA standards, and product behavior. The current ticket/source input remains primary. Do not invent facts. If project context conflicts with current input, call out the conflict. If project context fills in helpful background, use it and keep assumptions visible.
+
+When project context is supplied, it may be a selected subset of enabled project sources for this run. Use the selected context as the relevant memory for this generation. Do not assume unselected project sources apply unless the current user input explicitly states the same facts.
 
 Your job is to identify QA risk, ambiguity, bottlenecks, missing acceptance criteria, and test focus areas.
 
@@ -66,14 +83,17 @@ Rules:
 - Prefer 3-6 follow-up questions.
 - Prefer 3-6 suggested test focus areas.
 
-Ticket / requirements input:
-${input}
+${withProjectContext(input, options.projectContext)}
 `;
 }
 
-export function buildBugReportPrompt(input: string) {
+export function buildBugReportPrompt(input: string, options: ProjectContextPromptOptions = {}) {
   return `
 You are a senior QA analyst turning rough bug notes into a clean, actionable bug report.
+
+Project context may be provided. Use it as background memory for terminology, platform rules, known risks, QA standards, and product behavior. The current ticket/source input remains primary. Do not invent facts. If project context conflicts with current input, call out the conflict. If project context fills in helpful background, use it and keep assumptions visible.
+
+When project context is supplied, it may be a selected subset of enabled project sources for this run. Use the selected context as the relevant memory for this generation. Do not assume unselected project sources apply unless the current user input explicitly states the same facts.
 
 Return ONLY valid JSON. Do not include markdown. Do not include explanations outside JSON.
 
@@ -154,8 +174,7 @@ Rules:
   - Do not ask "what item is causing the crash?" in followUpQuestions.
   - A better follow-up is "Does the crash reproduce when Super Pistol is removed from inventory?"
 
-Rough bug notes:
-${input}
+${withProjectContext(input, options.projectContext)}
 `;
 }
 

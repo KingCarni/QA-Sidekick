@@ -50,6 +50,16 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
 
   const report = await prisma.qAReport.findFirst({
     where: { id, userId },
+    include: {
+      project: {
+        select: {
+          id: true,
+          name: true,
+          productType: true,
+          description: true,
+        },
+      },
+    },
   });
 
   if (!report) {
@@ -74,6 +84,25 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
               Launch App
             </Link>
           </div>
+        </div>
+
+        <div className="report-detail-project-card">
+          <p className="report-kicker">Project</p>
+          {report.project ? (
+            <>
+              <strong>{report.project.name}</strong>
+              <span>{report.project.productType || "project"}</span>
+              {report.project.description ? <p>{report.project.description}</p> : null}
+              <Link className="reports-project-filter" href={`/reports?project=${report.project.id}`}>
+                View Project Reports
+              </Link>
+            </>
+          ) : (
+            <>
+              <strong>No Project</strong>
+              <span>This report was saved without a project association.</span>
+            </>
+          )}
         </div>
       </section>
 

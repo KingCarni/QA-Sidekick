@@ -78,7 +78,7 @@ export default async function AccountPage() {
               Buy Credits
             </Link>
             <Link className="account-back-link" href="/jira/settings">
-              Jira Settings
+              Settings
             </Link>
             <Link className="account-back-link" href="/">
               Back to QAtalyst

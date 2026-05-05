@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import Image from "next/image";
 import Link from "next/link";
-import JiraSettingsForm from "@/components/JiraSettingsForm";
+import SettingsWorkspace from "@/components/SettingsWorkspace";
 import { authOptions } from "@/lib/auth";
 import { getUserJiraConfig } from "@/lib/jira-config";
 
@@ -50,7 +50,7 @@ export default async function SettingsPage() {
       <section className="reports-hero settings-hero-real-logo">
         <div className="settings-hero-copy">
           <h1>Settings</h1>
-          <p>Manage QAtalyst integrations, product defaults, and testing tools.</p>
+          <p>Manage QAtalyst integrations, project memory, product defaults, and testing tools.</p>
 
           <div className="settings-hero-actions">
             <Link className="account-buy-link" href="/app">
@@ -74,44 +74,11 @@ export default async function SettingsPage() {
         </div>
       </section>
 
-      <section className="settings-wide-panel">
-        <div className="settings-area-strip">
-          <p className="report-kicker">Settings Areas</p>
-
-          <nav className="settings-area-tabs" aria-label="Settings areas">
-            <a href="#jira-integration">Jira Integration</a>
-            <a href="#testrail-integration">TestRail Integration</a>
-            {isAdmin ? <a href="#admin-debug">Admin Debug</a> : null}
-          </nav>
-        </div>
-
-        <section className="settings-wide-section" id="jira-integration">
-          <JiraSettingsForm initialConfig={config} />
-        </section>
-
-        <section className="settings-module-card settings-coming-soon-card settings-wide-section" id="testrail-integration">
-          <p className="report-kicker">TestRail Integration</p>
-          <h2>Coming soon</h2>
-          <p>
-            Future TestRail settings can live here: project IDs, suite defaults, case type mapping, and export behavior.
-          </p>
-        </section>
-
-        {isAdmin ? (
-          <section className="settings-module-card admin-debug-card settings-wide-section" id="admin-debug">
-            <p className="report-kicker">Admin Debug</p>
-            <h2>Testing shortcuts</h2>
-            <p>Admin-only debug hooks for faster local and beta testing.</p>
-
-            <div className="admin-debug-grid">
-              <code>User: {session.user?.email}</code>
-              <code>Jira configured: {config ? "yes" : "no"}</code>
-              <code>Project key: {config?.projectKey ?? "none"}</code>
-              <code>Next: wire smoke/debug actions</code>
-            </div>
-          </section>
-        ) : null}
-      </section>
+      <SettingsWorkspace
+        initialJiraConfig={config}
+        isAdmin={isAdmin}
+        userEmail={session.user?.email ?? null}
+      />
     </main>
   );
 }

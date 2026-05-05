@@ -34,7 +34,9 @@ export async function POST(req: Request) {
     const screenshots = getScreenshotInputs((body as { screenshots?: unknown }).screenshots);
     const client = getOpenAIClient();
 
-    const textPrompt = buildBugReportPrompt(parsed.data.input);
+    const textPrompt = buildBugReportPrompt(parsed.data.input, {
+      projectContext: parsed.data.projectContext,
+    });
 
     const messages =
       screenshots.length > 0

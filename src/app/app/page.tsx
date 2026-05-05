@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import AppHeaderMenu from "@/components/AppHeaderMenu";
+import AppHeroProjectContextDock from "@/components/AppHeroProjectContextDock";
 import AuthStatus from "@/components/AuthStatus";
 import AutomationExportPanel from "@/components/AutomationExportPanel";
 import BugEvidencePanel, {
@@ -15,6 +16,8 @@ import BugEvidencePreview from "@/components/BugEvidencePreview";
 import CoverageScorePanel from "@/components/CoverageScorePanel";
 import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
 import JiraImportPanel from "@/components/JiraImportPanel";
+import type { ActiveProjectContext } from "@/components/ProjectContextIndicator";
+import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
 import TestCaseAutomationReadiness from "@/components/TestCaseAutomationReadiness";
 import TestCaseDisplayControls from "@/components/TestCaseDisplayControls";
 import {
@@ -2473,6 +2476,12 @@ export default function Home() {
   const [lastTestGenerationFingerprint, setLastTestGenerationFingerprint] = useState("");
   const [testCaseRefreshNonce, setTestCaseRefreshNonce] = useState(0);
   const [testGenerationNotice, setTestGenerationNotice] = useState("");
+  const [activeProject, setActiveProject] = useState<SafeQAProject | null>(null);
+  const [activeProjectContext, setActiveProjectContext] = useState<ActiveProjectContext | null>(null);
+  const [isProjectContextLoading, setIsProjectContextLoading] = useState(false);
+  const [projectContextError, setProjectContextError] = useState("");
+  const [selectedProjectSourceIds, setSelectedProjectSourceIds] = useState<string[]>([]);
+  const [selectedProjectContextBlock, setSelectedProjectContextBlock] = useState("");
 
   const tool = tools.find((item) => item.id === activeTool) ?? tools[0];
   const currentBugReport = activeTool === "bug" ? getBugReportFromOutput(output) : null;
@@ -2552,7 +2561,11 @@ export default function Home() {
     activeTool,
     sourceText: input,
     jiraKey: importedJiraTicket?.key,
-    additionalContext: testAdditionalContext,
+    additionalContext: [
+      testAdditionalContext,
+      selectedProjectContextBlock || activeProjectContext?.contextBlock || "",
+      selectedProjectSourceIds.join(","),
+    ].join("\n"),
     answeredFollowUps: testAnsweredFollowUps,
   });
   const testCaseGenerationKey = useMemo(() => {
@@ -2573,6 +2586,65 @@ export default function Home() {
     setSaveReportMessage("");
     setSavedReportId("");
   }, [activeTool, input, output]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadProjectContext(projectId: string) {
+      setIsProjectContextLoading(true);
+      setProjectContextError("");
+
+      try {
+        const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/context`);
+        const payload = await response.json().catch(() => null);
+
+        if (!response.ok || payload?.ok === false || !payload?.projectContext) {
+          throw new Error(payload?.error || "Could not load project context.");
+        }
+
+        if (!ignore) {
+          setActiveProjectContext(payload.projectContext);
+        }
+      } catch (error) {
+        if (!ignore) {
+          setActiveProjectContext(null);
+          setProjectContextError(error instanceof Error ? error.message : "Could not load project context.");
+        }
+      } finally {
+        if (!ignore) {
+          setIsProjectContextLoading(false);
+        }
+      }
+    }
+
+    if (!activeProject?.id) {
+      setActiveProjectContext(null);
+      setProjectContextError("");
+      setIsProjectContextLoading(false);
+      return;
+    }
+
+    void loadProjectContext(activeProject.id);
+
+    return () => {
+      ignore = true;
+    };
+  }, [activeProject?.id]);
+
+  useEffect(() => {
+    if (!activeProjectContext) {
+      setSelectedProjectSourceIds([]);
+      setSelectedProjectContextBlock("");
+      return;
+    }
+
+    const enabledIds = activeProjectContext.sources
+      .filter((source) => source.isEnabled)
+      .slice(0, 4)
+      .map((source) => source.id);
+
+    setSelectedProjectSourceIds(enabledIds);
+  }, [activeProjectContext?.project?.id, activeProjectContext?.enabledSourceCount]);
 
   function updateBugQuestionAnswer(question: string, answer: string) {
     setBugQuestionAnswers((current) => ({
@@ -2750,8 +2822,18 @@ export default function Home() {
           type: activeTool,
           title: getCurrentReportTitle(reportMarkdown),
           markdown: reportMarkdown,
-          structuredData: getCurrentStructuredReport(),
+          structuredData: {
+            ...getCurrentStructuredReport(),
+            projectContextMeta: activeProject
+              ? {
+                  projectId: activeProject.id,
+                  projectName: activeProject.name,
+                  productType: activeProject.productType,
+                }
+              : null,
+          },
           sourceInput: input,
+          projectId: activeProject?.id ?? null,
         }),
       });
 
@@ -2762,7 +2844,7 @@ export default function Home() {
       }
 
       setSaveReportStatus("saved");
-      setSaveReportMessage("Saved to Reports.");
+      setSaveReportMessage(activeProject ? `Saved report to ${activeProject.name}.` : "Saved report.");
       setSavedReportId(payload?.report?.id ?? "");
     } catch (error) {
       setSaveReportStatus("error");
@@ -3121,6 +3203,22 @@ export default function Home() {
         body: JSON.stringify({
           input: requestInput,
           screenshots: [],
+          projectId: activeProject?.id ?? null,
+          projectContext:
+            selectedProjectContextBlock ||
+            activeProjectContext?.contextBlock ||
+            "",
+          projectContextMeta: activeProjectContext?.project
+            ? {
+                projectName: activeProjectContext.project.name,
+                productType: activeProjectContext.project.productType,
+                enabledSourceCount: activeProjectContext.enabledSourceCount,
+                totalSourceCount: activeProjectContext.totalSourceCount,
+                selectedSourceCount: selectedProjectSourceIds.length,
+                selectedSourceIds: selectedProjectSourceIds,
+              }
+            : null,
+          selectedProjectSourceIds,
         }),
       });
 
@@ -3157,6 +3255,19 @@ export default function Home() {
             Generate test cases, expose risks, improve bug reports, and turn vague tickets<br />
             into actionable QA plans.
           </p>
+
+          <AppHeroProjectContextDock
+            activeProject={activeProject}
+            onActiveProjectChange={setActiveProject}
+            activeProjectContext={activeProjectContext}
+            isProjectContextLoading={isProjectContextLoading}
+            projectContextError={projectContextError}
+            sourceInput={input}
+            toolId={activeTool}
+            selectedProjectSourceIds={selectedProjectSourceIds}
+            onSelectedProjectSourceIdsChange={setSelectedProjectSourceIds}
+            onSelectedProjectContextBlockChange={setSelectedProjectContextBlock}
+          />
         </div>
 
         <div className="hero-brand-account">

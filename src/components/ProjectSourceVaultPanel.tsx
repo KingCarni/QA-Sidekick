@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import ProjectSourceFileUploader from "@/components/ProjectSourceFileUploader";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
+import type { SourceFileExtractionResult } from "@/lib/source-file-extract";
 
 export type SafeProjectSource = {
   id: string;
@@ -97,6 +99,61 @@ export default function ProjectSourceVaultPanel({ activeProject }: ProjectSource
   function handleNewSource() {
     setSelectedSourceId("");
     resetEditor();
+  }
+
+  function applyExtractedSource(result: SourceFileExtractionResult) {
+    setSelectedSourceId("");
+    setTitle(result.title);
+    setSourceType(result.sourceType || "other");
+    setTags(result.tags.join(", "));
+    setBody(result.body);
+    setIsEnabled(true);
+    setMessage(`Loaded ${result.filename}. Review and save the source.`);
+    setError("");
+  }
+
+  async function saveExtractedSource(result: SourceFileExtractionResult) {
+    if (!activeProject?.id || !result.ok) return;
+
+    setIsSaving(true);
+    setMessage("");
+    setError("");
+
+    try {
+      const response = await fetch(`/api/projects/${encodeURIComponent(activeProject.id)}/sources`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: result.title,
+          sourceType: result.sourceType || "other",
+          tags: result.tags,
+          body: result.body,
+          isEnabled: true,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as SourceApiResponse | null;
+
+      if (!response.ok || payload?.ok === false || !payload?.source) {
+        throw new Error(payload?.error || "Could not save extracted source.");
+      }
+
+      const savedSource = payload.source;
+
+      setSources((current) => [savedSource, ...current]);
+      setSelectedSourceId(savedSource.id);
+      setMessage(`Saved source from file: ${savedSource.title}`);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Could not save extracted source.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function saveAllExtractedSources(results: SourceFileExtractionResult[]) {
+    for (const result of results) {
+      await saveExtractedSource(result);
+    }
   }
 
   async function loadSources(projectId: string) {
@@ -235,7 +292,7 @@ export default function ProjectSourceVaultPanel({ activeProject }: ProjectSource
         <div>
           <p className="report-kicker">Project Source Vault</p>
           <h2>{activeProject.name} sources</h2>
-          <p>Store reusable product context now. QAS-67 will inject enabled sources into QA generation.</p>
+          <p>Store reusable product context for smarter QA generation.</p>
         </div>
 
         <button type="button" onClick={handleNewSource}>New Source</button>
@@ -246,6 +303,11 @@ export default function ProjectSourceVaultPanel({ activeProject }: ProjectSource
         <div><strong>{enabledCount}</strong><span>Enabled</span></div>
         <div><strong>{totalWords}</strong><span>Approx. words</span></div>
       </div>
+
+      <ProjectSourceFileUploader
+        onUseExtractedSource={applyExtractedSource}
+        onUseAllExtractedSources={saveAllExtractedSources}
+      />
 
       <div className="source-vault-grid">
         <aside className="source-list-card">
@@ -281,7 +343,7 @@ export default function ProjectSourceVaultPanel({ activeProject }: ProjectSource
           <p className="report-kicker">{selectedSourceId ? "Edit Source" : "New Source"}</p>
 
           <label>Source title
-            <input maxLength={120} onChange={(event) => setTitle(event.target.value)} placeholder="Example: Combat System Overview" value={title} />
+            <input maxLength={120} onChange={(event) => setTitle(event.target.value)} placeholder="Example: Product Overview" value={title} />
           </label>
 
           <label>Source type
@@ -291,7 +353,7 @@ export default function ProjectSourceVaultPanel({ activeProject }: ProjectSource
           </label>
 
           <label>Tags
-            <input onChange={(event) => setTags(event.target.value)} placeholder="combat, progression, mobile, admin" value={tags} />
+            <input onChange={(event) => setTags(event.target.value)}placeholder= "qa, requirements, jira, automation" value={tags} />
           </label>
 
           <label className="source-enabled-checkbox">

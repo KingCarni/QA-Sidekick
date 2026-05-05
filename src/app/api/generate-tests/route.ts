@@ -20,7 +20,9 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "user",
-          content: buildQaPrompt("generate-tests", parsed.data.input),
+          content: buildQaPrompt("generate-tests", parsed.data.input, {
+            projectContext: parsed.data.projectContext,
+          }),
         },
       ],
     });

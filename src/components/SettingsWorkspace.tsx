@@ -1,0 +1,125 @@
+"use client";
+
+import { useState } from "react";
+import JiraSettingsForm from "@/components/JiraSettingsForm";
+import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSettingsPanel";
+import ProjectSourceVaultPanel from "@/components/ProjectSourceVaultPanel";
+import type { SafeJiraConfig } from "@/lib/jira-config";
+
+type SettingsWorkspaceProps = {
+  initialJiraConfig: SafeJiraConfig | null;
+  isAdmin: boolean;
+  userEmail?: string | null;
+};
+
+type SettingsArea = "projects" | "source-vault" | "jira" | "testrail" | "admin";
+
+export default function SettingsWorkspace({
+  initialJiraConfig,
+  isAdmin,
+  userEmail,
+}: SettingsWorkspaceProps) {
+  const [activeArea, setActiveArea] = useState<SettingsArea>("projects");
+  const [activeProject, setActiveProject] = useState<SafeQAProject | null>(null);
+
+  const tabClass = (area: SettingsArea) =>
+    activeArea === area ? "settings-area-tab settings-area-tab-active" : "settings-area-tab";
+
+  return (
+    <section className="settings-wide-panel settings-wide-panel-with-projects">
+      <div className="settings-area-strip">
+        <p className="report-kicker">Settings Areas</p>
+
+        <nav className="settings-area-tabs" aria-label="Settings areas">
+          <button className={tabClass("projects")} onClick={() => setActiveArea("projects")} type="button">
+            Projects
+          </button>
+          <button className={tabClass("source-vault")} onClick={() => setActiveArea("source-vault")} type="button">
+            Project Source Vault
+          </button>
+          <button className={tabClass("jira")} onClick={() => setActiveArea("jira")} type="button">
+            Jira Integration
+          </button>
+          <button className={tabClass("testrail")} onClick={() => setActiveArea("testrail")} type="button">
+            TestRail Integration
+          </button>
+          {isAdmin ? (
+            <button className={tabClass("admin")} onClick={() => setActiveArea("admin")} type="button">
+              Admin Debug
+            </button>
+          ) : null}
+        </nav>
+      </div>
+
+      {activeProject ? (
+        <div className="active-project-settings-strip">
+          <div>
+            <p className="report-kicker">Active Project</p>
+            <strong>{activeProject.name}</strong>
+            <span>{activeProject.productType || "other"}</span>
+          </div>
+          <button type="button" onClick={() => setActiveArea("source-vault")}>
+            Manage Sources
+          </button>
+        </div>
+      ) : (
+        <div className="active-project-settings-strip active-project-settings-strip-empty">
+          <div>
+            <p className="report-kicker">Active Project</p>
+            <strong>No project selected</strong>
+            <span>Create a project to start building reusable context memory.</span>
+          </div>
+          <button type="button" onClick={() => setActiveArea("projects")}>
+            Create Project
+          </button>
+        </div>
+      )}
+
+      {activeArea === "projects" ? (
+        <section className="settings-wide-section" id="projects">
+          <ProjectSettingsPanel
+            activeProjectId={activeProject?.id}
+            onActiveProjectChange={setActiveProject}
+          />
+        </section>
+      ) : null}
+
+      {activeArea === "source-vault" ? (
+        <section className="settings-wide-section" id="project-source-vault">
+          <ProjectSourceVaultPanel activeProject={activeProject} />
+        </section>
+      ) : null}
+
+      {activeArea === "jira" ? (
+        <section className="settings-wide-section" id="jira-integration">
+          <JiraSettingsForm initialConfig={initialJiraConfig} />
+        </section>
+      ) : null}
+
+      {activeArea === "testrail" ? (
+        <section className="settings-module-card settings-coming-soon-card settings-wide-section" id="testrail-integration">
+          <p className="report-kicker">TestRail Integration</p>
+          <h2>Coming soon</h2>
+          <p>
+            Future TestRail settings can live here: project IDs, suite defaults, case type mapping, and export behavior.
+          </p>
+        </section>
+      ) : null}
+
+      {activeArea === "admin" && isAdmin ? (
+        <section className="settings-module-card admin-debug-card settings-wide-section" id="admin-debug">
+          <p className="report-kicker">Admin Debug</p>
+          <h2>Testing shortcuts</h2>
+          <p>Admin-only debug hooks for faster local and beta testing.</p>
+
+          <div className="admin-debug-grid">
+            <code>User: {userEmail ?? "unknown"}</code>
+            <code>Jira configured: {initialJiraConfig ? "yes" : "no"}</code>
+            <code>Project key: {initialJiraConfig?.projectKey ?? "none"}</code>
+            <code>Next: wire smoke/debug actions</code>
+          </div>
+        </section>
+      ) : null}
+    </section>
+  );
+}

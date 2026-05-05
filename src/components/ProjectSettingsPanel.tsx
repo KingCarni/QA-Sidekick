@@ -245,7 +245,7 @@ export default function ProjectSettingsPanel({
             <input
               maxLength={80}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Example: Idle Cat Knight"
+              placeholder="Example: QAtalyst"
               value={name}
             />
           </label>

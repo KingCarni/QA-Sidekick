@@ -20,7 +20,9 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "user",
-          content: buildRiskAnalysisPrompt(parsed.data.input),
+          content: buildRiskAnalysisPrompt(parsed.data.input, {
+            projectContext: parsed.data.projectContext,
+          }),
         },
       ],
     });

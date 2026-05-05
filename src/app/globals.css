@@ -12854,3 +12854,1031 @@ button.secondary-action-button.save-report-button,
   }
 }
 
+
+
+/* QAS-67 Settings workspace wiring */
+
+.settings-wide-panel-with-projects {
+  display: grid;
+  gap: 22px;
+}
+
+.settings-area-tabs button,
+.settings-area-tab {
+  min-height: 44px;
+  padding: 11px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(248, 113, 113, 0.26);
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.settings-area-tabs button:hover,
+.settings-area-tab:hover {
+  border-color: rgba(248, 113, 113, 0.54);
+  transform: translateY(-1px);
+}
+
+.settings-area-tab-active {
+  border-color: rgba(96, 165, 250, 0.52) !important;
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.44), rgba(15, 23, 42, 0.78)),
+    rgba(30, 64, 175, 0.26) !important;
+  box-shadow: 0 14px 32px rgba(30, 64, 175, 0.2);
+}
+
+.active-project-settings-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(34, 197, 94, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 34%),
+    rgba(15, 23, 42, 0.58);
+}
+
+.active-project-settings-strip-empty {
+  border-color: rgba(250, 204, 21, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(250, 204, 21, 0.1), transparent 34%),
+    rgba(15, 23, 42, 0.58);
+}
+
+.active-project-settings-strip strong {
+  display: block;
+  margin-top: 3px;
+  color: #ffffff;
+  font-size: 1.12rem;
+}
+
+.active-project-settings-strip span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.active-project-settings-strip button {
+  min-height: 44px;
+  padding: 10px 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.88), rgba(30, 41, 59, 0.92)),
+    rgba(30, 64, 175, 0.72);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+@media (max-width: 780px) {
+  .active-project-settings-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .active-project-settings-strip button {
+    width: 100%;
+  }
+}
+
+
+
+/* QAS-67 Project context injection UI */
+
+.project-context-indicator {
+  margin: 18px 0;
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 34%),
+    rgba(7, 8, 12, 0.78);
+}
+
+.project-context-indicator-empty,
+.project-context-indicator-loading {
+  border-color: rgba(96, 165, 250, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.13), transparent 34%),
+    rgba(7, 8, 12, 0.78);
+}
+
+.project-context-indicator-error {
+  border-color: rgba(248, 113, 113, 0.34);
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.13), transparent 34%),
+    rgba(7, 8, 12, 0.78);
+}
+
+.project-context-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.project-context-indicator strong {
+  display: block;
+  margin-top: 3px;
+  color: #ffffff;
+  font-size: 1.08rem;
+}
+
+.project-context-indicator span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.45;
+}
+
+.project-context-indicator button {
+  min-height: 42px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.88), rgba(30, 41, 59, 0.92)),
+    rgba(30, 64, 175, 0.72);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.project-context-preview {
+  max-height: 300px;
+  overflow: auto;
+  margin: 14px 0 0;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  background: rgba(0, 0, 0, 0.68);
+  color: rgba(255, 255, 255, 0.78);
+  white-space: pre-wrap;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 780px) {
+  .project-context-main {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .project-context-indicator button {
+    width: 100%;
+  }
+}
+
+
+
+/* QAS-68 Project source relevance selector */
+
+.source-relevance-selector {
+  margin: 14px 0 18px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.13), transparent 34%),
+    rgba(7, 8, 12, 0.78);
+}
+
+.source-relevance-selector-empty {
+  border-color: rgba(250, 204, 21, 0.26);
+}
+
+.source-relevance-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+}
+
+.source-relevance-selector strong {
+  display: block;
+  margin-top: 3px;
+  color: #ffffff;
+  font-size: 1.08rem;
+}
+
+.source-relevance-selector span,
+.source-relevance-selector em,
+.source-relevance-selector small {
+  display: block;
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.45;
+}
+
+.source-relevance-actions,
+.source-relevance-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.source-relevance-actions button,
+.source-relevance-toolbar button {
+  min-height: 40px;
+  padding: 9px 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.88), rgba(30, 41, 59, 0.92)),
+    rgba(30, 64, 175, 0.72);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.source-relevance-actions button:first-child {
+  border-color: rgba(34, 197, 94, 0.34);
+  background:
+    linear-gradient(180deg, rgba(22, 101, 52, 0.88), rgba(20, 83, 45, 0.92)),
+    rgba(20, 83, 45, 0.72);
+}
+
+.source-relevance-drawer {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.source-relevance-toolbar {
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.source-relevance-list {
+  display: grid;
+  gap: 10px;
+}
+
+.source-relevance-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 13px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+}
+
+.source-relevance-item-selected {
+  border-color: rgba(34, 197, 94, 0.34);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 35%),
+    rgba(20, 83, 45, 0.16);
+}
+
+.source-relevance-item input {
+  margin-top: 4px;
+}
+
+.source-relevance-item strong {
+  margin: 0;
+}
+
+.source-relevance-item em {
+  margin-top: 6px;
+  font-style: normal;
+}
+
+@media (max-width: 780px) {
+  .source-relevance-main {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .source-relevance-actions button,
+  .source-relevance-toolbar button {
+    flex: 1;
+  }
+}
+
+
+
+/* QAS-69 Project Source file upload */
+
+.project-source-file-uploader {
+  margin-top: 18px;
+}
+
+.source-file-dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px dashed rgba(96, 165, 250, 0.38);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 36%),
+    rgba(15, 23, 42, 0.5);
+}
+
+.source-file-dropzone-active {
+  border-color: rgba(34, 197, 94, 0.58);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.15), transparent 36%),
+    rgba(15, 23, 42, 0.62);
+}
+
+.source-file-dropzone h3 {
+  margin: 4px 0 8px;
+  color: #ffffff;
+  font-size: 1.35rem;
+}
+
+.source-file-dropzone p,
+.source-file-dropzone small {
+  display: block;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.64);
+  line-height: 1.45;
+}
+
+.source-file-dropzone button,
+.source-file-results-header button,
+.source-file-result-card button {
+  min-height: 42px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.88), rgba(30, 41, 59, 0.92)),
+    rgba(30, 64, 175, 0.72);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.source-file-dropzone button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.source-file-dropzone input {
+  display: none;
+}
+
+.source-file-results {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background: rgba(0, 0, 0, 0.34);
+}
+
+.source-file-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.source-file-results-header strong {
+  display: block;
+  color: #ffffff;
+  margin-top: 3px;
+}
+
+.source-file-results-header button,
+.source-file-result-card button {
+  border-color: rgba(34, 197, 94, 0.34);
+  background:
+    linear-gradient(180deg, rgba(22, 101, 52, 0.88), rgba(20, 83, 45, 0.92)),
+    rgba(20, 83, 45, 0.72);
+}
+
+.source-file-result-list {
+  display: grid;
+  gap: 10px;
+}
+
+.source-file-result-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.1), transparent 35%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.source-file-result-card-error {
+  border-color: rgba(248, 113, 113, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.1), transparent 35%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.source-file-result-card strong {
+  display: block;
+  color: #ffffff;
+}
+
+.source-file-result-card span,
+.source-file-result-card small {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+
+@media (max-width: 780px) {
+  .source-file-dropzone,
+  .source-file-results-header,
+  .source-file-result-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .source-file-dropzone button,
+  .source-file-results-header button,
+  .source-file-result-card button {
+    width: 100%;
+  }
+}
+
+
+
+/* QAS-70 Project-aware saved reports */
+
+.reports-project-filter-card {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 34%),
+    rgba(15, 23, 42, 0.58);
+}
+
+.reports-project-filter-card strong {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 1.12rem;
+}
+
+.reports-project-filter-card span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.45;
+}
+
+.reports-project-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.reports-project-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.reports-project-filter small {
+  display: inline-flex;
+  min-width: 24px;
+  min-height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.reports-project-filter-active {
+  border-color: rgba(34, 197, 94, 0.38);
+  background:
+    linear-gradient(180deg, rgba(22, 101, 52, 0.42), rgba(20, 83, 45, 0.28)),
+    rgba(20, 83, 45, 0.2);
+  box-shadow: 0 12px 28px rgba(34, 197, 94, 0.12);
+}
+
+.saved-report-card-project-aware {
+  position: relative;
+}
+
+.saved-report-project-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 12px 0 4px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background: rgba(15, 23, 42, 0.66);
+}
+
+.saved-report-project-pill span {
+  color: #bfdbfe;
+  font-size: 0.85rem;
+  font-weight: 950;
+}
+
+.saved-report-project-pill small {
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.report-detail-project-card {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 34%),
+    rgba(15, 23, 42, 0.58);
+}
+
+.report-detail-project-card strong {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 1.18rem;
+}
+
+.report-detail-project-card span,
+.report-detail-project-card p {
+  display: block;
+  max-width: 760px;
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.66);
+  line-height: 1.5;
+}
+
+.report-detail-project-card .reports-project-filter {
+  margin-top: 12px;
+}
+
+@media (max-width: 760px) {
+  .reports-project-filter-row {
+    display: grid;
+  }
+
+  .reports-project-filter {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+
+
+/* UI pass: hero/project context dock cleanup */
+
+.app-hero-context-dock {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.75fr) minmax(260px, 1fr) minmax(260px, 1fr);
+  gap: 16px;
+  align-items: stretch;
+  width: min(100%, 760px);
+  margin-top: 18px;
+}
+
+.app-hero-project-panel,
+.app-hero-memory-panel,
+.app-hero-source-panel {
+  min-height: 88px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.1), transparent 35%),
+    rgba(0, 0, 0, 0.22);
+}
+
+.app-hero-project-panel {
+  padding: 14px;
+}
+
+.app-hero-project-panel .report-kicker {
+  margin-bottom: 8px;
+}
+
+.app-hero-context-dock .project-picker,
+.app-hero-context-dock select {
+  width: 100%;
+}
+
+.app-hero-context-dock .project-context-indicator,
+.app-hero-context-dock .source-relevance-selector {
+  height: 100%;
+  min-height: 88px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.app-hero-context-dock .project-context-main,
+.app-hero-context-dock .source-relevance-main {
+  height: 100%;
+}
+
+.app-hero-context-dock .project-context-indicator strong,
+.app-hero-context-dock .source-relevance-selector strong {
+  font-size: 1rem;
+}
+
+.app-hero-context-dock .project-context-indicator span,
+.app-hero-context-dock .source-relevance-selector span {
+  font-size: 0.92rem;
+}
+
+.app-hero-context-dock .project-context-indicator button,
+.app-hero-context-dock .source-relevance-actions button {
+  min-height: 40px;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
+.app-hero-context-dock .source-relevance-actions {
+  justify-content: flex-end;
+}
+
+.app-hero-context-dock .source-relevance-drawer,
+.app-hero-context-dock .project-context-preview {
+  position: absolute;
+  z-index: 30;
+  width: min(620px, calc(100vw - 40px));
+  margin-top: 12px;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+}
+
+.app-hero-source-panel,
+.app-hero-memory-panel {
+  position: relative;
+}
+
+/* Hide old sidebar project/context/source blocks after moving them into the hero dock.
+   Add app-sidebar-project-memory-retired to old wrappers during the integration step. */
+.app-sidebar-project-memory-retired {
+  display: none !important;
+}
+
+/* Header balance cleanup */
+.qatalyst-app-hero,
+.app-hero,
+.hero-card,
+.reports-hero.app-hero {
+  align-items: flex-start;
+}
+
+.qatalyst-app-hero h1,
+.app-hero h1,
+.hero-card h1,
+.reports-hero.app-hero h1 {
+  margin-top: 0;
+}
+
+.qatalyst-app-hero .app-header-menu-wrap,
+.app-hero .app-header-menu-wrap,
+.hero-card .app-header-menu-wrap {
+  transform: translateY(-10px);
+}
+
+.qatalyst-app-hero .qatalyst-hero-logo,
+.app-hero .qatalyst-hero-logo,
+.hero-card .qatalyst-hero-logo {
+  transform: translateY(-8px) scale(0.94);
+  transform-origin: top center;
+}
+
+.qatalyst-app-hero .auth-status-card,
+.app-hero .auth-status-card,
+.hero-card .auth-status-card {
+  margin-top: 14px;
+  transform: translateY(10px);
+}
+
+/* Trim the empty dead space under the hero before the tools grid. */
+.app-main-grid,
+.qa-tool-layout,
+.app-tool-grid {
+  margin-top: 22px;
+}
+
+@media (max-width: 1120px) {
+  .app-hero-context-dock {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .app-hero-context-dock .project-context-main,
+  .app-hero-context-dock .source-relevance-main {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app-hero-context-dock .project-context-indicator button,
+  .app-hero-context-dock .source-relevance-actions button {
+    width: 100%;
+  }
+
+  .app-hero-context-dock .source-relevance-drawer,
+  .app-hero-context-dock .project-context-preview {
+    position: static;
+    width: 100%;
+  }
+}
+
+@media (max-width: 760px) {
+  .qatalyst-app-hero .app-header-menu-wrap,
+  .app-hero .app-header-menu-wrap,
+  .hero-card .app-header-menu-wrap,
+  .qatalyst-app-hero .qatalyst-hero-logo,
+  .app-hero .qatalyst-hero-logo,
+  .hero-card .qatalyst-hero-logo,
+  .qatalyst-app-hero .auth-status-card,
+  .app-hero .auth-status-card,
+  .hero-card .auth-status-card {
+    transform: none;
+  }
+}
+/* UI FIX: sane hero project/context dock.
+   This intentionally overrides the previous hero-dock pass. */
+
+.app-hero-context-dock {
+  display: none !important;
+}
+
+.app-hero-context-dock-fixed {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.8fr) minmax(230px, 1fr) minmax(230px, 1fr);
+  gap: 14px;
+  width: 100%;
+  max-width: 760px;
+  margin-top: 18px;
+  clear: both;
+}
+
+.hero-context-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 104px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.10), transparent 34%),
+    rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+}
+
+.hero-project-card {
+  display: block;
+}
+
+.hero-project-card .project-picker,
+.hero-project-card select {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.hero-context-card .report-kicker {
+  margin: 0 0 6px;
+}
+
+.hero-context-card strong {
+  display: block;
+  color: #ffffff;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.hero-context-card span {
+  display: block;
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.66);
+  line-height: 1.35;
+  font-size: 0.92rem;
+}
+
+.hero-source-actions {
+  display: grid;
+  gap: 8px;
+  min-width: 108px;
+}
+
+.hero-context-secondary-button,
+.hero-context-green-button,
+.hero-context-expanded button {
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 13px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  background:
+    linear-gradient(180deg, rgba(30, 64, 175, 0.88), rgba(30, 41, 59, 0.94)),
+    rgba(30, 64, 175, 0.72);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.hero-context-green-button {
+  border-color: rgba(34, 197, 94, 0.38);
+  background:
+    linear-gradient(180deg, rgba(22, 101, 52, 0.88), rgba(20, 83, 45, 0.94)),
+    rgba(20, 83, 45, 0.72);
+}
+
+.hero-context-secondary-button:disabled,
+.hero-context-green-button:disabled,
+.hero-context-expanded button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.hero-context-expanded {
+  grid-column: 1 / -1;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.10), transparent 34%),
+    rgba(0, 0, 0, 0.72);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.hero-context-expanded-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.hero-context-expanded-header strong {
+  display: block;
+  color: #ffffff;
+  margin-top: 4px;
+}
+
+.hero-context-preview-fixed pre {
+  max-height: 260px;
+  overflow: auto;
+  margin: 0;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.64);
+  color: rgba(255, 255, 255, 0.74);
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.hero-source-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.hero-source-list-fixed {
+  display: grid;
+  gap: 10px;
+}
+
+.hero-source-row-fixed {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+}
+
+.hero-source-row-fixed-selected {
+  border-color: rgba(34, 197, 94, 0.34);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 35%),
+    rgba(20, 83, 45, 0.16);
+}
+
+.hero-source-row-fixed input {
+  margin-top: 4px;
+}
+
+.hero-source-row-fixed strong,
+.hero-source-row-fixed small,
+.hero-source-row-fixed em {
+  display: block;
+}
+
+.hero-source-row-fixed strong {
+  color: #ffffff;
+}
+
+.hero-source-row-fixed small,
+.hero-source-row-fixed em {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.4;
+  font-style: normal;
+}
+
+/* Undo the last pass's aggressive header nudges. */
+.qatalyst-app-hero .app-header-menu-wrap,
+.app-hero .app-header-menu-wrap,
+.hero-card .app-header-menu-wrap,
+.qatalyst-app-hero .qatalyst-hero-logo,
+.app-hero .qatalyst-hero-logo,
+.hero-card .qatalyst-hero-logo,
+.qatalyst-app-hero .auth-status-card,
+.app-hero .auth-status-card,
+.hero-card .auth-status-card {
+  transform: none !important;
+}
+
+/* Give the right-side header/account cluster breathing room. */
+.app-header-menu-wrap {
+  position: relative;
+  z-index: 5;
+}
+
+.auth-status-card {
+  position: relative;
+  z-index: 5;
+  margin-top: 16px;
+}
+
+.qatalyst-hero-logo {
+  position: relative;
+  z-index: 4;
+}
+
+/* Keep old sidebar memory blocks hidden if they were left in place. */
+.app-sidebar-project-memory-retired {
+  display: none !important;
+}
+
+@media (max-width: 1180px) {
+  .app-hero-context-dock-fixed {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
+
+  .hero-context-card {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero-context-card,
+  .hero-context-expanded-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .hero-source-actions,
+  .hero-source-toolbar {
+    width: 100%;
+  }
+
+  .hero-context-secondary-button,
+  .hero-context-green-button,
+  .hero-context-expanded button {
+    width: 100%;
+  }
+}
+
