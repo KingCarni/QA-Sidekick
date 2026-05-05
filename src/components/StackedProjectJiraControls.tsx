@@ -245,8 +245,12 @@ export default function StackedProjectJiraControls({
             </div>
 
             <div>
-              <span>Acceptance Criteria</span>
-              <strong>{Array.isArray(fetchedTicket.acceptanceCriteria) ? fetchedTicket.acceptanceCriteria.length : 0}</strong>
+              <span>Source Detail</span>
+              <strong>
+                {fetchedTicket.description && fetchedTicket.description !== "Not provided."
+                  ? "Description found"
+                  : "Description missing"}
+              </strong>
             </div>
           </div>
         </section>

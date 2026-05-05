@@ -1,6 +1,7 @@
 import { buildQaPrompt } from "@/lib/qaPrompts";
 import { getOpenAIClient } from "@/lib/openai";
 import { jsonError, qaRequestSchema } from "@/lib/api";
+import { buildQAS73PromptBlock } from "@/lib/qas73-generator-quality-rules";
 
 export async function POST(req: Request) {
   try {
@@ -9,16 +10,25 @@ export async function POST(req: Request) {
     if (!parsed.success) return jsonError(parsed.error.issues[0]?.message ?? "Invalid request.");
 
     const client = getOpenAIClient();
+    const systemPrompt = [
+      "You are QAtalyst, a senior QA analyst assistant. Return only valid JSON matching the requested schema. Do not wrap JSON in markdown.",
+      buildQAS73PromptBlock("improve"),
+    ].join("\n\n");
+    const userPrompt = buildQaPrompt("improve-test", parsed.data.input, {
+      projectContext: parsed.data.projectContext,
+    });
     const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.2,
       response_format: { type: "json_object" },
       messages: [
         {
+          role: "system",
+          content: systemPrompt,
+        },
+        {
           role: "user",
-          content: buildQaPrompt("improve-test", parsed.data.input, {
-            projectContext: parsed.data.projectContext,
-          }),
+          content: userPrompt,
         },
       ],
     });

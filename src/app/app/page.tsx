@@ -1291,22 +1291,6 @@ function TestCaseCards({
         </div>
       ) : null}
 
-      <CoverageScorePanel
-        reportType={reportType}
-        sourceInput={sourceInput}
-        markdown={savedMarkdown || generatedMarkdown}
-        structuredData={{ testCases: editableTestCases }}
-      />
-
-      {reportType === "tests" && editableTestCases.length > 0 ? (
-        <AutomationExportPanel
-          key={`automation-export-${testCaseGenerationKey}`}
-          generationKey={testCaseGenerationKey}
-          testCases={renderedTestCases}
-          bundleName="QAtalyst automation export"
-        />
-      ) : null}
-
       {isEditingMarkdown ? (
         <section className="report-markdown-editor-card">
           <div className="report-markdown-editor-header">
@@ -1505,6 +1489,22 @@ function TestCaseCards({
         onLastPage={() => setTestCasePageIndex(totalTestCasePages - 1)}
       />
 
+      {reportType === "tests" && editableTestCases.length > 0 ? (
+        <AutomationExportPanel
+          key={`automation-export-${testCaseGenerationKey}`}
+          generationKey={testCaseGenerationKey}
+          testCases={renderedTestCases}
+          bundleName="QAtalyst automation export"
+        />
+      ) : null}
+
+      <CoverageScorePanel
+        reportType={reportType}
+        sourceInput={sourceInput}
+        markdown={savedMarkdown || generatedMarkdown}
+        structuredData={{ testCases: editableTestCases }}
+      />
+
     </div>
   );
 }
@@ -1656,13 +1656,6 @@ function RiskReviewCards({
         </div>
       ) : null}
 
-      <CoverageScorePanel
-        reportType={reportType}
-        sourceInput={sourceInput}
-        markdown={savedMarkdown || buildRiskReviewMarkdown(editableRiskReview, answeredFollowUps)}
-        structuredData={editableRiskReview}
-      />
-
       {isEditingMarkdown ? (
         <section className="report-markdown-editor-card">
           <div className="report-markdown-editor-header">
@@ -1799,6 +1792,13 @@ function RiskReviewCards({
           </section>
         ) : null}
       </div>
+
+      <CoverageScorePanel
+        reportType={reportType}
+        sourceInput={sourceInput}
+        markdown={savedMarkdown || buildRiskReviewMarkdown(editableRiskReview, answeredFollowUps)}
+        structuredData={editableRiskReview}
+      />
     </div>
   );
 }
@@ -2090,6 +2090,13 @@ function BugReportCards({
           <BugEvidencePreview evidence={bugEvidence} />
         ) : null}
       </div>
+
+      <CoverageScorePanel
+        reportType={reportType}
+        sourceInput={sourceInput}
+        markdown={evidenceAwareBugMarkdown}
+        structuredData={editableBugReport}
+      />
     </div>
   );
 }
@@ -2220,13 +2227,6 @@ function TestImprovementCards({
         </div>
       ) : null}
 
-      <CoverageScorePanel
-        reportType={reportType}
-        sourceInput={sourceInput}
-        markdown={exportMarkdown}
-        structuredData={editableReport}
-      />
-
       {isEditingMarkdown ? (
         <section className="report-markdown-editor-card">
           <div className="report-markdown-editor-header">
@@ -2327,6 +2327,13 @@ function TestImprovementCards({
         <RiskTextList title="Follow-up Questions" items={followUpQuestions} />
         <RiskTextList title="QA Notes" items={qaNotes} />
       </div>
+
+      <CoverageScorePanel
+        reportType={reportType}
+        sourceInput={sourceInput}
+        markdown={exportMarkdown}
+        structuredData={editableReport}
+      />
     </div>
   );
 }

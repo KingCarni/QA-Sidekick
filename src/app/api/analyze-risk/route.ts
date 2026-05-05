@@ -1,6 +1,7 @@
 import { jsonError, qaRequestSchema } from "@/lib/api";
 import { getOpenAIClient } from "@/lib/openai";
 import { buildRiskAnalysisPrompt } from "@/lib/qaPrompts";
+import { buildQAS73PromptBlock } from "@/lib/qas73-generator-quality-rules";
 
 export async function POST(req: Request) {
   try {
@@ -12,6 +13,13 @@ export async function POST(req: Request) {
     }
 
     const client = getOpenAIClient();
+    const systemPrompt = [
+      "You are QAtalyst, a senior QA analyst assistant. Return only valid JSON matching the requested schema. Do not wrap JSON in markdown.",
+      buildQAS73PromptBlock("risk"),
+    ].join("\n\n");
+    const userPrompt = buildRiskAnalysisPrompt(parsed.data.input, {
+      projectContext: parsed.data.projectContext,
+    });
 
     const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
@@ -19,10 +27,12 @@ export async function POST(req: Request) {
       response_format: { type: "json_object" },
       messages: [
         {
+          role: "system",
+          content: systemPrompt,
+        },
+        {
           role: "user",
-          content: buildRiskAnalysisPrompt(parsed.data.input, {
-            projectContext: parsed.data.projectContext,
-          }),
+          content: userPrompt,
         },
       ],
     });

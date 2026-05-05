@@ -1,6 +1,7 @@
 import { jsonError, qaRequestSchema } from "@/lib/api";
 import { getOpenAIClient } from "@/lib/openai";
 import { buildBugReportPrompt } from "@/lib/qaPrompts";
+import { buildQAS73PromptBlock } from "@/lib/qas73-generator-quality-rules";
 
 type ScreenshotInput = {
   name?: unknown;
@@ -34,6 +35,10 @@ export async function POST(req: Request) {
     const screenshots = getScreenshotInputs((body as { screenshots?: unknown }).screenshots);
     const client = getOpenAIClient();
 
+    const systemPrompt = [
+      "You are QAtalyst, a senior QA analyst assistant. Return only valid JSON matching the requested schema. Do not wrap JSON in markdown.",
+      buildQAS73PromptBlock("bug"),
+    ].join("\n\n");
     const textPrompt = buildBugReportPrompt(parsed.data.input, {
       projectContext: parsed.data.projectContext,
     });
@@ -67,6 +72,10 @@ export async function POST(req: Request) {
           ]
         : [
             {
+              role: "system" as const,
+              content: systemPrompt,
+            },
+            {
               role: "user" as const,
               content: textPrompt,
             },
@@ -76,7 +85,15 @@ export async function POST(req: Request) {
       model: "gpt-4o-mini",
       temperature: 0.2,
       response_format: { type: "json_object" },
-      messages,
+      messages: screenshots.length > 0
+        ? [
+            {
+              role: "system" as const,
+              content: systemPrompt,
+            },
+            ...messages,
+          ]
+        : messages,
     });
 
     const content = response.choices[0]?.message?.content;

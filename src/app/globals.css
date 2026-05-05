@@ -14405,3 +14405,137 @@ button.secondary-action-button.save-report-button,
   display: none !important;
 }
 
+
+
+/* QAS-73 scoring/layout fix */
+
+.source-quality-signal-card {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.12), transparent 42%),
+    rgba(0, 0, 0, 0.28);
+}
+
+.source-quality-signal-card ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.source-quality-signal-card li + li {
+  margin-top: 4px;
+}
+
+.coverage-score-number small,
+.coverage-score-number .coverage-score-number-label {
+  display: none !important;
+}
+
+.jira-fetched-summary-grid div:has(span) {
+  min-height: 92px;
+}
+
+/* Use this wrapper after moving quality/export sections below generated output. */
+.generated-output-first-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.generated-output-results {
+  order: 1;
+}
+
+.generated-output-followups {
+  order: 2;
+}
+
+.generated-output-export {
+  order: 3;
+}
+
+.generated-output-quality {
+  order: 4;
+}
+
+
+
+/* QAS-73 hard fix: score balance + output order */
+
+/* Hide old cramped score labels if any old component version is still cached. */
+.coverage-score-number small,
+.coverage-score-number .coverage-score-number-label {
+  display: none !important;
+}
+
+/*
+  Best-effort ordering safety net.
+  This only works when these cards share a flex/grid parent, but it helps prevent
+  quality/export cards from floating above generated test cards after refactors.
+*/
+.coverage-score-card {
+  order: 90;
+}
+
+.automation-export-card,
+.automation-export-panel,
+section[aria-label="Automation export"],
+section[aria-label="Export automation skeletons"] {
+  order: 80;
+}
+
+.test-case-card,
+.generated-test-case-card {
+  order: 10;
+}
+
+.test-case-display-card,
+.test-case-display-controls {
+  order: 70;
+}
+
+.source-quality-signal-card {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.12), transparent 42%),
+    rgba(0, 0, 0, 0.28);
+}
+
+.source-quality-signal-card ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.source-quality-signal-card li + li {
+  margin-top: 4px;
+}
+
+.generated-output-first-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.generated-output-results {
+  order: 1;
+}
+
+.generated-output-followups {
+  order: 2;
+}
+
+.generated-output-export {
+  order: 3;
+}
+
+.generated-output-quality {
+  order: 4;
+}
+
