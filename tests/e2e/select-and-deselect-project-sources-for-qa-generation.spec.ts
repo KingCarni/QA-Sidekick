@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import {
   expectSelectedSourceCount,
   expectSourceVisible,
@@ -7,23 +7,19 @@ import {
   openQATool,
 } from "../support/app";
 
-test.describe("Project source selection", () => {
-  test.skip(
-    !process.env.PROJECT_E2E_STANDARD_EMAIL || !process.env.PROJECT_E2E_STANDARD_PASSWORD,
-    "Set e2e credentials and seed a project/source before running this generated example."
-  );
-
+test.describe("Select and Deselect Project Sources for QA Generation", () => {
   test.beforeEach(async ({ page }) => {
+    // Preconditions: User has opened the 'Choose Sources' panel., At least one project source is available.
     await openQATool(page, {
       profileKey: "standard-user",
-      projectName: "Project",
+      projectName: "Project", // TODO: replace with your project fixture.
     });
 
     await openChooseSourcesPanel(page);
   });
 
-  test("selects and deselects a project source", async ({ page }) => {
-    const sourceName = "Project Product Overview";
+  test("validates source selection updates", async ({ page }) => {
+    const sourceName = "Project Product Overview"; // TODO: replace with a seeded project source name.
     const source = await expectSourceVisible(page, sourceName);
 
     if (await source.isChecked()) {
@@ -45,5 +41,7 @@ test.describe("Project source selection", () => {
     if (initialCount !== null) {
       await expectSelectedSourceCount(page, initialCount);
     }
+
+    // Expected Result: The selected sources are included in the generation context, and the generated output reflects the selected sources accurately.
   });
 });

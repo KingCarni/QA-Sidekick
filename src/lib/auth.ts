@@ -1,5 +1,5 @@
 import type { NextAuthOptions } from "next-auth";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
@@ -42,35 +42,35 @@ async function grantCreditIfMissing(args: {
   ref: string;
   meta?: Record<string, unknown>;
 }) {
-  const existing = await prisma.creditsLedger.findUnique({
-    where: {
-      userId_ref: {
-        userId: args.userId,
-        ref: args.ref,
-      },
-    },
-    select: { id: true },
-  });
-
-  if (existing) return;
-
-  await prisma.$transaction([
-    prisma.creditsLedger.create({
-      data: {
-        userId: args.userId,
-        delta: args.delta,
-        reason: args.reason,
-        ref: args.ref,
-      },
-    }),
-    prisma.event.create({
-      data: {
-        userId: args.userId,
-        type: args.reason,
-        metaJson: toJsonObject(args.meta),
-      },
-    }),
-  ]);
+  try {
+    await prisma.$transaction([
+      prisma.creditsLedger.upsert({
+        where: {
+          userId_ref: {
+            userId: args.userId,
+            ref: args.ref,
+          },
+        },
+        update: {},
+        create: {
+          userId: args.userId,
+          delta: args.delta,
+          reason: args.reason,
+          ref: args.ref,
+        },
+      }),
+      prisma.event.create({
+        data: {
+          userId: args.userId,
+          type: args.reason,
+          metaJson: toJsonObject(args.meta),
+        },
+      }),
+    ]);
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return;
+    throw error;
+  }
 }
 
 async function ensureUserBonuses(user: unknown) {

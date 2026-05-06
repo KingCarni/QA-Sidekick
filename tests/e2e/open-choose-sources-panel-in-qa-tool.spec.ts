@@ -20,8 +20,13 @@ test.describe("Open Choose Sources Panel in QA Tool", () => {
 
   test("validates source selection updates", async ({ page }) => {
     const sourceName = "Project Product Overview"; // TODO: replace with a seeded project source name.
-    const initialCount = await getSelectedSourceCount(page);
     const source = await expectSourceVisible(page, sourceName);
+
+    if (await source.isChecked()) {
+      await source.uncheck();
+    }
+
+    const initialCount = await getSelectedSourceCount(page);
 
     await source.check();
     await expect(source).toBeChecked();

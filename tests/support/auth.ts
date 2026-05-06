@@ -42,7 +42,29 @@ function requiredEnv(name: string): string {
   return value;
 }
 
+async function tryDevTestAuth(page: Page, profileKey: string): Promise<boolean> {
+  if (process.env.ENABLE_E2E_AUTH !== "true") return false;
+
+  const response = await page.request.post("/api/e2e/auth", {
+    data: { profileKey },
+  });
+
+  if (!response.ok()) {
+    const body = await response.text().catch(() => "");
+    throw new Error(`E2E dev auth failed for ${profileKey}: ${response.status()} ${body}`);
+  }
+
+  const payload = await response.json();
+  await page.goto(payload.redirectTo || "/app");
+  await expect(page).toHaveURL(/\/(app|account|dashboard|home|settings|jira)(\/|$)?/i);
+
+  return true;
+}
+
 export async function loginAs(page: Page, profileKey: AuthProfileKey | string = "standard-user") {
+  const usedDevAuth = await tryDevTestAuth(page, profileKey);
+  if (usedDevAuth) return;
+
   const profile = getAuthProfile(profileKey);
   const email = requiredEnv(profile.emailEnv);
   const password = requiredEnv(profile.passwordEnv);
