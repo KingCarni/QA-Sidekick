@@ -8,6 +8,7 @@ import {
 } from "@/lib/automation-readiness";
 import { generateAutomationSkeleton } from "@/lib/automation-codegen";
 import type { SafeAutomationCredentialProfile } from "@/lib/automation-credentials";
+import { validateGeneratedSelectors } from "@/lib/selector-validation";
 
 export type AutomationExportTestCase = {
   title?: unknown;
@@ -140,6 +141,11 @@ function buildReadme(bundleName: string, bundle: Omit<AutomationExportBundle, "f
   const playwrightFiles = bundle.files.filter((file: AutomationExportFile) => file.type === "playwright");
   const cypressFiles = bundle.files.filter((file: AutomationExportFile) => file.type === "cypress");
   const manualFiles = bundle.files.filter((file: AutomationExportFile) => file.type === "manual");
+  const selectorWarnings = bundle.files
+    .filter((file: AutomationExportFile) => file.path.endsWith(".ts"))
+    .flatMap((file: AutomationExportFile) =>
+      validateGeneratedSelectors(file.content).map((issue) => `- \`${file.path}\`: ${issue.message}`)
+    );
 
   return [
     `# ${bundleName}`,
@@ -164,6 +170,16 @@ function buildReadme(bundleName: string, bundle: Omit<AutomationExportBundle, "f
     ...(playwrightFiles.length ? ["### Playwright", "", ...playwrightFiles.map((file: AutomationExportFile) => `- \`${file.path}\``), ""] : []),
     ...(cypressFiles.length ? ["### Cypress", "", ...cypressFiles.map((file: AutomationExportFile) => `- \`${file.path}\``), ""] : []),
     ...(manualFiles.length ? ["### Manual Review", "", ...manualFiles.map((file: AutomationExportFile) => `- \`${file.path}\``), ""] : []),
+    ...(selectorWarnings.length
+      ? [
+          "## Selector Warnings",
+          "",
+          "QAtalyst detected unstable selector patterns in this generated spec. Prefer adding data-testid hooks and regenerating the skeleton.",
+          "",
+          ...selectorWarnings,
+          "",
+        ]
+      : []),
     "## Before running generated tests",
     "",
     "- Install Playwright: `npm install -D @playwright/test` and `npx playwright install chromium`.",

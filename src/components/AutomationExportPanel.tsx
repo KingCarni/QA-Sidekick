@@ -147,7 +147,7 @@ export default function AutomationExportPanel({
           Download Files
         </button>
 
-        <button disabled={exportDisabled} type="button" onClick={handleCopyBundle}>
+        <button disabled={exportDisabled} data-testid="copy-automation-bundle-button" type="button" onClick={handleCopyBundle}>
           {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy Failed" : "Copy Bundle"}
         </button>
 

@@ -133,7 +133,7 @@ export default function ProjectAutomationCredentialsForm({
   }
 
   return (
-    <section className="automation-credentials-shell">
+    <section className="automation-credentials-shell" data-testid="automation-credentials-panel">
       <div className="automation-credentials-hero">
         <div>
           <p className="report-kicker">Automation Credentials</p>
@@ -144,7 +144,7 @@ export default function ProjectAutomationCredentialsForm({
           </p>
         </div>
 
-        <button className="secondary-button automation-credentials-defaults" type="button" onClick={useDefaults}>
+        <button className="secondary-button automation-credentials-defaults" data-testid="use-starter-profiles-button" type="button" onClick={useDefaults}>
           Use Starter Profiles
         </button>
       </div>
@@ -224,6 +224,7 @@ export default function ProjectAutomationCredentialsForm({
               <label>
                 Profile Name
                 <input
+                  data-testid="credential-profile-name-input"
                   value={profile.name ?? ""}
                   onChange={(event) => updateProfile(index, { name: event.target.value })}
                   placeholder="Standard User"
@@ -242,6 +243,7 @@ export default function ProjectAutomationCredentialsForm({
               <label>
                 Role / Persona
                 <input
+                  data-testid="credential-profile-role-input"
                   value={profile.role ?? ""}
                   onChange={(event) => updateProfile(index, { role: event.target.value })}
                   placeholder="Signed-in standard user"
@@ -260,6 +262,7 @@ export default function ProjectAutomationCredentialsForm({
               <label>
                 Email Env Var
                 <input
+                  data-testid="credential-profile-email-env-input"
                   value={profile.emailEnvVar ?? ""}
                   onChange={(event) => updateProfile(index, { emailEnvVar: event.target.value })}
                   placeholder="PROJECT_E2E_STANDARD_EMAIL"
@@ -269,6 +272,7 @@ export default function ProjectAutomationCredentialsForm({
               <label>
                 Password Env Var
                 <input
+                  data-testid="credential-profile-password-env-input"
                   value={profile.passwordEnvVar ?? ""}
                   onChange={(event) => updateProfile(index, { passwordEnvVar: event.target.value })}
                   placeholder="PROJECT_E2E_STANDARD_PASSWORD"
@@ -279,6 +283,7 @@ export default function ProjectAutomationCredentialsForm({
             <label className="credential-notes-label">
               Setup Notes
               <textarea
+                data-testid="credential-profile-notes-input"
                 value={profile.notes ?? ""}
                 onChange={(event) => updateProfile(index, { notes: event.target.value })}
                 placeholder="Expected permissions, seed data, project state, account limits, or role restrictions..."
@@ -308,6 +313,7 @@ export default function ProjectAutomationCredentialsForm({
           <label>
             Profile Name
             <input
+              data-testid="credential-profile-name-input"
               value={draft.name ?? ""}
               onChange={(event) => {
                 const name = event.target.value;
@@ -320,6 +326,7 @@ export default function ProjectAutomationCredentialsForm({
           <label>
             Role / Persona
             <input
+              data-testid="credential-profile-role-input"
               value={draft.role ?? ""}
               onChange={(event) => setDraft({ ...draft, role: event.target.value })}
               placeholder="Signed-in standard user"
@@ -329,6 +336,7 @@ export default function ProjectAutomationCredentialsForm({
           <label>
             Email Env Var
             <input
+              data-testid="credential-profile-email-env-input"
               value={draft.emailEnvVar ?? ""}
               onChange={(event) => setDraft({ ...draft, emailEnvVar: event.target.value })}
               placeholder="PROJECT_E2E_STANDARD_EMAIL"
@@ -338,6 +346,7 @@ export default function ProjectAutomationCredentialsForm({
           <label>
             Password Env Var
             <input
+              data-testid="credential-profile-password-env-input"
               value={draft.passwordEnvVar ?? ""}
               onChange={(event) => setDraft({ ...draft, passwordEnvVar: event.target.value })}
               placeholder="PROJECT_E2E_STANDARD_PASSWORD"
@@ -348,6 +357,7 @@ export default function ProjectAutomationCredentialsForm({
         <label className="credential-notes-label">
           Setup Notes
           <textarea
+            data-testid="credential-profile-notes-input"
             value={draft.notes ?? ""}
             onChange={(event) => setDraft({ ...draft, notes: event.target.value })}
             placeholder="Expected permissions, seed data, account limits, role restrictions..."
@@ -356,7 +366,7 @@ export default function ProjectAutomationCredentialsForm({
 
         <div className="credential-profile-footer">
           <span />
-          <button className="primary-button" type="button" onClick={addDraft}>
+          <button className="primary-button" data-testid="add-credential-profile-button" type="button" onClick={addDraft}>
             Add Credential Profile
           </button>
         </div>

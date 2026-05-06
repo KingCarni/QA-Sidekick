@@ -1,6 +1,6 @@
 import { encode } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
-import { getE2EPersona, isE2EAuthEnabled } from "@/lib/e2e-auth-personas";
+import { E2E_PERSONAS, getE2EPersona, isE2EAuthEnabled } from "@/lib/e2e-auth-personas";
 import { upsertE2EUserAndFixtures } from "@/lib/e2e-fixtures";
 import { getOptionalEnv } from "@/lib/env";
 
@@ -61,13 +61,32 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  if (!isE2EAuthEnabled()) {
-    return NextResponse.json({ error: "E2E auth is disabled." }, { status: 404 });
-  }
+  const productionBlocked = process.env.NODE_ENV === "production";
+  const enabled = isE2EAuthEnabled();
 
-  return NextResponse.json({
-    ok: true,
-    enabled: true,
-    personas: ["standard-user", "admin-user", "limited-access-user"],
-  });
+  return NextResponse.json(
+    {
+      ok: enabled,
+      enabled,
+      productionBlocked,
+      environment: process.env.NODE_ENV || "unknown",
+      personas: Object.values(E2E_PERSONAS).map((persona) => ({
+        key: persona.key,
+        name: persona.name,
+        role: persona.role,
+      })),
+      fixtures: {
+        project: enabled,
+        source: enabled,
+        credits: enabled,
+        permissions: enabled,
+      },
+      message: enabled
+        ? "E2E dev/test auth is enabled."
+        : productionBlocked
+          ? "E2E dev/test auth is blocked in production."
+          : "Set ENABLE_E2E_AUTH=true in .env.e2e to enable local dev/test auth.",
+    },
+    { status: productionBlocked ? 403 : 200 }
+  );
 }

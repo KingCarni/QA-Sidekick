@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { loginAs } from "./auth";
 
 export type OpenQAToolOptions = {
@@ -7,26 +7,21 @@ export type OpenQAToolOptions = {
   requireAuth?: boolean;
 };
 
-function slugifyForTestId(value: string): string {
+function slugifyTestId(value: string) {
   return value
     .toLowerCase()
+    .trim()
+    .replace(/['"]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
 
 export async function openQATool(page: Page, options: OpenQAToolOptions = {}) {
   const { profileKey = "standard-user", requireAuth = true } = options;
-
-  if (requireAuth) {
-    await loginAs(page, profileKey);
-  }
-
+  if (requireAuth) await loginAs(page, profileKey);
   await page.goto("/app");
   await expect(page.getByTestId("qa-tool")).toBeVisible();
-
-  if (options.projectName) {
-    await selectProject(page, options.projectName);
-  }
+  if (options.projectName) await selectProject(page, options.projectName);
 }
 
 export async function selectTool(page: Page, tool: "test-cases" | "risk-review" | "bug-writer" | "test-improver") {
@@ -35,9 +30,7 @@ export async function selectTool(page: Page, tool: "test-cases" | "risk-review" 
 
 export async function selectProject(page: Page, projectName: string) {
   const picker = page.getByTestId("project-picker");
-
   await expect(picker).toBeVisible();
-
   await picker.selectOption({ label: projectName }).catch(async () => {
     await picker.click();
     await page.getByRole("option", { name: projectName }).click();
@@ -55,19 +48,12 @@ export async function openChooseSourcesPanel(page: Page) {
   await expect(page.getByTestId("choose-sources-panel")).toBeVisible();
 }
 
-export async function sourceCheckbox(page: Page, sourceName: string) {
-  const slug = slugifyForTestId(sourceName);
-  const byTestId = page.getByTestId(`source-checkbox-${slug}`);
-
-  if (await byTestId.count()) {
-    return byTestId;
-  }
-
-  return page.getByRole("checkbox", { name: sourceName });
+export function sourceCheckboxLocator(page: Page, sourceName: string) {
+  return page.getByTestId(`source-checkbox-${slugifyTestId(sourceName)}`);
 }
 
 export async function expectSourceVisible(page: Page, sourceName: string) {
-  const checkbox = await sourceCheckbox(page, sourceName);
+  const checkbox = sourceCheckboxLocator(page, sourceName);
   await expect(checkbox).toBeVisible();
   return checkbox;
 }
@@ -75,7 +61,6 @@ export async function expectSourceVisible(page: Page, sourceName: string) {
 export async function getSelectedSourceCount(page: Page): Promise<number | null> {
   const countText = await page.getByTestId("selected-source-count").textContent().catch(() => null);
   if (!countText) return null;
-
   const match = countText.match(/\d+/);
   return match ? Number(match[0]) : null;
 }
@@ -90,11 +75,33 @@ export async function runTestCases(page: Page) {
   await expect(page.getByTestId("qa-output")).toBeVisible();
 }
 
+export async function runRiskReview(page: Page) {
+  await selectTool(page, "risk-review");
+  await page.getByTestId("run-risk-review-button").click();
+  await expect(page.getByTestId("qa-output")).toBeVisible();
+}
+
+export async function runBugWriter(page: Page) {
+  await selectTool(page, "bug-writer");
+  await page.getByTestId("run-bug-writer-button").click();
+  await expect(page.getByTestId("qa-output")).toBeVisible();
+}
+
 export async function expectGeneratedTestCase(page: Page, index = 1) {
   await expect(page.getByTestId(`test-case-card-${index}`)).toBeVisible();
+}
+
+export async function expectAutomationFit(page: Page, index = 1) {
+  await expect(page.getByTestId(`automation-fit-${index}`)).toBeVisible();
 }
 
 export async function generateSkeletonForCase(page: Page, index = 1) {
   await page.getByTestId(`generate-skeleton-${index}`).click();
   await expect(page.getByTestId("automation-export-panel")).toBeVisible();
+}
+
+export async function downloadAutomationFiles(page: Page) {
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByTestId("download-automation-files-button").click();
+  return downloadPromise;
 }

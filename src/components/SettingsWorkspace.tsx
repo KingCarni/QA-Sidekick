@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import E2EAutomationReadinessPanel from "@/components/E2EAutomationReadinessPanel";
 import JiraSettingsForm from "@/components/JiraSettingsForm";
 import ProjectAutomationCredentialsForm from "@/components/ProjectAutomationCredentialsForm";
 import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSettingsPanel";
@@ -14,7 +15,7 @@ type SettingsWorkspaceProps = {
   userEmail?: string | null;
 };
 
-type SettingsArea = "projects" | "source-vault" | "automation-credentials" | "jira" | "testrail" | "admin";
+type SettingsArea = "projects" | "source-vault" | "account-setup" | "jira" | "testrail" | "admin";
 
 export default function SettingsWorkspace({
   initialJiraConfig,
@@ -61,24 +62,24 @@ export default function SettingsWorkspace({
   }
 
   return (
-    <section className="settings-wide-panel settings-wide-panel-with-projects">
+    <section className="settings-wide-panel settings-wide-panel-with-projects" data-testid="settings-workspace">
       <div className="settings-area-strip">
         <p className="report-kicker">Settings Areas</p>
 
         <nav className="settings-area-tabs" aria-label="Settings areas">
-          <button className={tabClass("projects")} onClick={() => setActiveArea("projects")} type="button">
+          <button className={tabClass("projects")} data-testid="settings-tab-projects" onClick={() => setActiveArea("projects")} type="button">
             Projects
           </button>
-          <button className={tabClass("source-vault")} onClick={() => setActiveArea("source-vault")} type="button">
+          <button className={tabClass("source-vault")} data-testid="settings-tab-source-vault" onClick={() => setActiveArea("source-vault")} type="button">
             Project Source Vault
           </button>
-          <button className={tabClass("automation-credentials")} onClick={() => setActiveArea("automation-credentials")} type="button">
-            Automation Credentials
+          <button className={tabClass("account-setup")} data-testid="settings-tab-account-setup" onClick={() => setActiveArea("account-setup")} type="button">
+            Account Setup
           </button>
-          <button className={tabClass("jira")} onClick={() => setActiveArea("jira")} type="button">
+          <button className={tabClass("jira")} data-testid="settings-tab-jira-integration" onClick={() => setActiveArea("jira")} type="button">
             Jira Integration
           </button>
-          <button className={tabClass("testrail")} onClick={() => setActiveArea("testrail")} type="button">
+          <button className={tabClass("testrail")} data-testid="settings-tab-testrail-integration" onClick={() => setActiveArea("testrail")} type="button">
             TestRail Integration
           </button>
           {isAdmin ? (
@@ -128,8 +129,9 @@ export default function SettingsWorkspace({
         </section>
       ) : null}
 
-      {activeArea === "automation-credentials" ? (
-        <section className="settings-wide-section" id="automation-credentials">
+      {activeArea === "account-setup" ? (
+        <section className="settings-wide-section account-setup-section" data-testid="account-setup-panel" id="account-setup">
+          <E2EAutomationReadinessPanel />
           <ProjectAutomationCredentialsForm
             profiles={automationCredentialProfiles}
             onChange={updateAutomationCredentialProfiles}
