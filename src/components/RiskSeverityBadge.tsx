@@ -1,14 +1,14 @@
 "use client";
 
-type RiskSeverity = "Critical" | "High" | "Medium" | "Low" | "None" | string;
+export type RiskTone = "critical" | "high" | "medium" | "low" | "none";
 
 type RiskSeverityBadgeProps = {
-  severity?: RiskSeverity;
-  score?: number;
-  label?: string;
+  severity?: unknown;
+  score?: unknown;
+  compact?: boolean;
 };
 
-function normalizeSeverity(severity?: RiskSeverity, score?: number) {
+function normalizeSeverity(severity?: unknown, score?: unknown): RiskTone {
   const raw = String(severity ?? "").toLowerCase();
 
   if (raw.includes("critical")) return "critical";
@@ -17,20 +17,36 @@ function normalizeSeverity(severity?: RiskSeverity, score?: number) {
   if (raw.includes("low")) return "low";
   if (raw.includes("none")) return "none";
 
-  if (typeof score === "number") {
-    if (score >= 75) return "high";
-    if (score >= 40) return "medium";
-    if (score > 0) return "low";
+  const numericScore =
+    typeof score === "number"
+      ? score
+      : typeof score === "string" && score.trim()
+        ? Number(score)
+        : Number.NaN;
+
+  if (Number.isFinite(numericScore)) {
+    if (numericScore >= 75) return "high";
+    if (numericScore >= 40) return "medium";
+    if (numericScore > 0) return "low";
     return "none";
   }
 
   return "medium";
 }
 
-function severityScore(severityTone: string, score?: number) {
-  if (typeof score === "number") return Math.max(0, Math.min(100, Math.round(score)));
+function scoreForTone(tone: RiskTone, score?: unknown) {
+  const numericScore =
+    typeof score === "number"
+      ? score
+      : typeof score === "string" && score.trim()
+        ? Number(score)
+        : Number.NaN;
 
-  switch (severityTone) {
+  if (Number.isFinite(numericScore)) {
+    return Math.max(0, Math.min(100, Math.round(numericScore)));
+  }
+
+  switch (tone) {
     case "critical":
       return 95;
     case "high":
@@ -46,10 +62,8 @@ function severityScore(severityTone: string, score?: number) {
   }
 }
 
-function severityLabel(severityTone: string, label?: string) {
-  if (label) return label;
-
-  switch (severityTone) {
+function labelForTone(tone: RiskTone) {
+  switch (tone) {
     case "critical":
       return "Critical";
     case "high":
@@ -65,23 +79,30 @@ function severityLabel(severityTone: string, label?: string) {
   }
 }
 
-export default function RiskSeverityBadge({ severity, score, label }: RiskSeverityBadgeProps) {
+export function riskToneFromSeverity(severity?: unknown, score?: unknown): RiskTone {
+  return normalizeSeverity(severity, score);
+}
+
+export default function RiskSeverityBadge({ severity, score, compact = false }: RiskSeverityBadgeProps) {
   const tone = normalizeSeverity(severity, score);
-  const numericScore = severityScore(tone, score);
-  const displayLabel = severityLabel(tone, label);
+  const riskScore = scoreForTone(tone, score);
+  const label = labelForTone(tone);
 
   return (
     <div
-      className={`risk-severity-badge risk-severity-badge-${tone}`}
-      title={`Risk Severity: ${displayLabel} · ${numericScore}%`}
-      aria-label={`Risk Severity ${displayLabel}, ${numericScore} percent`}
-      style={{ ["--risk-score" as string]: `${numericScore * 3.6}deg` }}
+      className={`risk-severity-badge risk-severity-badge-${tone} ${
+        compact ? "risk-severity-badge-compact" : ""
+      }`}
+      title={`Risk Severity: ${label} · ${riskScore}%`}
+      aria-label={`Risk Severity ${label}, ${riskScore} percent`}
+      style={{ ["--risk-score" as string]: `${riskScore * 3.6}deg` }}
     >
       <div className="risk-severity-donut" aria-hidden="true">
-        <span>{numericScore}</span>
+        <span>{riskScore}</span>
       </div>
+
       <div className="risk-severity-copy">
-        <strong>{displayLabel}</strong>
+        <strong>{label}</strong>
         <small>Risk</small>
       </div>
     </div>

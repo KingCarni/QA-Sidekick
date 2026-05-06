@@ -81,6 +81,15 @@ Automation readiness rules:
 - Manual/exploratory cases are allowed, but they should not dominate unless the source is subjective.
 - If source is too vague, generate fewer stronger tests and ask follow-up questions instead of producing 8 generic cases.
 
+Selection/count rules:
+- When testing source selection, filters, toggles, checkboxes, selected counts, or left-panel counters, use a named fixture item when possible.
+- Prefer deterministic expected results.
+- Bad: "The source count updates correctly."
+- Better: "The selected source count increases by 1 after selecting the source and returns to the previous value after deselecting it."
+- If exact source names are unknown, write: "Use a seeded source named [SOURCE_NAME]."
+- Include observable UI targets such as Choose Sources panel, source checkbox/list item, selected source count, left panel source count, and selected/checked state.
+- These cases should usually be automation candidates with setup cleanup, not manual-only cases.
+
 For QAtalyst-specific tickets:
 Prefer cases that validate actual QAtalyst value:
 - fetched Jira source flows

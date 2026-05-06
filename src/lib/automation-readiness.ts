@@ -153,9 +153,9 @@ function titleSpecificityBucket(title: string): BucketResult {
 
 function stepsBucket(caseText: string): BucketResult {
   const steps = sectionText(caseText, "Steps") || caseText;
-  const actionCount = countMatches(steps, /\b(click|select|enter|type|submit|navigate|open|save|create|delete|update|upload|download|login|log in|sign in|search|filter|sort|fetch|trigger|verify|check|pull|generate|export|install|configure|run|send|capture|attempt|perform|locate)\b/gi);
+  const actionCount = countMatches(steps, /\b(click|select|deselect|toggle|untoggle|check|uncheck|choose|clear|enter|type|submit|navigate|open|save|create|delete|update|upload|download|login|log in|sign in|search|filter|sort|fetch|trigger|verify|pull|generate|export|install|configure|run|send|capture|attempt|perform|locate)\b/gi);
   const stepCount = Math.max(countMatches(steps, /^\s*\d+[.)]\s+/gm), steps.split(/\n+/).filter((line) => line.trim()).length);
-  const targetCount = countMatches(steps, /\b(button|field|input|dropdown|checkbox|table|card|page|screen|form|link|panel|modal|toast|message|jira|ticket|issue|comment|subtask|file|bundle|component|css|class|folder|config|configuration|server|endpoint|api|account|credit|ledger|balance|limit|dashboard)\b/gi);
+  const targetCount = countMatches(steps, /\b(button|field|input|dropdown|checkbox|table|card|page|screen|form|link|panel|modal|toast|message|jira|ticket|issue|comment|subtask|file|bundle|component|css|class|folder|config|configuration|server|endpoint|api|account|credit|ledger|balance|limit|dashboard|source|sources|count|counter|selected|selection|list|row|item)\b/gi);
   const reasons: string[] = [];
   let score = 0;
 
@@ -183,12 +183,12 @@ function assertionBucket(caseText: string): BucketResult {
   const reasons: string[] = [];
   let score = 0;
 
-  if (/\b(expected result|should|verify|assert|must|displays|shows|returns|creates|saves|blocks|prevents|excludes|includes|downloads|opens|appears|visible|hidden|error message|success|redirected|reduced|deducted|balance|logged entry|limit exceeded|insufficient credits|authenticated)\b/i.test(expected)) {
+  if (/\b(expected result|should|verify|assert|must|displays|shows|returns|creates|saves|blocks|prevents|excludes|includes|downloads|opens|appears|visible|hidden|error message|success|redirected|reduced|deducted|balance|logged entry|limit exceeded|insufficient credits|authenticated|selected|deselected|checked|unchecked|count|counter|increments|decrements|updates|selection state|selected source count)\b/i.test(expected)) {
     score += 11;
     reasons.push("Expected behavior is stated.");
   }
 
-  if (/\b(no |not |without |only |exact|specific|does not|should not|must not|excluded|included|count|status|message|url|file|record|issue|ticket|styles|css|class|component|configuration|balance|credit|ledger|dashboard|api|json)\b/i.test(expected)) {
+  if (/\b(no |not |without |only |exact|specific|does not|should not|must not|excluded|included|selected|deselected|checked|unchecked|count|counter|increments|decrements|updates|selection state|selected source count|status|message|url|file|record|issue|ticket|styles|css|class|component|configuration|balance|credit|ledger|dashboard|api|json)\b/i.test(expected)) {
     score += 9;
     reasons.push("Expected result contains a concrete assertion.");
   }
@@ -233,7 +233,7 @@ function targetBucket(caseText: string): BucketResult {
   const reasons: string[] = [];
   let score = 0;
 
-  const uiTargets = countMatches(text, /\b(button|field|input|dropdown|checkbox|table|card|page|screen|form|link|panel|modal|toast|message|textarea|component|style|styles|css|class|dashboard|account page|login page|credit balance)\b/g);
+  const uiTargets = countMatches(text, /\b(button|field|input|dropdown|checkbox|table|card|page|screen|form|link|panel|modal|toast|message|textarea|component|style|styles|css|class|dashboard|account page|login page|credit balance|source|sources|selected source|selected sources|count|counter|selection state|list item)\b/g);
   const apiTargets = countMatches(text, /\b(api|request|response|payload|database|record|state|network|endpoint|route|jira|issue|ticket|comment|label|priority|subtask|attachment|file|folder|bundle|config|configuration|server|credit ledger|ledger|credit deduction|usage entry|limit)\b/g);
 
   score += Math.min(8, uiTargets * 2);
@@ -254,6 +254,9 @@ function determinismBucket(caseText: string, title: string): BucketResult {
   const singleActionClearExpected =
     /\b(navigate|open|click|attempt|enter|fetch|make an api call|perform)\b/i.test(caseText) &&
     /\b(redirected|displays|returns|shows|error|message|balance|deducted|reduced|logged|prevents)\b/i.test(caseText);
+  const selectionStateSignal =
+    /\b(select|deselect|toggle|untoggle|check|uncheck|choose)\b/i.test(caseText) &&
+    /\b(selected|deselected|checked|unchecked|count|counter|updates|selection state|source count)\b/i.test(caseText);
 
   if (/\b(exact|specific|valid|invalid|required|selected|created|updated|deleted|saved|loaded|visible|hidden|excluded|included|matching|non-epic|without|with no|configured|installed|applied|zero credits|sufficient credits|insufficient credits|defined limit|reduced|deducted|redirected|displayed)\b/.test(text)) {
     score += 6;
@@ -273,6 +276,11 @@ function determinismBucket(caseText: string, title: string): BucketResult {
   if (singleActionClearExpected) {
     score += 6;
     reasons.push("Simple action with clear expected outcome.");
+  }
+
+  if (selectionStateSignal) {
+    score += 10;
+    reasons.push("Selection/count state is deterministic enough to automate.");
   }
 
   return { score: Math.min(11, score), reasons };
@@ -322,11 +330,13 @@ function missingInputsFor(scores: {
   const missing: string[] = [];
   const hasSoftTarget =
     /\b(account page|login page|dashboard|credit balance|api call|credit ledger|jira ticket|report|button|input|page|message|error|redirect)\b/i.test(caseText);
+  const hasSelectionSoftTarget =
+    /\b(source|sources|checkbox|selected source|selected sources|count|counter|selection state|choose sources)\b/i.test(caseText);
 
   if (scores.steps < 12) missing.push("Concrete steps/actions");
   if (scores.assertion < 11) missing.push("Expected result/assertion");
   if (scores.setup < 6) missing.push("Test account/data setup");
-  if (scores.target < 5 && !hasSoftTarget) missing.push("Observable UI/API target");
+  if (scores.target < 5 && !hasSoftTarget && !hasSelectionSoftTarget) missing.push("Observable UI/API target");
 
   return missing;
 }
@@ -386,8 +396,11 @@ function readinessFromScore(
   if (manualOnly) return "manual";
 
   const hasCoreFlow =
-    /\b(click|navigate|open|enter|login|log in|perform|attempt|send|fetch|verify|check|locate)\b/i.test(caseText) &&
-    /\b(expected result|should|displays|returns|redirected|reduced|deducted|error|message|balance|entry|authenticated)\b/i.test(caseText);
+    /\b(click|navigate|open|enter|login|log in|perform|attempt|send|fetch|verify|check|locate|select|deselect|toggle|untoggle|choose)\b/i.test(caseText) &&
+    /\b(expected result|should|displays|returns|redirected|reduced|deducted|error|message|balance|entry|authenticated|selected|deselected|checked|unchecked|count|counter|updates|selection state)\b/i.test(caseText);
+  const isSelectionFlow =
+    /\b(select|deselect|toggle|untoggle|check|uncheck|choose)\b/i.test(caseText) &&
+    /\b(source|sources|checkbox|selected|selection state|count|counter)\b/i.test(caseText);
 
   // Missing selectors, seed data, auth state, and exact routes are normal TODOs for skeleton generation.
   // They should usually be Partial, not Blocked, if the behavior itself is deterministic.
@@ -395,6 +408,7 @@ function readinessFromScore(
   if (score >= 62 && hasCoreFlow && !missingInputs.includes("Expected result/assertion")) return "ready";
   if (score >= 48 && hasCoreFlow) return "partial";
   if (score >= 40 && hasCoreFlow && !missingInputs.includes("Expected result/assertion")) return "partial";
+  if (isSelectionFlow && hasCoreFlow && !missingInputs.includes("Expected result/assertion")) return "partial";
   if (score >= 40) return "manual";
   return "blocked";
 }

@@ -14,6 +14,7 @@ import BugEvidencePanel, {
 import BugEvidencePreview from "@/components/BugEvidencePreview";
 import CoverageScorePanel from "@/components/CoverageScorePanel";
 import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
+import RiskReviewPanel from "@/components/RiskReviewPanel";
 import StackedProjectJiraControls from "@/components/StackedProjectJiraControls";
 import type { ActiveProjectContext } from "@/components/ProjectContextIndicator";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
@@ -1676,7 +1677,9 @@ function RiskReviewCards({
         </section>
       ) : null}
 
-      <div className="risk-report-list">
+      {editableRiskReview ? <RiskReviewPanel review={editableRiskReview} /> : null}
+
+      <div className="risk-report-list risk-report-list-retired">
         <section className="risk-summary-card">
           <div className="badge-row">
             <EditableBadgeSelect

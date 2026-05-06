@@ -15413,3 +15413,571 @@ section[aria-label="Export automation skeletons"] {
   }
 }
 
+
+
+/* QAS-73 Risk Review ACTUAL integration styles */
+
+/* Main risk review layout */
+.risk-review-report-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.risk-review-summary-card,
+.risk-review-section,
+.risk-review-glow-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 26px;
+}
+
+.risk-review-summary-card::before,
+.risk-review-section::before,
+.risk-review-glow-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(239, 68, 68, 0.12), transparent 34%),
+    radial-gradient(circle at 8% 92%, rgba(37, 99, 235, 0.08), transparent 32%);
+}
+
+.risk-review-summary-card > *,
+.risk-review-section > *,
+.risk-review-glow-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Summary card */
+.risk-review-summary-card {
+  padding: 28px 30px !important;
+  border: 1px solid rgba(245, 158, 11, 0.42);
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.14), transparent 42%),
+    linear-gradient(135deg, rgba(39, 28, 4, 0.76), rgba(8, 10, 14, 0.94));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    0 18px 42px rgba(0, 0, 0, 0.24);
+}
+
+.risk-review-summary-card-low,
+.risk-review-summary-card-none {
+  border-color: rgba(34, 197, 94, 0.42);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.15), transparent 42%),
+    linear-gradient(135deg, rgba(2, 28, 16, 0.76), rgba(8, 10, 14, 0.94));
+}
+
+.risk-review-summary-card-medium {
+  border-color: rgba(245, 158, 11, 0.48);
+}
+
+.risk-review-summary-card-high,
+.risk-review-summary-card-critical {
+  border-color: rgba(248, 113, 113, 0.52);
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.16), transparent 42%),
+    linear-gradient(135deg, rgba(45, 10, 12, 0.76), rgba(8, 10, 14, 0.94));
+}
+
+.risk-review-summary-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 118px;
+  gap: 26px;
+  align-items: start;
+}
+
+.risk-review-summary-copy {
+  padding-top: 4px;
+}
+
+.risk-review-summary-copy h3 {
+  margin: 0 0 14px !important;
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+}
+
+.risk-review-summary-copy p {
+  margin: 0;
+  max-width: 760px;
+  line-height: 1.65;
+}
+
+/* Severity donut badge */
+.risk-severity-badge {
+  --risk-ring: rgba(245, 158, 11, 0.98);
+  --risk-bg: rgba(60, 40, 5, 0.74);
+
+  width: 112px;
+  min-width: 112px;
+  height: 118px;
+  padding: 10px 8px 9px;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.07), transparent 52%),
+    var(--risk-bg);
+  box-shadow:
+    inset 0 0 18px rgba(255, 255, 255, 0.035),
+    0 10px 24px rgba(0, 0, 0, 0.22);
+  display: grid;
+  grid-template-rows: 60px 20px 12px;
+  align-items: center;
+  justify-items: center;
+  gap: 5px;
+  justify-self: end;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.risk-severity-badge-compact {
+  width: 96px;
+  min-width: 96px;
+  height: 104px;
+  border-radius: 20px;
+  grid-template-rows: 52px 18px 11px;
+}
+
+.risk-severity-badge-low,
+.risk-severity-badge-none {
+  --risk-ring: rgba(34, 197, 94, 0.98);
+  --risk-bg: rgba(5, 46, 22, 0.72);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.risk-severity-badge-medium {
+  --risk-ring: rgba(245, 158, 11, 0.98);
+  --risk-bg: rgba(60, 40, 5, 0.74);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.risk-severity-badge-high,
+.risk-severity-badge-critical {
+  --risk-ring: rgba(248, 113, 113, 0.98);
+  --risk-bg: rgba(69, 10, 10, 0.74);
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.risk-severity-donut {
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at center, rgba(5, 7, 10, 1) 0 56%, transparent 57%),
+    conic-gradient(var(--risk-ring) var(--risk-score), rgba(255, 255, 255, 0.13) 0);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 18px rgba(0, 0, 0, 0.25);
+}
+
+.risk-severity-badge-compact .risk-severity-donut {
+  width: 50px;
+  height: 50px;
+}
+
+.risk-severity-donut span {
+  font-size: 1.05rem;
+  line-height: 1;
+  font-weight: 950;
+  color: white;
+  letter-spacing: -0.045em;
+}
+
+.risk-severity-copy {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  line-height: 1;
+}
+
+.risk-severity-copy strong {
+  max-width: 96px;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.96);
+  font-weight: 950;
+  text-align: center;
+}
+
+.risk-severity-copy small {
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+  font-weight: 900;
+}
+
+/* Risk sections */
+.risk-review-section {
+  padding: 24px 26px;
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.09), transparent 42%),
+    rgba(0, 0, 0, 0.22);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.025),
+    0 10px 28px rgba(0,0,0,0.18);
+}
+
+.risk-review-section-heading {
+  margin-bottom: 18px;
+}
+
+.risk-review-section-heading h3 {
+  margin: 4px 0 0;
+}
+
+.risk-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.risk-item-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 100px;
+  gap: 20px;
+  align-items: start;
+  padding: 22px;
+  border-radius: 22px;
+  border: 1px solid rgba(245, 158, 11, 0.32);
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.045), transparent 44%),
+    rgba(0, 0, 0, 0.24);
+}
+
+.risk-item-card-low,
+.risk-item-card-none {
+  border-color: rgba(34, 197, 94, 0.34);
+}
+
+.risk-item-card-medium {
+  border-color: rgba(245, 158, 11, 0.38);
+}
+
+.risk-item-card-high,
+.risk-item-card-critical {
+  border-color: rgba(248, 113, 113, 0.42);
+}
+
+.risk-item-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.risk-mini-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.risk-mini-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.risk-mini-chip-low,
+.risk-mini-chip-none {
+  border-color: rgba(34, 197, 94, 0.38);
+  color: rgb(187, 247, 208);
+}
+
+.risk-mini-chip-medium {
+  border-color: rgba(245, 158, 11, 0.42);
+  color: rgb(254, 240, 138);
+}
+
+.risk-mini-chip-high,
+.risk-mini-chip-critical {
+  border-color: rgba(248, 113, 113, 0.42);
+  color: rgb(254, 202, 202);
+}
+
+.risk-item-copy h4 {
+  margin: 0 0 16px;
+  font-size: 1.1rem;
+}
+
+.risk-item-detail-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.risk-item-detail-grid strong {
+  display: block;
+  margin-bottom: 6px;
+  color: rgb(255, 205, 210);
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.risk-item-detail-grid p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Secondary cards */
+.risk-secondary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.risk-secondary-grid-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.risk-secondary-card {
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.risk-secondary-card h4 {
+  margin: 0 0 10px;
+}
+
+.risk-secondary-card p,
+.risk-secondary-card li,
+.risk-secondary-card small {
+  line-height: 1.55;
+}
+
+.risk-secondary-card ul {
+  margin: 10px 0 0;
+  padding-left: 20px;
+}
+
+/* Broader flair hooks for other generated report windows */
+.generated-report-card,
+.bug-report-card,
+.test-improvement-card,
+.report-section-card,
+.qa-output-card,
+.bug-report-section,
+.test-improver-section,
+.generated-report-section,
+.report-detail-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.09), transparent 42%),
+    rgba(0, 0, 0, 0.22);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.025),
+    0 10px 28px rgba(0,0,0,0.18);
+}
+
+@media (max-width: 840px) {
+  .risk-review-summary-header,
+  .risk-item-card,
+  .risk-secondary-grid,
+  .risk-secondary-grid-three {
+    grid-template-columns: 1fr;
+  }
+
+  .risk-severity-badge {
+    justify-self: start;
+  }
+}
+
+.risk-report-list-retired {
+  display: none !important;
+}
+/* QAS-73 horizontal explanation cards */
+
+/*
+  Use this for long-form analysis groups like:
+  - Missing Criteria
+  - Suggested Test Focus
+  - Follow-up Questions
+  - Recommended Improvements
+  - Bottlenecks
+  - QA Notes
+
+  Narrow vertical columns are fine for stats/metadata, but not paragraph-heavy text.
+*/
+
+.qa-explanation-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.qa-explanation-card {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+  padding: 22px 24px;
+  border-radius: 22px;
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.08), transparent 42%),
+    linear-gradient(135deg, rgba(8, 10, 14, 0.88), rgba(0, 0, 0, 0.7));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+.qa-explanation-card-warn {
+  border-color: rgba(245, 158, 11, 0.35);
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 42%),
+    linear-gradient(135deg, rgba(38, 27, 4, 0.72), rgba(0, 0, 0, 0.74));
+}
+
+.qa-explanation-card-risk {
+  border-color: rgba(248, 113, 113, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.11), transparent 42%),
+    linear-gradient(135deg, rgba(45, 10, 12, 0.68), rgba(0, 0, 0, 0.74));
+}
+
+.qa-explanation-card-good {
+  border-color: rgba(34, 197, 94, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.10), transparent 42%),
+    linear-gradient(135deg, rgba(2, 28, 16, 0.68), rgba(0, 0, 0, 0.74));
+}
+
+.qa-explanation-heading {
+  min-width: 0;
+}
+
+.qa-explanation-heading .report-kicker,
+.qa-explanation-heading h3,
+.qa-explanation-heading h4 {
+  margin: 0;
+}
+
+.qa-explanation-heading h3,
+.qa-explanation-heading h4 {
+  margin-top: 8px;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.qa-explanation-body {
+  min-width: 0;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.qa-explanation-body p {
+  margin: 0;
+  line-height: 1.65;
+  max-width: 72ch;
+}
+
+.qa-explanation-body p + p {
+  margin-top: 12px;
+}
+
+.qa-explanation-body ul,
+.qa-explanation-body ol {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 10px;
+}
+
+.qa-explanation-body li {
+  line-height: 1.6;
+  max-width: 78ch;
+}
+
+/* Convert the previous 3-column risk secondary grid into stacked horizontal cards. */
+.risk-secondary-grid,
+.risk-secondary-grid-three {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.risk-secondary-card {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+  padding: 22px 24px !important;
+  border-radius: 22px !important;
+}
+
+.risk-secondary-card .report-kicker {
+  margin: 0;
+}
+
+.risk-secondary-card ul,
+.risk-secondary-card ol {
+  margin-top: 0 !important;
+  display: grid;
+  gap: 10px;
+}
+
+.risk-secondary-card li {
+  line-height: 1.6;
+}
+
+/* If existing cards don't have a heading/body wrapper, this prevents ultra-narrow text columns. */
+.risk-secondary-card > * {
+  max-width: none;
+}
+
+/* Generic hook for other tools' long explanation windows. */
+.long-form-analysis-grid,
+.long-form-recommendation-grid,
+.qa-follow-up-grid,
+.qa-notes-grid,
+.missing-info-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.long-form-analysis-card,
+.long-form-recommendation-card,
+.qa-follow-up-card,
+.qa-notes-card,
+.missing-info-card {
+  display: grid !important;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .qa-explanation-card,
+  .risk-secondary-card,
+  .long-form-analysis-card,
+  .long-form-recommendation-card,
+  .qa-follow-up-card,
+  .qa-notes-card,
+  .missing-info-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  .qa-explanation-body p,
+  .qa-explanation-body li {
+    max-width: none;
+  }
+}

@@ -103,6 +103,29 @@ function cypressActionForStep(step: string): string {
   return `${comment}\n  // TODO: translate this step into a stable Cypress action.`;
 }
 
+function isSourceSelectionFlow(text: string): boolean {
+  return /\b(choose sources|project sources|source selection|selected source|selected sources|source count)\b/i.test(text) &&
+    /\b(select|deselect|toggle|untoggle|check|uncheck|choose)\b/i.test(text);
+}
+
+function sourceSelectionSkeletonLines(): string[] {
+  return [
+    "    const sourceName = 'QAtalyst Product Overview'; // TODO: replace with seeded source fixture.",
+    "    const sourceCheckbox = page.getByRole('checkbox', { name: sourceName }); // TODO: replace with stable data-testid if available.",
+    "    const selectedCount = page.getByTestId('selected-source-count'); // TODO: add/use stable selector.",
+    "",
+    "    await expect(sourceCheckbox).toBeVisible();",
+    "    await sourceCheckbox.check();",
+    "    await expect(sourceCheckbox).toBeChecked();",
+    "    // TODO: assert selected count increments after selecting.",
+    "",
+    "    await sourceCheckbox.uncheck();",
+    "    await expect(sourceCheckbox).not.toBeChecked();",
+    "    // TODO: assert selected count returns to the previous value after deselecting.",
+    "    await expect(selectedCount).toBeVisible();",
+  ];
+}
+
 export function getSelectorHintsForTestCase(testCase: SkeletonTestCase): string[] {
   const steps = normalizeSteps(testCase.steps);
   const text = [
@@ -143,6 +166,31 @@ export function generateAutomationSkeleton(
   const expectedResult = safeString(testCase.expectedResult) || "TODO: expected result";
   const preconditions = safeString(testCase.preconditions) || "TODO: preconditions";
   const testName = slugify(title);
+  const combinedText = `${title}\n${preconditions}\n${steps.join("\n")}\n${expectedResult}`;
+
+  if (isSourceSelectionFlow(combinedText)) {
+    return {
+      framework: "playwright",
+      filename: `tests/${testName}.spec.ts`,
+      code: [
+        `import { test, expect } from "@playwright/test";`,
+        "",
+        `test.describe("${title.replace(/"/g, '\\"')}", () => {`,
+        "  test.beforeEach(async ({ page }) => {",
+        `    // Preconditions: ${escapeForComment(preconditions)}`,
+        "    // TODO: seed project and enabled source fixtures.",
+        "    await page.goto('/');",
+        "  });",
+        "",
+        `  test("validates source selection updates", async ({ page }) => {`,
+        ...sourceSelectionSkeletonLines(),
+        "",
+        `    // Expected Result: ${escapeForComment(expectedResult)}`,
+        "  });",
+        "});",
+      ].join("\n"),
+    };
+  }
 
   if (framework === "cypress") {
     const actionLines = steps.length
