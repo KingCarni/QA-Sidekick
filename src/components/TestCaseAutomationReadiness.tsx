@@ -61,7 +61,7 @@ export default function TestCaseAutomationReadiness({ testCase, index }: TestCas
   }
 
   return (
-    <div className={`test-case-automation-box test-case-automation-${tone}`}>
+    <div className={`test-case-automation-box test-case-automation-${tone}`} data-testid={`automation-fit-${index + 1}`}>
       <div className="test-case-automation-top">
         <div>
           <p className="report-kicker">Automation Fit</p>
@@ -82,11 +82,11 @@ export default function TestCaseAutomationReadiness({ testCase, index }: TestCas
       <p>{readiness.summary}</p>
 
       <div className="automation-readiness-actions">
-        <button className="automation-action-button" type="button" onClick={() => setShowDetails((value) => !value)}>
+        <button className="automation-action-button" data-testid={`automation-fit-details-${index + 1}`} type="button" onClick={() => setShowDetails((value) => !value)}>
           {showDetails ? "Hide Details" : "Show Details"}
         </button>
 
-        <button className="automation-action-button automation-action-button-primary" type="button" onClick={() => setShowSkeleton((value) => !value)}>
+        <button className="automation-action-button automation-action-button-primary" data-testid={`generate-skeleton-${index + 1}`} type="button" onClick={() => setShowSkeleton((value) => !value)}>
           {showSkeleton ? "Hide Skeleton" : "Generate Skeleton"}
         </button>
       </div>

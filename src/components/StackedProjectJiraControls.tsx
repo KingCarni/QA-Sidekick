@@ -138,6 +138,7 @@ export default function StackedProjectJiraControls({
         <label htmlFor="stacked-project-select">Project</label>
         <select
           id="stacked-project-select"
+          data-testid="project-picker"
           value={activeProject?.id ?? ""}
           onChange={(event) => {
             const selectedProject = projects.find((project) => project.id === event.target.value) ?? null;
@@ -158,6 +159,7 @@ export default function StackedProjectJiraControls({
 
         <input
           id="stacked-jira-input"
+          data-testid="jira-ticket-input"
           value={jiraQuery}
           placeholder="QAS-61 or Jira URL"
           onChange={(event) => {
@@ -177,6 +179,7 @@ export default function StackedProjectJiraControls({
 
         <button
           className="stacked-fetch-button"
+          data-testid="fetch-jira-ticket-button"
           type="button"
           disabled={!canFetch}
           onClick={handleFetchFromJira}
@@ -210,7 +213,7 @@ export default function StackedProjectJiraControls({
       ) : null}
 
       {fetchedTicket?.key ? (
-        <section className="jira-fetched-summary-card" aria-label="Fetched Jira ticket summary">
+        <section className="jira-fetched-summary-card" data-testid="fetched-jira-ticket-card" aria-label="Fetched Jira ticket summary">
           <div className="jira-fetched-summary-top">
             <div>
               <p className="report-kicker">Fetched Jira Ticket</p>

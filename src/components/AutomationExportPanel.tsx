@@ -65,7 +65,7 @@ export default function AutomationExportPanel({
   const exportDisabled = bundle.summary.skeletons === 0 && !includeManualReview;
 
   return (
-    <section className="automation-export-card automation-export-card-primary" data-generation-key={generationKey}>
+    <section className="automation-export-card automation-export-card-primary" data-testid="automation-export-panel" data-generation-key={generationKey}>
       <div className="automation-export-header">
         <div>
           <p className="report-kicker">Automation Export</p>
@@ -139,11 +139,11 @@ export default function AutomationExportPanel({
       </div>
 
       <div className="automation-export-actions">
-        <button disabled={exportDisabled} type="button" onClick={() => downloadAutomationBundleAsMarkdown(bundleName, bundle)}>
+        <button disabled={exportDisabled} data-testid="download-markdown-bundle-button" type="button" onClick={() => downloadAutomationBundleAsMarkdown(bundleName, bundle)}>
           Download Markdown Bundle
         </button>
 
-        <button disabled={exportDisabled} type="button" onClick={() => downloadAutomationFilesIndividually(bundle)}>
+        <button disabled={exportDisabled} data-testid="download-automation-files-button" type="button" onClick={() => downloadAutomationFilesIndividually(bundle)}>
           Download Files
         </button>
 
@@ -151,7 +151,7 @@ export default function AutomationExportPanel({
           {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy Failed" : "Copy Bundle"}
         </button>
 
-        <button type="button" className="automation-export-secondary-button" onClick={() => setShowFiles((value) => !value)}>
+        <button type="button" data-testid="preview-automation-files-button" className="automation-export-secondary-button" onClick={() => setShowFiles((value) => !value)}>
           {showFiles ? "Hide Files" : "Preview Files"}
         </button>
       </div>

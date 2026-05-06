@@ -42,7 +42,7 @@ function requiredEnv(name: string): string {
   return value;
 }
 
-export async function loginAs(page: Page, profileKey: AuthProfileKey = "standard-user") {
+export async function loginAs(page: Page, profileKey: AuthProfileKey | string = "standard-user") {
   const profile = getAuthProfile(profileKey);
   const email = requiredEnv(profile.emailEnv);
   const password = requiredEnv(profile.passwordEnv);

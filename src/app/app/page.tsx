@@ -16,6 +16,7 @@ import CoverageScorePanel from "@/components/CoverageScorePanel";
 import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
 import RiskReviewPanel from "@/components/RiskReviewPanel";
 import StackedProjectJiraControls from "@/components/StackedProjectJiraControls";
+import ProjectSourceRelevanceSelector from "@/components/ProjectSourceRelevanceSelector";
 import type { ActiveProjectContext } from "@/components/ProjectContextIndicator";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
 import TestCaseAutomationReadiness from "@/components/TestCaseAutomationReadiness";
@@ -37,6 +38,20 @@ import {
 import type { ParsedJiraTicket } from "@/lib/jira-ticket";
 
 type ToolId = "tests" | "risk" | "bug" | "improve";
+
+const TOOL_TEST_IDS: Record<ToolId, string> = {
+  tests: "tool-tab-test-cases",
+  risk: "tool-tab-risk-review",
+  bug: "tool-tab-bug-writer",
+  improve: "tool-tab-test-improver",
+};
+
+const RUN_BUTTON_TEST_IDS: Record<ToolId, string> = {
+  tests: "run-test-cases-button",
+  risk: "run-risk-review-button",
+  bug: "run-bug-writer-button",
+  improve: "run-test-improver-button",
+};
 
 type SaveReportStatus = "idle" | "saving" | "saved" | "error";
 
@@ -1086,6 +1101,7 @@ function SaveReportControl({
       {saveReportStatus !== "saved" ? (
         <button
           className="secondary-action-button save-report-button"
+          data-testid="save-report-button"
           disabled={saveReportStatus === "saving"}
           onClick={onSaveReport}
           type="button"
@@ -1275,13 +1291,13 @@ function TestCaseCards({
         </div>
         <div className="report-action-stack">
           <div className="report-actions compact-report-actions report-action-row">
-            <button className="copy-all-button" type="button" onClick={() => handleCopy("all", allText)}>
+            <button className="copy-all-button" data-testid="copy-report-button" type="button" onClick={() => handleCopy("all", allText)}>
               {copied === "all" ? "Copied" : "Copy All"}
             </button>
-            <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
+            <button className="copy-all-button secondary-action-button" data-testid="export-markdown-button" type="button" onClick={handleExportMarkdown}>
               {markdownExported ? "Exported" : "Export Markdown"}
             </button>
-            <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportCsv}>
+            <button className="copy-all-button secondary-action-button" data-testid="export-csv-button" type="button" onClick={handleExportCsv}>
               {exported ? "Exported" : "Export CSV"}
             </button>
             <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
@@ -1353,6 +1369,7 @@ function TestCaseCards({
           return (
             <article
               className={getTestCaseQualityCardClass(testCaseQuality.score)}
+              data-testid={`test-case-card-${index + 1}`}
               key={stableKey}
             >
               <div className="test-case-card-header">
@@ -1377,7 +1394,7 @@ function TestCaseCards({
                   </div>
                 </div>
 
-                <TestCaseQualityBadge testCase={testCase} />
+                <TestCaseQualityBadge index={index} testCase={testCase} />
 
                 <div className="test-case-fixed-action-stack">
                   <button
@@ -3359,7 +3376,7 @@ export default function Home() {
   }
 
   return (
-    <main>
+    <main data-testid="qa-tool">
       <section className="hero hero-split">
         <div className="hero-copy">
           <h1>Turn rough tickets into release-ready QA plans.</h1>
@@ -3389,6 +3406,7 @@ export default function Home() {
               <button
                 key={item.id}
                 className={`tab ${activeTool === item.id ? "active" : ""}`}
+                data-testid={TOOL_TEST_IDS[item.id]}
                 type="button"
                 onClick={() => {
                   setActiveTool(item.id);
@@ -3449,7 +3467,17 @@ export default function Home() {
             onJiraImport={handleJiraTicketImport}
           />
 
+          <ProjectSourceRelevanceSelector
+            activeContext={activeProjectContext}
+            sourceInput={input}
+            toolId={activeTool}
+            selectedSourceIds={selectedProjectSourceIds}
+            onSelectedSourceIdsChange={setSelectedProjectSourceIds}
+            onSelectedContextBlockChange={setSelectedProjectContextBlock}
+          />
+
           <textarea
+            data-testid="qa-source-input"
             value={input}
             onChange={(event) => {
               setInput(event.target.value);
@@ -3815,7 +3843,7 @@ export default function Home() {
             </section>
           ) : null}
 
-          <button className="run-button" type="button" disabled={isRunning} onClick={() => runTool()}>
+          <button className="run-button" data-testid={RUN_BUTTON_TEST_IDS[activeTool]} type="button" disabled={isRunning} onClick={() => runTool()}>
             {isRunning
               ? "Running..."
               : activeTool === "bug" && currentBugReport
@@ -3835,7 +3863,7 @@ export default function Home() {
 
         </aside>
 
-        <section className="panel output-panel">
+        <section className="panel output-panel" data-testid="qa-output">
           {output ? (
             <>
               {projectContextPayload.projectContextUsed ? (

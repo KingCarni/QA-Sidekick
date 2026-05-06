@@ -8,6 +8,13 @@ import {
   type RankedProjectSource,
 } from "@/lib/project-source-relevance";
 
+function slugifyForTestId(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 type ProjectSourceRelevanceSelectorProps = {
   activeContext: ActiveProjectContext | null;
   sourceInput: string;
@@ -69,7 +76,7 @@ export default function ProjectSourceRelevanceSelector({
 
   if (enabledSources.length === 0) {
     return (
-      <section className="source-relevance-selector source-relevance-selector-empty">
+      <section className="source-relevance-selector source-relevance-selector-empty" data-testid="project-sources-card">
         <p className="report-kicker">Project Sources</p>
         <strong>No enabled sources</strong>
         <span>Enable sources in the Project Source Vault to use project memory for this run.</span>
@@ -78,12 +85,12 @@ export default function ProjectSourceRelevanceSelector({
   }
 
   return (
-    <section className="source-relevance-selector">
+    <section className="source-relevance-selector" data-testid="project-sources-card">
       <div className="source-relevance-main">
         <div>
           <p className="report-kicker">Project Sources</p>
           <strong>
-            {selectedCount} selected for this run
+            <span data-testid="selected-source-count">{selectedCount} selected</span> for this run
           </strong>
           <span>
             {suggestedSourceIds.length} suggested from {enabledSources.length} enabled source
@@ -95,14 +102,14 @@ export default function ProjectSourceRelevanceSelector({
           <button type="button" onClick={selectSuggested}>
             Use Suggested
           </button>
-          <button type="button" onClick={() => setIsOpen((value) => !value)}>
+          <button type="button" data-testid="choose-sources-button" onClick={() => setIsOpen((value) => !value)}>
             {isOpen ? "Hide Sources" : "Choose Sources"}
           </button>
         </div>
       </div>
 
       {isOpen ? (
-        <div className="source-relevance-drawer">
+        <div className="source-relevance-drawer" data-testid="choose-sources-panel">
           <div className="source-relevance-toolbar">
             <button type="button" onClick={selectAllEnabled}>
               Select All
@@ -112,18 +119,23 @@ export default function ProjectSourceRelevanceSelector({
             </button>
           </div>
 
-          <div className="source-relevance-list">
-            {rankedSources.map((source) => (
+          <div className="source-relevance-list" data-testid="source-list">
+            {rankedSources.map((source) => {
+              const sourceSlug = slugifyForTestId(source.title || source.id);
+
+              return (
               <label
                 className={
                   selectedSourceIds.includes(source.id)
                     ? "source-relevance-item source-relevance-item-selected"
                     : "source-relevance-item"
                 }
+                data-testid={`source-option-${sourceSlug}`}
                 key={source.id}
               >
                 <input
                   checked={selectedSourceIds.includes(source.id)}
+                  data-testid={`source-checkbox-${sourceSlug}`}
                   onChange={() => toggleSource(source.id)}
                   type="checkbox"
                 />
@@ -137,7 +149,8 @@ export default function ProjectSourceRelevanceSelector({
                   <em>{source.relevanceReason}</em>
                 </span>
               </label>
-            ))}
+              );
+            })}
           </div>
         </div>
       ) : null}

@@ -164,10 +164,93 @@ function buildReadme(bundleName: string, bundle: Omit<AutomationExportBundle, "f
     ...(playwrightFiles.length ? ["### Playwright", "", ...playwrightFiles.map((file: AutomationExportFile) => `- \`${file.path}\``), ""] : []),
     ...(cypressFiles.length ? ["### Cypress", "", ...cypressFiles.map((file: AutomationExportFile) => `- \`${file.path}\``), ""] : []),
     ...(manualFiles.length ? ["### Manual Review", "", ...manualFiles.map((file: AutomationExportFile) => `- \`${file.path}\``), ""] : []),
+    "## Before running generated tests",
+    "",
+    "- Install Playwright: `npm install -D @playwright/test` and `npx playwright install chromium`.",
+    "- Use a Playwright config with `baseURL` pointed at your running app.",
+    "- Fill env vars locally only. Never commit real secrets.",
+    "- Ensure the app has the expected project/source fixture.",
+    "- If a generated test references `Project Product Overview`, create that saved source or update `sourceName`.",
+    "- If selectors fail, add/update the data-testid hooks expected by `tests/support/app.ts`.",
+    "",
+    "## Selector contract",
+    "",
+    "- `qa-tool`",
+    "- `qa-output`",
+    "- `project-picker`",
+    "- `choose-sources-button`",
+    "- `choose-sources-panel`",
+    "- `selected-source-count`",
+    "- `source-checkbox-[slug]`",
+    "- `jira-ticket-input`",
+    "- `fetch-jira-ticket-button`",
+    "- `run-test-cases-button`",
+    "- `test-case-card-[number]`",
+    "- `automation-fit-[number]`",
+    "- `automation-export-panel`",
+    "",
     "## QA Note",
     "",
     "These are code skeletons, not final automation. Confirm selectors, seed data, auth setup, routes, mocks, and assertions before treating them as runnable tests.",
     "",
+  ].join("\n");
+}
+
+function buildAppFixture(): string {
+  return [
+    `import { expect, Page } from "@playwright/test";`,
+    `import { loginAs } from "./auth";`,
+    "",
+    "export type OpenQAToolOptions = {",
+    "  profileKey?: string;",
+    "  projectName?: string;",
+    "  requireAuth?: boolean;",
+    "};",
+    "",
+    "function slugifyForTestId(value: string): string {",
+    "  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');",
+    "}",
+    "",
+    "export async function openQATool(page: Page, options: OpenQAToolOptions = {}) {",
+    "  const { profileKey = 'standard-user', requireAuth = true } = options;",
+    "  if (requireAuth) await loginAs(page, profileKey);",
+    "  await page.goto('/app');",
+    "  await expect(page.getByTestId('qa-tool')).toBeVisible();",
+    "  if (options.projectName) await selectProject(page, options.projectName);",
+    "}",
+    "",
+    "export async function selectProject(page: Page, projectName: string) {",
+    "  const picker = page.getByTestId('project-picker');",
+    "  await expect(picker).toBeVisible();",
+    "  await picker.selectOption({ label: projectName });",
+    "}",
+    "",
+    "export async function openChooseSourcesPanel(page: Page) {",
+    "  await page.getByTestId('choose-sources-button').click();",
+    "  await expect(page.getByTestId('choose-sources-panel')).toBeVisible();",
+    "}",
+    "",
+    "export async function sourceCheckbox(page: Page, sourceName: string) {",
+    "  const byTestId = page.getByTestId(`source-checkbox-${slugifyForTestId(sourceName)}`);",
+    "  if (await byTestId.count()) return byTestId;",
+    "  return page.getByRole('checkbox', { name: sourceName });",
+    "}",
+    "",
+    "export async function expectSourceVisible(page: Page, sourceName: string) {",
+    "  const checkbox = await sourceCheckbox(page, sourceName);",
+    "  await expect(checkbox).toBeVisible();",
+    "  return checkbox;",
+    "}",
+    "",
+    "export async function getSelectedSourceCount(page: Page): Promise<number | null> {",
+    "  const countText = await page.getByTestId('selected-source-count').textContent().catch(() => null);",
+    "  const match = countText?.match(/\\d+/);",
+    "  return match ? Number(match[0]) : null;",
+    "}",
+    "",
+    "export async function expectSelectedSourceCount(page: Page, expectedCount: number) {",
+    "  await expect(page.getByTestId('selected-source-count')).toContainText(String(expectedCount));",
+    "}",
   ].join("\n");
 }
 
@@ -222,6 +305,20 @@ function buildAuthFixture(profiles: SafeAutomationCredentialProfile[]): string {
 }
 
 function buildEnvExample(profiles: SafeAutomationCredentialProfile[]): string {
+  if (profiles.length === 0) {
+    return [
+      "# QAtalyst generated automation credentials",
+      "# Fill these locally or in CI. Do not commit real values.",
+      "",
+      "PROJECT_E2E_STANDARD_EMAIL=",
+      "PROJECT_E2E_STANDARD_PASSWORD=",
+      "PROJECT_E2E_ADMIN_EMAIL=",
+      "PROJECT_E2E_ADMIN_PASSWORD=",
+      "PROJECT_E2E_LIMITED_EMAIL=",
+      "PROJECT_E2E_LIMITED_PASSWORD=",
+    ].join("\n");
+  }
+
   return [
     "# QAtalyst generated automation credentials",
     "# Fill these locally or in CI. Do not commit real values.",
@@ -334,11 +431,18 @@ export function buildAutomationExportBundle(
     });
   }
 
-  if (credentialProfiles.length > 0) {
+  const hasPlaywrightFiles = files.some((file) => file.type === "playwright");
+
+  if (hasPlaywrightFiles) {
     files.push({
       path: "tests/support/auth.ts",
       type: "playwright",
       content: buildAuthFixture(credentialProfiles),
+    });
+    files.push({
+      path: "tests/support/app.ts",
+      type: "playwright",
+      content: buildAppFixture(),
     });
     files.push({
       path: ".env.example",
