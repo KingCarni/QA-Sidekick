@@ -196,7 +196,7 @@ function buildAuthFixture(profiles: SafeAutomationCredentialProfile[]): string {
     "};",
     "",
     "const AUTH_PROFILES: Record<string, AuthProfileEnv> = {",
-    ...(profileEntries.length ? profileEntries : ['  "standard-user": { emailEnv: "QATALYST_E2E_STANDARD_EMAIL", passwordEnv: "QATALYST_E2E_STANDARD_PASSWORD" },']),
+    ...(profileEntries.length ? profileEntries : ['  "standard-user": { emailEnv: "PROJECT_E2E_STANDARD_EMAIL", passwordEnv: "PROJECT_E2E_STANDARD_PASSWORD" },']),
     "};",
     "",
     `export async function loginAs(page: Page, profileKey: AuthProfileKey = "standard-user") {`,

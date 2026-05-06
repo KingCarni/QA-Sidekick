@@ -210,10 +210,10 @@ export function generateAutomationSkeleton(
   if (isSourceSelectionFlow(combinedText)) {
     return {
       framework: "playwright",
-      filename: `tests/${testName}.spec.ts`,
+      filename: `tests/e2e/${testName}.spec.ts`,
       code: [
         `import { test, expect } from "@playwright/test";`,
-        ...(authSetupLines.length ? [`import { loginAs } from "./support/auth";`] : []),
+        ...(authSetupLines.length ? [`import { loginAs } from "../support/auth";`] : []),
         "",
         `test.describe("${title.replace(/"/g, '\\"')}", () => {`,
         "  test.beforeEach(async ({ page }) => {",
@@ -277,10 +277,10 @@ export function generateAutomationSkeleton(
 
   return {
     framework: "playwright",
-    filename: `tests/${testName}.spec.ts`,
+    filename: `tests/e2e/${testName}.spec.ts`,
     code: [
       `import { test, expect } from "@playwright/test";`,
-      ...(authSetupLines.length ? [`import { loginAs } from "./support/auth";`] : []),
+      ...(authSetupLines.length ? [`import { loginAs } from "../support/auth";`] : []),
       "",
       `test.describe("${title.replace(/"/g, '\\"')}", () => {`,
       "  test.beforeEach(async ({ page }) => {",

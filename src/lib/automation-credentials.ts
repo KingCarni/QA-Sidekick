@@ -54,7 +54,7 @@ function envKeyFromProfile(key: string, suffix: "EMAIL" | "USERNAME" | "PASSWORD
     .replace(/[^A-Z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
 
-  return `QATALYST_E2E_${normalized}_${suffix}`;
+  return `PROJECT_E2E_${normalized}_${suffix}`;
 }
 
 export function sanitizeCredentialProfile(profile: AutomationCredentialProfile): SafeAutomationCredentialProfile {
