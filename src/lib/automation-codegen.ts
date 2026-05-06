@@ -5,6 +5,10 @@ import {
   getAutomationCaseTextFromObject,
   type AutomationFramework,
 } from "@/lib/automation-readiness";
+import {
+  findCredentialProfileForText,
+  type SafeAutomationCredentialProfile,
+} from "@/lib/automation-credentials";
 
 type SkeletonTestCase = {
   title?: unknown;
@@ -13,6 +17,11 @@ type SkeletonTestCase = {
   steps?: unknown;
   expectedResult?: unknown;
   priority?: unknown;
+};
+
+type AutomationSkeletonOptions = {
+  credentialProfiles?: SafeAutomationCredentialProfile[];
+  defaultCredentialProfileKey?: string;
 };
 
 function safeString(value: unknown): string {
@@ -126,6 +135,24 @@ function sourceSelectionSkeletonLines(): string[] {
   ];
 }
 
+function needsAuthSetup(text: string): boolean {
+  return /\b(login|log in|logged in|signed in|auth|authenticated|credentials|account|role|permission|admin|user has access)\b/i.test(text);
+}
+
+function emitLoginSetup(profile: SafeAutomationCredentialProfile | null): string[] {
+  if (!profile) {
+    return [
+      "    // TODO: configure auth state or login fixture for this test.",
+      "    // Example: await loginAs(page, 'standard-user');",
+    ];
+  }
+
+  return [
+    `    // Auth profile: ${profile.name} (${profile.role})`,
+    `    await loginAs(page, "${profile.key}"); // TODO: implement/import test fixture helper.`,
+  ];
+}
+
 export function getSelectorHintsForTestCase(testCase: SkeletonTestCase): string[] {
   const steps = normalizeSteps(testCase.steps);
   const text = [
@@ -153,13 +180,20 @@ export function getSelectorHintsForTestCase(testCase: SkeletonTestCase): string[
 export function generateAutomationSkeleton(
   testCase: SkeletonTestCase,
   index: number,
-  preferredFramework?: AutomationFramework
+  preferredFrameworkOrOptions?: AutomationFramework | AutomationSkeletonOptions,
+  maybeOptions?: AutomationSkeletonOptions
 ): {
   framework: "playwright" | "cypress";
   filename: string;
   code: string;
 } {
-  const readiness = evaluateAutomationReadinessCase(getAutomationCaseTextFromObject(testCase), index);
+  const preferredFramework =
+    typeof preferredFrameworkOrOptions === "string" ? preferredFrameworkOrOptions : undefined;
+  const options =
+    typeof preferredFrameworkOrOptions === "object" ? preferredFrameworkOrOptions : maybeOptions;
+  const readiness = evaluateAutomationReadinessCase(getAutomationCaseTextFromObject(testCase), index, {
+    credentialProfiles: options?.credentialProfiles,
+  });
   const framework = preferredFramework && preferredFramework !== "manual-review" ? preferredFramework : readiness.framework;
   const title = safeString(testCase.title) || `Test Case ${index + 1}`;
   const steps = normalizeSteps(testCase.steps);
@@ -167,6 +201,11 @@ export function generateAutomationSkeleton(
   const preconditions = safeString(testCase.preconditions) || "TODO: preconditions";
   const testName = slugify(title);
   const combinedText = `${title}\n${preconditions}\n${steps.join("\n")}\n${expectedResult}`;
+  const credentialProfile =
+    findCredentialProfileForText(combinedText, options?.credentialProfiles ?? []) ??
+    options?.credentialProfiles?.find((profile) => profile.key === options.defaultCredentialProfileKey) ??
+    null;
+  const authSetupLines = needsAuthSetup(combinedText) ? emitLoginSetup(credentialProfile) : [];
 
   if (isSourceSelectionFlow(combinedText)) {
     return {
@@ -174,11 +213,13 @@ export function generateAutomationSkeleton(
       filename: `tests/${testName}.spec.ts`,
       code: [
         `import { test, expect } from "@playwright/test";`,
+        ...(authSetupLines.length ? [`import { loginAs } from "./support/auth";`] : []),
         "",
         `test.describe("${title.replace(/"/g, '\\"')}", () => {`,
         "  test.beforeEach(async ({ page }) => {",
         `    // Preconditions: ${escapeForComment(preconditions)}`,
         "    // TODO: seed project and enabled source fixtures.",
+        ...authSetupLines,
         "    await page.goto('/');",
         "  });",
         "",
@@ -205,6 +246,12 @@ export function generateAutomationSkeleton(
         "  beforeEach(() => {",
         `    // Preconditions: ${escapeForComment(preconditions)}`,
         "    // TODO: seed data, auth state, and app route.",
+        ...(authSetupLines.length
+          ? [
+              "    // TODO: configure Cypress auth state from credential profile metadata.",
+              `    // Suggested profile: ${credentialProfile?.key ?? "standard-user"}.`,
+            ]
+          : []),
         "    cy.visit('/');",
         "  });",
         "",
@@ -233,11 +280,13 @@ export function generateAutomationSkeleton(
     filename: `tests/${testName}.spec.ts`,
     code: [
       `import { test, expect } from "@playwright/test";`,
+      ...(authSetupLines.length ? [`import { loginAs } from "./support/auth";`] : []),
       "",
       `test.describe("${title.replace(/"/g, '\\"')}", () => {`,
       "  test.beforeEach(async ({ page }) => {",
       `    // Preconditions: ${escapeForComment(preconditions)}`,
       "    // TODO: seed data, auth state, and app route.",
+      ...authSetupLines,
       "    await page.goto('/');",
       "  });",
       "",

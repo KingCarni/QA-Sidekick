@@ -16,6 +16,10 @@ type CreateReportBody = {
   structuredData?: unknown;
   sourceInput?: unknown;
   projectId?: unknown;
+  projectName?: unknown;
+  projectSourceIds?: unknown;
+  projectContextSummary?: unknown;
+  projectContextUsed?: unknown;
 };
 
 function normalizeLimit(value: string | null) {
@@ -169,6 +173,20 @@ export async function POST(req: Request) {
       markdown,
       sourceInput: body.sourceInput,
     });
+    const structuredData =
+      body.structuredData && typeof body.structuredData === "object" && !Array.isArray(body.structuredData)
+        ? {
+            ...body.structuredData,
+            projectContextMeta: {
+              ...((body.structuredData as { projectContextMeta?: Record<string, unknown> }).projectContextMeta ?? {}),
+              projectId,
+              projectName: String(body.projectName ?? "").trim() || null,
+              projectSourceIds: Array.isArray(body.projectSourceIds) ? body.projectSourceIds : [],
+              projectContextSummary: String(body.projectContextSummary ?? "").trim() || null,
+              projectContextUsed: Boolean(body.projectContextUsed),
+            },
+          }
+        : body.structuredData;
 
     const report = await prisma.qAReport.create({
       data: {
@@ -177,7 +195,7 @@ export async function POST(req: Request) {
         type,
         title,
         markdown: markdown || null,
-        structuredData: toPrismaJson(body.structuredData),
+        structuredData: toPrismaJson(structuredData),
         sourceInput: String(body.sourceInput ?? "").trim() || null,
       },
     });

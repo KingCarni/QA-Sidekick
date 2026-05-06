@@ -1,5 +1,10 @@
 export type AutomationFramework = "playwright" | "cypress" | "api" | "manual-review";
 
+import {
+  findCredentialProfileForText,
+  type SafeAutomationCredentialProfile,
+} from "@/lib/automation-credentials";
+
 export type AutomationReadinessLevel = "ready" | "partial" | "manual" | "blocked";
 
 export type AutomationReadinessCase = {
@@ -29,6 +34,10 @@ export type AutomationReadinessReport = {
     blocked: number;
   };
   recommendations: string[];
+};
+
+type AutomationReadinessOptions = {
+  credentialProfiles?: SafeAutomationCredentialProfile[];
 };
 
 type BucketResult = {
@@ -428,6 +437,10 @@ function caseSummary(level: AutomationReadinessLevel): string {
   }
 }
 
+function needsAuthSetup(text: string): boolean {
+  return /\b(login|log in|logged in|signed in|auth|authenticated|credentials|account|role|permission|admin|user has access)\b/i.test(text);
+}
+
 export function getAutomationReadinessTone(score: number, level?: AutomationReadinessLevel) {
   if (level === "ready" || score >= 72) return "good";
   if (level === "partial" || score >= 52) return "warn";
@@ -438,7 +451,11 @@ export function getAutomationReadinessCardClass(score: number, level?: Automatio
   return `test-case-card test-case-card-automation-${getAutomationReadinessTone(score, level)}`;
 }
 
-export function evaluateAutomationReadinessCase(caseText: string, index = 0): AutomationReadinessCase {
+export function evaluateAutomationReadinessCase(
+  caseText: string,
+  index = 0,
+  options?: AutomationReadinessOptions
+): AutomationReadinessCase {
   const title = extractTitle(caseText, index);
   const titleScore = titleSpecificityBucket(title);
   const steps = stepsBucket(caseText);
@@ -447,6 +464,9 @@ export function evaluateAutomationReadinessCase(caseText: string, index = 0): Au
   const target = targetBucket(caseText);
   const deterministic = determinismBucket(caseText, title);
   const penalties = penaltySignals(caseText);
+  const credentialProfile = findCredentialProfileForText(caseText, options?.credentialProfiles ?? []);
+  const authSetupNeeded = needsAuthSetup(caseText);
+  const hasCredentialProfile = Boolean(credentialProfile);
   const missingInputs = missingInputsFor(
     {
       steps: steps.score,
@@ -456,6 +476,14 @@ export function evaluateAutomationReadinessCase(caseText: string, index = 0): Au
     },
     caseText
   );
+  const effectiveMissingInputPenalty = missingInputs.reduce((sum, missing) => {
+    if (missing === "Test account/data setup" && authSetupNeeded && hasCredentialProfile) {
+      return sum;
+    }
+
+    return sum + 2;
+  }, 0);
+  const credentialBonus = authSetupNeeded && hasCredentialProfile ? 8 : 0;
 
   const rawScore =
     titleScore.score +
@@ -466,7 +494,8 @@ export function evaluateAutomationReadinessCase(caseText: string, index = 0): Au
     deterministic.score -
     penalties.penalty -
     // Missing automation implementation details are a cleanup cost, not an automatic block.
-    missingInputs.length * 2;
+    effectiveMissingInputPenalty +
+    credentialBonus;
 
   const finalScore = clampScore(rawScore);
   const readiness = readinessFromScore(finalScore, missingInputs, caseText, penalties.manualOnly);
@@ -479,6 +508,7 @@ export function evaluateAutomationReadinessCase(caseText: string, index = 0): Au
     ...setup.reasons,
     ...target.reasons,
     ...deterministic.reasons,
+    ...(authSetupNeeded && credentialProfile ? [`Credential profile available: ${credentialProfile.name}.`] : []),
   ];
 
   return {
@@ -578,7 +608,7 @@ function buildRecommendations(cases: AutomationReadinessCase[]): string[] {
 
 export function evaluateAutomationReadiness(sourceText: string): AutomationReadinessReport {
   const candidateCases = splitIntoCandidateCases(sourceText);
-  const cases = candidateCases.map(evaluateAutomationReadinessCase);
+  const cases = candidateCases.map((caseText, index) => evaluateAutomationReadinessCase(caseText, index));
 
   if (cases.length === 0) {
     return {

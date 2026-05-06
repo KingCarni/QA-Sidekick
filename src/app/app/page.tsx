@@ -23,6 +23,14 @@ import TestCaseDisplayControls from "@/components/TestCaseDisplayControls";
 import TestCaseQualityBadge from "@/components/TestCaseQualityBadge";
 import { calculateTestCaseQuality, getTestCaseQualityCardClass } from "@/lib/test-case-quality";
 import {
+  buildProjectContextPayload,
+  type ProjectContextPayload,
+} from "@/lib/project-context-injection";
+import {
+  buildAutomationCredentialPayload,
+  type AutomationCredentialProfile,
+} from "@/lib/automation-credentials";
+import {
   buildGenerationFingerprint,
   buildOutputGenerationKey,
 } from "@/lib/regeneration-guard";
@@ -51,6 +59,9 @@ type CoverageScoreProps = {
   reportType: ToolId;
   sourceInput: string;
   testCaseGenerationKey?: string;
+  automationCredentialProfiles?: ReturnType<typeof buildAutomationCredentialPayload>["profiles"];
+  automationCredentialDefaultProfileKey?: string;
+  automationCredentialEnvExample?: string;
 };
 
 type SaveReportButtonProps = Omit<SaveReportControlProps, "onSaveReport"> & {
@@ -1142,6 +1153,9 @@ function TestCaseCards({
   reportType,
   sourceInput,
   testCaseGenerationKey = "",
+  automationCredentialProfiles = [],
+  automationCredentialDefaultProfileKey = "",
+  automationCredentialEnvExample = "",
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -1495,6 +1509,9 @@ function TestCaseCards({
           generationKey={testCaseGenerationKey}
           testCases={renderedTestCases}
           bundleName="QAtalyst automation export"
+          credentialProfiles={automationCredentialProfiles}
+          defaultCredentialProfileKey={automationCredentialDefaultProfileKey}
+          envExample={automationCredentialEnvExample}
         />
       ) : null}
 
@@ -1818,6 +1835,9 @@ function BugReportCards({
   reportType,
   sourceInput,
   testCaseGenerationKey,
+  automationCredentialProfiles = [],
+  automationCredentialDefaultProfileKey = "",
+  automationCredentialEnvExample = "",
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -2352,6 +2372,9 @@ function GenericOutput({
   reportType,
   sourceInput,
   testCaseGenerationKey,
+  automationCredentialProfiles = [],
+  automationCredentialDefaultProfileKey = "",
+  automationCredentialEnvExample = "",
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -2376,6 +2399,9 @@ function GenericOutput({
         reportType={reportType}
         sourceInput={sourceInput}
         testCaseGenerationKey={testCaseGenerationKey}
+        automationCredentialProfiles={automationCredentialProfiles}
+        automationCredentialDefaultProfileKey={automationCredentialDefaultProfileKey}
+        automationCredentialEnvExample={automationCredentialEnvExample}
         saveReportStatus={saveReportStatus}
         saveReportMessage={saveReportMessage}
         savedReportId={savedReportId}
@@ -2490,6 +2516,32 @@ export default function Home() {
   const [projectContextError, setProjectContextError] = useState("");
   const [selectedProjectSourceIds, setSelectedProjectSourceIds] = useState<string[]>([]);
   const [selectedProjectContextBlock, setSelectedProjectContextBlock] = useState("");
+  const [automationCredentialProfiles, setAutomationCredentialProfiles] = useState<AutomationCredentialProfile[]>([]);
+
+  const projectContextPayload = useMemo<ProjectContextPayload>(() => {
+    return buildProjectContextPayload({
+      projectId: activeProject?.id,
+      projectName: activeProject?.name,
+      productType: activeProject?.productType,
+      projectDescription: activeProject?.description,
+      sources: (activeProjectContext?.sources ?? []).map((source) => ({
+        ...source,
+        enabled: source.isEnabled,
+      })),
+      selectedSourceIds: selectedProjectSourceIds,
+      maxCharacters: 12000,
+    });
+  }, [
+    activeProject?.id,
+    activeProject?.name,
+    activeProject?.productType,
+    activeProject?.description,
+    activeProjectContext?.sources,
+    selectedProjectSourceIds,
+  ]);
+  const automationCredentialPayload = useMemo(() => {
+    return buildAutomationCredentialPayload(automationCredentialProfiles);
+  }, [automationCredentialProfiles]);
 
   const tool = tools.find((item) => item.id === activeTool) ?? tools[0];
   const currentBugReport = activeTool === "bug" ? getBugReportFromOutput(output) : null;
@@ -2571,6 +2623,9 @@ export default function Home() {
     jiraKey: importedJiraTicket?.key,
     additionalContext: [
       testAdditionalContext,
+      projectContextPayload.selectedProjectId,
+      projectContextPayload.selectedProjectSourceIds.join(","),
+      projectContextPayload.projectContextSummary,
       selectedProjectContextBlock || activeProjectContext?.contextBlock || "",
       selectedProjectSourceIds.join(","),
     ].join("\n"),
@@ -2652,6 +2707,36 @@ export default function Home() {
     setSelectedProjectSourceIds(defaultSourceIds);
     setSelectedProjectContextBlock(defaultSourceIds.length > 0 ? activeProjectContext.contextBlock : "");
   }, [activeProjectContext]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const storageKey = activeProject?.id
+      ? `qatalyst.automationCredentialProfiles.${activeProject.id}`
+      : "qatalyst.automationCredentialProfiles.global";
+    const stored = window.localStorage.getItem(storageKey);
+
+    if (!stored) {
+      setAutomationCredentialProfiles([]);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(stored);
+      setAutomationCredentialProfiles(Array.isArray(parsed) ? parsed : []);
+    } catch {
+      setAutomationCredentialProfiles([]);
+    }
+  }, [activeProject?.id]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const storageKey = activeProject?.id
+      ? `qatalyst.automationCredentialProfiles.${activeProject.id}`
+      : "qatalyst.automationCredentialProfiles.global";
+    window.localStorage.setItem(storageKey, JSON.stringify(automationCredentialProfiles));
+  }, [activeProject?.id, automationCredentialProfiles]);
 
   function updateBugQuestionAnswer(question: string, answer: string) {
     setBugQuestionAnswers((current) => ({
@@ -2831,16 +2916,24 @@ export default function Home() {
           markdown: reportMarkdown,
           structuredData: {
             ...getCurrentStructuredReport(),
-            projectContextMeta: activeProject
+            projectContextMeta: projectContextPayload.projectContextUsed
               ? {
-                  projectId: activeProject.id,
-                  projectName: activeProject.name,
-                  productType: activeProject.productType,
+                  projectId: projectContextPayload.selectedProjectId,
+                  projectName: projectContextPayload.selectedProjectName,
+                  projectSourceIds: projectContextPayload.selectedProjectSourceIds,
+                  projectContextSummary: projectContextPayload.projectContextSummary,
+                  projectContextUsed: projectContextPayload.projectContextUsed,
+                  automationCredentialsUsed: automationCredentialPayload.credentialsUsed,
+                  automationCredentialProfiles: automationCredentialPayload.profiles,
                 }
               : null,
           },
           sourceInput: input,
-          projectId: activeProject?.id ?? null,
+          projectId: projectContextPayload.selectedProjectId || null,
+          projectName: projectContextPayload.selectedProjectName || null,
+          projectSourceIds: projectContextPayload.selectedProjectSourceIds,
+          projectContextSummary: projectContextPayload.projectContextSummary,
+          projectContextUsed: projectContextPayload.projectContextUsed,
         }),
       });
 
@@ -3210,22 +3303,34 @@ export default function Home() {
         body: JSON.stringify({
           input: requestInput,
           screenshots: [],
-          projectId: activeProject?.id ?? null,
+          projectId: projectContextPayload.selectedProjectId || null,
+          projectContextBlock: projectContextPayload.projectContextBlock,
+          projectContextSummary: projectContextPayload.projectContextSummary,
+          projectContextUsed: projectContextPayload.projectContextUsed,
+          selectedProjectId: projectContextPayload.selectedProjectId,
+          selectedProjectName: projectContextPayload.selectedProjectName,
+          selectedProjectSourceIds: projectContextPayload.selectedProjectSourceIds,
           projectContext:
+            projectContextPayload.projectContextBlock ||
             selectedProjectContextBlock ||
             activeProjectContext?.contextBlock ||
             "",
-          projectContextMeta: activeProjectContext?.project
+          projectContextMeta: projectContextPayload.projectContextUsed
             ? {
-                projectName: activeProjectContext.project.name,
-                productType: activeProjectContext.project.productType,
-                enabledSourceCount: activeProjectContext.enabledSourceCount,
-                totalSourceCount: activeProjectContext.totalSourceCount,
-                selectedSourceCount: selectedProjectSourceIds.length,
-                selectedSourceIds: selectedProjectSourceIds,
+                projectName: projectContextPayload.selectedProjectName,
+                projectId: projectContextPayload.selectedProjectId,
+                enabledSourceCount: activeProjectContext?.enabledSourceCount ?? 0,
+                totalSourceCount: activeProjectContext?.totalSourceCount ?? 0,
+                selectedSourceCount: projectContextPayload.selectedProjectSourceIds.length,
+                selectedSourceIds: projectContextPayload.selectedProjectSourceIds,
               }
             : null,
-          selectedProjectSourceIds,
+          automationCredentialsUsed: automationCredentialPayload.credentialsUsed,
+          automationCredentialProfiles: automationCredentialPayload.profiles,
+          automationCredentialProfileSummary: automationCredentialPayload.profiles
+            .map((profile) => `${profile.name} (${profile.role})`)
+            .join(", "),
+          automationCredentialPromptBlock: automationCredentialPayload.promptBlock,
         }),
       });
 
@@ -3732,23 +3837,38 @@ export default function Home() {
 
         <section className="panel output-panel">
           {output ? (
-            <GenericOutput
-              output={output}
-              evidenceFiles={[]}
-              evidenceLink=""
-              answeredFollowUps={bugAnsweredFollowUps}
-              riskAnsweredFollowUps={riskAnsweredFollowUps}
-              testAnsweredFollowUps={testAnsweredFollowUps}
-              onSaveBugMarkdown={handleSaveBugMarkdown}
-              bugEvidence={bugEvidence}
-              reportType={activeTool}
-              sourceInput={input}
-              testCaseGenerationKey={testCaseGenerationKey}
-              saveReportStatus={saveReportStatus}
-              saveReportMessage={saveReportMessage}
-              savedReportId={savedReportId}
-              onSaveReport={handleSaveReport}
-            />
+            <>
+              {projectContextPayload.projectContextUsed ? (
+                <p className="qa-context-used-line">
+                  Used project context: {projectContextPayload.projectContextSummary}
+                </p>
+              ) : null}
+              {automationCredentialPayload.credentialsUsed ? (
+                <span className="qa-context-used-pill">
+                  Automation credentials: {automationCredentialPayload.profiles.length} profiles
+                </span>
+              ) : null}
+              <GenericOutput
+                output={output}
+                evidenceFiles={[]}
+                evidenceLink=""
+                answeredFollowUps={bugAnsweredFollowUps}
+                riskAnsweredFollowUps={riskAnsweredFollowUps}
+                testAnsweredFollowUps={testAnsweredFollowUps}
+                onSaveBugMarkdown={handleSaveBugMarkdown}
+                bugEvidence={bugEvidence}
+                reportType={activeTool}
+                sourceInput={input}
+                testCaseGenerationKey={testCaseGenerationKey}
+                automationCredentialProfiles={automationCredentialPayload.profiles}
+                automationCredentialDefaultProfileKey={automationCredentialPayload.defaultProfileKey}
+                automationCredentialEnvExample={automationCredentialPayload.envExample}
+                saveReportStatus={saveReportStatus}
+                saveReportMessage={saveReportMessage}
+                savedReportId={savedReportId}
+                onSaveReport={handleSaveReport}
+              />
+            </>
           ) : (
             <div className="output-empty">Run a tool to see QA output here.</div>
           )}

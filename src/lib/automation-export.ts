@@ -7,6 +7,7 @@ import {
   type AutomationReadinessLevel,
 } from "@/lib/automation-readiness";
 import { generateAutomationSkeleton } from "@/lib/automation-codegen";
+import type { SafeAutomationCredentialProfile } from "@/lib/automation-credentials";
 
 export type AutomationExportTestCase = {
   title?: unknown;
@@ -170,17 +171,87 @@ function buildReadme(bundleName: string, bundle: Omit<AutomationExportBundle, "f
   ].join("\n");
 }
 
+function buildAuthFixture(profiles: SafeAutomationCredentialProfile[]): string {
+  const profileEntries = profiles.map((profile) =>
+    [
+      `  "${profile.key}": {`,
+      profile.emailEnvVar ? `    emailEnv: "${profile.emailEnvVar}",` : "",
+      profile.usernameEnvVar ? `    usernameEnv: "${profile.usernameEnvVar}",` : "",
+      `    passwordEnv: "${profile.passwordEnvVar}",`,
+      "  },",
+    ]
+      .filter(Boolean)
+      .join("\n")
+  );
+
+  return [
+    `import { expect, Page } from "@playwright/test";`,
+    "",
+    `export type AuthProfileKey = ${profiles.map((profile) => `"${profile.key}"`).join(" | ") || '"standard-user"'} | string;`,
+    "",
+    "type AuthProfileEnv = {",
+    "  emailEnv?: string;",
+    "  usernameEnv?: string;",
+    "  passwordEnv: string;",
+    "};",
+    "",
+    "const AUTH_PROFILES: Record<string, AuthProfileEnv> = {",
+    ...(profileEntries.length ? profileEntries : ['  "standard-user": { emailEnv: "QATALYST_E2E_STANDARD_EMAIL", passwordEnv: "QATALYST_E2E_STANDARD_PASSWORD" },']),
+    "};",
+    "",
+    `export async function loginAs(page: Page, profileKey: AuthProfileKey = "standard-user") {`,
+    "  const profile = AUTH_PROFILES[profileKey];",
+    "  if (!profile) throw new Error(`Unknown auth profile: ${profileKey}`);",
+    "",
+    "  const username = profile.emailEnv",
+    "    ? process.env[profile.emailEnv]",
+    "    : profile.usernameEnv",
+    "      ? process.env[profile.usernameEnv]",
+    "      : '';",
+    "  const password = process.env[profile.passwordEnv];",
+    "",
+    "  if (!username || !password) throw new Error(`Missing auth env vars for profile: ${profileKey}`);",
+    "",
+    "  await page.goto('/login');",
+    "  await page.getByLabel(/email|username/i).fill(username);",
+    "  await page.getByLabel(/password/i).fill(password);",
+    "  await page.getByRole('button', { name: /log in|login|sign in/i }).click();",
+    "  await expect(page).toHaveURL(/dashboard|app|account|home/i);",
+    "}",
+  ].join("\n");
+}
+
+function buildEnvExample(profiles: SafeAutomationCredentialProfile[]): string {
+  return [
+    "# QAtalyst generated automation credentials",
+    "# Fill these locally or in CI. Do not commit real values.",
+    "",
+    ...profiles.flatMap((profile) => [
+      profile.emailEnvVar ? `${profile.emailEnvVar}=` : "",
+      profile.usernameEnvVar ? `${profile.usernameEnvVar}=` : "",
+      profile.passwordEnvVar ? `${profile.passwordEnvVar}=` : "",
+      "",
+    ]),
+  ]
+    .filter((line, index, lines) => line || lines[index - 1])
+    .join("\n");
+}
+
 export function buildAutomationExportBundle(
   testCases: AutomationExportTestCase[],
   options?: {
     bundleName?: string;
     includePartial?: boolean;
     includeManualReview?: boolean;
+    credentialProfiles?: SafeAutomationCredentialProfile[];
+    defaultCredentialProfileKey?: string;
+    envExample?: string;
   }
 ): AutomationExportBundle {
   const bundleName = options?.bundleName || "QAtalyst Automation Export";
   const includePartial = options?.includePartial ?? true;
   const includeManualReview = options?.includeManualReview ?? true;
+  const credentialProfiles = options?.credentialProfiles ?? [];
 
   const files: AutomationExportFile[] = [];
   const manualReviewSections: string[] = [];
@@ -198,7 +269,9 @@ export function buildAutomationExportBundle(
   };
 
   const evaluatedCases: AutomationExportEvaluatedCase[] = testCases.map((testCase: AutomationExportTestCase, index: number) => {
-    const readiness = evaluateAutomationReadinessCase(getAutomationCaseTextFromObject(testCase), index);
+    const readiness = evaluateAutomationReadinessCase(getAutomationCaseTextFromObject(testCase), index, {
+      credentialProfiles,
+    });
     summary[readiness.readiness] += 1;
 
     const isReady = readiness.readiness === "ready";
@@ -220,7 +293,10 @@ export function buildAutomationExportBundle(
 
     if (exportable) {
       summary.exportable += 1;
-      const skeleton = generateAutomationSkeleton(testCase, index, readiness.framework);
+      const skeleton = generateAutomationSkeleton(testCase, index, readiness.framework, {
+        credentialProfiles,
+        defaultCredentialProfileKey: options?.defaultCredentialProfileKey,
+      });
       const uniquePath = uniquifyPath(skeleton.filename, usedPaths, index);
 
       files.push({
@@ -255,6 +331,19 @@ export function buildAutomationExportBundle(
         "",
         ...manualReviewSections,
       ].join("\n"),
+    });
+  }
+
+  if (credentialProfiles.length > 0) {
+    files.push({
+      path: "tests/support/auth.ts",
+      type: "playwright",
+      content: buildAuthFixture(credentialProfiles),
+    });
+    files.push({
+      path: ".env.example",
+      type: "readme",
+      content: options?.envExample || buildEnvExample(credentialProfiles),
     });
   }
 

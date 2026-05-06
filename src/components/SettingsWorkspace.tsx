@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import JiraSettingsForm from "@/components/JiraSettingsForm";
+import ProjectAutomationCredentialsForm from "@/components/ProjectAutomationCredentialsForm";
 import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSettingsPanel";
 import ProjectSourceVaultPanel from "@/components/ProjectSourceVaultPanel";
+import type { AutomationCredentialProfile } from "@/lib/automation-credentials";
 import type { SafeJiraConfig } from "@/lib/jira-config";
 
 type SettingsWorkspaceProps = {
@@ -12,7 +14,7 @@ type SettingsWorkspaceProps = {
   userEmail?: string | null;
 };
 
-type SettingsArea = "projects" | "source-vault" | "jira" | "testrail" | "admin";
+type SettingsArea = "projects" | "source-vault" | "automation-credentials" | "jira" | "testrail" | "admin";
 
 export default function SettingsWorkspace({
   initialJiraConfig,
@@ -21,9 +23,42 @@ export default function SettingsWorkspace({
 }: SettingsWorkspaceProps) {
   const [activeArea, setActiveArea] = useState<SettingsArea>("projects");
   const [activeProject, setActiveProject] = useState<SafeQAProject | null>(null);
+  const [automationCredentialProfiles, setAutomationCredentialProfiles] = useState<AutomationCredentialProfile[]>([]);
 
   const tabClass = (area: SettingsArea) =>
     activeArea === area ? "settings-area-tab settings-area-tab-active" : "settings-area-tab";
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const storageKey = activeProject?.id
+      ? `qatalyst.automationCredentialProfiles.${activeProject.id}`
+      : "qatalyst.automationCredentialProfiles.global";
+    const stored = window.localStorage.getItem(storageKey);
+
+    if (!stored) {
+      setAutomationCredentialProfiles([]);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(stored);
+      setAutomationCredentialProfiles(Array.isArray(parsed) ? parsed : []);
+    } catch {
+      setAutomationCredentialProfiles([]);
+    }
+  }, [activeProject?.id]);
+
+  function updateAutomationCredentialProfiles(profiles: AutomationCredentialProfile[]) {
+    setAutomationCredentialProfiles(profiles);
+
+    if (typeof window === "undefined") return;
+
+    const storageKey = activeProject?.id
+      ? `qatalyst.automationCredentialProfiles.${activeProject.id}`
+      : "qatalyst.automationCredentialProfiles.global";
+    window.localStorage.setItem(storageKey, JSON.stringify(profiles));
+  }
 
   return (
     <section className="settings-wide-panel settings-wide-panel-with-projects">
@@ -36,6 +71,9 @@ export default function SettingsWorkspace({
           </button>
           <button className={tabClass("source-vault")} onClick={() => setActiveArea("source-vault")} type="button">
             Project Source Vault
+          </button>
+          <button className={tabClass("automation-credentials")} onClick={() => setActiveArea("automation-credentials")} type="button">
+            Automation Credentials
           </button>
           <button className={tabClass("jira")} onClick={() => setActiveArea("jira")} type="button">
             Jira Integration
@@ -87,6 +125,15 @@ export default function SettingsWorkspace({
       {activeArea === "source-vault" ? (
         <section className="settings-wide-section" id="project-source-vault">
           <ProjectSourceVaultPanel activeProject={activeProject} />
+        </section>
+      ) : null}
+
+      {activeArea === "automation-credentials" ? (
+        <section className="settings-wide-section" id="automation-credentials">
+          <ProjectAutomationCredentialsForm
+            profiles={automationCredentialProfiles}
+            onChange={updateAutomationCredentialProfiles}
+          />
         </section>
       ) : null}
 

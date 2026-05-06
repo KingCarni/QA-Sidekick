@@ -8,11 +8,15 @@ import {
   downloadAutomationFilesIndividually,
   type AutomationExportTestCase,
 } from "@/lib/automation-export";
+import type { SafeAutomationCredentialProfile } from "@/lib/automation-credentials";
 
 type AutomationExportPanelProps = {
   testCases: AutomationExportTestCase[];
   bundleName?: string;
   generationKey?: string;
+  credentialProfiles?: SafeAutomationCredentialProfile[];
+  defaultCredentialProfileKey?: string;
+  envExample?: string;
 };
 
 type CopyState = "idle" | "copied" | "error";
@@ -21,6 +25,9 @@ export default function AutomationExportPanel({
   testCases,
   bundleName = "QAtalyst Automation Export",
   generationKey = "",
+  credentialProfiles = [],
+  defaultCredentialProfileKey = "",
+  envExample = "",
 }: AutomationExportPanelProps) {
   const [includePartial, setIncludePartial] = useState(true);
   const [includeManualReview, setIncludeManualReview] = useState(true);
@@ -33,8 +40,11 @@ export default function AutomationExportPanel({
         bundleName,
         includePartial,
         includeManualReview,
+        credentialProfiles,
+        defaultCredentialProfileKey,
+        envExample,
       }),
-    [bundleName, generationKey, includeManualReview, includePartial, testCases]
+    [bundleName, credentialProfiles, defaultCredentialProfileKey, envExample, generationKey, includeManualReview, includePartial, testCases]
   );
 
   if (testCases.length === 0) {

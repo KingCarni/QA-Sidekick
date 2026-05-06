@@ -2,6 +2,11 @@ import { jsonError, qaRequestSchema } from "@/lib/api";
 import { getOpenAIClient } from "@/lib/openai";
 import { buildQaPrompt } from "@/lib/qaPrompts";
 import { buildQAS73PromptBlock } from "@/lib/qas73-generator-quality-rules";
+import {
+  appendProjectContextToInput,
+  buildProjectContextPromptRules,
+} from "@/lib/project-context-injection";
+import { buildAutomationCredentialPromptRules } from "@/lib/automation-credentials";
 
 export async function POST(req: Request) {
   try {
@@ -15,11 +20,21 @@ export async function POST(req: Request) {
     const client = getOpenAIClient();
     const systemPrompt = [
       "You are QAtalyst, a senior QA analyst assistant. Return only valid JSON matching the requested schema. Do not wrap JSON in markdown.",
+      buildProjectContextPromptRules(),
+      `Project context used: ${parsed.data.projectContextUsed ? "yes" : "no"}`,
+      `Project: ${parsed.data.selectedProjectName || "none"}`,
+      `Project context summary: ${parsed.data.projectContextSummary || "No project context used."}`,
+      parsed.data.automationCredentialPromptBlock || "",
+      buildAutomationCredentialPromptRules(),
+      `Automation credentials used: ${parsed.data.automationCredentialsUsed ? "yes" : "no"}`,
+      `Automation credential profiles: ${parsed.data.automationCredentialProfileSummary || "none"}`,
       buildQAS73PromptBlock("tests"),
     ].join("\n\n");
-    const userPrompt = buildQaPrompt("generate-tests", parsed.data.input, {
-      projectContext: parsed.data.projectContext,
-    });
+    const sourceWithProjectContext = appendProjectContextToInput(
+      parsed.data.input,
+      parsed.data.projectContextBlock || parsed.data.projectContext || ""
+    );
+    const userPrompt = buildQaPrompt("generate-tests", sourceWithProjectContext);
 
     const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
@@ -46,6 +61,13 @@ export async function POST(req: Request) {
     return Response.json({
       ok: true,
       result: JSON.parse(content),
+      context: {
+        projectContextUsed: Boolean(parsed.data.projectContextUsed),
+        selectedProjectId: parsed.data.selectedProjectId,
+        selectedProjectName: parsed.data.selectedProjectName,
+        selectedProjectSourceIds: parsed.data.selectedProjectSourceIds ?? [],
+        projectContextSummary: parsed.data.projectContextSummary,
+      },
     });
   } catch (error) {
     console.error("/generate-tests failed", error);

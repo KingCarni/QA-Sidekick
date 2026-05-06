@@ -15981,3 +15981,416 @@ section[aria-label="Export automation skeletons"] {
     max-width: none;
   }
 }
+/* QAS-77 project context used metadata */
+
+.qa-context-used-line {
+  margin: 10px 0 0;
+  color: rgba(187, 247, 208, 0.86);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.qa-context-used-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.14), transparent 45%),
+    rgba(5, 46, 22, 0.42);
+  color: rgba(220, 252, 231, 0.92);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.qa-context-used-pill::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgb(34, 197, 94);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.55);
+}
+
+/* QAS-78 automation credential profile UI */
+
+.automation-credentials-card {
+  border-color: rgba(34, 197, 94, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 42%),
+    rgba(0, 0, 0, 0.28);
+}
+
+.credential-warning-card {
+  margin: 18px 0;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(245, 158, 11, 0.36);
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 44%),
+    rgba(0, 0, 0, 0.26);
+}
+
+.credential-warning-card p {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.76);
+  line-height: 1.5;
+}
+
+.credential-profile-list {
+  display: grid;
+  gap: 16px;
+}
+
+.credential-profile-card {
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.08), transparent 42%),
+    rgba(0, 0, 0, 0.24);
+}
+
+.credential-profile-card-new {
+  margin-top: 18px;
+  border-color: rgba(34, 197, 94, 0.28);
+}
+
+.credential-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.credential-profile-card label {
+  display: grid;
+  gap: 7px;
+  color: rgb(255, 205, 210);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.credential-profile-card input,
+.credential-profile-card textarea {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background: rgba(0, 0, 0, 0.45);
+  color: white;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.credential-profile-card textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.credential-profile-actions {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.inline-check {
+  display: inline-flex !important;
+  grid-template-columns: auto !important;
+  grid-auto-flow: column;
+  align-items: center;
+  gap: 8px !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.inline-check input {
+  min-height: auto;
+  width: auto;
+}
+
+@media (max-width: 760px) {
+  .credential-profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* QAS-78 Automation Credentials UI/UX cleanup */
+
+.automation-credentials-shell {
+  display: grid;
+  gap: 22px;
+  margin-top: 24px;
+}
+
+.automation-credentials-hero,
+.credential-security-note,
+.credential-profile-card,
+.credential-empty-state {
+  border-radius: 26px;
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.09), transparent 42%),
+    rgba(0, 0, 0, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    0 14px 34px rgba(0, 0, 0, 0.2);
+}
+
+.automation-credentials-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: start;
+  padding: 26px 28px;
+  border-color: rgba(34, 197, 94, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 44%),
+    linear-gradient(135deg, rgba(2, 28, 16, 0.52), rgba(0, 0, 0, 0.36));
+}
+
+.automation-credentials-hero h2,
+.credential-section-header h3,
+.credential-profile-card h3,
+.credential-security-note h3 {
+  margin: 6px 0 8px;
+}
+
+.automation-credentials-hero p,
+.credential-section-header p,
+.credential-profile-card p,
+.credential-security-note p,
+.credential-empty-state p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.74);
+  line-height: 1.55;
+}
+
+.automation-credentials-defaults {
+  white-space: nowrap;
+}
+
+.credential-security-note {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  padding: 22px 24px;
+  border-color: rgba(245, 158, 11, 0.36);
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 42%),
+    rgba(0, 0, 0, 0.26);
+}
+
+.credential-security-note code {
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  color: rgb(187, 247, 208);
+  font-size: 0.85em;
+}
+
+.credential-section-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: end;
+  padding: 0 4px;
+}
+
+.credential-section-header > p {
+  max-width: 460px;
+  text-align: right;
+}
+
+.credential-profile-list {
+  display: grid;
+  gap: 18px;
+}
+
+.credential-empty-state {
+  padding: 22px 24px;
+  border-style: dashed;
+}
+
+.credential-empty-state strong {
+  display: block;
+  margin-bottom: 6px;
+  color: white;
+}
+
+.credential-profile-card {
+  padding: 24px;
+  overflow: hidden;
+}
+
+.credential-profile-card-new {
+  border-color: rgba(34, 197, 94, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.1), transparent 42%),
+    rgba(0, 0, 0, 0.26);
+}
+
+.credential-profile-card-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.credential-profile-toggle-row,
+.credential-profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.credential-inline-check {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px !important;
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(255, 255, 255, 0.82) !important;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
+.credential-inline-check input {
+  width: auto !important;
+  min-height: auto !important;
+  padding: 0 !important;
+  accent-color: rgb(34, 197, 94);
+}
+
+.credential-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.credential-profile-card label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  color: rgb(255, 205, 210);
+  font-size: 0.73rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.credential-profile-card input,
+.credential-profile-card textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  border-radius: 15px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background: rgba(0, 0, 0, 0.48);
+  color: white;
+  padding: 11px 13px;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  letter-spacing: normal;
+  text-transform: none;
+  outline: none;
+}
+
+.credential-profile-card input:focus,
+.credential-profile-card textarea:focus {
+  border-color: rgba(96, 165, 250, 0.7);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+}
+
+.credential-profile-card input::placeholder,
+.credential-profile-card textarea::placeholder {
+  color: rgba(255, 255, 255, 0.34);
+}
+
+.credential-notes-label {
+  margin-top: 16px;
+}
+
+.credential-profile-card textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.credential-profile-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.credential-profile-footer code {
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  background: rgba(0, 0, 0, 0.36);
+  color: rgba(187, 247, 208, 0.86);
+  font-size: 0.82rem;
+}
+
+.automation-credentials-shell .primary-button,
+.automation-credentials-shell .secondary-button,
+.automation-credentials-shell .danger-button {
+  min-height: 44px;
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-weight: 900;
+}
+
+@media (max-width: 820px) {
+  .automation-credentials-hero,
+  .credential-security-note,
+  .credential-profile-card-header,
+  .credential-profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .credential-section-header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .credential-section-header > p {
+    text-align: left;
+  }
+
+  .credential-profile-toggle-row {
+    justify-content: flex-start;
+  }
+
+  .credential-profile-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .credential-profile-footer code {
+    max-width: 100%;
+  }
+}
