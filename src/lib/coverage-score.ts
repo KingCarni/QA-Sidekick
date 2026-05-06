@@ -1,3 +1,5 @@
+import { calculateAutomationQualityAdjustment } from "@/lib/automation-quality-adjustment";
+
 export type ReportType = "tests" | "risk" | "bug" | "improve";
 
 export type CoverageDimensionId =
@@ -621,9 +623,9 @@ function scoreDimension(config: DimensionConfig, reportText: string): CoverageDi
 }
 
 function gradeFromScore(score: number): CoverageScoreResult["grade"] {
-  if (score >= 82) return "Strong";
-  if (score >= 68) return "Good";
-  if (score >= 48) return "Needs Work";
+  if (score >= 84) return "Strong";
+  if (score >= 72) return "Good";
+  if (score >= 58) return "Needs Work";
   return "Thin";
 }
 
@@ -731,6 +733,75 @@ function adjustToolScore(reportType: ReportType, score: number, dimensions: Cove
   return clampScore(adjusted);
 }
 
+function calibrateUserFacingScore(
+  reportType: ReportType,
+  baseScore: number,
+  dimensions: CoverageDimension[],
+  reportText: string,
+  automationAdjustment?: {
+    exportableCount: number;
+    totalCount: number;
+    manualReviewCount: number;
+    cap: number;
+    penalty: number;
+  }
+): number {
+  let score = baseScore;
+
+  const strongCount = dimensions.filter((item) => item.status === "strong").length;
+  const partialCount = dimensions.filter((item) => item.status === "partial").length;
+  const weakCount = dimensions.filter((item) => item.status === "weak").length;
+  const hasUsefulStructure =
+    reportText.includes("preconditions") &&
+    reportText.includes("steps") &&
+    reportText.includes("expected result");
+  const hasVagueFailure =
+    /visually appealing|user experiences confusion|evaluate the ui presentation|preferred designs/i.test(reportText);
+
+  if (reportType === "tests") {
+    const total = automationAdjustment?.totalCount ?? 0;
+    const exportable = automationAdjustment?.exportableCount ?? 0;
+    const exportableRatio = total > 0 ? exportable / total : 0;
+
+    if (hasUsefulStructure && total >= 4 && exportable >= 1 && !hasVagueFailure) {
+      score = Math.max(score, 68);
+    }
+
+    if (hasUsefulStructure && total >= 5 && exportableRatio >= 0.4 && !hasVagueFailure) {
+      score = Math.max(score, 74);
+    }
+
+    if (hasUsefulStructure && total >= 5 && exportableRatio >= 0.6 && strongCount + partialCount >= weakCount) {
+      score = Math.max(score, 78);
+    }
+
+    if (hasVagueFailure) {
+      score = Math.min(score, 64);
+    }
+
+    if (total > 0 && exportable === 0) {
+      score = Math.min(score, 68);
+    }
+  }
+
+  if (reportType === "risk") {
+    if (strongCount >= 2 && partialCount >= 2) score = Math.max(score, 72);
+    if (weakCount >= 4) score = Math.min(score, 66);
+  }
+
+  if (reportType === "bug") {
+    if (hasUsefulStructure && strongCount >= 2) score = Math.max(score, 72);
+    if (weakCount >= 4) score = Math.min(score, 66);
+  }
+
+  if (reportType === "improve") {
+    if (hasUsefulStructure && strongCount >= 2) score = Math.max(score, 72);
+    if (weakCount >= 4) score = Math.min(score, 66);
+  }
+
+  return clampScore(Math.min(score, automationAdjustment?.cap ?? 100));
+}
+
 export function calculateCoverageScore(input: CoverageInput): CoverageScoreResult {
   const dimensionsConfig = TOOL_DIMENSIONS[input.reportType];
   const reportText = normalizeText(`${stringify(input.markdown)}\n${stringify(input.structuredData)}`);
@@ -738,7 +809,21 @@ export function calculateCoverageScore(input: CoverageInput): CoverageScoreResul
   const dimensions = dimensionsConfig.map((config) => scoreDimension(config, reportText));
   const totalWeight = dimensions.reduce((sum, item) => sum + item.weight, 0) || 1;
   const weightedScore = dimensions.reduce((sum, item) => sum + item.score * item.weight, 0) / totalWeight;
-  const score = adjustToolScore(input.reportType, clampScore(weightedScore), dimensions, reportText);
+  const automationAdjustment = calculateAutomationQualityAdjustment(
+    input.reportType,
+    `${stringify(input.markdown)}\n${stringify(input.structuredData)}`
+  );
+  const adjustedBaseScore = adjustToolScore(input.reportType, clampScore(weightedScore), dimensions, reportText);
+  const diagnosticScore = clampScore(
+    Math.min(adjustedBaseScore - automationAdjustment.penalty, automationAdjustment.cap)
+  );
+  const score = calibrateUserFacingScore(
+    input.reportType,
+    diagnosticScore,
+    dimensions,
+    reportText,
+    automationAdjustment
+  );
   const grade = gradeFromScore(score);
 
   const strengths = dimensions
@@ -752,13 +837,20 @@ export function calculateCoverageScore(input: CoverageInput): CoverageScoreResul
     .sort((a, b) => a.score - b.score)
     .slice(0, 4)
     .map((item) => item.recommendation);
+  const automationGaps =
+    input.reportType === "tests" && automationAdjustment.reasons.length > 0
+      ? automationAdjustment.reasons
+      : [];
 
   return {
     score,
     grade,
     summary: summaryFromScore(score, input.reportType),
     strengths: strengths.length > 0 ? strengths : ["The output has enough structure to evaluate, but no standout strength yet."],
-    gaps: gaps.length > 0 ? gaps : ["No major scoring gaps detected by this scoring pass."],
+    gaps:
+      [...automationGaps, ...gaps].length > 0
+        ? [...automationGaps, ...gaps].slice(0, 5)
+        : ["No major scoring gaps detected by this scoring pass."],
     dimensions,
     risk: calculateRisk(input, reportText, sourceText, dimensions),
   };

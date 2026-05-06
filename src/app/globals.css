@@ -14539,3 +14539,877 @@ section[aria-label="Export automation skeletons"] {
   order: 4;
 }
 
+
+
+/* QAS-73 score comparison repair */
+
+.coverage-score-number small,
+.coverage-score-number .coverage-score-number-label {
+  display: none !important;
+}
+
+.coverage-score-method {
+  max-width: 720px;
+  margin-top: 10px !important;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.source-quality-signal-card {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.12), transparent 42%),
+    rgba(0, 0, 0, 0.28);
+}
+
+.source-quality-signal-card ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.source-quality-signal-card li + li {
+  margin-top: 4px;
+}
+
+.generated-output-first-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.generated-output-results {
+  order: 1;
+}
+
+.generated-output-followups {
+  order: 2;
+}
+
+.generated-output-export {
+  order: 3;
+}
+
+.generated-output-quality {
+  order: 4;
+}
+
+
+
+/* QAS-73 score-tone color pass */
+
+/*
+  Add tone classes to CoverageScorePanel section:
+  coverage-score-card coverage-score-card-strong
+  coverage-score-card coverage-score-card-good
+  coverage-score-card coverage-score-card-warn
+  coverage-score-card coverage-score-card-weak
+*/
+
+.coverage-score-card-strong,
+.coverage-score-card-good {
+  border-color: rgba(34, 197, 94, 0.55) !important;
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.18), transparent 44%),
+    linear-gradient(135deg, rgba(5, 35, 20, 0.72), rgba(8, 10, 14, 0.94)) !important;
+  box-shadow: 0 0 34px rgba(34, 197, 94, 0.08);
+}
+
+.coverage-score-card-warn {
+  border-color: rgba(245, 158, 11, 0.55) !important;
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 44%),
+    linear-gradient(135deg, rgba(40, 29, 5, 0.72), rgba(8, 10, 14, 0.94)) !important;
+  box-shadow: 0 0 34px rgba(245, 158, 11, 0.08);
+}
+
+.coverage-score-card-weak {
+  border-color: rgba(248, 113, 113, 0.55) !important;
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.16), transparent 44%),
+    linear-gradient(135deg, rgba(45, 10, 12, 0.72), rgba(8, 10, 14, 0.94)) !important;
+  box-shadow: 0 0 34px rgba(248, 113, 113, 0.08);
+}
+
+.coverage-score-card-good .score-comparison-card > div,
+.coverage-score-card-strong .score-comparison-card > div {
+  border-color: rgba(34, 197, 94, 0.26);
+}
+
+.coverage-score-card-warn .score-comparison-card > div {
+  border-color: rgba(245, 158, 11, 0.26);
+}
+
+.coverage-score-card-weak .score-comparison-card > div {
+  border-color: rgba(248, 113, 113, 0.26);
+}
+
+
+
+/* QAS-73 test case quality split */
+
+/*
+  Outer test case card = Test Case Quality
+  Inner automation panel = Automation Fit
+
+  Add one of these classes to the outer test case card:
+  test-case-card-quality-strong
+  test-case-card-quality-good
+  test-case-card-quality-warn
+  test-case-card-quality-weak
+*/
+
+.test-case-card-quality-strong,
+.test-case-card-quality-good {
+  border-color: rgba(34, 197, 94, 0.55) !important;
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.16), transparent 44%),
+    linear-gradient(135deg, rgba(2, 28, 16, 0.74), rgba(8, 10, 14, 0.94)) !important;
+}
+
+.test-case-card-quality-warn {
+  border-color: rgba(245, 158, 11, 0.55) !important;
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 44%),
+    linear-gradient(135deg, rgba(39, 28, 4, 0.74), rgba(8, 10, 14, 0.94)) !important;
+}
+
+.test-case-card-quality-weak {
+  border-color: rgba(248, 113, 113, 0.55) !important;
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.16), transparent 44%),
+    linear-gradient(135deg, rgba(45, 10, 12, 0.74), rgba(8, 10, 14, 0.94)) !important;
+}
+
+.test-case-card-header,
+.test-case-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.test-case-card-title-block {
+  min-width: 0;
+  flex: 1;
+}
+
+.test-case-quality-badge {
+  --quality-ring: rgba(96, 165, 250, 0.9);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 72px;
+  padding: 8px 9px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.03);
+}
+
+.test-case-quality-badge-strong,
+.test-case-quality-badge-good {
+  --quality-ring: rgba(34, 197, 94, 0.95);
+  border-color: rgba(34, 197, 94, 0.42);
+}
+
+.test-case-quality-badge-warn {
+  --quality-ring: rgba(245, 158, 11, 0.95);
+  border-color: rgba(245, 158, 11, 0.42);
+}
+
+.test-case-quality-badge-weak {
+  --quality-ring: rgba(248, 113, 113, 0.95);
+  border-color: rgba(248, 113, 113, 0.42);
+}
+
+.test-case-quality-donut {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at center, rgba(5, 7, 10, 1) 0 56%, transparent 57%),
+    conic-gradient(var(--quality-ring) var(--quality-score), rgba(255, 255, 255, 0.12) 0);
+}
+
+.test-case-quality-donut span {
+  font-size: 1rem;
+  line-height: 1;
+  font-weight: 900;
+  color: white;
+}
+
+.test-case-quality-badge small {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.68);
+  font-weight: 800;
+}
+
+.automation-fit-panel,
+.automation-readiness-panel {
+  margin-top: 22px;
+}
+
+@media (max-width: 720px) {
+  .test-case-card-header,
+  .test-case-heading-row {
+    flex-direction: column;
+  }
+
+  .test-case-quality-badge {
+    align-self: flex-start;
+  }
+}
+
+
+
+/* QAS-73 quality badge UI polish */
+
+/*
+  Outer test case card = Test Case Quality
+  Inner automation panel = Automation Fit
+*/
+
+.test-case-card-quality-strong,
+.test-case-card-quality-good {
+  border-color: rgba(34, 197, 94, 0.5) !important;
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.14), transparent 42%),
+    linear-gradient(135deg, rgba(2, 26, 15, 0.74), rgba(8, 10, 14, 0.94)) !important;
+}
+
+.test-case-card-quality-warn {
+  border-color: rgba(245, 158, 11, 0.52) !important;
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.15), transparent 42%),
+    linear-gradient(135deg, rgba(38, 27, 4, 0.74), rgba(8, 10, 14, 0.94)) !important;
+}
+
+.test-case-card-quality-weak {
+  border-color: rgba(248, 113, 113, 0.52) !important;
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.14), transparent 42%),
+    linear-gradient(135deg, rgba(45, 10, 12, 0.74), rgba(8, 10, 14, 0.94)) !important;
+}
+
+.test-case-card-header,
+.test-case-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.test-case-card-title-block {
+  min-width: 0;
+  flex: 1;
+}
+
+.test-case-quality-badge {
+  --quality-ring: rgba(96, 165, 250, 0.95);
+  --quality-bg: rgba(15, 23, 42, 0.82);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 128px;
+  padding: 8px 10px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.07), transparent 52%),
+    var(--quality-bg);
+  box-shadow:
+    inset 0 0 18px rgba(255, 255, 255, 0.035),
+    0 10px 24px rgba(0, 0, 0, 0.22);
+  flex-shrink: 0;
+}
+
+.test-case-quality-badge-strong,
+.test-case-quality-badge-good {
+  --quality-ring: rgba(34, 197, 94, 0.98);
+  --quality-bg: rgba(5, 46, 22, 0.7);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.test-case-quality-badge-warn {
+  --quality-ring: rgba(245, 158, 11, 0.98);
+  --quality-bg: rgba(60, 40, 5, 0.7);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.test-case-quality-badge-weak {
+  --quality-ring: rgba(248, 113, 113, 0.98);
+  --quality-bg: rgba(69, 10, 10, 0.72);
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.test-case-quality-donut {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at center, rgba(5, 7, 10, 1) 0 56%, transparent 57%),
+    conic-gradient(var(--quality-ring) var(--quality-score), rgba(255, 255, 255, 0.13) 0);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 18px rgba(0, 0, 0, 0.25);
+}
+
+.test-case-quality-donut span {
+  font-size: 0.98rem;
+  line-height: 1;
+  font-weight: 950;
+  color: white;
+  letter-spacing: -0.04em;
+}
+
+.test-case-quality-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1;
+  text-align: left;
+}
+
+.test-case-quality-copy strong {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.94);
+  font-weight: 900;
+}
+
+.test-case-quality-copy small {
+  font-size: 0.6rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.64);
+  font-weight: 850;
+}
+
+/* Remove/override plain "69 Quality" layouts if the first integration rendered raw text. */
+.test-case-quality-plain,
+.test-case-quality-score-text {
+  display: none !important;
+}
+
+.automation-fit-panel,
+.automation-readiness-panel {
+  margin-top: 22px;
+}
+
+@media (max-width: 760px) {
+  .test-case-card-header,
+  .test-case-heading-row {
+    flex-direction: column;
+  }
+
+  .test-case-quality-badge {
+    align-self: flex-start;
+  }
+}
+
+
+
+/* QAS-73 quality badge layout fix */
+
+/*
+  Stable test card header layout:
+  left column  = test case title/type/priority
+  middle       = fixed quality badge
+  right column = fixed Edit/Copy actions
+
+  The goal is to stop the quality badge and buttons from bouncing around
+  when titles wrap or cards vary in width.
+*/
+
+.test-case-card-header,
+.test-case-heading-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 104px 86px;
+  align-items: start;
+  gap: 18px;
+}
+
+.test-case-card-title-block,
+.test-case-title-block,
+.test-case-main-heading {
+  min-width: 0;
+}
+
+.test-case-actions,
+.test-case-card-actions,
+.test-case-action-stack {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: 86px;
+  justify-self: end;
+}
+
+.test-case-actions button,
+.test-case-card-actions button,
+.test-case-action-stack button {
+  width: 86px;
+  min-width: 86px;
+  justify-content: center;
+}
+
+/* If Edit/Copy are not already wrapped, use this helper class in the integration notes. */
+.test-case-fixed-action-stack {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: 86px;
+  justify-self: end;
+}
+
+.test-case-fixed-action-stack button {
+  width: 86px;
+  min-width: 86px;
+  justify-content: center;
+}
+
+/* Fixed-size polished badge. No horizontal label collision. */
+.test-case-quality-badge {
+  --quality-ring: rgba(96, 165, 250, 0.95);
+  --quality-bg: rgba(15, 23, 42, 0.84);
+
+  width: 104px;
+  min-width: 104px;
+  height: 112px;
+  padding: 10px 8px 9px;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.07), transparent 52%),
+    var(--quality-bg);
+  box-shadow:
+    inset 0 0 18px rgba(255, 255, 255, 0.035),
+    0 10px 24px rgba(0, 0, 0, 0.22);
+  display: grid;
+  grid-template-rows: 12px 54px 18px;
+  align-items: center;
+  justify-items: center;
+  gap: 5px;
+  justify-self: end;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.test-case-quality-badge-strong,
+.test-case-quality-badge-good {
+  --quality-ring: rgba(34, 197, 94, 0.98);
+  --quality-bg: rgba(5, 46, 22, 0.72);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.test-case-quality-badge-warn {
+  --quality-ring: rgba(245, 158, 11, 0.98);
+  --quality-bg: rgba(60, 40, 5, 0.74);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.test-case-quality-badge-weak {
+  --quality-ring: rgba(248, 113, 113, 0.98);
+  --quality-bg: rgba(69, 10, 10, 0.74);
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.test-case-quality-badge-kicker {
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.58);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.test-case-quality-donut {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at center, rgba(5, 7, 10, 1) 0 56%, transparent 57%),
+    conic-gradient(var(--quality-ring) var(--quality-score), rgba(255, 255, 255, 0.13) 0);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 18px rgba(0, 0, 0, 0.25);
+}
+
+.test-case-quality-donut span {
+  font-size: 1.05rem;
+  line-height: 1;
+  font-weight: 950;
+  color: white;
+  letter-spacing: -0.045em;
+}
+
+.test-case-quality-badge > strong {
+  max-width: 92px;
+  font-size: 0.73rem;
+  line-height: 1.05;
+  color: rgba(255, 255, 255, 0.96);
+  font-weight: 950;
+  text-align: center;
+  white-space: normal;
+}
+
+/* Kill old/pill/inline badge layouts and raw text if both CSS versions exist. */
+.test-case-quality-copy,
+.test-case-quality-plain,
+.test-case-quality-score-text {
+  display: none !important;
+}
+
+/* Outer card should reflect test quality only. */
+.test-case-card-quality-strong,
+.test-case-card-quality-good {
+  border-color: rgba(34, 197, 94, 0.5) !important;
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.14), transparent 42%),
+    linear-gradient(135deg, rgba(2, 26, 15, 0.74), rgba(8, 10, 14, 0.94)) !important;
+}
+
+.test-case-card-quality-warn {
+  border-color: rgba(245, 158, 11, 0.52) !important;
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.15), transparent 42%),
+    linear-gradient(135deg, rgba(38, 27, 4, 0.74), rgba(8, 10, 14, 0.94)) !important;
+}
+
+.test-case-card-quality-weak {
+  border-color: rgba(248, 113, 113, 0.52) !important;
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.14), transparent 42%),
+    linear-gradient(135deg, rgba(45, 10, 12, 0.74), rgba(8, 10, 14, 0.94)) !important;
+}
+
+/* Keep automation panel visually independent. */
+.automation-fit-panel,
+.automation-readiness-panel {
+  margin-top: 22px;
+}
+
+/* Medium screens: keep badge/action on same row, title full width above if needed. */
+@media (max-width: 920px) {
+  .test-case-card-header,
+  .test-case-heading-row {
+    grid-template-columns: minmax(0, 1fr) 104px 86px;
+    gap: 14px;
+  }
+}
+
+/* Small screens: stack cleanly. */
+@media (max-width: 700px) {
+  .test-case-card-header,
+  .test-case-heading-row {
+    grid-template-columns: 1fr;
+  }
+
+  .test-case-quality-badge,
+  .test-case-actions,
+  .test-case-card-actions,
+  .test-case-action-stack,
+  .test-case-fixed-action-stack {
+    justify-self: start;
+  }
+
+  .test-case-actions,
+  .test-case-card-actions,
+  .test-case-action-stack,
+  .test-case-fixed-action-stack {
+    flex-direction: row !important;
+    width: auto;
+  }
+
+  .test-case-actions button,
+  .test-case-card-actions button,
+  .test-case-action-stack button,
+  .test-case-fixed-action-stack button {
+    width: auto;
+    min-width: 86px;
+  }
+}
+
+
+
+/* QAS-73 Risk Review UI polish + report card glow */
+
+/* Generic report window flair/glow for Risk Review/Bug Writer/Test Improver result cards. */
+.generated-report-card,
+.risk-review-card,
+.bug-report-card,
+.test-improvement-card,
+.report-section-card,
+.qa-output-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.generated-report-card::before,
+.risk-review-card::before,
+.bug-report-card::before,
+.test-improvement-card::before,
+.report-section-card::before,
+.qa-output-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(239, 68, 68, 0.12), transparent 34%),
+    radial-gradient(circle at 8% 92%, rgba(37, 99, 235, 0.08), transparent 32%);
+  opacity: 0.9;
+}
+
+.generated-report-card > *,
+.risk-review-card > *,
+.bug-report-card > *,
+.test-improvement-card > *,
+.report-section-card > *,
+.qa-output-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Summary card spacing: fixes chip/badge sitting too close to Summary. */
+.risk-review-summary-card {
+  padding: 28px 30px !important;
+  border-radius: 26px;
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(239, 68, 68, 0.13), transparent 42%),
+    linear-gradient(135deg, rgba(24, 8, 10, 0.78), rgba(8, 10, 14, 0.94));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    0 18px 42px rgba(0, 0, 0, 0.24);
+}
+
+.risk-review-summary-card-low {
+  border-color: rgba(34, 197, 94, 0.42);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.15), transparent 42%),
+    linear-gradient(135deg, rgba(2, 28, 16, 0.76), rgba(8, 10, 14, 0.94));
+}
+
+.risk-review-summary-card-medium {
+  border-color: rgba(245, 158, 11, 0.48);
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.15), transparent 42%),
+    linear-gradient(135deg, rgba(39, 28, 4, 0.76), rgba(8, 10, 14, 0.94));
+}
+
+.risk-review-summary-card-high,
+.risk-review-summary-card-critical {
+  border-color: rgba(248, 113, 113, 0.52);
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.16), transparent 42%),
+    linear-gradient(135deg, rgba(45, 10, 12, 0.76), rgba(8, 10, 14, 0.94));
+}
+
+.risk-review-summary-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 118px;
+  gap: 22px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.risk-review-summary-copy {
+  padding-top: 8px;
+}
+
+.risk-review-summary-copy h3,
+.risk-review-summary-copy .risk-review-summary-title {
+  margin: 0 0 14px !important;
+}
+
+.risk-review-summary-copy p {
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* Risk chip gets breathing room even if old chip remains. */
+.risk-chip,
+.overall-risk-chip,
+.risk-pill,
+.risk-review-overall-chip {
+  margin-bottom: 16px !important;
+}
+
+/* Risk severity donut badge */
+.risk-severity-badge {
+  --risk-ring: rgba(245, 158, 11, 0.98);
+  --risk-bg: rgba(60, 40, 5, 0.74);
+
+  width: 112px;
+  min-width: 112px;
+  height: 118px;
+  padding: 10px 8px 9px;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.07), transparent 52%),
+    var(--risk-bg);
+  box-shadow:
+    inset 0 0 18px rgba(255, 255, 255, 0.035),
+    0 10px 24px rgba(0, 0, 0, 0.22);
+  display: grid;
+  grid-template-rows: 60px 20px 12px;
+  align-items: center;
+  justify-items: center;
+  gap: 5px;
+  justify-self: end;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.risk-severity-badge-low,
+.risk-severity-badge-none {
+  --risk-ring: rgba(34, 197, 94, 0.98);
+  --risk-bg: rgba(5, 46, 22, 0.72);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.risk-severity-badge-medium {
+  --risk-ring: rgba(245, 158, 11, 0.98);
+  --risk-bg: rgba(60, 40, 5, 0.74);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.risk-severity-badge-high,
+.risk-severity-badge-critical {
+  --risk-ring: rgba(248, 113, 113, 0.98);
+  --risk-bg: rgba(69, 10, 10, 0.74);
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.risk-severity-donut {
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at center, rgba(5, 7, 10, 1) 0 56%, transparent 57%),
+    conic-gradient(var(--risk-ring) var(--risk-score), rgba(255, 255, 255, 0.13) 0);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 18px rgba(0, 0, 0, 0.25);
+}
+
+.risk-severity-donut span {
+  font-size: 1.05rem;
+  line-height: 1;
+  font-weight: 950;
+  color: white;
+  letter-spacing: -0.045em;
+}
+
+.risk-severity-copy {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  line-height: 1;
+}
+
+.risk-severity-copy strong {
+  max-width: 96px;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.96);
+  font-weight: 950;
+  text-align: center;
+}
+
+.risk-severity-copy small {
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+  font-weight: 900;
+}
+
+/* Individual risk item cards */
+.risk-item-card,
+.risk-review-risk-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: 18px;
+  align-items: start;
+  padding: 22px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.045), transparent 44%),
+    rgba(0, 0, 0, 0.24);
+}
+
+.risk-item-card + .risk-item-card,
+.risk-review-risk-item + .risk-review-risk-item {
+  margin-top: 16px;
+}
+
+.risk-item-card-low {
+  border-color: rgba(34, 197, 94, 0.34);
+}
+
+.risk-item-card-medium {
+  border-color: rgba(245, 158, 11, 0.38);
+}
+
+.risk-item-card-high,
+.risk-item-card-critical {
+  border-color: rgba(248, 113, 113, 0.42);
+}
+
+.risk-item-copy h4 {
+  margin: 0 0 10px;
+}
+
+.risk-item-copy p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Extra flair for other generated report windows */
+.bug-report-section,
+.test-improver-section,
+.generated-report-section,
+.report-detail-panel {
+  border-radius: 22px;
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.09), transparent 42%),
+    rgba(0, 0, 0, 0.22);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.025),
+    0 10px 28px rgba(0,0,0,0.18);
+}
+
+@media (max-width: 760px) {
+  .risk-review-summary-header,
+  .risk-item-card,
+  .risk-review-risk-item {
+    grid-template-columns: 1fr;
+  }
+
+  .risk-severity-badge {
+    justify-self: start;
+  }
+}
+

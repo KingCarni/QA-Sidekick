@@ -19,11 +19,8 @@ import type { ActiveProjectContext } from "@/components/ProjectContextIndicator"
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
 import TestCaseAutomationReadiness from "@/components/TestCaseAutomationReadiness";
 import TestCaseDisplayControls from "@/components/TestCaseDisplayControls";
-import {
-  evaluateAutomationReadinessCase,
-  getAutomationCaseTextFromObject,
-  getAutomationReadinessCardClass,
-} from "@/lib/automation-readiness";
+import TestCaseQualityBadge from "@/components/TestCaseQualityBadge";
+import { calculateTestCaseQuality, getTestCaseQualityCardClass } from "@/lib/test-case-quality";
 import {
   buildGenerationFingerprint,
   buildOutputGenerationKey,
@@ -1335,16 +1332,16 @@ function TestCaseCards({
           const steps = normalizeSteps(testCase.steps);
           const safeTitle = safeText(testCase.title);
           const displayTitle = safeTitle !== "Not specified." ? safeTitle : `Test Case ${index + 1}`;
-          const readiness = evaluateAutomationReadinessCase(getAutomationCaseTextFromObject(testCase), index);
+          const testCaseQuality = calculateTestCaseQuality(testCase);
           const stableKey = `test-case-${index}`;
 
           return (
             <article
-              className={`test-case-card ${getAutomationReadinessCardClass(readiness.score, readiness.readiness)}`}
+              className={getTestCaseQualityCardClass(testCaseQuality.score)}
               key={stableKey}
             >
-              <div className="test-case-title-action-row">
-                <div className="test-case-title-meta">
+              <div className="test-case-card-header">
+                <div className="test-case-card-title-block test-case-title-meta">
                   <p className="report-kicker">Test Case {index + 1}</p>
                   <h3>{displayTitle}</h3>
                   <div className="test-case-title-meta-row">
@@ -1365,7 +1362,9 @@ function TestCaseCards({
                   </div>
                 </div>
 
-                <div className="test-case-card-action-row">
+                <TestCaseQualityBadge testCase={testCase} />
+
+                <div className="test-case-fixed-action-stack">
                   <button
                     className="test-case-edit-button"
                     type="button"

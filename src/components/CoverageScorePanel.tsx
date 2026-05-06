@@ -35,7 +35,7 @@ function toolScoreLabel(reportType: ReportType) {
       return "Improvement Score";
     case "tests":
     default:
-      return "Test Plan Quality";
+      return "QA Handoff Quality";
   }
 }
 
@@ -50,6 +50,36 @@ function toolNoun(reportType: ReportType) {
     case "tests":
     default:
       return "test plan";
+  }
+}
+
+function beforeLabel(reportType: ReportType) {
+  switch (reportType) {
+    case "tests":
+      return "Source readiness";
+    case "risk":
+      return "Risk input";
+    case "bug":
+      return "Bug source";
+    case "improve":
+      return "Original test";
+    default:
+      return "Source";
+  }
+}
+
+function afterLabel(reportType: ReportType) {
+  switch (reportType) {
+    case "tests":
+      return "Generated suite";
+    case "risk":
+      return "Generated risk review";
+    case "bug":
+      return "Generated bug report";
+    case "improve":
+      return "Improved test";
+    default:
+      return "Generated output";
   }
 }
 
@@ -85,6 +115,22 @@ function deltaClass(delta: number) {
   if (delta > 0) return "score-delta score-delta-good";
   if (delta === 0) return "score-delta";
   return "score-delta score-delta-down";
+}
+
+function comparisonExplainer(reportType: ReportType) {
+  if (reportType === "tests") {
+    return "Before measures how much usable QA detail existed in the source. After measures how useful the generated suite is for handoff, including structure, coverage, and automation readiness.";
+  }
+
+  if (reportType === "risk") {
+    return "Before measures how useful the source is for risk analysis. Jira metadata helps, but it is not a completed risk review.";
+  }
+
+  if (reportType === "bug") {
+    return "Before measures how complete the original bug source is. After measures the structured bug report QAtalyst generated.";
+  }
+
+  return "Before measures the original test quality. After measures the improved test QAtalyst generated.";
 }
 
 function riskPieVars(items: CoverageScoreResult["risk"]["items"]) {
@@ -277,16 +323,16 @@ export default function CoverageScorePanel({
   const expandedRiskDetails = expandedRisk ? riskDetailFor(expandedRisk) : null;
 
   return (
-    <section className="coverage-score-card" aria-label={toolScoreLabel(reportType)}>
+    <section
+      className={`coverage-score-card coverage-score-card-${coverageScoreTone(score.score)}`}
+      aria-label={toolScoreLabel(reportType)}
+    >
       <div className="coverage-score-top">
         <div>
           <p className="report-kicker">{toolScoreLabel(reportType)}</p>
           <h3>{score.grade}</h3>
           <p>{score.summary}</p>
-          <p className="coverage-score-method">
-            Compares the original source quality against the generated {toolNoun(reportType)} quality.
-            Before recognizes structured Jira metadata instead of treating every original ticket as zero.
-          </p>
+          <p className="coverage-score-method">{comparisonExplainer(reportType)}</p>
         </div>
 
         <div className="score-number-stack">
@@ -299,13 +345,13 @@ export default function CoverageScorePanel({
         <div>
           <p className="report-kicker">Before</p>
           <strong>{originalScore.score}/100</strong>
-          <span>Original source</span>
+          <span>{beforeLabel(reportType)}</span>
         </div>
 
         <div>
           <p className="report-kicker">After</p>
           <strong>{score.score}/100</strong>
-          <span>Generated output</span>
+          <span>{afterLabel(reportType)}</span>
         </div>
 
         <div>
@@ -317,7 +363,7 @@ export default function CoverageScorePanel({
 
       {originalScore.signals.length > 0 ? (
         <div className="source-quality-signal-card">
-          <p className="report-kicker">Original Source Signals</p>
+          <p className="report-kicker">Source Signals</p>
           <ul>
             {originalScore.signals.slice(0, 4).map((signal) => (
               <li key={signal}>{signal}</li>

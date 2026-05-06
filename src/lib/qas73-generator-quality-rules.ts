@@ -8,35 +8,34 @@ Do not merely mirror, reformat, or create weak generic output from the source.
 
 Preserve source facts:
 - Treat Jira ticket fields, pasted requirements, project memory, uploaded source context, and user-provided notes as source-of-truth.
-- Do not invent implementation details, selectors, routes, hidden acceptance criteria, logs, evidence, customer impact, or root cause.
+- Do not invent implementation details, hidden acceptance criteria, logs, evidence, customer impact, or root cause.
+- You may suggest likely selectors only as automation hints, not as confirmed existing selectors.
 - Label assumptions clearly.
 - Put missing details in Missing Info / Follow-up Questions instead of pretending they are known.
 
-Make the output better for real reasons:
-- Add concrete setup/preconditions where the source supports them.
-- Add specific user/data/platform/role scope where the source supports it.
-- Add observable assertions instead of generic "works correctly" wording.
-- Add negative, edge, data/state, permission/auth, regression, accessibility/readability, and failure-mode coverage only when relevant.
-- Prefer fewer high-quality items over many vague items.
-
 Avoid low-value wording:
-- Do not use "visually appealing" as an expected result unless the source provides concrete visual acceptance criteria.
+- Do not use "visually appealing" as an expected result.
 - Do not use "user experiences confusion" as an expected result.
 - Do not generate tests that only say "evaluate the UI presentation".
 - Do not generate comparison tests against "preferred designs" unless a design reference is actually provided.
 - Do not generate a regression test that requires a previous version unless the source provides one.
 - Do not use generic titles such as "Happy Path", "Negative Test", "Validation Test", or "UI Test".
-
-For vague UI bugs:
-- Generate grounded manual/design-review coverage only when the issue is subjective.
-- Add concrete missing-info questions asking which element is unclear, what the expected layout/content should be, and whether screenshots/design references exist.
-- If screenshots are referenced but unavailable to the model, call that out.
 `;
 
 export const QAS73_TEST_CASE_RULES = `
 TEST CASE GENERATION RULES
 
-Generate a practical QA suite, not filler.
+Generate a practical handoff-ready test plan, not filler.
+
+High-scoring test plans should include:
+- app-specific behavior
+- stable observable targets
+- concrete setup/preconditions
+- executable steps
+- observable expected results
+- negative/failure coverage
+- data/state or regression coverage where relevant
+- automation hints where possible
 
 Each test case must include:
 - title
@@ -48,38 +47,52 @@ Each test case must include:
 
 Title rules:
 - Name the exact behavior being tested.
-- Bad: "Verify UI Clarity"
-- Better: "Verify Risk Review Summary Separates Score, Risk Level, and Recommended Actions"
+- Bad: "Verify Input UI for Test Case Generation"
+- Better: "Generate Test Cases from a Fetched Jira Ticket and Render Structured Case Cards"
 
 Step rules:
 - Steps must be executable by a tester.
-- Avoid vague steps like "evaluate the UI" or "review the summary".
-- Use concrete actions like open the tab, fetch a Jira ticket, generate a report, inspect a named section, resize viewport, or compare visible fields.
+- Avoid vague steps like "inspect the UI", "evaluate the UI", or "review formatting".
+- Use concrete QAtalyst actions when applicable:
+  - select a project
+  - fetch a Jira ticket
+  - paste requirement text
+  - click Run Test Cases
+  - verify generated test case cards
+  - verify Before/After score panel
+  - verify Automation Export counts
+  - copy/export markdown or CSV
+  - save report
+  - answer follow-up questions
+  - regenerate after adding context
 
 Expected result rules:
 - Expected result must be observable/assertable.
-- Bad: "The UI should be visually appealing."
-- Better: "The Risk Review summary displays score, risk label, top risk area, and recommended QA action without overlapping or truncated text."
-- Bad: "User experiences confusion."
-- Better: "If source detail is missing, QAtalyst displays follow-up questions instead of presenting assumptions as confirmed facts."
+- Bad: "The UI is clean and readable."
+- Better: "Each generated test case card displays title, type, priority, preconditions, steps, expected result, and automation readiness without overlapping or truncated text."
+- Bad: "The API returns structured JSON."
+- Better: "The response includes a non-empty testCases array, each item has title/type/priority/preconditions/steps/expectedResult, and qaFollowUpQuestions is present as an array."
 
-Coverage rules:
-- Add a primary success-path test when source has enough behavior.
-- Add negative/error tests when source mentions invalid states, missing config, access failure, or broken behavior.
-- Add regression tests only when existing behavior could be affected.
-- Add data/state tests when persistence, reload, sync, metadata, project/source selection, or saved output is involved.
-- Add accessibility/readability checks for UI clarity tickets when relevant.
-- Subjective visual review cases should be marked Manual or Exploratory, not automation-ready.
-- If the ticket is too vague, generate a small starter suite and ask low-noise follow-up questions instead of inventing details.
+Automation readiness rules:
+- When the feature under test is a web app flow, include at least 2 cases that are likely automation candidates.
+- Automation-candidate cases need deterministic actions and observable assertions.
+- Include selector hints only as suggestions, for example:
+  "Suggested automation targets: jira ticket input, fetch button, run test cases button, generated test case card, export markdown button."
+- Manual/exploratory cases are allowed, but they should not dominate unless the source is subjective.
+- If source is too vague, generate fewer stronger tests and ask follow-up questions instead of producing 8 generic cases.
 
-QAS-75 style warning:
-If the source says "UI pass needed" or "summary is confusing", do not generate five subjective UI tests.
-Generate:
-1. A concrete readability/layout test if visible elements are known.
-2. A missing-information test/follow-up flow.
-3. A regression smoke test only if existing behavior is identifiable.
-4. Optional accessibility/readability coverage.
-Then ask follow-up questions for screenshots, expected design, target section, viewport/device, and acceptance criteria.
+For QAtalyst-specific tickets:
+Prefer cases that validate actual QAtalyst value:
+- fetched Jira source flows
+- project context injection
+- selected source relevance
+- generated output structure
+- follow-up question behavior
+- scoring/quality panel consistency
+- automation export count consistency
+- markdown/CSV/export/save behavior
+- stale-state/regeneration behavior
+- error handling for missing/invalid Jira keys
 `;
 
 export const QAS73_RISK_REVIEW_RULES = `
@@ -106,8 +119,7 @@ Good risk review sections:
 Rules:
 - Do not describe a source as complete just because Jira metadata exists.
 - If the source is a bug ticket, recognize its summary, issue type, status, priority, description, and evidence gaps.
-- If the source is UI-related but vague, call out that visual expectations need screenshots/design references.
-- Keep follow-up questions low-noise and only ask questions that materially affect test scope, release confidence, or implementation risk.
+- Keep follow-up questions low-noise and only ask questions that materially affect testing scope, release confidence, or implementation risk.
 - Do not invent severity, root cause, affected users, or implementation details.
 `;
 
@@ -133,7 +145,6 @@ Rules:
 - Separate confirmed facts from assumptions.
 - Do not claim evidence is attached unless it is actually provided.
 - Do not fabricate logs, screenshots, affected users, severity, or exact root cause.
-- If the source only says a UI pass is needed, keep impact grounded and ask for the specific unclear elements and expected design.
 - Expected vs actual must be separated.
 - Repro steps should use the best safe sequence from source; if incomplete, state what is missing.
 `;

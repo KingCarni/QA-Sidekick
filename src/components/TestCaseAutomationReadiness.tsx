@@ -26,8 +26,8 @@ type TestCaseAutomationReadinessProps = {
 
 const READINESS_LABELS: Record<AutomationReadinessLevel, string> = {
   ready: "Ready",
-  partial: "Needs Work",
-  manual: "Manual",
+  partial: "Needs Automation Setup",
+  manual: "Manual Review",
   blocked: "Blocked",
 };
 
@@ -64,7 +64,7 @@ export default function TestCaseAutomationReadiness({ testCase, index }: TestCas
     <div className={`test-case-automation-box test-case-automation-${tone}`}>
       <div className="test-case-automation-top">
         <div>
-          <p className="report-kicker">Automation Readiness</p>
+          <p className="report-kicker">Automation Fit</p>
           <strong>{READINESS_LABELS[readiness.readiness]}</strong>
           <span>{frameworkLabel(readiness.framework)}</span>
         </div>
@@ -72,7 +72,7 @@ export default function TestCaseAutomationReadiness({ testCase, index }: TestCas
         <em className={readinessClass(readiness.readiness)}>{READINESS_LABELS[readiness.readiness]}</em>
       </div>
 
-      <div className={`automation-score-meter automation-score-meter-${tone}`} aria-label={`Automation readiness score ${readiness.score} out of 100`}>
+      <div className={`automation-score-meter automation-score-meter-${tone}`} aria-label={`Automation fit score ${readiness.score} out of 100`}>
         <div className="automation-score-meter-track">
           <span style={{ width: `${readiness.score}%` }} />
         </div>
@@ -104,7 +104,7 @@ export default function TestCaseAutomationReadiness({ testCase, index }: TestCas
             </div>
 
             <div>
-              <h5>Before coding</h5>
+              <h5>Before Automating</h5>
               {readiness.missingInputs.length ? (
                 <ul>
                   {readiness.missingInputs.slice(0, 4).map((item) => (
@@ -119,7 +119,7 @@ export default function TestCaseAutomationReadiness({ testCase, index }: TestCas
 
           {selectorHints.length ? (
             <div className="automation-selector-hints">
-              <h5>Selector hints</h5>
+              <h5>Automation Hints</h5>
               <p>{selectorHints.join(" · ")}</p>
             </div>
           ) : null}
