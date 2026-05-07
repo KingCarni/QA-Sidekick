@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import type { ActiveProjectContext } from "@/components/ProjectContextIndicator";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
@@ -51,6 +51,88 @@ function slugifyForTestId(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function getSafePopoverPosition(button: HTMLButtonElement | null): PopoverPosition {
+  if (!button || typeof window === "undefined") {
+    return { top: 220, left: 320 };
+  }
+
+  const rect = button.getBoundingClientRect();
+  const menuWidth = Math.min(460, window.innerWidth - 32);
+  const top = Math.max(16, Math.min(rect.bottom + 12, window.innerHeight - 120));
+  const left = Math.min(Math.max(16, rect.left), Math.max(16, window.innerWidth - menuWidth - 16));
+
+  return { top, left };
+}
+
+const popoverStyleBase: CSSProperties = {
+  width: "min(460px, calc(100vw - 32px))",
+  maxHeight: "min(520px, calc(100vh - 32px))",
+  overflowY: "auto",
+  overflowX: "hidden",
+  border: "1px solid rgba(34, 197, 94, 0.38)",
+  borderRadius: 24,
+  background:
+    "radial-gradient(circle at top left, rgba(34, 197, 94, 0.16), transparent 36%), radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 38%), linear-gradient(135deg, rgba(6, 10, 22, 0.99), rgba(0, 0, 0, 0.98))",
+  boxShadow:
+    "0 30px 80px rgba(0, 0, 0, 0.72), 0 0 38px rgba(34, 197, 94, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.04)",
+  padding: 18,
+  pointerEvents: "auto",
+  isolation: "isolate",
+};
+
+const summaryStyle: CSSProperties = {
+  display: "grid",
+  gap: 6,
+  paddingBottom: 14,
+  borderBottom: "1px solid rgba(34, 197, 94, 0.18)",
+};
+
+const actionRowStyle: CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 9,
+  margin: "14px 0",
+};
+
+const blueActionStyle: CSSProperties = {
+  border: "1px solid rgba(96, 165, 250, 0.32)",
+  borderRadius: 999,
+  background: "rgba(37, 99, 235, 0.18)",
+  color: "rgb(219, 234, 254)",
+  cursor: "pointer",
+  fontSize: "0.78rem",
+  fontWeight: 950,
+  padding: "9px 12px",
+};
+
+const greenActionStyle: CSSProperties = {
+  ...blueActionStyle,
+  border: "1px solid rgba(34, 197, 94, 0.34)",
+  background: "rgba(22, 163, 74, 0.2)",
+  color: "rgb(220, 252, 231)",
+};
+
+const listStyle: CSSProperties = {
+  display: "grid",
+  gap: 10,
+};
+
+function sourceOptionStyle(isSelected: boolean): CSSProperties {
+  return {
+    display: "grid",
+    gridTemplateColumns: "auto 1fr",
+    gap: 12,
+    alignItems: "flex-start",
+    border: isSelected ? "1px solid rgba(34, 197, 94, 0.46)" : "1px solid rgba(96, 165, 250, 0.16)",
+    borderRadius: 18,
+    background: isSelected
+      ? "radial-gradient(circle at top left, rgba(34, 197, 94, 0.14), transparent 44%), rgba(6, 78, 59, 0.2)"
+      : "rgba(15, 23, 42, 0.56)",
+    cursor: "pointer",
+    padding: 13,
+  };
+}
+
 export default function HeaderProjectSourceControls({
   activeProject,
   activeContext,
@@ -65,7 +147,7 @@ export default function HeaderProjectSourceControls({
   const [projectError, setProjectError] = useState("");
   const [isSourcesOpen, setIsSourcesOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [popoverPosition, setPopoverPosition] = useState<PopoverPosition>({ top: 0, left: 0 });
+  const [popoverPosition, setPopoverPosition] = useState<PopoverPosition>({ top: 220, left: 320 });
   const sourcesButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const rankedSources = useMemo<RankedProjectSource[]>(() => {
@@ -117,17 +199,7 @@ export default function HeaderProjectSourceControls({
   }, [activeProject, onActiveProjectChange]);
 
   function updatePopoverPosition() {
-    const button = sourcesButtonRef.current;
-    if (!button) return;
-
-    const rect = button.getBoundingClientRect();
-    const menuWidth = Math.min(460, window.innerWidth - 32);
-    const safeLeft = Math.min(Math.max(16, rect.left), Math.max(16, window.innerWidth - menuWidth - 16));
-
-    setPopoverPosition({
-      top: rect.bottom + 12,
-      left: safeLeft,
-    });
+    setPopoverPosition(getSafePopoverPosition(sourcesButtonRef.current));
   }
 
   useEffect(() => {
@@ -154,7 +226,7 @@ export default function HeaderProjectSourceControls({
 
       const target = event.target as Node;
       const clickedTrigger = sourcesButtonRef.current?.contains(target);
-      const clickedMenu = target instanceof Element && Boolean(target.closest("[data-header-sources-menu='true']"));
+      const clickedMenu = target instanceof Element && Boolean(target.closest("[data-q84-sources-menu='true']"));
 
       if (!clickedTrigger && !clickedMenu) {
         setIsSourcesOpen(false);
@@ -211,64 +283,92 @@ export default function HeaderProjectSourceControls({
 
   const sourcesMenu = (
     <div
-      className="header-sources-menu header-sources-menu-portal"
-      data-header-sources-menu="true"
+      data-q84-sources-menu="true"
       data-testid="choose-sources-panel"
       role="menu"
-      style={{ top: popoverPosition.top, left: popoverPosition.left }}
+      style={{
+        ...popoverStyleBase,
+        position: "fixed",
+        top: `${popoverPosition.top}px`,
+        left: `${popoverPosition.left}px`,
+        right: "auto",
+        bottom: "auto",
+        zIndex: 2147483647,
+      }}
     >
-      <div className="header-sources-menu-summary">
-        <p className="report-kicker">Project Sources</p>
-        <strong>{optionSummary(selectedCount, enabledSources.length)}</strong>
-        <span>
+      <div style={summaryStyle}>
+        <p className="report-kicker" style={{ margin: 0 }}>
+          Project Sources
+        </p>
+        <strong style={{ color: "white", fontSize: "1.05rem" }}>
+          {optionSummary(selectedCount, enabledSources.length)}
+        </strong>
+        <span style={{ color: "rgba(255, 255, 255, 0.68)", lineHeight: 1.45 }}>
           Choose the source memory for this run. Leave all unchecked to use only the pasted/Jira ticket source.
         </span>
       </div>
 
-      <div className="header-sources-menu-actions">
-        <button type="button" onClick={selectSuggested}>
+      <div style={actionRowStyle}>
+        <button style={greenActionStyle} type="button" onClick={selectSuggested}>
           Use Suggested
         </button>
-        <button type="button" onClick={selectAllEnabled}>
+        <button style={blueActionStyle} type="button" onClick={selectAllEnabled}>
           Select All
         </button>
-        <button type="button" onClick={clearSelection}>
+        <button style={blueActionStyle} type="button" onClick={clearSelection}>
           Clear
         </button>
       </div>
 
       {enabledSources.length ? (
-        <div className="header-sources-list" data-testid="source-list">
+        <div data-testid="source-list" style={listStyle}>
           {rankedSources.map((source) => {
             const sourceSlug = slugifyForTestId(source.title || source.id);
             const checked = selectedSourceIds.includes(source.id);
 
             return (
               <label
-                className={checked ? "header-source-option header-source-option-selected" : "header-source-option"}
                 data-testid={`source-option-${sourceSlug}`}
                 key={source.id}
+                style={sourceOptionStyle(checked)}
               >
                 <input
                   checked={checked}
                   data-testid={`source-checkbox-${sourceSlug}`}
                   onChange={() => toggleSource(source.id)}
+                  style={{
+                    width: 17,
+                    height: 17,
+                    marginTop: 4,
+                    accentColor: "rgb(34, 197, 94)",
+                  }}
                   type="checkbox"
                 />
-                <span>
-                  <strong>{source.title}</strong>
-                  <small>
+                <span style={{ display: "grid", gap: 4, minWidth: 0 }}>
+                  <strong style={{ color: "white", fontSize: "0.92rem", overflowWrap: "anywhere" }}>
+                    {source.title}
+                  </strong>
+                  <small style={{ color: "rgba(255, 255, 255, 0.62)", fontSize: "0.78rem" }}>
                     {source.sourceType} · score {source.relevanceScore}
                     {source.isSuggested ? " · suggested" : ""}
                   </small>
-                  <em>{source.relevanceReason}</em>
+                  <em
+                    style={{
+                      color: "rgba(255, 255, 255, 0.54)",
+                      fontSize: "0.78rem",
+                      fontStyle: "normal",
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {source.relevanceReason}
+                  </em>
                 </span>
               </label>
             );
           })}
         </div>
       ) : (
-        <p className="header-sources-empty">
+        <p style={{ color: "rgba(255, 255, 255, 0.68)", lineHeight: 1.45 }}>
           No enabled sources yet. Add or enable sources in the Project Source Vault.
         </p>
       )}
@@ -309,8 +409,8 @@ export default function HeaderProjectSourceControls({
           data-testid="choose-sources-button"
           type="button"
           onClick={() => {
-          requestAnimationFrame(() => updatePopoverPosition());
-          setIsSourcesOpen((value) => !value);
+            setPopoverPosition(getSafePopoverPosition(sourcesButtonRef.current));
+            setIsSourcesOpen((value) => !value);
           }}
         >
           <span>
