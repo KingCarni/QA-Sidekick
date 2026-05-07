@@ -16,7 +16,7 @@ import CoverageScorePanel from "@/components/CoverageScorePanel";
 import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
 import RiskReviewPanel from "@/components/RiskReviewPanel";
 import StackedProjectJiraControls from "@/components/StackedProjectJiraControls";
-import ProjectSourceRelevanceSelector from "@/components/ProjectSourceRelevanceSelector";
+import HeaderProjectSourceControls from "@/components/HeaderProjectSourceControls";
 import type { ActiveProjectContext } from "@/components/ProjectContextIndicator";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
 import TestCaseAutomationReadiness from "@/components/TestCaseAutomationReadiness";
@@ -3423,6 +3423,16 @@ export default function Home() {
             Generate test cases, expose risks, improve bug reports, and turn vague tickets<br />
             into actionable QA plans.
           </p>
+          <HeaderProjectSourceControls
+            activeProject={activeProject}
+            activeContext={activeProjectContext}
+            sourceInput={input}
+            toolId={activeTool}
+            selectedSourceIds={selectedProjectSourceIds}
+            onActiveProjectChange={setActiveProject}
+            onSelectedSourceIdsChange={setSelectedProjectSourceIds}
+            onSelectedContextBlockChange={setSelectedProjectContextBlock}
+          />
         </div>
 
         <div className="hero-brand-account">
@@ -3500,20 +3510,7 @@ export default function Home() {
             ))}
           </div>
 
-          <StackedProjectJiraControls
-            activeProject={activeProject}
-            onActiveProjectChange={setActiveProject}
-            onJiraImport={handleJiraTicketImport}
-          />
-
-          <ProjectSourceRelevanceSelector
-            activeContext={activeProjectContext}
-            sourceInput={input}
-            toolId={activeTool}
-            selectedSourceIds={selectedProjectSourceIds}
-            onSelectedSourceIdsChange={setSelectedProjectSourceIds}
-            onSelectedContextBlockChange={setSelectedProjectContextBlock}
-          />
+          <StackedProjectJiraControls onJiraImport={handleJiraTicketImport} />
 
           <textarea
             data-testid="qa-source-input"

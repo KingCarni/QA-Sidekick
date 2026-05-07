@@ -17414,3 +17414,1107 @@ section[aria-label="Export automation skeletons"] {
   }
 }
 
+/* QAS-84 Header Project + Sources dropdown */
+/* Append near the end of src/app/globals.css. */
+
+.header-project-source-controls {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  width: min(760px, 100%);
+  margin-top: 28px;
+}
+
+.header-project-source-field {
+  display: grid;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.header-project-source-field label {
+  color: rgb(254, 202, 202);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.header-project-source-field select,
+.header-sources-trigger {
+  min-height: 50px;
+  width: 100%;
+  border: 1px solid rgba(96, 165, 250, 0.42);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(0, 0, 0, 0.72)), rgba(0, 0, 0, 0.86);
+  color: white;
+  font-weight: 900;
+  padding: 0 16px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.025), 0 16px 32px rgba(0, 0, 0, 0.26);
+}
+
+.header-project-source-field select:focus,
+.header-sources-trigger:focus {
+  outline: 2px solid rgba(96, 165, 250, 0.55);
+  outline-offset: 2px;
+}
+
+.header-source-dropdown-field {
+  position: relative;
+  min-width: 260px;
+}
+
+.header-sources-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  gap: 12px;
+}
+
+.header-sources-trigger em {
+  color: rgb(147, 197, 253);
+  font-size: 0.8rem;
+  font-style: normal;
+}
+
+.header-sources-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: min(460px, calc(100vw - 40px));
+  max-height: 460px;
+  overflow: auto;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  border-radius: 22px;
+  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 34%), linear-gradient(135deg, rgba(6, 10, 22, 0.98), rgba(0, 0, 0, 0.96));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.52), 0 0 36px rgba(37, 99, 235, 0.14);
+  padding: 16px;
+}
+
+.header-sources-menu-summary {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(96, 165, 250, 0.16);
+}
+
+.header-sources-menu-summary strong {
+  color: white;
+}
+
+.header-sources-menu-summary span,
+.header-sources-empty {
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.45;
+}
+
+.header-sources-menu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.header-sources-menu-actions button {
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.18);
+  color: rgb(219, 234, 254);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 900;
+  padding: 8px 11px;
+}
+
+.header-sources-menu-actions button:hover {
+  border-color: rgba(96, 165, 250, 0.54);
+  background: rgba(37, 99, 235, 0.28);
+}
+
+.header-sources-list {
+  display: grid;
+  gap: 10px;
+}
+
+.header-source-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: flex-start;
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.52);
+  cursor: pointer;
+  padding: 12px;
+}
+
+.header-source-option-selected {
+  border-color: rgba(34, 197, 94, 0.42);
+  background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 42%), rgba(6, 78, 59, 0.18);
+}
+
+.header-source-option input {
+  margin-top: 4px;
+  accent-color: rgb(34, 197, 94);
+}
+
+.header-source-option span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.header-source-option strong {
+  color: white;
+  overflow-wrap: anywhere;
+}
+
+.header-source-option small {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.78rem;
+}
+
+.header-source-option em {
+  color: rgba(255, 255, 255, 0.54);
+  font-size: 0.78rem;
+  font-style: normal;
+  line-height: 1.35;
+}
+
+.header-project-source-error {
+  color: rgb(254, 202, 202);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.stacked-jira-only-controls {
+  margin-top: 0;
+}
+
+/* The old Project Sources card should be removed from page.tsx.
+   This fallback hides it if a leftover render remains during the pass. */
+.qa-tool-left-panel .source-relevance-selector,
+.input-panel .source-relevance-selector {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .header-project-source-controls {
+    width: 100%;
+  }
+
+  .header-project-source-field,
+  .header-source-dropdown-field {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .header-sources-menu {
+    position: fixed;
+    top: auto;
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+    width: auto;
+    max-height: 70vh;
+  }
+}
+/* QAS-84 Header Project/Sources dropdown UI polish */
+/* Append at the very end of src/app/globals.css so it overrides the earlier QAS-84 pass. */
+
+.header-project-source-controls {
+  position: relative;
+  z-index: 80;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  width: min(760px, 100%);
+  margin-top: 28px;
+}
+
+.header-project-source-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.header-project-picker-field {
+  flex: 0 1 270px;
+}
+
+.header-source-dropdown-field {
+  position: relative;
+  flex: 0 1 300px;
+}
+
+.header-project-source-field label {
+  color: rgb(254, 202, 202);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.24em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.header-select-shell {
+  position: relative;
+  min-height: 56px;
+}
+
+.header-select-shell select {
+  appearance: none;
+  min-height: 56px;
+  width: 100%;
+  border: 1px solid rgba(96, 165, 250, 0.44);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.2), transparent 45%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(0, 0, 0, 0.84));
+  color: white;
+  cursor: pointer;
+  font-weight: 950;
+  padding: 0 46px 0 16px;
+  box-shadow:
+    0 12px 28px rgba(37, 99, 235, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.header-select-shell span {
+  pointer-events: none;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  color: rgb(147, 197, 253);
+  font-size: 1rem;
+  transform: translateY(-50%);
+}
+
+.header-sources-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 56px;
+  width: 100%;
+  border: 1px solid rgba(34, 197, 94, 0.44);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.18), transparent 45%),
+    linear-gradient(135deg, rgba(6, 78, 59, 0.72), rgba(0, 0, 0, 0.86));
+  color: white;
+  cursor: pointer;
+  padding: 10px 15px;
+  text-align: left;
+  box-shadow:
+    0 12px 28px rgba(34, 197, 94, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.header-sources-trigger:hover,
+.header-select-shell select:hover {
+  transform: translateY(-1px);
+}
+
+.header-sources-trigger span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.header-sources-trigger strong {
+  color: white;
+  font-size: 0.96rem;
+  font-weight: 950;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-sources-trigger small {
+  color: rgba(220, 252, 231, 0.76);
+  font-size: 0.74rem;
+  font-weight: 850;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-sources-trigger em {
+  flex: 0 0 auto;
+  color: rgb(187, 247, 208);
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.header-select-shell select:focus,
+.header-sources-trigger:focus {
+  outline: 2px solid rgba(96, 165, 250, 0.58);
+  outline-offset: 3px;
+}
+
+.header-sources-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  z-index: 200;
+  width: min(520px, calc(100vw - 40px));
+  max-height: 470px;
+  overflow: auto;
+  border: 1px solid rgba(34, 197, 94, 0.34);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.16), transparent 36%),
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 38%),
+    linear-gradient(135deg, rgba(6, 10, 22, 0.99), rgba(0, 0, 0, 0.98));
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.62),
+    0 0 38px rgba(34, 197, 94, 0.13),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+  padding: 18px;
+}
+
+.header-sources-menu-summary {
+  display: grid;
+  gap: 6px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(34, 197, 94, 0.18);
+}
+
+.header-sources-menu-summary .report-kicker {
+  margin: 0;
+}
+
+.header-sources-menu-summary strong {
+  color: white;
+  font-size: 1.05rem;
+}
+
+.header-sources-menu-summary span,
+.header-sources-empty {
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.45;
+}
+
+.header-sources-menu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 14px 0;
+}
+
+.header-sources-menu-actions button {
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.18);
+  color: rgb(219, 234, 254);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 950;
+  padding: 9px 12px;
+}
+
+.header-sources-menu-actions button:first-child {
+  border-color: rgba(34, 197, 94, 0.34);
+  background: rgba(22, 163, 74, 0.2);
+  color: rgb(220, 252, 231);
+}
+
+.header-sources-menu-actions button:hover {
+  border-color: rgba(96, 165, 250, 0.58);
+  background: rgba(37, 99, 235, 0.3);
+}
+
+.header-sources-list {
+  display: grid;
+  gap: 10px;
+}
+
+.header-source-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.56);
+  cursor: pointer;
+  padding: 13px;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    transform 140ms ease;
+}
+
+.header-source-option:hover {
+  border-color: rgba(96, 165, 250, 0.34);
+  transform: translateY(-1px);
+}
+
+.header-source-option-selected {
+  border-color: rgba(34, 197, 94, 0.46);
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.14), transparent 44%),
+    rgba(6, 78, 59, 0.2);
+}
+
+.header-source-option input {
+  width: 17px;
+  height: 17px;
+  margin-top: 4px;
+  accent-color: rgb(34, 197, 94);
+}
+
+.header-source-option span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.header-source-option strong {
+  color: white;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.header-source-option small {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.78rem;
+}
+
+.header-source-option em {
+  color: rgba(255, 255, 255, 0.54);
+  font-size: 0.78rem;
+  font-style: normal;
+  line-height: 1.35;
+}
+
+.header-project-source-error {
+  color: rgb(254, 202, 202);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 900px) {
+  .header-project-source-controls {
+    width: 100%;
+  }
+
+  .header-project-picker-field,
+  .header-source-dropdown-field {
+    flex: 1 1 100%;
+  }
+
+  .header-sources-menu {
+    position: fixed;
+    top: auto;
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+    width: auto;
+    max-height: 70vh;
+  }
+}
+
+/* QAS-84 Header/Jira alignment polish */
+/* Append at the very end of src/app/globals.css. */
+
+/* Move the hero content down slightly without changing core layout. */
+.app-hero,
+.hero-panel,
+.qa-hero,
+.marketing-hero,
+.app-shell-hero {
+  padding-top: clamp(34px, 4vw, 58px);
+}
+
+/* If the page does not use the above hero class names, this safely catches the common first hero card. */
+.app-main > section:first-child,
+main > section:first-child {
+  padding-top: clamp(34px, 4vw, 58px);
+}
+
+/* Align Project and Sources as compact first-class header controls. */
+.header-project-source-controls {
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 34px;
+  width: min(620px, 100%);
+}
+
+.header-project-picker-field {
+  flex: 0 0 220px;
+  margin-top: 2px;
+}
+
+.header-source-dropdown-field {
+  flex: 0 0 190px;
+}
+
+.header-select-shell,
+.header-select-shell select,
+.header-sources-trigger {
+  min-height: 52px;
+}
+
+.header-sources-trigger {
+  padding: 9px 13px;
+}
+
+.header-sources-trigger strong {
+  font-size: 0.95rem;
+}
+
+.header-sources-trigger small {
+  font-size: 0.7rem;
+}
+
+.header-sources-menu {
+  width: min(460px, calc(100vw - 40px));
+}
+
+/* Kill any stray arrow/text artifact from older select/dropdown CSS. */
+.header-project-source-controls > span,
+.header-project-source-controls > em,
+.header-project-source-field > span[aria-hidden="true"] {
+  display: none;
+}
+
+.header-select-shell span[aria-hidden="true"] {
+  display: block;
+}
+
+/* Jira field should be a compact row with the fetch button beside it. */
+.stacked-jira-only-controls .stacked-source-field {
+  display: grid;
+  gap: 8px;
+}
+
+.jira-fetch-inline-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+}
+
+.jira-fetch-inline-row input,
+.stacked-jira-only-controls input[data-testid="jira-ticket-input"] {
+  flex: 0 1 210px;
+  width: min(210px, 100%);
+  min-height: 50px;
+  border: 1px solid rgba(96, 165, 250, 0.42);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 45%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(0, 0, 0, 0.84));
+  color: white;
+  font-weight: 900;
+  padding: 0 14px;
+  box-shadow:
+    0 12px 28px rgba(37, 99, 235, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.jira-fetch-inline-row input::placeholder,
+.stacked-jira-only-controls input[data-testid="jira-ticket-input"]::placeholder {
+  color: transparent;
+}
+
+.jira-fetch-inline-row .stacked-fetch-button,
+.stacked-jira-only-controls .stacked-fetch-button {
+  flex: 0 0 170px;
+  min-height: 50px;
+  border: 1px solid rgba(96, 165, 250, 0.48);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.22), transparent 42%),
+    linear-gradient(135deg, rgba(37, 99, 235, 0.94), rgba(30, 64, 175, 0.86));
+  color: white;
+  cursor: pointer;
+  font-weight: 950;
+  line-height: 1.05;
+  padding: 0 14px;
+  text-align: center;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.18);
+}
+
+.jira-fetch-inline-row .stacked-fetch-button:hover:not(:disabled),
+.stacked-jira-only-controls .stacked-fetch-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 30px rgba(37, 99, 235, 0.22),
+    0 0 20px rgba(96, 165, 250, 0.12);
+}
+
+.jira-fetch-inline-row .stacked-fetch-button:disabled,
+.stacked-jira-only-controls .stacked-fetch-button:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+/* If old CSS forces the button under the field, this reasserts inline layout. */
+.stacked-jira-only-controls .stacked-source-field > input[data-testid="jira-ticket-input"] + .stacked-fetch-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0;
+}
+
+@media (max-width: 760px) {
+  .header-project-source-controls {
+    width: 100%;
+  }
+
+  .header-project-picker-field,
+  .header-source-dropdown-field {
+    flex: 1 1 100%;
+  }
+
+  .jira-fetch-inline-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .jira-fetch-inline-row input,
+  .jira-fetch-inline-row .stacked-fetch-button,
+  .stacked-jira-only-controls input[data-testid="jira-ticket-input"],
+  .stacked-jira-only-controls .stacked-fetch-button {
+    width: 100%;
+    flex-basis: auto;
+  }
+}
+/* QAS-84 final alignment hardening */
+/* Append at the VERY END of src/app/globals.css. This intentionally overrides earlier QAS-84 CSS. */
+
+/* Nudge hero content lower. */
+.app-hero,
+.hero-panel,
+.qa-hero,
+.marketing-hero,
+.app-shell-hero,
+.app-main > section:first-child,
+main > section:first-child {
+  padding-top: clamp(52px, 5vw, 76px) !important;
+}
+
+/* Desktop: Project + Sources should be a compact horizontal pair. */
+.header-project-source-controls {
+  display: grid !important;
+  grid-template-columns: 220px 148px !important;
+  align-items: end !important;
+  gap: 12px !important;
+  width: auto !important;
+  max-width: 390px !important;
+  margin-top: 36px !important;
+}
+
+.header-project-source-field,
+.header-project-picker-field,
+.header-source-dropdown-field {
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  flex: unset !important;
+}
+
+.header-select-shell,
+.header-select-shell select,
+.header-sources-trigger {
+  min-height: 52px !important;
+  height: 52px !important;
+}
+
+.header-select-shell select {
+  padding-left: 16px !important;
+  padding-right: 38px !important;
+}
+
+.header-sources-trigger {
+  padding: 8px 12px !important;
+}
+
+.header-sources-trigger strong {
+  font-size: 0.9rem !important;
+}
+
+.header-sources-trigger small {
+  font-size: 0.68rem !important;
+}
+
+.header-sources-trigger em {
+  font-size: 0.72rem !important;
+}
+
+/* Keep the dropdown readable even though the trigger is compact. */
+.header-sources-menu {
+  left: 0 !important;
+  width: min(460px, calc(100vw - 40px)) !important;
+}
+
+/* Jira: force input and button into a single row. */
+.stacked-jira-only-controls .stacked-source-field {
+  display: grid !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.stacked-jira-only-controls .jira-fetch-inline-row {
+  display: grid !important;
+  grid-template-columns: 180px 170px !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+  width: 360px !important;
+  max-width: 100% !important;
+}
+
+.stacked-jira-only-controls .jira-fetch-inline-row input,
+.stacked-jira-only-controls input[data-testid="jira-ticket-input"] {
+  width: 180px !important;
+  max-width: 180px !important;
+  min-width: 0 !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  box-sizing: border-box !important;
+}
+
+.stacked-jira-only-controls .jira-fetch-inline-row .stacked-fetch-button,
+.stacked-jira-only-controls .stacked-fetch-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 170px !important;
+  max-width: 170px !important;
+  min-width: 0 !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  white-space: normal !important;
+}
+
+/* Fallback for the case where the wrapper patch was missed:
+   make adjacent input/button behave like a row as much as CSS can. */
+.stacked-jira-only-controls .stacked-source-field > input[data-testid="jira-ticket-input"] {
+  display: inline-block !important;
+  vertical-align: top !important;
+}
+
+.stacked-jira-only-controls .stacked-source-field > input[data-testid="jira-ticket-input"] + .stacked-fetch-button {
+  display: inline-flex !important;
+  vertical-align: top !important;
+  margin-left: 10px !important;
+}
+
+/* Remove placeholder visually even if the TSX patch was missed. */
+.stacked-jira-only-controls input[data-testid="jira-ticket-input"]::placeholder {
+  color: transparent !important;
+  opacity: 0 !important;
+}
+
+/* Mobile/tablet: stack cleanly. */
+@media (max-width: 760px) {
+  .header-project-source-controls {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .stacked-jira-only-controls .jira-fetch-inline-row {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  .stacked-jira-only-controls .jira-fetch-inline-row input,
+  .stacked-jira-only-controls input[data-testid="jira-ticket-input"],
+  .stacked-jira-only-controls .jira-fetch-inline-row .stacked-fetch-button,
+  .stacked-jira-only-controls .stacked-fetch-button {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+/* QAS-84 hero spacing + sources popover escape */
+/* Append at the VERY END of src/app/globals.css. */
+
+/* Let dropdowns escape the hero/header card instead of being clipped. */
+.app-hero,
+.hero-panel,
+.qa-hero,
+.marketing-hero,
+.app-shell-hero,
+.app-main > section:first-child,
+main > section:first-child {
+  overflow: visible !important;
+}
+
+/* Move the hero/title block down a touch.
+   These target common hero text wrappers without disrupting the rest of the page. */
+.app-hero > div:first-child,
+.hero-panel > div:first-child,
+.qa-hero > div:first-child,
+.marketing-hero > div:first-child,
+.app-shell-hero > div:first-child,
+.app-main > section:first-child > div:first-child,
+main > section:first-child > div:first-child {
+  padding-top: 18px !important;
+}
+
+/* If the heading itself is the first element, add a small top margin. */
+.app-hero h1,
+.hero-panel h1,
+.qa-hero h1,
+.marketing-hero h1,
+.app-shell-hero h1,
+.app-main > section:first-child h1,
+main > section:first-child h1 {
+  margin-top: 10px !important;
+}
+
+/* Lower the Project/Sources row so it lines up closer to the account/sign-in card. */
+.header-project-source-controls {
+  margin-top: 54px !important;
+  z-index: 500 !important;
+}
+
+/* Keep the header dropdown pair compact and horizontal. */
+.header-project-source-controls {
+  display: grid !important;
+  grid-template-columns: 220px 148px !important;
+  align-items: end !important;
+  gap: 12px !important;
+  width: auto !important;
+  max-width: 390px !important;
+}
+
+.header-project-picker-field,
+.header-source-dropdown-field {
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  flex: unset !important;
+}
+
+/* Sources dropdown should float above page content and not be trapped by the hero card. */
+.header-sources-menu {
+  position: absolute !important;
+  top: calc(100% + 12px) !important;
+  left: 0 !important;
+  z-index: 9999 !important;
+  width: min(460px, calc(100vw - 40px)) !important;
+  max-height: 420px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Give the page enough visual room when the popover opens near the bottom of the hero. */
+.header-project-source-controls:has(.header-sources-menu) {
+  margin-bottom: 320px !important;
+}
+
+/* Fallback if :has support is not applied in a specific browser/build:
+   still make the popover usable with a high z-index and visible overflow. */
+.header-source-dropdown-field {
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+/* Keep the account card from painting over the dropdown. */
+.auth-card,
+.account-card,
+.credits-card,
+.header-account-card,
+.hero-auth-card {
+  position: relative;
+  z-index: 20;
+}
+
+@media (max-width: 760px) {
+  .header-project-source-controls {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin-top: 32px !important;
+  }
+
+  .header-project-source-controls:has(.header-sources-menu) {
+    margin-bottom: 0 !important;
+  }
+
+  .header-sources-menu {
+    position: fixed !important;
+    top: auto !important;
+    right: 16px !important;
+    bottom: 16px !important;
+    left: 16px !important;
+    width: auto !important;
+    max-height: 70vh !important;
+  }
+}
+/* QAS-84 fixed viewport Sources popover */
+/* Append at the VERY END of src/app/globals.css. */
+
+/* Remove previous layout-pushing workaround. */
+.header-project-source-controls,
+.header-project-source-controls:has(.header-sources-menu) {
+  margin-bottom: 0 !important;
+}
+
+/* This is the actual fix: the open menu is positioned against the viewport, not trapped in the hero/card flow. */
+.header-sources-menu-fixed,
+.header-sources-menu.header-sources-menu-fixed {
+  position: fixed !important;
+  z-index: 2147483000 !important;
+  width: min(460px, calc(100vw - 32px)) !important;
+  max-height: min(520px, calc(100vh - 32px)) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+
+/* Make sure all likely parent panels don't create accidental clipping/stacking prisons. */
+.app-hero,
+.hero-panel,
+.qa-hero,
+.marketing-hero,
+.app-shell-hero,
+.app-main > section:first-child,
+main > section:first-child,
+.header-project-source-controls,
+.header-source-dropdown-field {
+  overflow: visible !important;
+}
+
+/* Keep lower app panels below the fixed popover. */
+.input-panel,
+.output-panel,
+.tool-panel,
+.qa-output-panel,
+.stacked-source-controls,
+.source-relevance-selector {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure account/auth card remains below the open dropdown too. */
+.auth-card,
+.account-card,
+.credits-card,
+.header-account-card,
+.hero-auth-card {
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 760px) {
+  .header-sources-menu-fixed,
+  .header-sources-menu.header-sources-menu-fixed {
+    top: auto !important;
+    right: 16px !important;
+    bottom: 16px !important;
+    left: 16px !important;
+    width: auto !important;
+    max-height: 70vh !important;
+  }
+}
+/* QAS-84 portal-based Sources dropdown */
+/* Append at the VERY END of src/app/globals.css. */
+
+.header-sources-menu-portal,
+.header-sources-menu.header-sources-menu-portal {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  width: min(460px, calc(100vw - 32px)) !important;
+  max-height: min(520px, calc(100vh - 32px)) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  transform: none !important;
+  margin: 0 !important;
+  isolation: isolate !important;
+  pointer-events: auto !important;
+}
+
+/* Make sure old non-portal menu hacks do not push the page around. */
+.header-project-source-controls,
+.header-project-source-controls:has(.header-sources-menu),
+.header-project-source-controls:has(.header-sources-menu-portal) {
+  margin-bottom: 0 !important;
+}
+
+/* No need to fight lower panels anymore, but keep them below normal app content. */
+.input-panel,
+.output-panel,
+.tool-panel,
+.qa-output-panel,
+.stacked-source-controls,
+.source-relevance-selector {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 760px) {
+  .header-sources-menu-portal,
+  .header-sources-menu.header-sources-menu-portal {
+    top: auto !important;
+    right: 16px !important;
+    bottom: 16px !important;
+    left: 16px !important;
+    width: auto !important;
+    max-height: 70vh !important;
+  }
+}
+/* QAS-84 portal popover position override fix */
+/* Append at the VERY END of src/app/globals.css.
+   This fixes the portal menu opening in the bottom-left because older fixed/bottom/right rules are overriding it. */
+
+.header-sources-menu-portal,
+.header-sources-menu.header-sources-menu-portal,
+body > .header-sources-menu-portal,
+body > .header-sources-menu.header-sources-menu-portal {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+
+  /* Critical: clear older bottom/right rules from previous passes. */
+  right: auto !important;
+  bottom: auto !important;
+
+  /* The component inline style owns top/left from getBoundingClientRect(). */
+  width: min(460px, calc(100vw - 32px)) !important;
+  max-height: min(520px, calc(100vh - 32px)) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  transform: none !important;
+  margin: 0 !important;
+  pointer-events: auto !important;
+  isolation: isolate !important;
+}
+
+/* Stop old menu selectors from applying a bottom-sheet position on desktop. */
+@media (min-width: 761px) {
+  .header-sources-menu-portal,
+  .header-sources-menu.header-sources-menu-portal,
+  body > .header-sources-menu-portal,
+  body > .header-sources-menu.header-sources-menu-portal {
+    right: auto !important;
+    bottom: auto !important;
+  }
+}
+
+/* Keep mobile as a deliberate bottom sheet only on small screens. */
+@media (max-width: 760px) {
+  .header-sources-menu-portal,
+  .header-sources-menu.header-sources-menu-portal,
+  body > .header-sources-menu-portal,
+  body > .header-sources-menu.header-sources-menu-portal {
+    top: auto !important;
+    right: 16px !important;
+    bottom: 16px !important;
+    left: 16px !important;
+    width: auto !important;
+    max-height: 70vh !important;
+  }
+}
+

@@ -1,19 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
+import { useMemo, useState } from "react";
 import { parseJiraTicket, type ParsedJiraTicket } from "@/lib/jira-ticket";
 
 type StackedProjectJiraControlsProps = {
-  activeProject: SafeQAProject | null;
-  onActiveProjectChange: (project: SafeQAProject | null) => void;
   onJiraImport: (normalizedText: string, ticket: ParsedJiraTicket) => void;
-};
-
-type ProjectsResponse = {
-  ok?: boolean;
-  error?: string;
-  projects?: SafeQAProject[];
 };
 
 type JiraFetchResponse = {
@@ -42,13 +33,7 @@ function fieldValue(value: unknown) {
   return String(value);
 }
 
-export default function StackedProjectJiraControls({
-  activeProject,
-  onActiveProjectChange,
-  onJiraImport,
-}: StackedProjectJiraControlsProps) {
-  const [projects, setProjects] = useState<SafeQAProject[]>([]);
-  const [projectError, setProjectError] = useState("");
+export default function StackedProjectJiraControls({ onJiraImport }: StackedProjectJiraControlsProps) {
   const [jiraQuery, setJiraQuery] = useState("");
   const [fetchState, setFetchState] = useState<"idle" | "fetching" | "fetched" | "error">("idle");
   const [fetchMessage, setFetchMessage] = useState("");
@@ -57,41 +42,6 @@ export default function StackedProjectJiraControls({
 
   const jiraKeyOrUrl = useMemo(() => extractJiraKeyOrUrl(jiraQuery), [jiraQuery]);
   const canFetch = Boolean(jiraKeyOrUrl) && fetchState !== "fetching";
-
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadProjects() {
-      setProjectError("");
-
-      try {
-        const response = await fetch("/api/projects", { method: "GET" });
-        const payload = (await response.json().catch(() => null)) as ProjectsResponse | null;
-
-        if (!response.ok || payload?.ok === false || !payload?.projects) {
-          throw new Error(payload?.error || "Could not load projects.");
-        }
-
-        if (ignore) return;
-
-        setProjects(payload.projects);
-
-        if (!activeProject && payload.projects.length > 0) {
-          onActiveProjectChange(payload.projects[0]);
-        }
-      } catch (error) {
-        if (!ignore) {
-          setProjectError(error instanceof Error ? error.message : "Could not load projects.");
-        }
-      }
-    }
-
-    void loadProjects();
-
-    return () => {
-      ignore = true;
-    };
-  }, [activeProject, onActiveProjectChange]);
 
   async function handleFetchFromJira() {
     if (!canFetch) return;
@@ -133,66 +83,42 @@ export default function StackedProjectJiraControls({
   }
 
   return (
-    <section className="stacked-source-controls" aria-label="Project and Jira source controls">
-      <div className="stacked-source-field">
-        <label htmlFor="stacked-project-select">Project</label>
-        <select
-          id="stacked-project-select"
-          data-testid="project-picker"
-          value={activeProject?.id ?? ""}
-          onChange={(event) => {
-            const selectedProject = projects.find((project) => project.id === event.target.value) ?? null;
-            onActiveProjectChange(selectedProject);
-          }}
-        >
-          {projects.length === 0 ? <option value="">No projects</option> : null}
-          {projects.map((project) => (
-            <option key={project.id} value={project.id}>
-              {project.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
+    <section className="stacked-source-controls stacked-jira-only-controls" aria-label="Jira source controls">
       <div className="stacked-source-field">
         <label htmlFor="stacked-jira-input">Jira Ticket</label>
 
-        <input
-          id="stacked-jira-input"
-          data-testid="jira-ticket-input"
-          value={jiraQuery}
-          placeholder="QAS-61 or Jira URL"
-          onChange={(event) => {
-            setJiraQuery(event.target.value);
-            setFetchState("idle");
-            setFetchMessage("");
-            setFetchedBrowseUrl("");
-            setFetchedTicket(null);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              void handleFetchFromJira();
-            }
-          }}
-        />
+        <div className="jira-fetch-inline-row">
+          <input
+            id="stacked-jira-input"
+            data-testid="jira-ticket-input"
+            value={jiraQuery}
+            placeholder=""
+            onChange={(event) => {
+              setJiraQuery(event.target.value);
+              setFetchState("idle");
+              setFetchMessage("");
+              setFetchedBrowseUrl("");
+              setFetchedTicket(null);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                void handleFetchFromJira();
+              }
+            }}
+          />
 
-        <button
-          className="stacked-fetch-button"
-          data-testid="fetch-jira-ticket-button"
-          type="button"
-          disabled={!canFetch}
-          onClick={handleFetchFromJira}
-        >
-          {fetchState === "fetching" ? "Fetching..." : "Fetch Jira Ticket"}
-        </button>
-      </div>
-
-      {projectError ? (
-        <div className="stacked-source-status stacked-source-status-error">
-          {projectError}
+          <button
+            className="stacked-fetch-button"
+            data-testid="fetch-jira-ticket-button"
+            type="button"
+            disabled={!canFetch}
+            onClick={handleFetchFromJira}
+          >
+            {fetchState === "fetching" ? "Fetching..." : "Fetch Jira Ticket"}
+          </button>
         </div>
-      ) : null}
+      </div>
 
       {fetchMessage ? (
         <div className={fetchState === "error" ? "stacked-source-status stacked-source-status-error" : "stacked-source-status"}>
