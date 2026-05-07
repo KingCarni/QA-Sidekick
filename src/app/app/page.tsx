@@ -15,6 +15,8 @@ import BugEvidencePreview from "@/components/BugEvidencePreview";
 import CoverageScorePanel from "@/components/CoverageScorePanel";
 import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
 import RiskReviewPanel from "@/components/RiskReviewPanel";
+import SaveBugToCollectionButton from "@/components/SaveBugToCollectionButton";
+import SaveGeneratedOutputToSourceButton from "@/components/SaveGeneratedOutputToSourceButton";
 import StackedProjectJiraControls from "@/components/StackedProjectJiraControls";
 import HeaderProjectSourceControls from "@/components/HeaderProjectSourceControls";
 import type { ActiveProjectContext } from "@/components/ProjectContextIndicator";
@@ -1182,10 +1184,12 @@ function TestCaseCards({
   saveReportStatus,
   saveReportMessage,
   savedReportId,
+  activeProject,
   onSaveReport,
 }: {
   testCases: TestCase[];
   answeredFollowUps?: AnsweredFollowUp[];
+  activeProject: SafeQAProject | null;
 } & CoverageScoreProps & SaveReportControlProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const [exported, setExported] = useState(false);
@@ -1319,6 +1323,13 @@ function TestCaseCards({
           />
         </div>
       </div>
+
+      <SaveGeneratedOutputToSourceButton
+        activeProject={activeProject}
+        reportType={reportType}
+        markdown={savedMarkdown || generatedMarkdown}
+        structuredData={{ testCases: editableTestCases }}
+      />
 
       {savedMarkdown && !isEditingMarkdown ? (
         <div className="saved-edit-notice">
@@ -1564,10 +1575,12 @@ function RiskReviewCards({
   saveReportStatus,
   saveReportMessage,
   savedReportId,
+  activeProject,
   onSaveReport,
 }: {
   riskReview: RiskReview;
   answeredFollowUps?: AnsweredFollowUp[];
+  activeProject: SafeQAProject | null;
 } & CoverageScoreProps & SaveReportControlProps) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
@@ -1696,6 +1709,13 @@ function RiskReviewCards({
           />
         </div>
       </div>
+
+      <SaveGeneratedOutputToSourceButton
+        activeProject={activeProject}
+        reportType={reportType}
+        markdown={savedMarkdown || buildRiskReviewMarkdown(editableRiskReview, answeredFollowUps)}
+        structuredData={{ riskReview: editableRiskReview }}
+      />
 
       {savedMarkdown && !isEditingMarkdown ? (
         <div className="saved-edit-notice">
@@ -1872,6 +1892,7 @@ function BugReportCards({
   saveReportStatus,
   saveReportMessage,
   savedReportId,
+  activeProject,
   onSaveReport,
 }: {
   bugReport: BugReport;
@@ -1882,6 +1903,7 @@ function BugReportCards({
   onSaveBugMarkdown?: (markdown: string) => void;
   savedEditedMarkdown?: string;
   bugEvidence: BugEvidenceState;
+  activeProject: SafeQAProject | null;
 } & CoverageScoreProps & SaveReportControlProps) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
@@ -1969,6 +1991,12 @@ function BugReportCards({
               saveReportMessage={saveReportMessage}
               savedReportId={savedReportId}
               onSaveReport={() => onSaveReport(evidenceAwareBugMarkdown)}
+            />
+            <SaveBugToCollectionButton
+              activeProject={activeProject}
+              markdown={evidenceAwareBugMarkdown}
+              structuredData={{ bugReport: editableBugReport }}
+              sourceInput={sourceInput}
             />
             <JiraCreateIssueButton
               reportType="bug"
@@ -2162,8 +2190,9 @@ function TestImprovementCards({
   saveReportStatus,
   saveReportMessage,
   savedReportId,
+  activeProject,
   onSaveReport,
-}: { report: TestImprovementReport } & CoverageScoreProps & SaveReportControlProps) {
+}: { report: TestImprovementReport; activeProject: SafeQAProject | null } & CoverageScoreProps & SaveReportControlProps) {
   const [copied, setCopied] = useState(false);
   const [exported, setExported] = useState(false);
   const [isEditingMarkdown, setIsEditingMarkdown] = useState(false);
@@ -2273,6 +2302,13 @@ function TestImprovementCards({
           />
         </div>
       </div>
+
+      <SaveGeneratedOutputToSourceButton
+        activeProject={activeProject}
+        reportType={reportType}
+        markdown={exportMarkdown}
+        structuredData={{ testImprovement: editableReport }}
+      />
 
       {savedMarkdown && !isEditingMarkdown ? (
         <div className="saved-edit-notice">
@@ -2410,6 +2446,7 @@ function GenericOutput({
   saveReportStatus,
   saveReportMessage,
   savedReportId,
+  activeProject,
   onSaveReport,
 }: {
   output: string;
@@ -2420,6 +2457,7 @@ function GenericOutput({
   testAnsweredFollowUps?: AnsweredFollowUp[];
   onSaveBugMarkdown?: (markdown: string) => void;
   bugEvidence: BugEvidenceState;
+  activeProject: SafeQAProject | null;
 } & CoverageScoreProps & SaveReportControlProps) {
   const parsed = unwrapQaResult(parseOutput(output));
 
@@ -2438,6 +2476,7 @@ function GenericOutput({
         saveReportStatus={saveReportStatus}
         saveReportMessage={saveReportMessage}
         savedReportId={savedReportId}
+        activeProject={activeProject}
         onSaveReport={onSaveReport}
       />
     );
@@ -2453,6 +2492,7 @@ function GenericOutput({
         saveReportStatus={saveReportStatus}
         saveReportMessage={saveReportMessage}
         savedReportId={savedReportId}
+        activeProject={activeProject}
         onSaveReport={onSaveReport}
       />
     );
@@ -2473,6 +2513,7 @@ function GenericOutput({
         saveReportStatus={saveReportStatus}
         saveReportMessage={saveReportMessage}
         savedReportId={savedReportId}
+        activeProject={activeProject}
         onSaveReport={onSaveReport}
       />
     );
@@ -2487,6 +2528,7 @@ function GenericOutput({
         saveReportStatus={saveReportStatus}
         saveReportMessage={saveReportMessage}
         savedReportId={savedReportId}
+        activeProject={activeProject}
         onSaveReport={onSaveReport}
       />
     );
@@ -3931,6 +3973,7 @@ export default function Home() {
                 saveReportStatus={saveReportStatus}
                 saveReportMessage={saveReportMessage}
                 savedReportId={savedReportId}
+                activeProject={activeProject}
                 onSaveReport={handleSaveReport}
               />
             </>

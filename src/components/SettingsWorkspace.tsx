@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AutomationExportSettingsForm from "@/components/AutomationExportSettingsForm";
+import BugCollectionPanel from "@/components/BugCollectionPanel";
 import E2EAutomationReadinessPanel from "@/components/E2EAutomationReadinessPanel";
 import JiraSettingsForm from "@/components/JiraSettingsForm";
 import ProjectAutomationCredentialsForm from "@/components/ProjectAutomationCredentialsForm";
@@ -21,7 +22,7 @@ type SettingsWorkspaceProps = {
   userEmail?: string | null;
 };
 
-type SettingsArea = "projects" | "source-vault" | "account-setup" | "jira" | "testrail" | "admin";
+type SettingsArea = "projects" | "source-vault" | "bugs" | "account-setup" | "jira" | "testrail" | "admin";
 
 export default function SettingsWorkspace({
   initialJiraConfig,
@@ -114,6 +115,9 @@ export default function SettingsWorkspace({
           <button className={tabClass("source-vault")} data-testid="settings-tab-source-vault" onClick={() => setActiveArea("source-vault")} type="button">
             Project Source Vault
           </button>
+          <button className={tabClass("bugs")} data-testid="settings-tab-bug-collection" onClick={() => setActiveArea("bugs")} type="button">
+            Bug Collection
+          </button>
           <button className={tabClass("account-setup")} data-testid="settings-tab-account-setup" onClick={() => setActiveArea("account-setup")} type="button">
             Account Setup
           </button>
@@ -167,6 +171,12 @@ export default function SettingsWorkspace({
       {activeArea === "source-vault" ? (
         <section className="settings-wide-section" id="project-source-vault">
           <ProjectSourceVaultPanel activeProject={activeProject} />
+        </section>
+      ) : null}
+
+      {activeArea === "bugs" ? (
+        <section className="settings-wide-section" id="bug-collection">
+          <BugCollectionPanel activeProject={activeProject} />
         </section>
       ) : null}
 

@@ -18686,3 +18686,349 @@ body [data-q84-sources-menu="true"] {
   }
 }
 
+/* QAS-85 Save generated output to Project Source Vault */
+
+.save-generated-source-control {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0;
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 36%),
+    linear-gradient(135deg, rgba(6, 78, 59, 0.2), rgba(0, 0, 0, 0.64));
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, 0.28),
+    0 0 28px rgba(34, 197, 94, 0.08);
+  padding: 18px;
+}
+
+.save-generated-source-control strong {
+  color: white;
+  display: block;
+  font-size: 1rem;
+  margin-top: 4px;
+}
+
+.save-generated-source-control span,
+.save-generated-source-note {
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.45;
+}
+
+.save-generated-source-mode {
+  display: grid;
+  gap: 8px;
+  color: rgb(254, 202, 202);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.save-generated-source-mode select {
+  min-height: 46px;
+  border: 1px solid rgba(96, 165, 250, 0.36);
+  border-radius: 15px;
+  background: rgba(0, 0, 0, 0.72);
+  color: white;
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: normal;
+  padding: 0 12px;
+  text-transform: none;
+}
+
+.save-generated-source-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.save-generated-source-button {
+  border: 1px solid rgba(34, 197, 94, 0.44);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.2), transparent 42%),
+    linear-gradient(135deg, rgba(22, 163, 74, 0.92), rgba(21, 128, 61, 0.84));
+  color: white;
+  cursor: pointer;
+  font-weight: 950;
+  min-height: 48px;
+  padding: 0 16px;
+  box-shadow: 0 14px 30px rgba(34, 197, 94, 0.16);
+}
+
+.save-generated-source-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 16px 34px rgba(34, 197, 94, 0.2),
+    0 0 20px rgba(34, 197, 94, 0.12);
+}
+
+.save-generated-source-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.save-generated-source-message {
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 16px;
+  background: rgba(6, 78, 59, 0.18);
+  color: rgb(220, 252, 231);
+  font-weight: 800;
+  line-height: 1.45;
+  margin: 0;
+  padding: 12px 14px;
+}
+
+.save-generated-source-message-error {
+  border-color: rgba(248, 113, 113, 0.38);
+  background: rgba(127, 29, 29, 0.22);
+  color: rgb(254, 202, 202);
+}
+
+/* QAS-85 Bug Collection */
+
+.save-bug-collection-control,
+.bug-collection-panel {
+  border: 1px solid rgba(96, 165, 250, 0.26);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 36%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.74), rgba(0, 0, 0, 0.72));
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.28);
+}
+
+.save-bug-collection-control {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0;
+  padding: 18px;
+}
+
+.save-bug-collection-control strong,
+.bug-collection-panel h2,
+.bug-collection-panel h3,
+.bug-collection-panel h4 {
+  color: white;
+}
+
+.save-bug-collection-control span,
+.bug-collection-panel p,
+.bug-collection-muted {
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.45;
+}
+
+.save-bug-collection-button,
+.bug-collection-header button,
+.bug-collection-detail-actions button {
+  border: 1px solid rgba(96, 165, 250, 0.44);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.2), transparent 42%),
+    linear-gradient(135deg, rgba(37, 99, 235, 0.94), rgba(30, 64, 175, 0.84));
+  color: white;
+  cursor: pointer;
+  font-weight: 950;
+  min-height: 46px;
+  padding: 0 16px;
+}
+
+.save-bug-collection-button:disabled,
+.bug-collection-header button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.save-bug-collection-message,
+.bug-collection-message {
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 16px;
+  background: rgba(6, 78, 59, 0.18);
+  color: rgb(220, 252, 231);
+  font-weight: 800;
+  line-height: 1.45;
+  margin: 0;
+  padding: 12px 14px;
+}
+
+.save-bug-collection-message-error,
+.bug-collection-error {
+  border: 1px solid rgba(248, 113, 113, 0.38);
+  border-radius: 16px;
+  background: rgba(127, 29, 29, 0.22);
+  color: rgb(254, 202, 202);
+  font-weight: 800;
+  margin: 0;
+  padding: 12px 14px;
+}
+
+.bug-collection-panel {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+}
+
+.bug-collection-empty {
+  padding: 28px;
+}
+
+.bug-collection-header,
+.bug-collection-detail-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.bug-collection-stats,
+.bug-collection-detail-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bug-collection-stats div,
+.bug-collection-detail-meta div {
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.28);
+  padding: 14px;
+}
+
+.bug-collection-stats strong,
+.bug-collection-detail-meta strong {
+  color: white;
+  display: block;
+  font-size: 1.4rem;
+}
+
+.bug-collection-stats span,
+.bug-collection-detail-meta span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.bug-collection-toolbar label,
+.bug-collection-detail-top label {
+  color: rgb(254, 202, 202);
+  display: grid;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.bug-collection-toolbar select,
+.bug-collection-detail-top select {
+  min-height: 42px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.72);
+  color: white;
+  font-weight: 900;
+  padding: 0 12px;
+}
+
+.bug-collection-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1.5fr);
+  gap: 18px;
+}
+
+.bug-collection-list-card,
+.bug-collection-detail-card {
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  border-radius: 22px;
+  background: rgba(0, 0, 0, 0.24);
+  padding: 16px;
+}
+
+.bug-collection-list {
+  display: grid;
+  gap: 10px;
+}
+
+.bug-collection-list-item {
+  border: 1px solid rgba(96, 165, 250, 0.14);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.46);
+  color: white;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  text-align: left;
+}
+
+.bug-collection-list-item-active {
+  border-color: rgba(34, 197, 94, 0.42);
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 42%),
+    rgba(6, 78, 59, 0.18);
+}
+
+.bug-collection-list-item span,
+.bug-collection-list-item small {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.bug-collection-detail-card {
+  display: grid;
+  gap: 16px;
+}
+
+.bug-collection-detail-card ol {
+  color: rgba(255, 255, 255, 0.82);
+  padding-left: 20px;
+}
+
+.bug-collection-detail-card details {
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.bug-collection-detail-card summary {
+  color: white;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.bug-collection-detail-card pre {
+  max-height: 360px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bug-collection-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.bug-collection-danger-button {
+  border-color: rgba(248, 113, 113, 0.4) !important;
+  background:
+    radial-gradient(circle at top left, rgba(248, 113, 113, 0.18), transparent 42%),
+    linear-gradient(135deg, rgba(220, 38, 38, 0.92), rgba(127, 29, 29, 0.84)) !important;
+}
+
+@media (max-width: 900px) {
+  .bug-collection-header,
+  .bug-collection-detail-top {
+    flex-direction: column;
+  }
+
+  .bug-collection-stats,
+  .bug-collection-detail-meta,
+  .bug-collection-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
