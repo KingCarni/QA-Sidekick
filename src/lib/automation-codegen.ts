@@ -9,6 +9,10 @@ import {
   findCredentialProfileForText,
   type SafeAutomationCredentialProfile,
 } from "@/lib/automation-credentials";
+import {
+  normalizeAutomationProjectConfig,
+  type AutomationProjectConfig,
+} from "@/lib/automation-project-config";
 
 type SkeletonTestCase = {
   title?: unknown;
@@ -22,6 +26,8 @@ type SkeletonTestCase = {
 type AutomationSkeletonOptions = {
   credentialProfiles?: SafeAutomationCredentialProfile[];
   defaultCredentialProfileKey?: string;
+  projectConfig?: Partial<AutomationProjectConfig>;
+  exportMode?: "user-project" | "qatalyst-dogfood";
 };
 
 function safeString(value: unknown): string {
@@ -117,9 +123,9 @@ function isSourceSelectionFlow(text: string): boolean {
     /\b(select|deselect|toggle|untoggle|check|uncheck|choose)\b/i.test(text);
 }
 
-function sourceSelectionSkeletonLines(): string[] {
+function sourceSelectionSkeletonLines(sourceFixtureName: string): string[] {
   return [
-    `    const sourceName = "Project Product Overview"; // TODO: replace with a seeded project source name.`,
+    `    const sourceName = "${sourceFixtureName}";`,
     "    const source = await expectSourceVisible(page, sourceName);",
     "",
     "    if (await source.isChecked()) {",
@@ -210,6 +216,9 @@ export function generateAutomationSkeleton(
   const preconditions = safeString(testCase.preconditions) || "TODO: preconditions";
   const testName = slugify(title);
   const combinedText = `${title}\n${preconditions}\n${steps.join("\n")}\n${expectedResult}`;
+  const projectConfig = normalizeAutomationProjectConfig(options?.projectConfig);
+  const exportMode = options?.exportMode ?? "user-project";
+  const isDogfood = exportMode === "qatalyst-dogfood";
   const credentialProfile =
     findCredentialProfileForText(combinedText, options?.credentialProfiles ?? []) ??
     options?.credentialProfiles?.find((profile) => profile.key === options.defaultCredentialProfileKey) ??
@@ -217,6 +226,9 @@ export function generateAutomationSkeleton(
   const authSetupLines = needsAuthSetup(combinedText) ? emitLoginSetup(credentialProfile) : [];
 
   if (isSourceSelectionFlow(combinedText)) {
+    const sourceFixtureName = isDogfood ? "Project Product Overview" : projectConfig.sourceFixtureName;
+    const projectFixtureName = isDogfood ? "Project" : projectConfig.projectFixtureName;
+
     return {
       framework: "playwright",
       filename: `tests/e2e/${testName}.spec.ts`,
@@ -234,15 +246,15 @@ export function generateAutomationSkeleton(
         "  test.beforeEach(async ({ page }) => {",
         `    // Preconditions: ${escapeForComment(preconditions)}`,
         "    await openQATool(page, {",
-        `      profileKey: "${credentialProfile?.key ?? "standard-user"}",`,
-        `      projectName: "Project", // TODO: replace with your project fixture.`,
+        `      profileKey: "${credentialProfile?.key ?? projectConfig.defaultPersonaKey}",`,
+        `      projectName: "${projectFixtureName}",`,
         "    });",
         "",
         "    await openChooseSourcesPanel(page);",
         "  });",
         "",
         `  test("validates source selection updates", async ({ page }) => {`,
-        ...sourceSelectionSkeletonLines(),
+        ...sourceSelectionSkeletonLines(sourceFixtureName),
         "",
         `    // Expected Result: ${escapeForComment(expectedResult)}`,
         "  });",
@@ -307,7 +319,7 @@ export function generateAutomationSkeleton(
       ...(authSetupLines.length
         ? [
             `    // Auth profile: ${credentialProfile?.name ?? "Standard User"}.`,
-            `    await openQATool(page, { profileKey: "${credentialProfile?.key ?? "standard-user"}" });`,
+            `    await openQATool(page, { profileKey: "${credentialProfile?.key ?? projectConfig.defaultPersonaKey}" });`,
           ]
         : ["    await openQATool(page, { requireAuth: false });"]),
       "  });",

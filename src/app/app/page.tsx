@@ -32,6 +32,10 @@ import {
   type AutomationCredentialProfile,
 } from "@/lib/automation-credentials";
 import {
+  normalizeAutomationProjectConfig,
+  type AutomationProjectConfig,
+} from "@/lib/automation-project-config";
+import {
   buildGenerationFingerprint,
   buildOutputGenerationKey,
 } from "@/lib/regeneration-guard";
@@ -77,6 +81,7 @@ type CoverageScoreProps = {
   automationCredentialProfiles?: ReturnType<typeof buildAutomationCredentialPayload>["profiles"];
   automationCredentialDefaultProfileKey?: string;
   automationCredentialEnvExample?: string;
+  automationProjectConfig?: AutomationProjectConfig;
 };
 
 type SaveReportButtonProps = Omit<SaveReportControlProps, "onSaveReport"> & {
@@ -1172,6 +1177,7 @@ function TestCaseCards({
   automationCredentialProfiles = [],
   automationCredentialDefaultProfileKey = "",
   automationCredentialEnvExample = "",
+  automationProjectConfig,
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -1529,6 +1535,8 @@ function TestCaseCards({
           credentialProfiles={automationCredentialProfiles}
           defaultCredentialProfileKey={automationCredentialDefaultProfileKey}
           envExample={automationCredentialEnvExample}
+          projectConfig={automationProjectConfig}
+          exportMode="user-project"
         />
       ) : null}
 
@@ -1855,6 +1863,7 @@ function BugReportCards({
   automationCredentialProfiles = [],
   automationCredentialDefaultProfileKey = "",
   automationCredentialEnvExample = "",
+  automationProjectConfig,
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -2392,6 +2401,7 @@ function GenericOutput({
   automationCredentialProfiles = [],
   automationCredentialDefaultProfileKey = "",
   automationCredentialEnvExample = "",
+  automationProjectConfig,
   saveReportStatus,
   saveReportMessage,
   savedReportId,
@@ -2419,6 +2429,7 @@ function GenericOutput({
         automationCredentialProfiles={automationCredentialProfiles}
         automationCredentialDefaultProfileKey={automationCredentialDefaultProfileKey}
         automationCredentialEnvExample={automationCredentialEnvExample}
+        automationProjectConfig={automationProjectConfig}
         saveReportStatus={saveReportStatus}
         saveReportMessage={saveReportMessage}
         savedReportId={savedReportId}
@@ -2534,6 +2545,9 @@ export default function Home() {
   const [selectedProjectSourceIds, setSelectedProjectSourceIds] = useState<string[]>([]);
   const [selectedProjectContextBlock, setSelectedProjectContextBlock] = useState("");
   const [automationCredentialProfiles, setAutomationCredentialProfiles] = useState<AutomationCredentialProfile[]>([]);
+  const [automationProjectConfig, setAutomationProjectConfig] = useState<AutomationProjectConfig>(() =>
+    normalizeAutomationProjectConfig(null)
+  );
 
   const projectContextPayload = useMemo<ProjectContextPayload>(() => {
     return buildProjectContextPayload({
@@ -2754,6 +2768,26 @@ export default function Home() {
       : "qatalyst.automationCredentialProfiles.global";
     window.localStorage.setItem(storageKey, JSON.stringify(automationCredentialProfiles));
   }, [activeProject?.id, automationCredentialProfiles]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const storageKey = activeProject?.id
+      ? `qatalyst.automationExportConfig.${activeProject.id}`
+      : "qatalyst.automationExportConfig.global";
+    const stored = window.localStorage.getItem(storageKey);
+
+    if (!stored) {
+      setAutomationProjectConfig(normalizeAutomationProjectConfig(null));
+      return;
+    }
+
+    try {
+      setAutomationProjectConfig(normalizeAutomationProjectConfig(JSON.parse(stored)));
+    } catch {
+      setAutomationProjectConfig(normalizeAutomationProjectConfig(null));
+    }
+  }, [activeProject?.id]);
 
   function updateBugQuestionAnswer(question: string, answer: string) {
     setBugQuestionAnswers((current) => ({
@@ -3891,6 +3925,7 @@ export default function Home() {
                 automationCredentialProfiles={automationCredentialPayload.profiles}
                 automationCredentialDefaultProfileKey={automationCredentialPayload.defaultProfileKey}
                 automationCredentialEnvExample={automationCredentialPayload.envExample}
+                automationProjectConfig={automationProjectConfig}
                 saveReportStatus={saveReportStatus}
                 saveReportMessage={saveReportMessage}
                 savedReportId={savedReportId}

@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AutomationExportSettingsForm from "@/components/AutomationExportSettingsForm";
 import E2EAutomationReadinessPanel from "@/components/E2EAutomationReadinessPanel";
 import JiraSettingsForm from "@/components/JiraSettingsForm";
 import ProjectAutomationCredentialsForm from "@/components/ProjectAutomationCredentialsForm";
 import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSettingsPanel";
 import ProjectSourceVaultPanel from "@/components/ProjectSourceVaultPanel";
 import type { AutomationCredentialProfile } from "@/lib/automation-credentials";
+import {
+  normalizeAutomationProjectConfig,
+  type AutomationProjectConfig,
+} from "@/lib/automation-project-config";
 import type { SafeJiraConfig } from "@/lib/jira-config";
 
 type SettingsWorkspaceProps = {
@@ -25,6 +30,9 @@ export default function SettingsWorkspace({
   const [activeArea, setActiveArea] = useState<SettingsArea>("projects");
   const [activeProject, setActiveProject] = useState<SafeQAProject | null>(null);
   const [automationCredentialProfiles, setAutomationCredentialProfiles] = useState<AutomationCredentialProfile[]>([]);
+  const [automationProjectConfig, setAutomationProjectConfig] = useState<AutomationProjectConfig>(() =>
+    normalizeAutomationProjectConfig(null)
+  );
 
   const tabClass = (area: SettingsArea) =>
     activeArea === area ? "settings-area-tab settings-area-tab-active" : "settings-area-tab";
@@ -50,6 +58,26 @@ export default function SettingsWorkspace({
     }
   }, [activeProject?.id]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const storageKey = activeProject?.id
+      ? `qatalyst.automationExportConfig.${activeProject.id}`
+      : "qatalyst.automationExportConfig.global";
+    const stored = window.localStorage.getItem(storageKey);
+
+    if (!stored) {
+      setAutomationProjectConfig(normalizeAutomationProjectConfig(null));
+      return;
+    }
+
+    try {
+      setAutomationProjectConfig(normalizeAutomationProjectConfig(JSON.parse(stored)));
+    } catch {
+      setAutomationProjectConfig(normalizeAutomationProjectConfig(null));
+    }
+  }, [activeProject?.id]);
+
   function updateAutomationCredentialProfiles(profiles: AutomationCredentialProfile[]) {
     setAutomationCredentialProfiles(profiles);
 
@@ -59,6 +87,18 @@ export default function SettingsWorkspace({
       ? `qatalyst.automationCredentialProfiles.${activeProject.id}`
       : "qatalyst.automationCredentialProfiles.global";
     window.localStorage.setItem(storageKey, JSON.stringify(profiles));
+  }
+
+  function updateAutomationProjectConfig(config: AutomationProjectConfig) {
+    const normalized = normalizeAutomationProjectConfig(config);
+    setAutomationProjectConfig(normalized);
+
+    if (typeof window === "undefined") return;
+
+    const storageKey = activeProject?.id
+      ? `qatalyst.automationExportConfig.${activeProject.id}`
+      : "qatalyst.automationExportConfig.global";
+    window.localStorage.setItem(storageKey, JSON.stringify(normalized));
   }
 
   return (
@@ -132,6 +172,10 @@ export default function SettingsWorkspace({
       {activeArea === "account-setup" ? (
         <section className="settings-wide-section account-setup-section" data-testid="account-setup-panel" id="account-setup">
           <E2EAutomationReadinessPanel />
+          <AutomationExportSettingsForm
+            value={automationProjectConfig}
+            onChange={updateAutomationProjectConfig}
+          />
           <ProjectAutomationCredentialsForm
             profiles={automationCredentialProfiles}
             onChange={updateAutomationCredentialProfiles}

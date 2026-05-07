@@ -9,6 +9,7 @@ import {
   type AutomationExportTestCase,
 } from "@/lib/automation-export";
 import type { SafeAutomationCredentialProfile } from "@/lib/automation-credentials";
+import type { AutomationProjectConfig } from "@/lib/automation-project-config";
 
 type AutomationExportPanelProps = {
   testCases: AutomationExportTestCase[];
@@ -17,6 +18,8 @@ type AutomationExportPanelProps = {
   credentialProfiles?: SafeAutomationCredentialProfile[];
   defaultCredentialProfileKey?: string;
   envExample?: string;
+  projectConfig?: Partial<AutomationProjectConfig>;
+  exportMode?: "user-project" | "qatalyst-dogfood";
 };
 
 type CopyState = "idle" | "copied" | "error";
@@ -28,6 +31,8 @@ export default function AutomationExportPanel({
   credentialProfiles = [],
   defaultCredentialProfileKey = "",
   envExample = "",
+  projectConfig,
+  exportMode = "user-project",
 }: AutomationExportPanelProps) {
   const [includePartial, setIncludePartial] = useState(true);
   const [includeManualReview, setIncludeManualReview] = useState(true);
@@ -43,8 +48,10 @@ export default function AutomationExportPanel({
         credentialProfiles,
         defaultCredentialProfileKey,
         envExample,
+        projectConfig,
+        exportMode,
       }),
-    [bundleName, credentialProfiles, defaultCredentialProfileKey, envExample, generationKey, includeManualReview, includePartial, testCases]
+    [bundleName, credentialProfiles, defaultCredentialProfileKey, envExample, exportMode, generationKey, includeManualReview, includePartial, projectConfig, testCases]
   );
 
   if (testCases.length === 0) {
