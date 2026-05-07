@@ -7,6 +7,7 @@ import JiraSettingsForm from "@/components/JiraSettingsForm";
 import ProjectAutomationCredentialsForm from "@/components/ProjectAutomationCredentialsForm";
 import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSettingsPanel";
 import ProjectSourceVaultPanel from "@/components/ProjectSourceVaultPanel";
+import TestRailSettingsForm from "@/components/TestRailSettingsForm";
 import type { AutomationCredentialProfile } from "@/lib/automation-credentials";
 import {
   normalizeAutomationProjectConfig,
@@ -190,12 +191,8 @@ export default function SettingsWorkspace({
       ) : null}
 
       {activeArea === "testrail" ? (
-        <section className="settings-module-card settings-coming-soon-card settings-wide-section" id="testrail-integration">
-          <p className="report-kicker">TestRail Integration</p>
-          <h2>Coming soon</h2>
-          <p>
-            Future TestRail settings can live here: project IDs, suite defaults, case type mapping, and export behavior.
-          </p>
+        <section className="settings-wide-section" id="testrail-integration">
+          <TestRailSettingsForm />
         </section>
       ) : null}
 

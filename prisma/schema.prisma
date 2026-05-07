@@ -24,6 +24,8 @@ model User {
   projects      QAProject[]
   reports       QAReport[]
   jiraConfigs   JiraConfig[]
+  testRailConfigs TestRailConfig[]
+  testRailCaseSyncMaps TestRailCaseSyncMap[]
 }
 
 model Account {
@@ -168,8 +170,58 @@ model QAReport {
 
   user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   project QAProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  testRailSyncMaps TestRailCaseSyncMap[]
 
   @@index([userId, createdAt])
   @@index([projectId, createdAt])
   @@index([type, createdAt])
+}
+
+model TestRailConfig {
+  id               String   @id @default(cuid())
+  userId           String
+  baseUrl          String
+  username         String
+  encryptedApiKey  String
+  projectId        Int
+  suiteId          Int?
+  defaultSectionId Int
+  milestoneId      Int?
+  runId            Int?
+  fieldMapping     Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+  @@index([projectId])
+  @@index([createdAt])
+}
+
+model TestRailCaseSyncMap {
+  id             String    @id @default(cuid())
+  userId         String
+  reportId       String?
+  testCaseIndex  Int?
+  title          String
+  testRailCaseId Int?
+  projectId      Int
+  suiteId        Int?
+  sectionId      Int
+  contentHash    String
+  syncStatus     String    @default("synced")
+  lastSyncedAt   DateTime?
+  lastError      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  report QAReport? @relation(fields: [reportId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, contentHash])
+  @@unique([userId, testRailCaseId])
+  @@index([userId, updatedAt])
+  @@index([reportId])
+  @@index([syncStatus])
 }
