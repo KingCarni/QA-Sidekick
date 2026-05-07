@@ -30,6 +30,7 @@ export type TestRailSyncPreviewCase = {
   expectedResult: string;
   refs?: string;
   automationNote: string;
+  automationId: string;
   contentHash: string;
   existingTestRailCaseId?: number | null;
   status: "ready" | "stale" | "synced" | "not_synced";
@@ -68,6 +69,10 @@ function optionId(mapping: Record<string, unknown>, key: string, label: string):
 function customFieldName(mapping: Record<string, unknown>, key: string, fallback: string) {
   const value = String(mapping[key] ?? "").trim();
   return value || fallback;
+}
+
+function buildAutomationId(contentHash: string, index: number) {
+  return `QATALYST-${index + 1}-${contentHash.slice(0, 10).toUpperCase()}`;
 }
 
 export function extractTestCasesFromStructuredData(value: unknown): GeneratedQATestCase[] {
@@ -110,11 +115,13 @@ export function buildTestRailSyncPreviewCase(
     type,
     sourceJiraKey: source.sourceJiraKey ?? undefined,
   });
+  const automationId = buildAutomationId(contentHash, index);
 
   const preconditionsField = customFieldName(fieldMapping, "preconditionsField", "custom_preconds");
   const expectedField = customFieldName(fieldMapping, "expectedField", "custom_expected");
   const stepsField = customFieldName(fieldMapping, "stepsField", "custom_steps_separated");
   const automationField = customFieldName(fieldMapping, "automationNoteField", "custom_automation_readiness");
+  const automationIdField = customFieldName(fieldMapping, "automationIdField", "custom_case_automation_id");
 
   const payload: TestRailCasePayload = {
     title,
@@ -125,6 +132,7 @@ export function buildTestRailSyncPreviewCase(
     [preconditionsField]: preconditions,
     [expectedField]: expectedResult,
     [automationField]: automationNote,
+    [automationIdField]: automationId,
   };
 
   if (stepsField === "custom_steps_separated") {
@@ -144,6 +152,7 @@ export function buildTestRailSyncPreviewCase(
     expectedResult,
     refs,
     automationNote,
+    automationId,
     contentHash,
     existingTestRailCaseId: existing?.testRailCaseId ?? null,
     status: existing ? (existing.contentHash === contentHash ? "synced" : "stale") : "not_synced",

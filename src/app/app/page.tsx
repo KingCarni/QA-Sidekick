@@ -22,6 +22,7 @@ import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
 import TestCaseAutomationReadiness from "@/components/TestCaseAutomationReadiness";
 import TestCaseDisplayControls from "@/components/TestCaseDisplayControls";
 import TestCaseQualityBadge from "@/components/TestCaseQualityBadge";
+import TestRailSyncPanel from "@/components/TestRailSyncPanel";
 import { calculateTestCaseQuality, getTestCaseQualityCardClass } from "@/lib/test-case-quality";
 import {
   buildProjectContextPayload,
@@ -1538,6 +1539,10 @@ function TestCaseCards({
           projectConfig={automationProjectConfig}
           exportMode="user-project"
         />
+      ) : null}
+
+      {reportType === "tests" && testCases.length ? (
+        <TestRailSyncPanel reportId={savedReportId || undefined} testCases={testCases} />
       ) : null}
 
       <CoverageScorePanel

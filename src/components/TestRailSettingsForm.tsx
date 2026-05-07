@@ -31,6 +31,7 @@ const DEFAULT_FIELD_MAPPING = {
   stepsField: "custom_steps_separated",
   expectedField: "custom_expected",
   automationNoteField: "custom_automation_readiness",
+  automationIdField: "custom_case_automation_id",
   priorityIds: {
     low: 1,
     medium: 2,

@@ -16969,3 +16969,448 @@ section[aria-label="Export automation skeletons"] {
   }
 }
 
+/* QAS-83 TestRail Sync UI Bridge polish */
+/* Append to src/app/globals.css after the existing QAS-83 TestRail Integration styles. */
+
+.testrail-sync-message-ready {
+  border-color: rgba(96, 165, 250, 0.38);
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.14), transparent 42%),
+    rgba(30, 64, 175, 0.16);
+  color: rgb(191, 219, 254);
+  box-shadow:
+    0 0 0 1px rgba(96, 165, 250, 0.08),
+    0 0 22px rgba(96, 165, 250, 0.13),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.testrail-sync-message-success {
+  font-weight: 850;
+}
+
+.testrail-sync-message-error {
+  font-weight: 850;
+}
+
+.testrail-safe-sync-note strong {
+  color: rgb(187, 247, 208);
+}
+
+.testrail-preview-sync-button {
+  border-color: rgba(96, 165, 250, 0.38);
+}
+
+.testrail-approve-sync-button {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.96), rgba(21, 128, 61, 0.86));
+  box-shadow: 0 14px 28px rgba(34, 197, 94, 0.18);
+}
+
+.testrail-approve-sync-button:hover:not(:disabled) {
+  box-shadow:
+    0 16px 32px rgba(34, 197, 94, 0.22),
+    0 0 22px rgba(34, 197, 94, 0.14);
+}
+
+.testrail-sync-result-list {
+  display: grid;
+  gap: 12px;
+}
+
+.testrail-sync-result-summary,
+.testrail-sync-result-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(248, 113, 113, 0.16);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.testrail-sync-result-summary strong,
+.testrail-sync-result-row strong {
+  color: white;
+}
+
+.testrail-sync-result-summary span,
+.testrail-sync-result-row span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.66);
+  line-height: 1.4;
+}
+
+.testrail-sync-result-row em {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.testrail-sync-result-row-success {
+  border-color: rgba(34, 197, 94, 0.38);
+  box-shadow: 0 0 18px rgba(34, 197, 94, 0.1);
+}
+
+.testrail-sync-result-row-success em {
+  color: rgb(187, 247, 208);
+  border: 1px solid rgba(34, 197, 94, 0.38);
+  background: rgba(6, 78, 59, 0.22);
+}
+
+.testrail-sync-result-row-error {
+  border-color: rgba(248, 113, 113, 0.42);
+  box-shadow: 0 0 18px rgba(248, 113, 113, 0.12);
+}
+
+.testrail-sync-result-row-error em {
+  color: rgb(254, 202, 202);
+  border: 1px solid rgba(248, 113, 113, 0.42);
+  background: rgba(127, 29, 29, 0.22);
+}
+
+.testrail-preview-card-success,
+.testrail-preview-card-ready {
+  border-color: rgba(34, 197, 94, 0.26);
+}
+
+.testrail-preview-card-error {
+  border-color: rgba(248, 113, 113, 0.42);
+}
+
+@media (max-width: 760px) {
+  .testrail-sync-result-summary,
+  .testrail-sync-result-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* QAS-83 TestRail Sync layout/button containment fix */
+/* Append after the existing QAS-83 TestRail styles in src/app/globals.css. */
+
+.testrail-sync-panel,
+.testrail-preview-list,
+.testrail-preview-card,
+.testrail-sync-result-list,
+.testrail-sync-result-row {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.testrail-sync-panel {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.testrail-sync-header {
+  align-items: flex-start;
+}
+
+.testrail-sync-header > div:first-child {
+  min-width: 0;
+  max-width: 62ch;
+}
+
+.testrail-sync-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.testrail-sync-actions select {
+  width: auto;
+  min-width: 160px;
+  max-width: 220px;
+  min-height: 48px;
+}
+
+.testrail-preview-sync-button,
+.testrail-approve-sync-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  color: white;
+  font-weight: 950;
+  line-height: 1.1;
+  text-align: center;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.testrail-preview-sync-button {
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.92), rgba(30, 64, 175, 0.82));
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.16);
+}
+
+.testrail-preview-sync-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 16px 32px rgba(37, 99, 235, 0.2),
+    0 0 22px rgba(96, 165, 250, 0.12);
+}
+
+.testrail-approve-sync-button {
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.96), rgba(21, 128, 61, 0.86));
+  box-shadow: 0 14px 28px rgba(34, 197, 94, 0.18);
+}
+
+.testrail-approve-sync-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 16px 32px rgba(34, 197, 94, 0.22),
+    0 0 22px rgba(34, 197, 94, 0.14);
+}
+
+.testrail-preview-sync-button:disabled,
+.testrail-approve-sync-button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.testrail-preview-card dl {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  max-width: 100%;
+}
+
+.testrail-preview-card details {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.testrail-preview-card summary {
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.testrail-preview-card pre {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-sizing: border-box;
+}
+
+.testrail-sync-result-row > div {
+  min-width: 0;
+}
+
+.testrail-sync-result-row strong,
+.testrail-sync-result-row span {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 980px) {
+  .testrail-sync-header {
+    flex-direction: column;
+  }
+
+  .testrail-sync-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .testrail-sync-actions select,
+  .testrail-preview-sync-button,
+  .testrail-approve-sync-button {
+    width: 100%;
+    max-width: none;
+  }
+
+  .testrail-preview-card dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .testrail-preview-card dl {
+    grid-template-columns: 1fr;
+  }
+}
+/* QAS-83 TestRail Sync header/layout polish */
+/* Append this near the end of src/app/globals.css so it overrides earlier TestRail sync styles. */
+/* Backend logic unchanged. This only fixes the cramped header and control layout. */
+
+.testrail-sync-panel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Force the panel header to stack so the intro copy has real room. */
+.testrail-sync-panel .testrail-sync-header {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Let the text breathe instead of being squeezed beside the controls. */
+.testrail-sync-panel .testrail-sync-header > div:first-child {
+  width: 100%;
+  max-width: 74ch !important;
+  min-width: 0;
+}
+
+.testrail-sync-panel .testrail-sync-header > div:first-child p {
+  max-width: 74ch;
+}
+
+/* Keep the controls in a clean full-width row under the copy. */
+.testrail-sync-panel .testrail-sync-actions {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: flex-start !important;
+  align-items: center;
+  gap: 12px;
+  padding-top: 2px;
+}
+
+.testrail-sync-panel .testrail-sync-actions select {
+  flex: 0 1 220px;
+  width: auto;
+  min-width: 190px;
+  max-width: 260px;
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+/* Match app button feel and prevent ugly placeholder/default browser sizing. */
+.testrail-sync-panel .testrail-preview-sync-button,
+.testrail-sync-panel .testrail-approve-sync-button {
+  flex: 0 0 auto;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  min-width: 150px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  border-width: 1px;
+  border-style: solid;
+  color: white;
+  font-weight: 950;
+  line-height: 1.1;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.testrail-sync-panel .testrail-preview-sync-button {
+  border-color: rgba(96, 165, 250, 0.5);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.94), rgba(30, 64, 175, 0.84));
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.18);
+}
+
+.testrail-sync-panel .testrail-preview-sync-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 16px 32px rgba(37, 99, 235, 0.22),
+    0 0 22px rgba(96, 165, 250, 0.14);
+}
+
+.testrail-sync-panel .testrail-approve-sync-button {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.96), rgba(21, 128, 61, 0.86));
+  box-shadow: 0 14px 28px rgba(34, 197, 94, 0.18);
+}
+
+.testrail-sync-panel .testrail-approve-sync-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 16px 32px rgba(34, 197, 94, 0.22),
+    0 0 22px rgba(34, 197, 94, 0.14);
+}
+
+.testrail-sync-panel .testrail-preview-sync-button:disabled,
+.testrail-sync-panel .testrail-approve-sync-button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Keep the safety note, message banners, preview cards, and result rows inside the panel. */
+.testrail-sync-panel .testrail-safe-sync-note,
+.testrail-sync-panel .testrail-settings-message,
+.testrail-sync-panel .testrail-preview-list,
+.testrail-sync-panel .testrail-preview-card,
+.testrail-sync-panel .testrail-sync-result-list,
+.testrail-sync-panel .testrail-sync-result-summary,
+.testrail-sync-panel .testrail-sync-result-row {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Payloads should scroll/wrap inside the card, not stretch the whole page. */
+.testrail-sync-panel .testrail-preview-card details {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.testrail-sync-panel .testrail-preview-card pre {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Guard text rows against long titles/URLs/hashes. */
+.testrail-sync-panel .testrail-preview-card strong,
+.testrail-sync-panel .testrail-preview-card span,
+.testrail-sync-panel .testrail-sync-result-row strong,
+.testrail-sync-panel .testrail-sync-result-row span {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .testrail-sync-panel .testrail-sync-actions {
+    display: grid !important;
+    grid-template-columns: 1fr;
+  }
+
+  .testrail-sync-panel .testrail-sync-actions select,
+  .testrail-sync-panel .testrail-preview-sync-button,
+  .testrail-sync-panel .testrail-approve-sync-button {
+    width: 100%;
+    max-width: none;
+  }
+}
+
