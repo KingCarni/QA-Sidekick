@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AccountSetupUserPanel from "@/components/AccountSetupUserPanel";
 import AutomationExportSettingsForm from "@/components/AutomationExportSettingsForm";
 import BugCollectionPanel from "@/components/BugCollectionPanel";
 import E2EAutomationReadinessPanel from "@/components/E2EAutomationReadinessPanel";
@@ -38,6 +39,7 @@ export default function SettingsWorkspace({
 
   const tabClass = (area: SettingsArea) =>
     activeArea === area ? "settings-area-tab settings-area-tab-active" : "settings-area-tab";
+  const showInternalE2ESetup = process.env.NEXT_PUBLIC_SHOW_E2E_ACCOUNT_SETUP === "true";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -182,15 +184,26 @@ export default function SettingsWorkspace({
 
       {activeArea === "account-setup" ? (
         <section className="settings-wide-section account-setup-section" data-testid="account-setup-panel" id="account-setup">
-          <E2EAutomationReadinessPanel />
-          <AutomationExportSettingsForm
-            value={automationProjectConfig}
-            onChange={updateAutomationProjectConfig}
+          <AccountSetupUserPanel
+            activeProjectName={activeProject?.name}
+            activeProjectDescription={activeProject?.description}
+            jiraConfigured={Boolean(initialJiraConfig)}
+            testRailConfigured={false}
           />
-          <ProjectAutomationCredentialsForm
-            profiles={automationCredentialProfiles}
-            onChange={updateAutomationCredentialProfiles}
-          />
+
+          {showInternalE2ESetup ? (
+            <section className="dev-only-account-setup">
+              <E2EAutomationReadinessPanel />
+              <AutomationExportSettingsForm
+                value={automationProjectConfig}
+                onChange={updateAutomationProjectConfig}
+              />
+              <ProjectAutomationCredentialsForm
+                profiles={automationCredentialProfiles}
+                onChange={updateAutomationCredentialProfiles}
+              />
+            </section>
+          ) : null}
         </section>
       ) : null}
 
