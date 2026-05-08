@@ -19683,3 +19683,166 @@ body [data-q84-sources-menu="true"] {
   }
 }
 
+/* QAS-89 color/order/menu correction */
+
+/* Menu: place in the upper-right hero area, not low/center */
+.hero,
+.app-hero,
+.qatalyst-hero {
+  position: relative;
+}
+
+.hero-menu-button {
+  position: absolute;
+  top: 38px;
+  right: 292px;
+  z-index: 6;
+  min-width: 92px;
+  min-height: 38px;
+  padding: 8px 16px;
+  border: 1px solid rgba(96, 165, 250, 0.56);
+  border-radius: 13px;
+  color: #fff;
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.22), transparent 42%),
+    linear-gradient(135deg, #2563eb, #1e3a8a);
+  box-shadow:
+    0 12px 24px rgba(37, 99, 235, 0.24),
+    0 0 18px rgba(37, 99, 235, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  font-size: 0.88rem;
+  font-weight: 950;
+}
+
+.hero-menu-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+/* Tool tone base accents */
+.tool-toolbar-button-green {
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+.tool-toolbar-button-yellow {
+  border-color: rgba(250, 204, 21, 0.24);
+}
+
+.tool-toolbar-button-red {
+  border-color: rgba(248, 113, 113, 0.24);
+}
+
+.tool-toolbar-button-blue {
+  border-color: rgba(96, 165, 250, 0.24);
+}
+
+/* Inactive tinted surfaces */
+.tool-toolbar-button-green:not(.tool-toolbar-button-active) {
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.09), transparent 40%),
+    linear-gradient(135deg, rgba(28, 28, 28, 0.96), rgba(10, 10, 10, 0.96));
+}
+
+.tool-toolbar-button-yellow:not(.tool-toolbar-button-active) {
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.1), transparent 40%),
+    linear-gradient(135deg, rgba(32, 30, 20, 0.96), rgba(10, 10, 10, 0.96));
+}
+
+.tool-toolbar-button-red:not(.tool-toolbar-button-active) {
+  background:
+    radial-gradient(circle at top left, rgba(248, 113, 113, 0.09), transparent 40%),
+    linear-gradient(135deg, rgba(32, 24, 24, 0.96), rgba(10, 10, 10, 0.96));
+}
+
+.tool-toolbar-button-blue:not(.tool-toolbar-button-active) {
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.11), transparent 40%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(10, 10, 10, 0.96));
+}
+
+/* Active tone colors */
+.tool-toolbar-button-green.tool-toolbar-button-active {
+  border-color: rgba(74, 222, 128, 0.62);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.16), transparent 34%),
+    linear-gradient(135deg, #22c55e, #15803d 58%, #052e16);
+  box-shadow:
+    0 22px 44px rgba(34, 197, 94, 0.26),
+    0 0 34px rgba(34, 197, 94, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.tool-toolbar-button-yellow.tool-toolbar-button-active {
+  border-color: rgba(253, 224, 71, 0.62);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.15), transparent 34%),
+    linear-gradient(135deg, #f59e0b, #b45309 58%, #451a03);
+  box-shadow:
+    0 22px 44px rgba(245, 158, 11, 0.25),
+    0 0 34px rgba(250, 204, 21, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.tool-toolbar-button-red.tool-toolbar-button-active {
+  border-color: rgba(252, 165, 165, 0.62);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.16), transparent 34%),
+    linear-gradient(135deg, #ef4444, #b91c1c 58%, #450a0a);
+  box-shadow:
+    0 22px 44px rgba(220, 38, 38, 0.3),
+    0 0 34px rgba(248, 113, 113, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.tool-toolbar-button-blue.tool-toolbar-button-active {
+  border-color: rgba(147, 197, 253, 0.62);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.16), transparent 34%),
+    linear-gradient(135deg, #3b82f6, #1d4ed8 58%, #172554);
+  box-shadow:
+    0 22px 44px rgba(37, 99, 235, 0.28),
+    0 0 34px rgba(96, 165, 250, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+/* Active underline should inherit the tone better */
+.tool-toolbar-button-active::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 10px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.92), rgba(255,255,255,0.18));
+}
+
+/* Coming soon remains blue but muted */
+.tool-toolbar-button-coming-soon {
+  opacity: 0.76;
+}
+
+.tool-toolbar-button-coming-soon em {
+  border-color: rgba(96, 165, 250, 0.3);
+  color: rgb(191, 219, 254);
+  background: rgba(37, 99, 235, 0.14);
+}
+
+@media (max-width: 1120px) {
+  .hero-menu-button {
+    top: 28px;
+    right: 28px;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero-menu-button {
+    position: static;
+    width: fit-content;
+    min-width: 90px;
+    min-height: 38px;
+    margin-top: 16px;
+  }
+}
+

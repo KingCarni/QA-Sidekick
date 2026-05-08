@@ -1,11 +1,13 @@
 "use client";
 
 export type QatalystToolId = "tests" | "risk" | "bug" | "improve";
+export type QatalystToolTone = "green" | "yellow" | "red" | "blue";
 
 export type QatalystToolOption = {
   id: QatalystToolId;
   label: string;
   description: string;
+  tone?: QatalystToolTone;
   status?: "ready" | "coming-soon";
   testId?: string;
 };
@@ -22,8 +24,9 @@ const FUTURE_TOOLS = [
     label: "Feature Builder",
     description: "Shape rough ideas into feature briefs",
     status: "coming-soon",
+    tone: "blue",
   },
-];
+] as const;
 
 export default function ToolToolbar({ tools, activeTool, onToolChange }: ToolToolbarProps) {
   return (
@@ -46,7 +49,11 @@ export default function ToolToolbar({ tools, activeTool, onToolChange }: ToolToo
               type="button"
               role="tab"
               aria-selected={isActive}
-              className={isActive ? "tool-toolbar-button tool-toolbar-button-active" : "tool-toolbar-button"}
+              className={[
+                "tool-toolbar-button",
+                `tool-toolbar-button-${tool.tone ?? "red"}`,
+                isActive ? "tool-toolbar-button-active" : "",
+              ].filter(Boolean).join(" ")}
               data-testid={tool.testId}
               onClick={() => onToolChange(tool.id)}
             >
@@ -60,7 +67,11 @@ export default function ToolToolbar({ tools, activeTool, onToolChange }: ToolToo
           <button
             key={tool.id}
             type="button"
-            className="tool-toolbar-button tool-toolbar-button-coming-soon"
+            className={[
+              "tool-toolbar-button",
+              "tool-toolbar-button-blue",
+              "tool-toolbar-button-coming-soon",
+            ].filter(Boolean).join(" ")}
             disabled
             aria-disabled="true"
             title="Coming soon in QAS-88"
