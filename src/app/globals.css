@@ -19846,3 +19846,54 @@ body [data-q84-sources-menu="true"] {
   }
 }
 
+/* QAS-89 final menu position fix */
+
+/*
+  The prior menu placement was still too low/central.
+  This moves Menu into the upper-right open area of the hero card,
+  left of the QAtalyst logo and above the body-copy line.
+*/
+
+.hero,
+.app-hero,
+.qatalyst-hero {
+  position: relative;
+}
+
+.hero-menu-button {
+  position: absolute;
+  top: 48px;
+  right: 320px;
+  z-index: 8;
+  min-width: 92px;
+  min-height: 38px;
+  padding: 8px 16px;
+}
+
+/*
+  If the logo/card spacing differs on your local screen, adjust only right:
+  - move farther right: decrease to 280px
+  - move farther left: increase to 360px
+
+  If it is still too low, lower top:
+  - higher: 36px
+  - lower: 58px
+*/
+
+@media (max-width: 1120px) {
+  .hero-menu-button {
+    top: 28px;
+    right: 28px;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero-menu-button {
+    position: static;
+    width: fit-content;
+    min-width: 90px;
+    min-height: 38px;
+    margin-top: 16px;
+  }
+}
+
