@@ -20,7 +20,7 @@ const accountCardStyle: CSSProperties = {
 
 const floatingIdentityStyle: CSSProperties = {
   position: "absolute",
-  top: "-170px",
+  top: "-198px",
   right: "8px",
   zIndex: 20,
   minWidth: "220px",
@@ -51,8 +51,32 @@ const floatingIdentityEmailStyle: CSSProperties = {
   textShadow: "0 2px 14px rgba(0, 0, 0, 0.42)",
 };
 
+const actionRowStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(3, minmax(118px, 1fr))",
+  gap: "12px",
+  alignItems: "end",
+  width: "100%",
+};
+
+const actionCellStyle: CSSProperties = {
+  minWidth: 0,
+  position: "relative",
+};
+
+const signOutCellStyle: CSSProperties = {
+  ...actionCellStyle,
+  paddingTop: "46px",
+};
+
+const menuButtonWrapStyle: CSSProperties = {
+  position: "absolute",
+  top: "0",
+  left: "0",
+  right: "0",
+};
+
 const menuButtonStyle: CSSProperties = {
-  position: "static",
   width: "100%",
   minHeight: "34px",
   padding: "7px 12px",
@@ -60,11 +84,9 @@ const menuButtonStyle: CSSProperties = {
   fontSize: "0.8rem",
 };
 
-const signOutColumnStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "8px",
-  minWidth: 0,
+const actionButtonStyle: CSSProperties = {
+  width: "100%",
+  minHeight: "42px",
 };
 
 const signedOutCardStyle: CSSProperties = {
@@ -230,12 +252,19 @@ export default function AuthStatus() {
         <div className="qa-auth-card qa-auth-card-signed-out" style={signedOutCardStyle}>
           <FloatingSignedInIdentity label="Account" value="Not signed in" />
 
-          <div className="qa-auth-action-row account-action-row">
-            <span />
-            <span />
-            <div style={signOutColumnStyle}>
-              <AccountMenuButton isSignedIn={false} />
-              <button className="qa-auth-primary-button" type="button" onClick={() => signIn("google")}>
+          <div className="qa-auth-action-row account-action-row" style={actionRowStyle}>
+            <div style={actionCellStyle} />
+            <div style={actionCellStyle} />
+            <div style={signOutCellStyle}>
+              <div style={menuButtonWrapStyle}>
+                <AccountMenuButton isSignedIn={false} />
+              </div>
+              <button
+                className="qa-auth-primary-button"
+                style={actionButtonStyle}
+                type="button"
+                onClick={() => signIn("google")}
+              >
                 Sign in
               </button>
             </div>
@@ -252,14 +281,28 @@ export default function AuthStatus() {
       <div className="qa-auth-card qa-auth-card-signed-in" style={accountCardStyle}>
         <FloatingSignedInIdentity label="Signed in" value={displayName} />
 
-        <div className="qa-auth-action-row account-action-row">
-          <CreditsPill />
-          <Link className="qa-auth-secondary-button" href="/account">
-            Account
-          </Link>
-          <div style={signOutColumnStyle}>
-            <AccountMenuButton isSignedIn />
-            <button className="qa-auth-ghost-button" type="button" onClick={() => signOut()}>
+        <div className="qa-auth-action-row account-action-row" style={actionRowStyle}>
+          <div style={actionCellStyle}>
+            <CreditsPill />
+          </div>
+
+          <div style={actionCellStyle}>
+            <Link className="qa-auth-secondary-button" href="/account" style={actionButtonStyle}>
+              Account
+            </Link>
+          </div>
+
+          <div style={signOutCellStyle}>
+            <div style={menuButtonWrapStyle}>
+              <AccountMenuButton isSignedIn />
+            </div>
+
+            <button
+              className="qa-auth-ghost-button"
+              style={actionButtonStyle}
+              type="button"
+              onClick={() => signOut()}
+            >
               Sign out
             </button>
           </div>
