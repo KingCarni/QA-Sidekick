@@ -13,6 +13,44 @@ type MenuPosition = {
 const MENU_WIDTH = 238;
 const MENU_GAP = 10;
 
+const accountCardStyle: CSSProperties = {
+  overflow: "visible",
+  position: "relative",
+};
+
+const floatingIdentityStyle: CSSProperties = {
+  position: "absolute",
+  top: "-170px",
+  right: "8px",
+  zIndex: 20,
+  minWidth: "220px",
+  textAlign: "right",
+  pointerEvents: "none",
+};
+
+const floatingIdentityKickerStyle: CSSProperties = {
+  display: "block",
+  color: "#fca5a5",
+  fontSize: "0.68rem",
+  fontWeight: 1000,
+  letterSpacing: "0.13em",
+  textTransform: "uppercase",
+  textShadow: "0 0 14px rgba(248, 113, 113, 0.22)",
+};
+
+const floatingIdentityEmailStyle: CSSProperties = {
+  display: "block",
+  overflow: "hidden",
+  maxWidth: "260px",
+  color: "#ffffff",
+  fontSize: "0.82rem",
+  fontWeight: 950,
+  lineHeight: 1.2,
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  textShadow: "0 2px 14px rgba(0, 0, 0, 0.42)",
+};
+
 const menuButtonStyle: CSSProperties = {
   position: "static",
   width: "100%",
@@ -29,13 +67,9 @@ const signOutColumnStyle: CSSProperties = {
   minWidth: 0,
 };
 
-const accountCardStyle: CSSProperties = {
-  overflow: "visible",
-};
-
-const signedInIdentityStyle: CSSProperties = {
-  justifyContent: "flex-end",
-  textAlign: "right",
+const signedOutCardStyle: CSSProperties = {
+  ...accountCardStyle,
+  minHeight: "104px",
 };
 
 function AccountMenuButton({ isSignedIn }: { isSignedIn: boolean }) {
@@ -165,6 +199,17 @@ function AccountMenuButton({ isSignedIn }: { isSignedIn: boolean }) {
   );
 }
 
+function FloatingSignedInIdentity({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="qa-floating-signed-in" style={floatingIdentityStyle}>
+      <span style={floatingIdentityKickerStyle}>{label}</span>
+      <strong style={floatingIdentityEmailStyle} title={value}>
+        {value}
+      </strong>
+    </div>
+  );
+}
+
 export default function AuthStatus() {
   const { data: session, status } = useSession();
 
@@ -182,13 +227,8 @@ export default function AuthStatus() {
   if (!session?.user) {
     return (
       <aside className="qa-auth-widget" aria-label="Account status">
-        <div className="qa-auth-card qa-auth-card-signed-out" style={accountCardStyle}>
-          <div className="qa-auth-copy qa-auth-copy-under account-identity-row" style={signedInIdentityStyle}>
-            <div>
-              <span className="qa-auth-kicker account-kicker">Account</span>
-              <strong className="signed-in-email">Not signed in</strong>
-            </div>
-          </div>
+        <div className="qa-auth-card qa-auth-card-signed-out" style={signedOutCardStyle}>
+          <FloatingSignedInIdentity label="Account" value="Not signed in" />
 
           <div className="qa-auth-action-row account-action-row">
             <span />
@@ -210,14 +250,7 @@ export default function AuthStatus() {
   return (
     <aside className="qa-auth-widget" aria-label="Account status">
       <div className="qa-auth-card qa-auth-card-signed-in" style={accountCardStyle}>
-        <div className="qa-auth-copy qa-auth-copy-under account-identity-row" style={signedInIdentityStyle}>
-          <div>
-            <span className="qa-auth-kicker account-kicker">Signed in</span>
-            <strong className="signed-in-email" title={displayName}>
-              {displayName}
-            </strong>
-          </div>
-        </div>
+        <FloatingSignedInIdentity label="Signed in" value={displayName} />
 
         <div className="qa-auth-action-row account-action-row">
           <CreditsPill />
