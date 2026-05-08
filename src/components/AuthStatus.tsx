@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
+import { createPortal } from "react-dom";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import CreditsPill from "@/components/CreditsPill";
 
@@ -85,6 +86,32 @@ const menuButtonStyle: CSSProperties = {
   fontSize: "0.8rem",
 };
 
+const menuPortalStyle: CSSProperties = {
+  position: "fixed",
+  zIndex: 2147483647,
+  width: `${MENU_WIDTH}px`,
+  padding: "12px",
+  border: "1px solid rgba(248, 113, 113, 0.34)",
+  borderRadius: "16px",
+  background:
+    "radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 42%), linear-gradient(135deg, rgba(8, 8, 10, 0.98), rgba(0, 0, 0, 0.98))",
+  boxShadow:
+    "0 28px 70px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(255, 255, 255, 0.04), 0 0 34px rgba(248, 113, 113, 0.12)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px",
+};
+
+const menuLinkStyle: CSSProperties = {
+  display: "block",
+  padding: "12px 12px",
+  borderRadius: "10px",
+  color: "#ffffff",
+  fontSize: "0.95rem",
+  fontWeight: 950,
+  textDecoration: "none",
+};
+
 const actionButtonStyle: CSSProperties = {
   width: "100%",
   minHeight: "42px",
@@ -97,18 +124,19 @@ const signedOutCardStyle: CSSProperties = {
 
 function AccountMenuButton({ isSignedIn }: { isSignedIn: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState<MenuPosition>({ top: 0, left: 0 });
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const [position, setPosition] = useState<MenuPosition>({ top: -9999, left: -9999 });
+  const menuRef = useRef<HTMLElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   function updatePosition() {
     const button = buttonRef.current;
-    if (!button) return;
+    if (!button || typeof window === "undefined") return;
 
     const rect = button.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const estimatedMenuHeight = isSignedIn ? 264 : 312;
+    const estimatedMenuHeight = isSignedIn ? 258 : 308;
     const preferredTop = rect.bottom + MENU_GAP;
     const wouldOverflowBottom = preferredTop + estimatedMenuHeight > viewportHeight - 16;
 
@@ -122,6 +150,10 @@ function AccountMenuButton({ isSignedIn }: { isSignedIn: boolean }) {
     setPosition({ top, left });
   }
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   useLayoutEffect(() => {
     if (!isOpen) return;
 
@@ -131,7 +163,7 @@ function AccountMenuButton({ isSignedIn }: { isSignedIn: boolean }) {
   useEffect(() => {
     if (!isOpen) return;
 
-    function handleDocumentClick(event: MouseEvent) {
+    function handleDocumentPointerDown(event: PointerEvent) {
       const target = event.target as Node;
       const menu = menuRef.current;
       const button = buttonRef.current;
@@ -153,13 +185,13 @@ function AccountMenuButton({ isSignedIn }: { isSignedIn: boolean }) {
       updatePosition();
     }
 
-    document.addEventListener("mousedown", handleDocumentClick);
+    document.addEventListener("pointerdown", handleDocumentPointerDown);
     document.addEventListener("keydown", handleEscape);
     window.addEventListener("resize", handleReposition);
     window.addEventListener("scroll", handleReposition, true);
 
     return () => {
-      document.removeEventListener("mousedown", handleDocumentClick);
+      document.removeEventListener("pointerdown", handleDocumentPointerDown);
       document.removeEventListener("keydown", handleEscape);
       window.removeEventListener("resize", handleReposition);
       window.removeEventListener("scroll", handleReposition, true);
@@ -169,6 +201,41 @@ function AccountMenuButton({ isSignedIn }: { isSignedIn: boolean }) {
   function closeMenu() {
     setIsOpen(false);
   }
+
+  const menuMarkup = (
+    <nav
+      aria-label="QAtalyst menu"
+      ref={menuRef}
+      role="menu"
+      style={{
+        ...menuPortalStyle,
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+      }}
+    >
+      <Link href="/buy-credits" role="menuitem" onClick={closeMenu} style={menuLinkStyle}>
+        Buy Credits
+      </Link>
+      <Link href="/reports" role="menuitem" onClick={closeMenu} style={menuLinkStyle}>
+        Saved Reports
+      </Link>
+      <Link href="/jira/settings" role="menuitem" onClick={closeMenu} style={menuLinkStyle}>
+        Settings
+      </Link>
+      <Link href="/account" role="menuitem" onClick={closeMenu} style={menuLinkStyle}>
+        Account
+      </Link>
+      <Link href="/donate" role="menuitem" onClick={closeMenu} style={menuLinkStyle}>
+        Donate
+      </Link>
+
+      {!isSignedIn ? (
+        <Link href="/api/auth/signin" role="menuitem" onClick={closeMenu} style={menuLinkStyle}>
+          Sign in
+        </Link>
+      ) : null}
+    </nav>
+  );
 
   return (
     <>
@@ -184,40 +251,7 @@ function AccountMenuButton({ isSignedIn }: { isSignedIn: boolean }) {
         Menu
       </button>
 
-      {isOpen ? (
-        <nav
-          aria-label="QAtalyst menu"
-          className="app-header-menu-popover app-header-menu-floating"
-          ref={menuRef}
-          role="menu"
-          style={{
-            top: `${position.top}px`,
-            left: `${position.left}px`,
-          }}
-        >
-          <Link href="/buy-credits" role="menuitem" onClick={closeMenu}>
-            Buy Credits
-          </Link>
-          <Link href="/reports" role="menuitem" onClick={closeMenu}>
-            Saved Reports
-          </Link>
-          <Link href="/jira/settings" role="menuitem" onClick={closeMenu}>
-            Settings
-          </Link>
-          <Link href="/account" role="menuitem" onClick={closeMenu}>
-            Account
-          </Link>
-          <Link href="/donate" role="menuitem" onClick={closeMenu}>
-            Donate
-          </Link>
-
-          {!isSignedIn ? (
-            <Link href="/api/auth/signin" role="menuitem" onClick={closeMenu}>
-              Sign in
-            </Link>
-          ) : null}
-        </nav>
-      ) : null}
+      {isOpen && isMounted ? createPortal(menuMarkup, document.body) : null}
     </>
   );
 }
