@@ -96,7 +96,7 @@ export default function AppHeaderMenu({ isSignedIn = true }: AppHeaderMenuProps)
       <button
         aria-expanded={isOpen}
         aria-haspopup="menu"
-        className="app-header-menu-button"
+        className="app-header-menu-button hero-menu-button"
         onClick={() => setIsOpen((value) => !value)}
         ref={buttonRef}
         type="button"

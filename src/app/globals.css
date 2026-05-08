@@ -19421,3 +19421,265 @@ body [data-q84-sources-menu="true"] {
   }
 }
 
+/* QAS-89 Toolbelt/Header polish pass */
+
+/* Sources pill: label above count */
+.source-picker-trigger,
+.sources-trigger,
+.project-source-trigger {
+  min-height: 56px;
+}
+
+.source-pill-copy {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  line-height: 1.05;
+}
+
+.source-pill-label {
+  color: rgba(220, 252, 231, 0.88);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.01em;
+}
+
+.source-pill-count {
+  color: #fff;
+  font-size: 1.02rem;
+  font-weight: 1000;
+  letter-spacing: -0.02em;
+}
+
+.source-picker-caret {
+  margin-left: auto;
+  color: #bbf7d0;
+  font-size: 0.9rem;
+}
+
+/* Hero/menu positioning */
+.hero,
+.app-hero,
+.qatalyst-hero {
+  position: relative;
+}
+
+.hero-menu-button {
+  position: absolute;
+  top: 36px;
+  right: 330px;
+  z-index: 5;
+  min-width: 104px;
+  min-height: 42px;
+  padding: 9px 18px;
+  border: 1px solid rgba(96, 165, 250, 0.52);
+  border-radius: 14px;
+  color: #fff;
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.2), transparent 44%),
+    linear-gradient(135deg, #1d4ed8, #1e3a8a);
+  box-shadow:
+    0 12px 28px rgba(37, 99, 235, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  font-size: 0.94rem;
+  font-weight: 950;
+}
+
+.hero-menu-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+/* Signed-in/account card: identity above actions, action buttons aligned horizontally */
+.account-summary-card,
+.account-card,
+.user-account-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.account-identity-row {
+  display: flex;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.account-identity-row div {
+  min-width: 0;
+}
+
+.account-kicker,
+.signed-in-label {
+  display: block;
+  color: #fca5a5;
+  font-size: 0.68rem;
+  font-weight: 1000;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.account-identity-row strong,
+.signed-in-email {
+  display: block;
+  overflow: hidden;
+  max-width: 360px;
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-action-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(118px, 1fr));
+  gap: 12px;
+  align-items: center;
+}
+
+.account-action-row button,
+.account-action-row a,
+.account-action-row .credits-pill {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Toolbelt pop */
+.tool-toolbar-panel {
+  overflow: visible;
+  border-color: rgba(248, 113, 113, 0.24);
+  background:
+    radial-gradient(circle at 16% 0%, rgba(248, 113, 113, 0.16), transparent 34%),
+    radial-gradient(circle at 92% 8%, rgba(59, 130, 246, 0.13), transparent 30%),
+    radial-gradient(circle at 60% 100%, rgba(34, 197, 94, 0.08), transparent 32%),
+    linear-gradient(135deg, rgba(18, 18, 20, 0.98), rgba(10, 7, 7, 0.98));
+}
+
+.tool-toolbar-heading {
+  margin-bottom: 18px;
+}
+
+.tool-toolbar-grid {
+  grid-template-columns: repeat(5, minmax(145px, 1fr));
+  gap: 14px;
+}
+
+.tool-toolbar-button {
+  position: relative;
+  overflow: hidden;
+  min-height: 92px;
+  padding: 18px 16px;
+  border-radius: 18px;
+  isolation: isolate;
+}
+
+.tool-toolbar-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.14), transparent 36%),
+    linear-gradient(135deg, rgba(248, 113, 113, 0.12), transparent 52%);
+  transition: opacity 0.18s ease;
+}
+
+.tool-toolbar-button:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.tool-toolbar-button strong {
+  font-size: 1.02rem;
+  letter-spacing: -0.01em;
+}
+
+.tool-toolbar-button span {
+  max-width: 15ch;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.tool-toolbar-button-active {
+  transform: translateY(-2px);
+  border-color: rgba(252, 165, 165, 0.58);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 34%),
+    linear-gradient(135deg, #ef4444, #b91c1c 54%, #7f1d1d);
+  box-shadow:
+    0 22px 44px rgba(220, 38, 38, 0.32),
+    0 0 34px rgba(248, 113, 113, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.tool-toolbar-button-active::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 10px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(252,165,165,0.25));
+}
+
+.tool-toolbar-button-coming-soon {
+  border-color: rgba(96, 165, 250, 0.2);
+  opacity: 0.72;
+}
+
+.tool-toolbar-button-coming-soon strong,
+.tool-toolbar-button-coming-soon span {
+  color: rgba(226, 232, 240, 0.62);
+}
+
+@media (max-width: 1120px) {
+  .hero-menu-button {
+    top: 28px;
+    right: 28px;
+  }
+
+  .tool-toolbar-grid {
+    grid-template-columns: repeat(3, minmax(145px, 1fr));
+  }
+
+  .account-action-row {
+    grid-template-columns: repeat(3, minmax(96px, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .hero-menu-button {
+    position: static;
+    width: fit-content;
+    min-width: 92px;
+    min-height: 38px;
+    margin-top: 16px;
+  }
+
+  .account-summary-card,
+  .account-card,
+  .user-account-card {
+    align-items: stretch;
+  }
+
+  .account-identity-row {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .account-action-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-toolbar-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

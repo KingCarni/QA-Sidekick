@@ -413,11 +413,11 @@ export default function HeaderProjectSourceControls({
             setIsSourcesOpen((value) => !value);
           }}
         >
-          <span>
-            <strong>{optionSummary(selectedCount, enabledSources.length)}</strong>
-            <small>{sourceButtonSubtext(selectedCount, suggestedSourceIds.length, enabledSources.length)}</small>
+          <span className="source-pill-copy">
+            <small className="source-pill-label">{sourceButtonSubtext(selectedCount, suggestedSourceIds.length, enabledSources.length)}</small>
+            <strong className="source-pill-count">{optionSummary(selectedCount, enabledSources.length)}</strong>
           </span>
-          <em>{isSourcesOpen ? "▲" : "▼"}</em>
+          <em className="source-picker-caret">{isSourcesOpen ? "▲" : "▼"}</em>
         </button>
 
         {isMounted && isSourcesOpen ? createPortal(sourcesMenu, document.body) : null}

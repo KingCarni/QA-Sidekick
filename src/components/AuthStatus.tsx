@@ -41,7 +41,14 @@ export default function AuthStatus() {
   return (
     <aside className="qa-auth-widget" aria-label="Account status">
       <div className="qa-auth-card qa-auth-card-signed-in">
-        <div className="qa-auth-action-row">
+        <div className="qa-auth-copy qa-auth-copy-under account-identity-row">
+          <div>
+            <span className="qa-auth-kicker account-kicker">Signed in</span>
+            <strong className="signed-in-email" title={displayName}>{displayName}</strong>
+          </div>
+        </div>
+
+        <div className="qa-auth-action-row account-action-row">
           <CreditsPill />
           <Link className="qa-auth-secondary-button" href="/account">
             Account
@@ -49,11 +56,6 @@ export default function AuthStatus() {
           <button className="qa-auth-ghost-button" type="button" onClick={() => signOut()}>
             Sign out
           </button>
-        </div>
-
-        <div className="qa-auth-copy qa-auth-copy-under">
-          <span className="qa-auth-kicker">Signed in</span>
-          <strong title={displayName}>{displayName}</strong>
         </div>
       </div>
     </aside>
