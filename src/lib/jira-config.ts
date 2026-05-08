@@ -1,8 +1,11 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { decryptTestRailSecret, encryptTestRailSecret } from "@/lib/testrail-secret";
 
 export type JiraConfigPayload = {
   siteUrl: string;
+  jiraEmail: string;
+  jiraApiToken?: string;
   projectKey: string;
   defaultIssueType: string;
   defaultBugIssueType: string;
@@ -12,6 +15,8 @@ export type JiraConfigPayload = {
 export type SafeJiraConfig = {
   id: string;
   siteUrl: string;
+  jiraEmail: string;
+  hasJiraApiToken: boolean;
   projectKey: string;
   defaultIssueType: string;
   defaultBugIssueType: string;
@@ -68,6 +73,11 @@ function safeFieldMapping(value: unknown): Record<string, unknown> {
 
 export function normalizeJiraConfigPayload(value: {
   siteUrl?: unknown;
+  jiraEmail?: unknown;
+  email?: unknown;
+  username?: unknown;
+  jiraApiToken?: unknown;
+  apiToken?: unknown;
   projectKey?: unknown;
   defaultIssueType?: unknown;
   defaultBugIssueType?: unknown;
@@ -75,6 +85,8 @@ export function normalizeJiraConfigPayload(value: {
 }): JiraConfigPayload {
   return {
     siteUrl: normalizeUrl(value.siteUrl),
+    jiraEmail: String(value.jiraEmail ?? value.email ?? value.username ?? "").trim(),
+    jiraApiToken: String(value.jiraApiToken ?? value.apiToken ?? "").trim() || undefined,
     projectKey: normalizeProjectKey(value.projectKey),
     defaultIssueType: normalizeIssueType(value.defaultIssueType, "Task"),
     defaultBugIssueType: normalizeIssueType(value.defaultBugIssueType, "Bug"),
@@ -89,6 +101,10 @@ export function validateJiraConfigPayload(payload: JiraConfigPayload) {
     errors.push("Jira site URL is required.");
   } else if (!/^https?:\/\//i.test(payload.siteUrl)) {
     errors.push("Jira site URL must be a valid http or https URL.");
+  }
+
+  if (!payload.jiraEmail) {
+    errors.push("Jira username/email is required.");
   }
 
   if (!payload.projectKey) {
@@ -113,6 +129,8 @@ export function validateJiraConfigPayload(payload: JiraConfigPayload) {
 function toSafeConfig(config: {
   id: string;
   siteUrl: string;
+  jiraEmail: string | null;
+  encryptedApiToken: string | null;
   projectKey: string;
   defaultIssueType: string;
   defaultBugIssueType: string;
@@ -123,6 +141,8 @@ function toSafeConfig(config: {
   return {
     id: config.id,
     siteUrl: config.siteUrl,
+    jiraEmail: config.jiraEmail ?? "",
+    hasJiraApiToken: Boolean(config.encryptedApiToken),
     projectKey: config.projectKey,
     defaultIssueType: config.defaultIssueType,
     defaultBugIssueType: config.defaultBugIssueType,
@@ -148,6 +168,8 @@ export async function getUserJiraConfigStatus(userId: string): Promise<JiraConfi
   const missingFields: string[] = [];
 
   if (!config?.siteUrl) missingFields.push("Jira site URL");
+  if (!config?.jiraEmail) missingFields.push("Jira username/email");
+  if (!config?.hasJiraApiToken) missingFields.push("Jira API token");
   if (!config?.projectKey) missingFields.push("Project key");
   if (!config?.defaultIssueType) missingFields.push("Default issue type");
   if (!config?.defaultBugIssueType) missingFields.push("Default bug issue type");
@@ -160,10 +182,15 @@ export async function getUserJiraConfigStatus(userId: string): Promise<JiraConfi
 }
 
 export async function saveUserJiraConfig(userId: string, payload: JiraConfigPayload) {
+  const existing = userId ? await prisma.jiraConfig.findUnique({ where: { userId } }) : null;
   const errors = validateJiraConfigPayload(payload);
 
   if (!userId) {
     errors.push("User is required.");
+  }
+
+  if (!payload.jiraApiToken && !existing?.encryptedApiToken) {
+    errors.push("Jira API token is required.");
   }
 
   if (errors.length > 0) {
@@ -174,10 +201,16 @@ export async function saveUserJiraConfig(userId: string, payload: JiraConfigPayl
     };
   }
 
+  const encryptedApiToken = payload.jiraApiToken
+    ? encryptTestRailSecret(payload.jiraApiToken)
+    : existing?.encryptedApiToken;
+
   const config = await prisma.jiraConfig.upsert({
     where: { userId },
     update: {
       siteUrl: payload.siteUrl,
+      jiraEmail: payload.jiraEmail,
+      encryptedApiToken,
       projectKey: payload.projectKey,
       defaultIssueType: payload.defaultIssueType,
       defaultBugIssueType: payload.defaultBugIssueType,
@@ -186,6 +219,8 @@ export async function saveUserJiraConfig(userId: string, payload: JiraConfigPayl
     create: {
       userId,
       siteUrl: payload.siteUrl,
+      jiraEmail: payload.jiraEmail,
+      encryptedApiToken,
       projectKey: payload.projectKey,
       defaultIssueType: payload.defaultIssueType,
       defaultBugIssueType: payload.defaultBugIssueType,
@@ -197,6 +232,18 @@ export async function saveUserJiraConfig(userId: string, payload: JiraConfigPayl
     ok: true as const,
     errors: [],
     config: toSafeConfig(config),
+  };
+}
+
+export async function getUserJiraConfigWithSecret(userId: string) {
+  if (!userId) return null;
+
+  const config = await prisma.jiraConfig.findUnique({ where: { userId } });
+  if (!config) return null;
+
+  return {
+    ...toSafeConfig(config),
+    jiraApiToken: config.encryptedApiToken ? decryptTestRailSecret(config.encryptedApiToken) : "",
   };
 }
 

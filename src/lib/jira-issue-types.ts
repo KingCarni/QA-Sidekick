@@ -11,14 +11,14 @@ function cleanSiteUrl(value: string) {
   return value.trim().replace(/\/+$/, "").replace(/\/jira$/i, "");
 }
 
-function getJiraAuth() {
-  const email = process.env.JIRA_API_EMAIL || process.env.ATLASSIAN_EMAIL || process.env.JIRA_EMAIL;
-  const token = process.env.JIRA_API_TOKEN || process.env.ATLASSIAN_API_TOKEN;
+function getJiraAuth(config?: { jiraEmail?: string; jiraApiToken?: string }) {
+  const email = config?.jiraEmail || process.env.JIRA_API_EMAIL || process.env.ATLASSIAN_EMAIL || process.env.JIRA_EMAIL;
+  const token = config?.jiraApiToken || process.env.JIRA_API_TOKEN || process.env.ATLASSIAN_API_TOKEN;
 
   if (!email || !token) {
     return {
       ok: false as const,
-      error: "Jira API credentials are not configured. Add JIRA_API_EMAIL and JIRA_API_TOKEN.",
+      error: "Jira API credentials are not configured. Add Jira username/email and API token.",
     };
   }
 
@@ -32,11 +32,11 @@ async function readJiraJson(response: Response) {
   return response.json().catch(() => null);
 }
 
-export async function listJiraProjectIssueTypes(config: SafeJiraConfig): Promise<
+export async function listJiraProjectIssueTypes(config: SafeJiraConfig & { jiraApiToken?: string }): Promise<
   | { ok: true; issueTypes: JiraIssueTypeOption[] }
   | { ok: false; status: number; error: string; details?: unknown }
 > {
-  const auth = getJiraAuth();
+  const auth = getJiraAuth(config);
 
   if (!auth.ok) {
     return {

@@ -14,6 +14,11 @@ export const dynamic = "force-dynamic";
 
 type SaveJiraConfigBody = {
   siteUrl?: unknown;
+  jiraEmail?: unknown;
+  email?: unknown;
+  username?: unknown;
+  jiraApiToken?: unknown;
+  apiToken?: unknown;
   projectKey?: unknown;
   defaultIssueType?: unknown;
   defaultBugIssueType?: unknown;

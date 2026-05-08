@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { apiError, apiOk, getErrorMessage } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
-import { getUserJiraConfigStatus } from "@/lib/jira-config";
+import { getUserJiraConfigStatus, getUserJiraConfigWithSecret } from "@/lib/jira-config";
 import { listJiraProjectIssueTypes } from "@/lib/jira-issue-types";
 import { durationSince, nowMs, serverLog } from "@/lib/server-log";
 
@@ -41,7 +41,8 @@ export async function GET(req: Request): Promise<Response> {
       });
     }
 
-    const result = await listJiraProjectIssueTypes(jiraStatus.config);
+    const jiraConfigWithSecret = await getUserJiraConfigWithSecret(userId);
+    const result = await listJiraProjectIssueTypes(jiraConfigWithSecret ?? jiraStatus.config);
 
     if (!result.ok) {
       serverLog.warn("Jira issue type load failed.", {

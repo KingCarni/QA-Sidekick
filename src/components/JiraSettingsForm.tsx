@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import JiraCredentialFields from "@/components/JiraCredentialFields";
 import type { SafeJiraConfig } from "@/lib/jira-config";
 
 type JiraSettingsFormProps = {
@@ -57,6 +58,9 @@ function uniqueIssueTypeNames(issueTypes: IssueTypeOption[]) {
 
 export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProps) {
   const [siteUrl, setSiteUrl] = useState(initialConfig?.siteUrl ?? "");
+  const [jiraEmail, setJiraEmail] = useState(initialConfig?.jiraEmail ?? "");
+  const [jiraApiToken, setJiraApiToken] = useState("");
+  const [hasSavedJiraApiToken, setHasSavedJiraApiToken] = useState(Boolean(initialConfig?.hasJiraApiToken));
   const [projectKey, setProjectKey] = useState(initialConfig?.projectKey ?? "");
   const [defaultIssueType, setDefaultIssueType] = useState(initialConfig?.defaultIssueType ?? "Task");
   const [defaultBugIssueType, setDefaultBugIssueType] = useState(initialConfig?.defaultBugIssueType ?? "Task");
@@ -68,7 +72,15 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
 
   const jiraProjectUrl = useMemo(() => buildJiraProjectUrl(siteUrl, projectKey), [siteUrl, projectKey]);
   const jiraIssuesUrl = useMemo(() => buildJiraIssuesUrl(siteUrl, projectKey), [siteUrl, projectKey]);
-  const configured = Boolean(siteUrl.trim() && projectKey.trim() && defaultIssueType.trim() && defaultBugIssueType.trim());
+  const missingJiraConfigItems = [
+    !siteUrl.trim() ? "Jira site URL" : null,
+    !jiraEmail.trim() ? "Jira username/email" : null,
+    !jiraApiToken.trim() && !hasSavedJiraApiToken ? "Jira API token" : null,
+    !projectKey.trim() ? "Project key" : null,
+    !defaultIssueType.trim() ? "Default issue type" : null,
+    !defaultBugIssueType.trim() ? "Default bug issue type" : null,
+  ].filter(Boolean);
+  const configured = missingJiraConfigItems.length === 0;
   const issueTypeNames = useMemo(() => uniqueIssueTypeNames(issueTypes), [issueTypes]);
 
   useEffect(() => {
@@ -125,6 +137,12 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
   }, [initialConfig?.siteUrl, initialConfig?.projectKey, initialConfig?.defaultIssueType, initialConfig?.defaultBugIssueType]);
 
   async function handleRefreshIssueTypes() {
+    if (!siteUrl.trim() || !jiraEmail.trim() || (!jiraApiToken.trim() && !hasSavedJiraApiToken) || !projectKey.trim()) {
+      setIssueTypeState("error");
+      setIssueTypeMessage("Add Jira site URL, username/email, API token, and project key before refreshing issue types.");
+      return;
+    }
+
     setIssueTypeState("loading");
     setIssueTypeMessage("");
 
@@ -166,6 +184,8 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
         },
         body: JSON.stringify({
           siteUrl: cleanedSiteUrl,
+          jiraEmail: jiraEmail.trim(),
+          jiraApiToken: jiraApiToken.trim() || undefined,
           projectKey,
           defaultIssueType,
           defaultBugIssueType,
@@ -180,6 +200,8 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
       }
 
       setSiteUrl(cleanedSiteUrl);
+      setJiraApiToken("");
+      setHasSavedJiraApiToken(true);
       setSaveState("saved");
       setMessage("Jira config saved. QAtalyst can use these defaults for future Jira actions.");
     } catch (error) {
@@ -207,6 +229,9 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
       }
 
       setSiteUrl("");
+      setJiraEmail("");
+      setJiraApiToken("");
+      setHasSavedJiraApiToken(false);
       setProjectKey("");
       setDefaultIssueType("Task");
       setDefaultBugIssueType("Task");
@@ -245,6 +270,14 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
             value={siteUrl}
           />
         </label>
+
+        <JiraCredentialFields
+          jiraEmail={jiraEmail}
+          jiraApiToken={jiraApiToken}
+          hasSavedJiraApiToken={hasSavedJiraApiToken}
+          onJiraEmailChange={setJiraEmail}
+          onJiraApiTokenChange={setJiraApiToken}
+        />
 
         <label>
           <span>Project key</span>
@@ -289,7 +322,7 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
 
         <button
           className="secondary-action-button"
-          disabled={issueTypeState === "loading" || !siteUrl.trim() || !projectKey.trim()}
+          disabled={issueTypeState === "loading" || !siteUrl.trim() || !jiraEmail.trim() || (!jiraApiToken.trim() && !hasSavedJiraApiToken) || !projectKey.trim()}
           onClick={handleRefreshIssueTypes}
           type="button"
         >
@@ -338,6 +371,10 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
           Remove Config
         </button>
       </div>
+
+      <p className={configured ? "jira-settings-message jira-settings-message-success" : "jira-settings-message"}>
+        {configured ? "Jira config is ready." : `Jira config is missing: ${missingJiraConfigItems.join(", ")}.`}
+      </p>
 
       {message ? (
         <p className={saveState === "error" ? "jira-settings-message jira-settings-message-error" : "jira-settings-message"}>

@@ -180,6 +180,8 @@ model JiraConfig {
   id                  String   @id @default(cuid())
   userId              String
   siteUrl             String
+  jiraEmail           String?
+  encryptedApiToken   String?
   projectKey          String
   defaultIssueType    String   @default("Task")
   defaultBugIssueType String   @default("Bug")

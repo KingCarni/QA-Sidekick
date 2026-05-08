@@ -19179,3 +19179,63 @@ body [data-q84-sources-menu="true"] {
   }
 }
 
+/* QAS-90 Jira credential fields */
+
+.jira-credential-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.jira-credential-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.jira-credential-grid label span {
+  color: #fecaca;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.jira-credential-grid input {
+  width: 100%;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  border-radius: 14px;
+  color: var(--text);
+  background: #05070d;
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.015),
+    inset 0 16px 38px rgba(0, 0, 0, 0.28);
+}
+
+.jira-credential-grid input::placeholder {
+  color: rgba(212, 212, 216, 0.48);
+}
+
+.jira-credential-grid input:focus {
+  border-color: rgba(96, 165, 250, 0.72);
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.jira-credential-grid small {
+  color: rgba(212, 212, 216, 0.68);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 760px) {
+  .jira-credential-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
