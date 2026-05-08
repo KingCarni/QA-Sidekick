@@ -92,7 +92,7 @@ export default function StackedProjectJiraControls({ onJiraImport }: StackedProj
             id="stacked-jira-input"
             data-testid="jira-ticket-input"
             value={jiraQuery}
-            placeholder=""
+            placeholder="Ticket key or Jira URL"
             onChange={(event) => {
               setJiraQuery(event.target.value);
               setFetchState("idle");

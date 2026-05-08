@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { apiError, apiOk, getErrorMessage, readJsonBody } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
-import { getUserJiraConfigStatus } from "@/lib/jira-config";
+import { getUserJiraConfigStatus, getUserJiraConfigWithSecret } from "@/lib/jira-config";
 import { buildJiraIssueDraft, createJiraIssue } from "@/lib/jira-issue";
 import { durationSince, nowMs, serverLog } from "@/lib/server-log";
 
@@ -69,6 +69,16 @@ export async function POST(req: Request): Promise<Response> {
       });
     }
 
+    const jiraConfigWithSecret = await getUserJiraConfigWithSecret(userId);
+
+    if (!jiraConfigWithSecret?.jiraApiToken) {
+      return apiError(req, {
+        status: 400,
+        code: "VALIDATION_ERROR",
+        message: "Jira API credentials are not configured. Add Jira username/email and API token in Jira Integration settings.",
+      });
+    }
+
     const draft = buildJiraIssueDraft(
       {
         markdown,
@@ -78,7 +88,7 @@ export async function POST(req: Request): Promise<Response> {
       jiraStatus.config
     );
 
-    const result = await createJiraIssue(jiraStatus.config, draft);
+    const result = await createJiraIssue(jiraConfigWithSecret, draft);
 
     if (!result.ok) {
       serverLog.warn("Jira issue creation failed.", {

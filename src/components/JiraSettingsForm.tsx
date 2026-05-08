@@ -289,7 +289,7 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
         </label>
 
         <label>
-          <span>Default issue type</span>
+          <span>General issue type</span>
           <select onChange={(event) => setDefaultIssueType(event.target.value)} value={defaultIssueType}>
             {issueTypeNames.map((issueTypeName) => (
               <option key={issueTypeName} value={issueTypeName}>
@@ -297,10 +297,11 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
               </option>
             ))}
           </select>
+          <small>Used as the fallback for general Jira issues and future non-bug flows.</small>
         </label>
 
         <label>
-          <span>Default bug issue type</span>
+          <span>Bug Writer issue type</span>
           <select onChange={(event) => setDefaultBugIssueType(event.target.value)} value={defaultBugIssueType}>
             {issueTypeNames.map((issueTypeName) => (
               <option key={issueTypeName} value={issueTypeName}>
@@ -308,6 +309,7 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
               </option>
             ))}
           </select>
+          <small>Used specifically when Bug Writer creates Jira issues.</small>
         </label>
       </div>
 

@@ -6,6 +6,10 @@ export type JiraCreateIssueInput = {
   structuredData?: unknown;
 };
 
+export type JiraConfigWithSecret = SafeJiraConfig & {
+  jiraApiToken?: string;
+};
+
 export type JiraIssueDraft = {
   summary: string;
   descriptionText: string;
@@ -403,14 +407,14 @@ export function buildJiraIssueDraft(input: JiraCreateIssueInput, config: SafeJir
   };
 }
 
-function getJiraAuth() {
-  const email = process.env.JIRA_API_EMAIL || process.env.ATLASSIAN_EMAIL || process.env.JIRA_EMAIL;
-  const token = process.env.JIRA_API_TOKEN || process.env.ATLASSIAN_API_TOKEN;
+function getJiraAuth(config: JiraConfigWithSecret) {
+  const email = config.jiraEmail?.trim();
+  const token = config.jiraApiToken?.trim();
 
   if (!email || !token) {
     return {
       ok: false as const,
-      error: "Jira API credentials are not configured. Add JIRA_API_EMAIL and JIRA_API_TOKEN.",
+      error: "Jira API credentials are not configured. Add Jira username/email and API token in Jira Integration settings.",
     };
   }
 
@@ -455,11 +459,11 @@ function getJiraErrorMessage(payload: unknown, fallback: string) {
   return fallback;
 }
 
-export async function createJiraIssue(config: SafeJiraConfig, draft: JiraIssueDraft): Promise<
+export async function createJiraIssue(config: JiraConfigWithSecret, draft: JiraIssueDraft): Promise<
   | { ok: true; issue: JiraCreatedIssue }
   | { ok: false; status: number; error: string; details?: unknown }
 > {
-  const auth = getJiraAuth();
+  const auth = getJiraAuth(config);
 
   if (!auth.ok) {
     return {
