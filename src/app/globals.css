@@ -19239,3 +19239,185 @@ body [data-q84-sources-menu="true"] {
   }
 }
 
+/* QAS-89 horizontal tool toolbar */
+
+.tool-toolbar-panel {
+  position: relative;
+  z-index: 3;
+  overflow: hidden;
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(220, 38, 38, 0.12), transparent 34%),
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 32%),
+    linear-gradient(135deg, rgba(16, 16, 16, 0.98), rgba(12, 8, 8, 0.96));
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.tool-toolbar-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.06), transparent 34%, rgba(34, 197, 94, 0.035));
+}
+
+.tool-toolbar-heading {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.tool-toolbar-heading h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.08rem;
+  letter-spacing: -0.02em;
+}
+
+.tool-toolbar-heading span {
+  max-width: 360px;
+  color: rgba(212, 212, 216, 0.72);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.tool-toolbar-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.tool-toolbar-button {
+  min-height: 74px;
+  padding: 14px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  color: rgba(248, 250, 252, 0.78);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.045), transparent 42%),
+    linear-gradient(135deg, rgba(39, 39, 42, 0.96), rgba(20, 20, 20, 0.96));
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+  text-align: left;
+}
+
+.tool-toolbar-button strong {
+  display: block;
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.tool-toolbar-button span {
+  display: block;
+  margin-top: 6px;
+  color: rgba(212, 212, 216, 0.68);
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.tool-toolbar-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(248, 113, 113, 0.34);
+  filter: brightness(1.06);
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.28),
+    0 0 22px rgba(220, 38, 38, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.tool-toolbar-button-active {
+  border-color: rgba(248, 113, 113, 0.46);
+  background:
+    radial-gradient(circle at top left, rgba(248, 113, 113, 0.18), transparent 46%),
+    linear-gradient(135deg, #dc2626, #991b1b);
+  box-shadow:
+    0 16px 34px rgba(220, 38, 38, 0.26),
+    0 0 28px rgba(220, 38, 38, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.tool-toolbar-button-active span {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.tool-toolbar-button-coming-soon {
+  position: relative;
+  cursor: not-allowed;
+  opacity: 0.86;
+  border-color: rgba(96, 165, 250, 0.22);
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 46%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(10, 10, 10, 0.94));
+}
+
+.tool-toolbar-button-coming-soon em {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 9px;
+  padding: 4px 8px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  border-radius: 999px;
+  color: rgb(191, 219, 254);
+  background: rgba(37, 99, 235, 0.12);
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* The old .tabs/.tab styles can stay for backward compatibility, but the input panel no longer uses them. */
+
+@media (max-width: 1080px) {
+  .tool-toolbar-grid {
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .tool-toolbar-panel {
+    margin-top: 18px;
+    padding: 16px;
+  }
+
+  .tool-toolbar-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .tool-toolbar-heading span {
+    max-width: none;
+    text-align: left;
+  }
+
+  .tool-toolbar-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-toolbar-button {
+    min-height: 68px;
+  }
+}
+

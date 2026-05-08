@@ -25,6 +25,7 @@ import TestCaseAutomationReadiness from "@/components/TestCaseAutomationReadines
 import TestCaseDisplayControls from "@/components/TestCaseDisplayControls";
 import TestCaseQualityBadge from "@/components/TestCaseQualityBadge";
 import TestRailSyncPanel from "@/components/TestRailSyncPanel";
+import ToolToolbar, { type QatalystToolOption } from "@/components/ToolToolbar";
 import { calculateTestCaseQuality, getTestCaseQualityCardClass } from "@/lib/test-case-quality";
 import {
   buildProjectContextPayload,
@@ -167,30 +168,38 @@ type AnsweredFollowUp = {
   resolution: FollowUpResolution;
 };
 
-const tools: Array<{ id: ToolId; label: string; button: string; placeholder: string }> = [
+const tools: Array<QatalystToolOption & { button: string; placeholder: string }> = [
   {
     id: "tests",
     label: "Test Cases",
+    description: "Generate release-ready QA coverage",
     button: "Run Test Cases",
     placeholder: "Paste a Jira ticket, user story, or acceptance criteria here...",
+    testId: TOOL_TEST_IDS.tests,
   },
   {
     id: "risk",
     label: "Risk Review",
+    description: "Expose gaps, risks, and bottlenecks",
     button: "Analyze Risk",
     placeholder: "Paste a ticket or requirements doc to expose risks, gaps, and bottlenecks...",
+    testId: TOOL_TEST_IDS.risk,
   },
   {
     id: "bug",
     label: "Bug Writer",
+    description: "Turn rough notes into a clean defect",
     button: "Improve Bug Report",
     placeholder: "Paste rough bug notes, repro details, or a messy bug report...",
+    testId: TOOL_TEST_IDS.bug,
   },
   {
     id: "improve",
     label: "Test Improver",
+    description: "Upgrade weak test cases/checklists",
     button: "Improve Test Case",
     placeholder: "Paste an existing test case or checklist you want improved...",
+    testId: TOOL_TEST_IDS.improve,
   },
 ];
 
@@ -2677,6 +2686,51 @@ export default function Home() {
     currentTestAnsweredFollowUps
   );
   const currentTestImprovement = activeTool === "improve" ? getTestImprovementFromOutput(output) : null;
+
+  function handleToolChange(toolId: ToolId) {
+    setActiveTool(toolId);
+    setOutput("");
+    if (toolId !== "risk") {
+      setRiskQuestionAnswers({});
+      setRiskQuestionResolutions({});
+      setRiskAnsweredFollowUpHistory([]);
+      setRiskFollowUpLoopClosed(false);
+      setRiskAdditionalContext("");
+    }
+    if (toolId !== "tests") {
+      setTestQuestionAnswers({});
+      setTestQuestionResolutions({});
+      setTestAnsweredFollowUpHistory([]);
+      setTestFollowUpLoopClosed(false);
+      setTestAdditionalContext("");
+    }
+    if (toolId !== "improve") {
+      setImproveQuestionAnswers({});
+      setImproveQuestionResolutions({});
+      setImproveAnsweredFollowUpHistory([]);
+      setImproveFollowUpLoopClosed(false);
+      setImproveAdditionalContext("");
+    }
+    if (toolId !== "bug") {
+      setBugDeviceType("");
+      setBugOperatingSystem("");
+      setBugAppVersion("");
+      setBugBuildNumber("");
+      setBugPlatform("");
+      setBugAccountRole("");
+      setBugReproRate("Unknown");
+      setBugReproNotes("");
+      setBugEvidenceLinks("");
+      setBugEvidenceNotes("");
+      setBugScreenshotFiles([]);
+      setBugLogFiles([]);
+      setBugQuestionAnswers({});
+      setBugQuestionResolutions({});
+      setBugAnsweredFollowUpHistory([]);
+      setFollowUpLoopClosed(false);
+      setBugContextAnswers("");
+    }
+  }
   const rawImproveFollowUpQuestions = currentTestImprovement
     ? meaningfulLines(currentTestImprovement.followUpQuestions)
     : [];
@@ -3490,68 +3544,10 @@ export default function Home() {
         </div>
       </section>
 
+      <ToolToolbar tools={tools} activeTool={activeTool} onToolChange={handleToolChange} />
+
       <section className="workspace">
         <aside className="panel input-panel">
-          <div className="tabs">
-            {tools.map((item) => (
-              <button
-                key={item.id}
-                className={`tab ${activeTool === item.id ? "active" : ""}`}
-                data-testid={TOOL_TEST_IDS[item.id]}
-                type="button"
-                onClick={() => {
-                  setActiveTool(item.id);
-                  setOutput("");
-                  if (item.id !== "risk") {
-                    setRiskQuestionAnswers({});
-                    setRiskQuestionResolutions({});
-                    setRiskAnsweredFollowUpHistory([]);
-                    setRiskFollowUpLoopClosed(false);
-                    setRiskAdditionalContext("");
-                  }
-
-                  if (item.id !== "tests") {
-                    setTestQuestionAnswers({});
-                    setTestQuestionResolutions({});
-                    setTestAnsweredFollowUpHistory([]);
-                    setTestFollowUpLoopClosed(false);
-                    setTestAdditionalContext("");
-                  }
-
-                  if (item.id !== "improve") {
-                    setImproveQuestionAnswers({});
-                    setImproveQuestionResolutions({});
-                    setImproveAnsweredFollowUpHistory([]);
-                    setImproveFollowUpLoopClosed(false);
-                    setImproveAdditionalContext("");
-                  }
-
-                  if (item.id !== "bug") {
-                    setBugDeviceType("");
-                    setBugOperatingSystem("");
-                    setBugAppVersion("");
-                    setBugBuildNumber("");
-                    setBugPlatform("");
-                    setBugAccountRole("");
-                    setBugReproRate("Unknown");
-                    setBugReproNotes("");
-                    setBugEvidenceLinks("");
-                    setBugEvidenceNotes("");
-                    setBugScreenshotFiles([]);
-                    setBugLogFiles([]);
-                    setBugQuestionAnswers({});
-                    setBugQuestionResolutions({});
-                    setBugAnsweredFollowUpHistory([]);
-                    setFollowUpLoopClosed(false);
-                    setBugContextAnswers("");
-                  }
-                }}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
           <StackedProjectJiraControls onJiraImport={handleJiraTicketImport} />
 
           <textarea
