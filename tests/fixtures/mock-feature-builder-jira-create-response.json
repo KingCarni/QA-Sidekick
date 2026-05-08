@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "parent": {
+    "key": "QAS-999",
+    "url": "https://top-secret-games.atlassian.net/browse/QAS-999"
+  },
+  "children": [
+    {
+      "key": "QAS-1000",
+      "summary": "Implement: Input rough task ideas"
+    },
+    {
+      "key": "QAS-1001",
+      "summary": "Implement: Guided prompts"
+    }
+  ],
+  "qaTask": {
+    "key": "QAS-1002",
+    "summary": "QA: Review Jira Task Creator Tool"
+  }
+}

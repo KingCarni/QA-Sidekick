@@ -13,6 +13,7 @@ import BugEvidencePanel, {
 } from "@/components/BugEvidencePanel";
 import BugEvidencePreview from "@/components/BugEvidencePreview";
 import CoverageScorePanel from "@/components/CoverageScorePanel";
+import FeatureBuilderTool from "@/components/FeatureBuilderTool";
 import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
 import RiskReviewPanel from "@/components/RiskReviewPanel";
 import SaveBugToCollectionButton from "@/components/SaveBugToCollectionButton";
@@ -45,20 +46,23 @@ import {
 } from "@/lib/regeneration-guard";
 import type { ParsedJiraTicket } from "@/lib/jira-ticket";
 
-type ToolId = "tests" | "risk" | "bug" | "improve";
+type ToolId = "tests" | "bug" | "risk" | "improve" | "feature";
+type ReportToolId = Exclude<ToolId, "feature">;
 
 const TOOL_TEST_IDS: Record<ToolId, string> = {
   tests: "tool-tab-test-cases",
-  risk: "tool-tab-risk-review",
   bug: "tool-tab-bug-writer",
+  risk: "tool-tab-risk-review",
   improve: "tool-tab-test-improver",
+  feature: "tool-tab-feature-builder",
 };
 
 const RUN_BUTTON_TEST_IDS: Record<ToolId, string> = {
   tests: "run-test-cases-button",
-  risk: "run-risk-review-button",
   bug: "run-bug-writer-button",
+  risk: "run-risk-review-button",
   improve: "run-test-improver-button",
+  feature: "build-feature-brief-button",
 };
 
 type SaveReportStatus = "idle" | "saving" | "saved" | "error";
@@ -79,7 +83,7 @@ type SaveReportControlProps = {
 };
 
 type CoverageScoreProps = {
-  reportType: ToolId;
+  reportType: ReportToolId;
   sourceInput: string;
   testCaseGenerationKey?: string;
   automationCredentialProfiles?: ReturnType<typeof buildAutomationCredentialPayload>["profiles"];
@@ -204,6 +208,15 @@ const tools: Array<QatalystToolOption & { button: string; placeholder: string }>
     button: "Improve Test Case",
     placeholder: "Paste an existing test case or checklist you want improved...",
     testId: TOOL_TEST_IDS.improve,
+  },
+  {
+    id: "feature",
+    label: "Feature Builder",
+    description: "Shape rough ideas into feature briefs",
+    tone: "blue",
+    button: "Build Feature Brief",
+    placeholder: "Describe the feature you want to shape...",
+    testId: TOOL_TEST_IDS.feature,
   },
 ];
 
@@ -2635,6 +2648,7 @@ export default function Home() {
   }, [automationCredentialProfiles]);
 
   const tool = tools.find((item) => item.id === activeTool) ?? tools[0];
+  const activeReportTool: ReportToolId = activeTool === "feature" ? "tests" : activeTool;
   const currentBugReport = activeTool === "bug" ? getBugReportFromOutput(output) : null;
   const rawBugFollowUpQuestions = currentBugReport ? meaningfulLines(currentBugReport.followUpQuestions) : [];
   const bugFollowUpQuestions = rawBugFollowUpQuestions.filter(
@@ -3550,6 +3564,9 @@ export default function Home() {
 
       <ToolToolbar tools={tools} activeTool={activeTool} onToolChange={handleToolChange} />
 
+      {activeTool === "feature" ? (
+        <FeatureBuilderTool activeProject={activeProject} />
+      ) : (
       <section className="workspace">
         <aside className="panel input-panel">
           <StackedProjectJiraControls onJiraImport={handleJiraTicketImport} />
@@ -3963,7 +3980,7 @@ export default function Home() {
                 testAnsweredFollowUps={testAnsweredFollowUps}
                 onSaveBugMarkdown={handleSaveBugMarkdown}
                 bugEvidence={bugEvidence}
-                reportType={activeTool}
+                reportType={activeReportTool}
                 sourceInput={input}
                 testCaseGenerationKey={testCaseGenerationKey}
                 automationCredentialProfiles={automationCredentialPayload.profiles}
@@ -3982,6 +3999,7 @@ export default function Home() {
           )}
         </section>
       </section>
+      )}
     </main>
   );
 }

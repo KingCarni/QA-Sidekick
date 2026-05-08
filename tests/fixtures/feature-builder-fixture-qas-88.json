@@ -1,0 +1,42 @@
+{
+  "name": "QAS-88 Feature Builder Jira Task Creator Fixture",
+  "roughFeatureIdea": "I want to add a Jira Task Creator tool to QAtalyst. The user should be able to type a rough task idea, improve it with guided prompts, preview the Jira-ready title/description/acceptance criteria, and then create the task directly in their connected Jira project.\n\nThe first version should be simple: use the saved Jira integration settings, default project, default issue type, and existing user auth. It should not support advanced Jira fields yet, subtasks yet, or bulk task creation yet.\n\nThe tool should help the user avoid vague tickets by asking for missing details like user value, scope, acceptance criteria, dependencies, risk, and QA notes. Before creating anything in Jira, the user must see a preview and click an explicit Create Jira Task button.\n\nQA should verify that bad input is handled, missing Jira config blocks creation cleanly, Jira API errors show useful messages, and successfully created tasks link back to Jira.",
+  "extraContext": "This is for QAtalyst, a QA planning tool with existing Jira integration, Project Source Vault, Bug Writer, Test Cases, Risk Review, and Test Improver tools.\n\nKeep the MVP focused on creating a single Jira Task from a structured preview. Use existing Jira config and auth patterns. Do not create issues automatically. The user must approve before writing to Jira.\n\nFuture versions may support stories, epics, subtasks, templates, and linking generated QA artifacts.",
+  "expectedSignals": [
+    "user",
+    "value",
+    "scope",
+    "criteria",
+    "risk",
+    "jira"
+  ],
+  "expectedSections": [
+    "Summary",
+    "User Value",
+    "Problem",
+    "Target Users",
+    "In Scope",
+    "Out of Scope",
+    "User Stories",
+    "Acceptance Criteria",
+    "QA Risks",
+    "Test Ideas",
+    "Open Questions",
+    "Jira-ready Notes"
+  ],
+  "refinementActionsToSmokeTest": [
+    "Tighten Scope",
+    "Add QA Risks",
+    "Generate Acceptance Criteria",
+    "Find Missing Questions",
+    "Make Jira-ready",
+    "Simplify MVP",
+    "Expand Future Enhancements"
+  ],
+  "jiraCreationExpected": {
+    "parent": "Created parent Jira issue",
+    "children": "Creates child Jira issues from scope/test ideas when enabled",
+    "qaTask": "Creates QA planning issue when enabled",
+    "mustPreviewBeforeCreate": true
+  }
+}

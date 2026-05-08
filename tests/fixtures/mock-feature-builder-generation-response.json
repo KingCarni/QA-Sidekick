@@ -1,0 +1,58 @@
+{
+  "ok": true,
+  "brief": {
+    "title": "Jira Task Creator Tool",
+    "summary": "A tool that helps users turn rough task ideas into Jira-ready work items.",
+    "userValue": "Users can create clearer Jira tasks faster while reducing vague ticket risk.",
+    "problemStatement": "Users often create incomplete or vague task tickets that require follow-up before work can start.",
+    "targetUsers": [
+      "QA Engineers",
+      "Product Managers",
+      "Developers"
+    ],
+    "inScope": [
+      "Input rough task ideas",
+      "Guided prompts",
+      "Preview Jira title/description/acceptance criteria",
+      "Create one Jira task after explicit approval"
+    ],
+    "outOfScope": [
+      "Advanced Jira fields",
+      "Bulk creation",
+      "Automatic creation without preview"
+    ],
+    "userStories": [
+      "As a user, I want guided prompts so I can write clearer Jira tasks."
+    ],
+    "acceptanceCriteria": [
+      "User can generate a Jira-ready preview from a rough idea.",
+      "User must explicitly confirm before Jira issue creation."
+    ],
+    "qaRisks": [
+      "Invalid Jira credentials",
+      "Missing Jira config",
+      "Vague input",
+      "Network/API failure"
+    ],
+    "testIdeas": [
+      "Test with missing Jira config",
+      "Test invalid token",
+      "Test successful Jira creation"
+    ],
+    "analyticsOrTelemetry": [
+      "Track generation success/failure",
+      "Track Jira creation success/failure"
+    ],
+    "dependencies": [
+      "Saved Jira integration",
+      "Authenticated user",
+      "OpenAI API"
+    ],
+    "openQuestions": [
+      "Which issue types should be supported in MVP?"
+    ],
+    "jiraReadyNotes": [
+      "Use saved project key and default issue type from Jira Integration settings."
+    ]
+  }
+}
