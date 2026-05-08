@@ -64,7 +64,7 @@ const actionCellStyle: CSSProperties = {
   position: "relative",
 };
 
-const signOutCellStyle: CSSProperties = {
+const creditsCellStyle: CSSProperties = {
   ...actionCellStyle,
   paddingTop: "46px",
 };
@@ -77,6 +77,7 @@ const menuButtonWrapStyle: CSSProperties = {
 };
 
 const menuButtonStyle: CSSProperties = {
+  position: "static",
   width: "100%",
   minHeight: "34px",
   padding: "7px 12px",
@@ -115,8 +116,8 @@ function AccountMenuButton({ isSignedIn }: { isSignedIn: boolean }) {
       ? Math.max(16, rect.top - estimatedMenuHeight - MENU_GAP)
       : preferredTop;
 
-    const rightAlignedLeft = rect.right - MENU_WIDTH;
-    const left = Math.min(Math.max(16, rightAlignedLeft), viewportWidth - MENU_WIDTH - 16);
+    const leftAlignedLeft = rect.left;
+    const left = Math.min(Math.max(16, leftAlignedLeft), viewportWidth - MENU_WIDTH - 16);
 
     setPosition({ top, left });
   }
@@ -253,12 +254,15 @@ export default function AuthStatus() {
           <FloatingSignedInIdentity label="Account" value="Not signed in" />
 
           <div className="qa-auth-action-row account-action-row" style={actionRowStyle}>
-            <div style={actionCellStyle} />
-            <div style={actionCellStyle} />
-            <div style={signOutCellStyle}>
+            <div style={creditsCellStyle}>
               <div style={menuButtonWrapStyle}>
                 <AccountMenuButton isSignedIn={false} />
               </div>
+            </div>
+
+            <div style={actionCellStyle} />
+
+            <div style={actionCellStyle}>
               <button
                 className="qa-auth-primary-button"
                 style={actionButtonStyle}
@@ -282,7 +286,10 @@ export default function AuthStatus() {
         <FloatingSignedInIdentity label="Signed in" value={displayName} />
 
         <div className="qa-auth-action-row account-action-row" style={actionRowStyle}>
-          <div style={actionCellStyle}>
+          <div style={creditsCellStyle}>
+            <div style={menuButtonWrapStyle}>
+              <AccountMenuButton isSignedIn />
+            </div>
             <CreditsPill />
           </div>
 
@@ -292,11 +299,7 @@ export default function AuthStatus() {
             </Link>
           </div>
 
-          <div style={signOutCellStyle}>
-            <div style={menuButtonWrapStyle}>
-              <AccountMenuButton isSignedIn />
-            </div>
-
+          <div style={actionCellStyle}>
             <button
               className="qa-auth-ghost-button"
               style={actionButtonStyle}
