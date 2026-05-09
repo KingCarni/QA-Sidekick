@@ -27931,3 +27931,1344 @@ body:has(.qas156-shell)::before {
     height: 72px;
   }
 }
+/* QAS-74 FTUE window/spacing fix
+   Append this block at the very bottom of src/app/globals.css.
+   This overrides the earlier FTUE card sizing without touching working TSX. */
+
+.qatalyst-app-shell .qat-guide-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 132px;
+  align-items: center;
+  gap: 18px;
+  width: min(100%, 1120px);
+  margin: 18px auto 0;
+  padding: 18px 22px 18px 28px;
+  min-height: 132px;
+  overflow: visible;
+  border-radius: 22px;
+}
+
+.qatalyst-app-shell .qat-ftue-card {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+.qatalyst-app-shell .qat-tool-ftue-card {
+  width: min(100%, 960px);
+  margin-top: 16px;
+  margin-bottom: 20px;
+  min-height: 118px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.qatalyst-app-shell .qat-guide-copy {
+  min-width: 0;
+  max-width: 760px;
+}
+
+.qatalyst-app-shell .qat-guide-copy h3 {
+  margin: 0 0 8px;
+  font-size: clamp(1rem, 1.1vw, 1.2rem);
+  line-height: 1.25;
+}
+
+.qatalyst-app-shell .qat-guide-copy p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.qatalyst-app-shell .qat-guide-eyebrow {
+  margin: 0 0 8px !important;
+}
+
+.qatalyst-app-shell .qat-guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.qatalyst-app-shell .qat-guide-actions button {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 10px 16px;
+  line-height: 1;
+}
+
+.qatalyst-app-shell .qat-guide-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 12px 30px rgba(239, 68, 68, 0.24);
+}
+
+.qatalyst-app-shell .qat-guide-secondary,
+.qatalyst-app-shell .qat-guide-dismiss {
+  color: rgba(255, 255, 255, 0.84);
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.qatalyst-app-shell .qat-guide-media-wrap {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-end;
+  width: 132px;
+  height: 132px;
+  min-width: 132px;
+  overflow: visible;
+  pointer-events: none;
+  order: 2;
+}
+
+.qatalyst-app-shell .qat-guide-media {
+  display: block !important;
+  width: 150px;
+  max-width: none;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.38));
+  transform: translateX(18px);
+}
+
+.qatalyst-app-shell .app-toolbelt-shell {
+  margin-top: 20px;
+}
+
+.qatalyst-app-shell .feature-workspace-shell,
+.qatalyst-app-shell .workspace.app-workspace-grid {
+  margin-top: 24px;
+}
+
+@media (max-width: 900px) {
+  .qatalyst-app-shell .qat-guide-card {
+    grid-template-columns: minmax(0, 1fr) 86px;
+    padding: 16px 16px 16px 18px;
+    min-height: 110px;
+  }
+
+  .qatalyst-app-shell .qat-guide-media-wrap {
+    width: 86px;
+    height: 100px;
+    min-width: 86px;
+  }
+
+  .qatalyst-app-shell .qat-guide-media {
+    width: 106px;
+    transform: translateX(14px);
+  }
+}
+
+@media (max-width: 640px) {
+  .qatalyst-app-shell .qat-guide-card {
+    grid-template-columns: 1fr;
+    padding-right: 18px;
+  }
+
+  .qatalyst-app-shell .qat-guide-media-wrap {
+    display: none !important;
+  }
+}
+/* QAS-74 FTUE hover-peek QAt pass
+   Append at the very bottom of src/app/globals.css.
+   This supersedes earlier QAtGuideCard spacing/media overrides. */
+
+.qatalyst-app-shell .qat-guide-card {
+  position: relative;
+  display: block;
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  margin: 18px auto 0;
+  padding: 18px 240px 18px 28px;
+  min-height: 128px;
+  overflow: visible;
+  border-radius: 22px;
+}
+
+.qatalyst-app-shell .qat-ftue-card {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+.qatalyst-app-shell .qat-tool-ftue-card {
+  width: min(100%, 1180px);
+  max-width: calc(100vw - 96px);
+  min-height: 118px;
+  margin-top: 16px;
+  margin-bottom: 20px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.qatalyst-app-shell .qat-guide-copy {
+  min-width: 0;
+  max-width: 860px;
+}
+
+.qatalyst-app-shell .qat-tool-ftue-card .qat-guide-copy {
+  max-width: 760px;
+}
+
+.qatalyst-app-shell .qat-guide-copy h3 {
+  margin: 0 0 8px;
+  font-size: clamp(1rem, 1.1vw, 1.2rem);
+  line-height: 1.25;
+}
+
+.qatalyst-app-shell .qat-guide-copy p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.qatalyst-app-shell .qat-guide-eyebrow {
+  margin: 0 0 8px !important;
+}
+
+.qatalyst-app-shell .qat-guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.qatalyst-app-shell .qat-guide-actions button {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 10px 16px;
+  line-height: 1;
+}
+
+.qatalyst-app-shell .qat-guide-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 12px 30px rgba(239, 68, 68, 0.24);
+}
+
+.qatalyst-app-shell .qat-guide-secondary,
+.qatalyst-app-shell .qat-guide-dismiss {
+  color: rgba(255, 255, 255, 0.84);
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+/* QAt peeks from the right outside edge.
+   Default: barely visible.
+   Hover/focus: slides farther out. */
+.qatalyst-app-shell .qat-guide-media-wrap {
+  position: absolute;
+  right: -18px;
+  bottom: 12px;
+  z-index: 3;
+  display: flex !important;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: 178px;
+  height: 150px;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateX(120px);
+  transition: transform 220ms ease-out, filter 220ms ease-out;
+}
+
+.qatalyst-app-shell .qat-guide-card:hover .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-guide-card:focus-within .qat-guide-media-wrap {
+  transform: translateX(54px);
+}
+
+.qatalyst-app-shell .qat-guide-media {
+  display: block !important;
+  width: 172px;
+  max-width: none;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.42));
+}
+
+.qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media-wrap {
+  width: 158px;
+  height: 132px;
+  transform: translateX(108px);
+}
+
+.qatalyst-app-shell .qat-tool-ftue-card:hover .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-tool-ftue-card:focus-within .qat-guide-media-wrap {
+  transform: translateX(48px);
+}
+
+.qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media {
+  width: 152px;
+}
+
+.qatalyst-app-shell .app-toolbelt-shell {
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  margin: 20px auto 0;
+}
+
+.qatalyst-app-shell .feature-workspace-shell,
+.qatalyst-app-shell .workspace.app-workspace-grid {
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  margin: 24px auto 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qatalyst-app-shell .qat-guide-media-wrap {
+    transition: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .qatalyst-app-shell .qat-guide-card,
+  .qatalyst-app-shell .qat-tool-ftue-card,
+  .qatalyst-app-shell .app-toolbelt-shell,
+  .qatalyst-app-shell .feature-workspace-shell,
+  .qatalyst-app-shell .workspace.app-workspace-grid {
+    max-width: calc(100vw - 32px);
+  }
+
+  .qatalyst-app-shell .qat-guide-card {
+    padding-right: 130px;
+  }
+
+  .qatalyst-app-shell .qat-guide-media-wrap {
+    width: 126px;
+    height: 112px;
+    right: -10px;
+    transform: translateX(84px);
+  }
+
+  .qatalyst-app-shell .qat-guide-card:hover .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-guide-card:focus-within .qat-guide-media-wrap {
+    transform: translateX(34px);
+  }
+
+  .qatalyst-app-shell .qat-guide-media {
+    width: 122px;
+  }
+}
+
+@media (max-width: 680px) {
+  .qatalyst-app-shell .qat-guide-card {
+    padding-right: 18px;
+  }
+
+  .qatalyst-app-shell .qat-guide-media-wrap {
+    display: none !important;
+  }
+}
+/* QAS-74 hover-peek correction
+   Append at the very bottom of src/app/globals.css.
+   This overrides the earlier hover-peek pass.
+
+   Goals:
+   - All FTUE cards use the same wide workspace rhythm, including tool tutorial.
+   - QAt is anchored close to the right border.
+   - QAt sits visually behind the card/window.
+   - Default = barely peeking.
+   - Hover/focus = QAt reveals more, not less.
+*/
+
+.qatalyst-app-shell .qat-guide-card,
+.qatalyst-app-shell .qat-tool-ftue-card {
+  position: relative;
+  display: block;
+  isolation: isolate;
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  margin-left: auto;
+  margin-right: auto;
+  padding: 18px 220px 18px 28px;
+  min-height: 126px;
+  overflow: visible;
+  border-radius: 22px;
+}
+
+.qatalyst-app-shell .qat-ftue-card {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+.qatalyst-app-shell .qat-tool-ftue-card {
+  margin-top: 16px;
+  margin-bottom: 20px;
+  min-height: 122px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.qatalyst-app-shell .qat-guide-card::after,
+.qatalyst-app-shell .qat-tool-ftue-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.qatalyst-app-shell .qat-guide-copy {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  max-width: 860px;
+}
+
+.qatalyst-app-shell .qat-guide-copy h3 {
+  margin: 0 0 8px;
+  font-size: clamp(1rem, 1.1vw, 1.2rem);
+  line-height: 1.25;
+}
+
+.qatalyst-app-shell .qat-guide-copy p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.qatalyst-app-shell .qat-guide-eyebrow {
+  margin: 0 0 8px !important;
+}
+
+.qatalyst-app-shell .qat-guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.qatalyst-app-shell .qat-guide-actions button {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 10px 16px;
+  line-height: 1;
+}
+
+.qatalyst-app-shell .qat-guide-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 12px 30px rgba(239, 68, 68, 0.24);
+}
+
+.qatalyst-app-shell .qat-guide-secondary,
+.qatalyst-app-shell .qat-guide-dismiss {
+  color: rgba(255, 255, 255, 0.84);
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+/* Behind-card QAt peek.
+   Right edge is close to the card.
+   The image itself is translated right, so only a sliver shows by default.
+   On hover/focus, translate less right so more QAt becomes visible.
+*/
+.qatalyst-app-shell .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media-wrap {
+  position: absolute;
+  right: -74px;
+  bottom: 16px;
+  z-index: 0;
+  display: flex !important;
+  align-items: flex-end;
+  justify-content: flex-start;
+  width: 176px;
+  height: 150px;
+  overflow: visible;
+  pointer-events: none;
+  transform: translateX(92px);
+  transition: transform 220ms ease-out, opacity 220ms ease-out, filter 220ms ease-out;
+}
+
+.qatalyst-app-shell .qat-guide-card:hover .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-guide-card:focus-within .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-tool-ftue-card:hover .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-tool-ftue-card:focus-within .qat-guide-media-wrap {
+  transform: translateX(18px);
+}
+
+.qatalyst-app-shell .qat-guide-media,
+.qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media {
+  display: block !important;
+  width: 164px;
+  max-width: none;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.46));
+}
+
+/* Give the window face foreground strength so QAt reads as behind the surface. */
+.qatalyst-app-shell .qat-guide-card {
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.qatalyst-app-shell .app-toolbelt-shell,
+.qatalyst-app-shell .feature-workspace-shell,
+.qatalyst-app-shell .workspace.app-workspace-grid {
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.qatalyst-app-shell .app-toolbelt-shell {
+  margin-top: 20px;
+}
+
+.qatalyst-app-shell .feature-workspace-shell,
+.qatalyst-app-shell .workspace.app-workspace-grid {
+  margin-top: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qatalyst-app-shell .qat-guide-media-wrap {
+    transition: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .qatalyst-app-shell .qat-guide-card,
+  .qatalyst-app-shell .qat-tool-ftue-card,
+  .qatalyst-app-shell .app-toolbelt-shell,
+  .qatalyst-app-shell .feature-workspace-shell,
+  .qatalyst-app-shell .workspace.app-workspace-grid {
+    max-width: calc(100vw - 32px);
+  }
+
+  .qatalyst-app-shell .qat-guide-card,
+  .qatalyst-app-shell .qat-tool-ftue-card {
+    padding-right: 120px;
+  }
+
+  .qatalyst-app-shell .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media-wrap {
+    right: -52px;
+    bottom: 14px;
+    width: 122px;
+    height: 112px;
+    transform: translateX(64px);
+  }
+
+  .qatalyst-app-shell .qat-guide-card:hover .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-guide-card:focus-within .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-tool-ftue-card:hover .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-tool-ftue-card:focus-within .qat-guide-media-wrap {
+    transform: translateX(14px);
+  }
+
+  .qatalyst-app-shell .qat-guide-media,
+  .qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media {
+    width: 116px;
+  }
+}
+
+@media (max-width: 680px) {
+  .qatalyst-app-shell .qat-guide-card,
+  .qatalyst-app-shell .qat-tool-ftue-card {
+    padding-right: 18px;
+  }
+
+  .qatalyst-app-shell .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media-wrap {
+    display: none !important;
+  }
+}
+/* QAS-74 left-peek + one-line FTUE polish
+   Append this at the very bottom of src/app/globals.css.
+   CSS-only pass: no TSX changes required.
+
+   Goals:
+   - Move QAt to the left side where the FTUE copy starts.
+   - Flip QAt so he peeks inward toward the card content.
+   - Default: barely peeking from behind the left edge.
+   - Hover/focus: QAt slides farther out.
+   - Make FTUE cards shorter and one-line friendly.
+*/
+
+.qatalyst-app-shell .qat-guide-card,
+.qatalyst-app-shell .qat-tool-ftue-card {
+  position: relative;
+  display: block;
+  isolation: isolate;
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  margin-left: auto;
+  margin-right: auto;
+  padding: 18px 28px 18px 112px;
+  min-height: 116px;
+  overflow: visible;
+  border-radius: 22px;
+}
+
+.qatalyst-app-shell .qat-ftue-card {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+.qatalyst-app-shell .qat-tool-ftue-card {
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  min-height: 108px;
+  margin-top: 16px;
+  margin-bottom: 20px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.qatalyst-app-shell .qat-guide-copy {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  max-width: 920px;
+}
+
+.qatalyst-app-shell .qat-guide-copy h3 {
+  margin: 0 0 6px;
+  font-size: clamp(1rem, 1.08vw, 1.18rem);
+  line-height: 1.25;
+}
+
+.qatalyst-app-shell .qat-guide-copy p:not(.qat-guide-eyebrow) {
+  max-width: 980px;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.qatalyst-app-shell .qat-guide-eyebrow {
+  margin: 0 0 8px !important;
+}
+
+.qatalyst-app-shell .qat-guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.qatalyst-app-shell .qat-guide-actions button {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 10px 16px;
+  line-height: 1;
+}
+
+.qatalyst-app-shell .qat-guide-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 12px 30px rgba(239, 68, 68, 0.24);
+}
+
+.qatalyst-app-shell .qat-guide-secondary,
+.qatalyst-app-shell .qat-guide-dismiss {
+  color: rgba(255, 255, 255, 0.84);
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+/* Left-side QAt peek.
+   The image is flipped horizontally so QAt faces inward.
+   Default transform keeps him mostly hidden behind the left edge.
+   Hover/focus reveals more of him.
+*/
+.qatalyst-app-shell .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media-wrap {
+  position: absolute;
+  left: -38px;
+  bottom: 10px;
+  z-index: 0;
+  display: flex !important;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: 132px;
+  height: 120px;
+  overflow: visible;
+  pointer-events: none;
+  transform: translateX(-74px);
+  transition: transform 220ms ease-out, opacity 220ms ease-out, filter 220ms ease-out;
+}
+
+.qatalyst-app-shell .qat-guide-card:hover .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-guide-card:focus-within .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-tool-ftue-card:hover .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-tool-ftue-card:focus-within .qat-guide-media-wrap {
+  transform: translateX(-12px);
+}
+
+.qatalyst-app-shell .qat-guide-media,
+.qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media {
+  display: block !important;
+  width: 126px;
+  max-width: none;
+  height: auto;
+  object-fit: contain;
+  transform: scaleX(-1);
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.46));
+}
+
+.qatalyst-app-shell .qat-guide-card {
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.qatalyst-app-shell .app-toolbelt-shell,
+.qatalyst-app-shell .feature-workspace-shell,
+.qatalyst-app-shell .workspace.app-workspace-grid {
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.qatalyst-app-shell .app-toolbelt-shell {
+  margin-top: 20px;
+}
+
+.qatalyst-app-shell .feature-workspace-shell,
+.qatalyst-app-shell .workspace.app-workspace-grid {
+  margin-top: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qatalyst-app-shell .qat-guide-media-wrap {
+    transition: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .qatalyst-app-shell .qat-guide-card,
+  .qatalyst-app-shell .qat-tool-ftue-card,
+  .qatalyst-app-shell .app-toolbelt-shell,
+  .qatalyst-app-shell .feature-workspace-shell,
+  .qatalyst-app-shell .workspace.app-workspace-grid {
+    max-width: calc(100vw - 32px);
+  }
+
+  .qatalyst-app-shell .qat-guide-card,
+  .qatalyst-app-shell .qat-tool-ftue-card {
+    padding-left: 86px;
+  }
+
+  .qatalyst-app-shell .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media-wrap {
+    left: -28px;
+    bottom: 10px;
+    width: 104px;
+    height: 98px;
+    transform: translateX(-58px);
+  }
+
+  .qatalyst-app-shell .qat-guide-card:hover .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-guide-card:focus-within .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-tool-ftue-card:hover .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-tool-ftue-card:focus-within .qat-guide-media-wrap {
+    transform: translateX(-8px);
+  }
+
+  .qatalyst-app-shell .qat-guide-media,
+  .qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media {
+    width: 100px;
+  }
+}
+
+@media (max-width: 680px) {
+  .qatalyst-app-shell .qat-guide-card,
+  .qatalyst-app-shell .qat-tool-ftue-card {
+    padding-left: 18px;
+  }
+
+  .qatalyst-app-shell .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media-wrap {
+    display: none !important;
+  }
+}
+/* QAS-74 QAt peek correction + one-line visual rhythm
+   Append at the very bottom of src/app/globals.css.
+   CSS-only visual fix.
+
+   Goals:
+   - QAt is ~20% larger.
+   - Default: tiny peek from behind the left edge.
+   - Hover/focus: QAt reveals farther into view.
+   - QAt reads behind the FTUE window, not floating beside it.
+   - Cards are compact and ready for shorter one-line copy.
+*/
+
+.qatalyst-app-shell .qat-guide-card,
+.qatalyst-app-shell .qat-tool-ftue-card {
+  position: relative;
+  display: block;
+  isolation: isolate;
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  margin-left: auto;
+  margin-right: auto;
+  padding: 18px 28px 18px 120px;
+  min-height: 112px;
+  overflow: visible;
+  border-radius: 22px;
+}
+
+.qatalyst-app-shell .qat-ftue-card {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+.qatalyst-app-shell .qat-tool-ftue-card {
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  min-height: 106px;
+  margin-top: 16px;
+  margin-bottom: 20px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+/* Foreground face of the window.
+   This creates the "QAt is behind the card" illusion. */
+.qatalyst-app-shell .qat-guide-card::before,
+.qatalyst-app-shell .qat-tool-ftue-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    rgba(80, 20, 36, 0.78) 0%,
+    rgba(13, 18, 31, 0.96) 34%,
+    rgba(8, 13, 24, 0.98) 100%
+  );
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.qatalyst-app-shell .qat-guide-copy {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  max-width: 980px;
+}
+
+.qatalyst-app-shell .qat-guide-copy h3 {
+  margin: 0 0 6px;
+  font-size: clamp(1rem, 1.08vw, 1.18rem);
+  line-height: 1.25;
+}
+
+.qatalyst-app-shell .qat-guide-copy p:not(.qat-guide-eyebrow) {
+  max-width: 1040px;
+  margin: 0;
+  line-height: 1.42;
+}
+
+.qatalyst-app-shell .qat-guide-eyebrow {
+  margin: 0 0 8px !important;
+}
+
+.qatalyst-app-shell .qat-guide-actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.qatalyst-app-shell .qat-guide-actions button {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 10px 16px;
+  line-height: 1;
+}
+
+.qatalyst-app-shell .qat-guide-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 12px 30px rgba(239, 68, 68, 0.24);
+}
+
+.qatalyst-app-shell .qat-guide-secondary,
+.qatalyst-app-shell .qat-guide-dismiss {
+  color: rgba(255, 255, 255, 0.84);
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+/* Left-side QAt peek:
+   - Wrapper is behind the card face (z-index 0).
+   - Card face ::before and content are above it.
+   - Default translate keeps him mostly hidden to the left.
+   - Hover/focus moves him right, revealing more.
+*/
+.qatalyst-app-shell .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media-wrap {
+  position: absolute;
+  left: -18px;
+  bottom: 10px;
+  z-index: 0;
+  display: flex !important;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: 156px;
+  height: 142px;
+  overflow: visible;
+  pointer-events: none;
+  transform: translateX(-118px);
+  transition: transform 220ms ease-out, opacity 220ms ease-out, filter 220ms ease-out;
+}
+
+.qatalyst-app-shell .qat-guide-card:hover .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-guide-card:focus-within .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-tool-ftue-card:hover .qat-guide-media-wrap,
+.qatalyst-app-shell .qat-tool-ftue-card:focus-within .qat-guide-media-wrap {
+  transform: translateX(-42px);
+}
+
+.qatalyst-app-shell .qat-guide-media,
+.qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media {
+  display: block !important;
+  width: 152px;
+  max-width: none;
+  height: auto;
+  object-fit: contain;
+  transform: scaleX(-1);
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.5));
+}
+
+.qatalyst-app-shell .qat-guide-card {
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.qatalyst-app-shell .app-toolbelt-shell,
+.qatalyst-app-shell .feature-workspace-shell,
+.qatalyst-app-shell .workspace.app-workspace-grid {
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.qatalyst-app-shell .app-toolbelt-shell {
+  margin-top: 20px;
+}
+
+.qatalyst-app-shell .feature-workspace-shell,
+.qatalyst-app-shell .workspace.app-workspace-grid {
+  margin-top: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qatalyst-app-shell .qat-guide-media-wrap {
+    transition: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .qatalyst-app-shell .qat-guide-card,
+  .qatalyst-app-shell .qat-tool-ftue-card,
+  .qatalyst-app-shell .app-toolbelt-shell,
+  .qatalyst-app-shell .feature-workspace-shell,
+  .qatalyst-app-shell .workspace.app-workspace-grid {
+    max-width: calc(100vw - 32px);
+  }
+
+  .qatalyst-app-shell .qat-guide-card,
+  .qatalyst-app-shell .qat-tool-ftue-card {
+    padding-left: 92px;
+  }
+
+  .qatalyst-app-shell .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media-wrap {
+    left: -16px;
+    bottom: 10px;
+    width: 120px;
+    height: 112px;
+    transform: translateX(-92px);
+  }
+
+  .qatalyst-app-shell .qat-guide-card:hover .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-guide-card:focus-within .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-tool-ftue-card:hover .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-tool-ftue-card:focus-within .qat-guide-media-wrap {
+    transform: translateX(-30px);
+  }
+
+  .qatalyst-app-shell .qat-guide-media,
+  .qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media {
+    width: 116px;
+  }
+}
+
+@media (max-width: 680px) {
+  .qatalyst-app-shell .qat-guide-card,
+  .qatalyst-app-shell .qat-tool-ftue-card {
+    padding-left: 18px;
+  }
+
+  .qatalyst-app-shell .qat-guide-media-wrap,
+  .qatalyst-app-shell .qat-tool-ftue-card .qat-guide-media-wrap {
+    display: none !important;
+  }
+}
+/* QAS-74 structural QAt guide pass
+   Append this block to the bottom of src/app/globals.css.
+   Requires the rebuilt QAtGuideCard.tsx from this pass.
+
+   This creates real layers:
+   - .qat-guide-shell controls sizing/hover
+   - .qat-guide-peek-layer holds QAt behind the card
+   - .qat-guide-card is the window surface in front
+*/
+
+.qatalyst-app-shell .qat-guide-shell {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  margin: 18px auto 0;
+  overflow: visible;
+}
+
+.qatalyst-app-shell .qat-guide-shell.qat-tool-ftue-card {
+  margin-top: 16px;
+  margin-bottom: 20px;
+}
+
+.qatalyst-app-shell .qat-guide-shell .qat-guide-card {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  min-height: 112px;
+  padding: 18px 28px 18px 120px;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background:
+    linear-gradient(115deg, rgba(80, 20, 36, 0.78) 0%, rgba(13, 18, 31, 0.96) 34%, rgba(8, 13, 24, 0.98) 100%);
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.qatalyst-app-shell .qat-guide-shell.qat-tool-ftue-card .qat-guide-card {
+  min-height: 106px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.qatalyst-app-shell .qat-guide-peek-layer {
+  position: absolute;
+  left: -58px;
+  bottom: 8px;
+  z-index: 1;
+  width: 166px;
+  height: 150px;
+  pointer-events: none;
+  transform: translateX(-104px);
+  transition: transform 220ms ease-out;
+}
+
+.qatalyst-app-shell .qat-guide-shell:hover .qat-guide-peek-layer,
+.qatalyst-app-shell .qat-guide-shell:focus-within .qat-guide-peek-layer {
+  transform: translateX(-18px);
+}
+
+.qatalyst-app-shell .qat-guide-media {
+  display: block !important;
+  width: 154px;
+  max-width: none;
+  height: auto;
+  object-fit: contain;
+  transform: scaleX(-1);
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.5));
+}
+
+.qatalyst-app-shell .qat-guide-copy {
+  position: relative;
+  z-index: 3;
+  min-width: 0;
+  max-width: 1040px;
+}
+
+.qatalyst-app-shell .qat-guide-copy h3 {
+  margin: 0 0 6px;
+  font-size: clamp(1rem, 1.08vw, 1.18rem);
+  line-height: 1.25;
+}
+
+.qatalyst-app-shell .qat-guide-copy p:not(.qat-guide-eyebrow) {
+  margin: 0;
+  line-height: 1.42;
+}
+
+.qatalyst-app-shell .qat-guide-eyebrow {
+  margin: 0 0 8px !important;
+}
+
+.qatalyst-app-shell .qat-guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.qatalyst-app-shell .qat-guide-actions button {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 10px 16px;
+  line-height: 1;
+}
+
+.qatalyst-app-shell .qat-guide-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 12px 30px rgba(239, 68, 68, 0.24);
+}
+
+.qatalyst-app-shell .qat-guide-secondary,
+.qatalyst-app-shell .qat-guide-dismiss {
+  color: rgba(255, 255, 255, 0.84);
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.qatalyst-app-shell .app-toolbelt-shell,
+.qatalyst-app-shell .feature-workspace-shell,
+.qatalyst-app-shell .workspace.app-workspace-grid {
+  width: min(100%, 1360px);
+  max-width: calc(100vw - 96px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.qatalyst-app-shell .app-toolbelt-shell {
+  margin-top: 20px;
+}
+
+.qatalyst-app-shell .feature-workspace-shell,
+.qatalyst-app-shell .workspace.app-workspace-grid {
+  margin-top: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qatalyst-app-shell .qat-guide-peek-layer {
+    transition: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .qatalyst-app-shell .qat-guide-shell,
+  .qatalyst-app-shell .app-toolbelt-shell,
+  .qatalyst-app-shell .feature-workspace-shell,
+  .qatalyst-app-shell .workspace.app-workspace-grid {
+    max-width: calc(100vw - 32px);
+  }
+
+  .qatalyst-app-shell .qat-guide-shell .qat-guide-card {
+    padding-left: 92px;
+  }
+
+  .qatalyst-app-shell .qat-guide-peek-layer {
+    left: -42px;
+    bottom: 8px;
+    width: 126px;
+    height: 114px;
+    transform: translateX(-82px);
+  }
+
+  .qatalyst-app-shell .qat-guide-shell:hover .qat-guide-peek-layer,
+  .qatalyst-app-shell .qat-guide-shell:focus-within .qat-guide-peek-layer {
+    transform: translateX(-16px);
+  }
+
+  .qatalyst-app-shell .qat-guide-media {
+    width: 116px;
+  }
+}
+
+@media (max-width: 680px) {
+  .qatalyst-app-shell .qat-guide-shell .qat-guide-card {
+    padding-left: 18px;
+  }
+
+  .qatalyst-app-shell .qat-guide-peek-layer {
+    display: none !important;
+  }
+}
+/* QAS-74 QAt peek swap/tuning
+   Append at the very bottom of src/app/globals.css.
+   Requires structural QAtGuideCard pass.
+
+   Change:
+   - swap default and hover placement
+   - make QAt ~10% bigger
+*/
+
+.qatalyst-app-shell .qat-guide-peek-layer {
+  left: -58px;
+  bottom: 8px;
+  width: 184px;
+  height: 166px;
+  transform: translateX(-18px);
+}
+
+.qatalyst-app-shell .qat-guide-shell:hover .qat-guide-peek-layer,
+.qatalyst-app-shell .qat-guide-shell:focus-within .qat-guide-peek-layer {
+  transform: translateX(-104px);
+}
+
+.qatalyst-app-shell .qat-guide-media {
+  width: 170px;
+}
+
+@media (max-width: 1000px) {
+  .qatalyst-app-shell .qat-guide-peek-layer {
+    left: -42px;
+    bottom: 8px;
+    width: 138px;
+    height: 126px;
+    transform: translateX(-16px);
+  }
+
+  .qatalyst-app-shell .qat-guide-shell:hover .qat-guide-peek-layer,
+  .qatalyst-app-shell .qat-guide-shell:focus-within .qat-guide-peek-layer {
+    transform: translateX(-82px);
+  }
+
+  .qatalyst-app-shell .qat-guide-media {
+    width: 128px;
+  }
+}
+/* QAS-74 exact QAt position swap
+   Append at the very bottom of src/app/globals.css.
+   Requires structural QAtGuideCard pass.
+
+   User requested exact swap:
+   - default should use the current highlighted/final position
+   - highlighted/hover/focus should use the current default position
+*/
+
+.qatalyst-app-shell .qat-guide-peek-layer {
+  left: -58px;
+  bottom: 8px;
+  width: 184px;
+  height: 166px;
+  transform: translateX(-104px);
+}
+
+.qatalyst-app-shell .qat-guide-shell:hover .qat-guide-peek-layer,
+.qatalyst-app-shell .qat-guide-shell:focus-within .qat-guide-peek-layer {
+  transform: translateX(-18px);
+}
+
+.qatalyst-app-shell .qat-guide-media {
+  width: 170px;
+}
+
+@media (max-width: 1000px) {
+  .qatalyst-app-shell .qat-guide-peek-layer {
+    left: -42px;
+    bottom: 8px;
+    width: 138px;
+    height: 126px;
+    transform: translateX(-82px);
+  }
+
+  .qatalyst-app-shell .qat-guide-shell:hover .qat-guide-peek-layer,
+  .qatalyst-app-shell .qat-guide-shell:focus-within .qat-guide-peek-layer {
+    transform: translateX(-16px);
+  }
+
+  .qatalyst-app-shell .qat-guide-media {
+    width: 128px;
+  }
+}
+/* QAS-74 FINAL: QAt exact default/hover correction */
+
+.qatalyst-app-shell .qat-guide-peek-layer {
+  left: -58px !important;
+  bottom: 8px !important;
+  width: 184px !important;
+  height: 166px !important;
+  transform: translateX(-132px) !important;
+}
+
+.qatalyst-app-shell .qat-guide-shell:hover .qat-guide-peek-layer,
+.qatalyst-app-shell .qat-guide-shell:focus-within .qat-guide-peek-layer {
+  transform: translateX(-18px) !important;
+}
+
+.qatalyst-app-shell .qat-guide-media {
+  width: 170px !important;
+}/* QAS-74 FINAL: left-side QAt peeks out LEFT on hover */
+
+.qatalyst-app-shell .qat-guide-peek-layer {
+  left: -58px !important;
+  bottom: 8px !important;
+  width: 184px !important;
+  height: 166px !important;
+
+  /* default: tucked behind the window edge */
+  transform: translateX(-18px) !important;
+}
+
+.qatalyst-app-shell .qat-guide-shell:hover .qat-guide-peek-layer,
+.qatalyst-app-shell .qat-guide-shell:focus-within .qat-guide-peek-layer {
+  /* hover/focus: move LEFT to reveal more */
+  transform: translateX(-104px) !important;
+}
+
+.qatalyst-app-shell .qat-guide-media {
+  width: 170px !important;
+}/* QAS-74 FINAL: tuck tool tutorial QAt behind its outer window */
+
+.qatalyst-app-shell .qat-guide-shell.qat-tool-ftue-card {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.qatalyst-app-shell .qat-guide-shell.qat-tool-ftue-card .qat-guide-peek-layer {
+  left: -58px !important;
+  bottom: 38px !important;
+  z-index: 0 !important;
+  transform: translateX(-18px) !important;
+}
+
+.qatalyst-app-shell .qat-guide-shell.qat-tool-ftue-card:hover .qat-guide-peek-layer,
+.qatalyst-app-shell .qat-guide-shell.qat-tool-ftue-card:focus-within .qat-guide-peek-layer {
+  transform: translateX(-104px) !important;
+}
+
+.qatalyst-app-shell .qat-guide-shell.qat-tool-ftue-card .qat-guide-card {
+  position: relative !important;
+  z-index: 2 !important;
+}
