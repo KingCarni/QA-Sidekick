@@ -14,6 +14,7 @@ import BugEvidencePanel, {
 import BugEvidencePreview from "@/components/BugEvidencePreview";
 import CoverageScorePanel from "@/components/CoverageScorePanel";
 import FeatureBuilderTool from "@/components/FeatureBuilderTool";
+import QAtGuideCard from "@/components/QAtGuideCard";
 import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
 import RiskReviewPanel from "@/components/RiskReviewPanel";
 import SaveBugToCollectionButton from "@/components/SaveBugToCollectionButton";
@@ -47,6 +48,12 @@ import {
   buildOutputGenerationKey,
 } from "@/lib/regeneration-guard";
 import type { ParsedJiraTicket } from "@/lib/jira-ticket";
+import {
+  FTUE_KEYS,
+  completeFtueStep,
+  isFtueStepComplete,
+  type FtueStepKey,
+} from "@/lib/ftue-state";
 
 type ToolId = "tests" | "bug" | "risk" | "improve" | "feature";
 type ReportToolId = Exclude<ToolId, "feature">;
@@ -2738,6 +2745,61 @@ export default function Home() {
   );
   const currentTestImprovement = activeTool === "improve" ? getTestImprovementFromOutput(output) : null;
 
+  const TOOL_FTUE_KEYS: Record<ToolId, FtueStepKey> = {
+    tests: FTUE_KEYS.testsIntro,
+    bug: FTUE_KEYS.bugIntro,
+    risk: FTUE_KEYS.riskIntro,
+    improve: FTUE_KEYS.improveIntro,
+    feature: FTUE_KEYS.featureIntro,
+  };
+  const ftueToolKey = TOOL_FTUE_KEYS[activeTool];
+  const [showWelcomeFtue, setShowWelcomeFtue] = useState(false);
+  const [showBrainFtue, setShowBrainFtue] = useState(false);
+  const [showIntegrationsFtue, setShowIntegrationsFtue] = useState(false);
+  const [showToolFtue, setShowToolFtue] = useState(false);
+
+  const toolFtueCopy: Record<ToolId, { title: string; body: string }> = {
+    tests: {
+      title: "QAt can build test coverage from rough source work.",
+      body: "Paste a Jira ticket, user story, or acceptance criteria. QAtalyst will generate reviewable test cases and call out follow-up questions when the source is thin.",
+    },
+    bug: {
+      title: "QAt can turn messy bug notes into a clean defect.",
+      body: "Add repro notes, environment details, screenshots, logs, or tester notes. QAtalyst will structure the report so it is easier for developers to triage.",
+    },
+    risk: {
+      title: "QAt can spot release risks before QA starts.",
+      body: "Paste a ticket or requirements note. QAtalyst will look for unclear acceptance criteria, bottlenecks, fragile areas, and follow-up questions.",
+    },
+    improve: {
+      title: "QAt can strengthen weak test cases.",
+      body: "Paste an existing test case or checklist. QAtalyst will improve structure, coverage, clarity, and missing validation points.",
+    },
+    feature: {
+      title: "QAt can shape rough feature ideas into QA-ready briefs.",
+      body: "Start messy. Feature Builder helps turn early ideas into structured scope, risks, follow-up questions, and QA-ready direction.",
+    },
+  };
+
+  useEffect(() => {
+    setShowWelcomeFtue(!isFtueStepComplete(FTUE_KEYS.welcome));
+    setShowBrainFtue(!isFtueStepComplete(FTUE_KEYS.brainIntro));
+    setShowIntegrationsFtue(!isFtueStepComplete(FTUE_KEYS.integrationsIntro));
+  }, []);
+
+  useEffect(() => {
+    setShowToolFtue(!isFtueStepComplete(ftueToolKey));
+  }, [ftueToolKey]);
+
+  function dismissFtueStep(key: FtueStepKey) {
+    completeFtueStep(key);
+
+    if (key === FTUE_KEYS.welcome) setShowWelcomeFtue(false);
+    if (key === FTUE_KEYS.brainIntro) setShowBrainFtue(false);
+    if (key === FTUE_KEYS.integrationsIntro) setShowIntegrationsFtue(false);
+    if (key === ftueToolKey) setShowToolFtue(false);
+  }
+
   function handleToolChange(toolId: ToolId) {
     setActiveTool(toolId);
     setOutput("");
@@ -3659,9 +3721,87 @@ export default function Home() {
         </aside>
       </section>
 
+      {showWelcomeFtue ? (
+        <QAtGuideCard
+          className="qat-ftue-card"
+          eyebrow="First-time setup"
+          title="Hi, I’m QAt. I’ll help you get release-ready faster."
+          body="QAtalyst works best when it understands your project context. I’ll point you toward the Project Brain, integrations, and the main QA tools without getting in your way."
+          primaryAction={{
+            label: "Start with Project Brain",
+            onClick: () => {
+              dismissFtueStep(FTUE_KEYS.welcome);
+              window.location.href = "/projects";
+            },
+          }}
+          secondaryAction={{
+            label: "Skip for now",
+            onClick: () => dismissFtueStep(FTUE_KEYS.welcome),
+          }}
+        />
+      ) : null}
+
+      {showBrainFtue ? (
+        <QAtGuideCard
+          className="qat-ftue-card"
+          eyebrow="Project Brain"
+          title="QAtalyst gets smarter when your project memory is set up."
+          body="Use Project Brain/Source Vault for rules, terminology, product notes, links, risks, and reusable context. This keeps generated QA output grounded in your actual product instead of generic AI guesses."
+          primaryAction={{
+            label: "Open Project setup",
+            onClick: () => {
+              dismissFtueStep(FTUE_KEYS.brainIntro);
+              window.location.href = "/projects";
+            },
+          }}
+          secondaryAction={{
+            label: "Got it",
+            onClick: () => dismissFtueStep(FTUE_KEYS.brainIntro),
+          }}
+        />
+      ) : null}
+
+      {showIntegrationsFtue ? (
+        <QAtGuideCard
+          className="qat-ftue-card"
+          eyebrow="Integrations"
+          title="Want Jira-ready and TestRail-ready handoff later?"
+          body="Connect integrations when you’re ready. Jira helps QAtalyst pull tickets and create structured QA work; TestRail keeps generated coverage closer to your test management workflow."
+          primaryAction={{
+            label: "Show me integrations",
+            onClick: () => {
+              dismissFtueStep(FTUE_KEYS.integrationsIntro);
+              window.location.href = "/projects";
+            },
+          }}
+          secondaryAction={{
+            label: "Skip integrations",
+            onClick: () => dismissFtueStep(FTUE_KEYS.integrationsIntro),
+          }}
+        />
+      ) : null}
+
       <div className="app-toolbelt-shell">
         <ToolToolbar tools={tools} activeTool={activeTool} onToolChange={handleToolChange} />
       </div>
+
+      {showToolFtue ? (
+        <QAtGuideCard
+          className="qat-ftue-card qat-tool-ftue-card"
+          eyebrow={`${tool.label} tutorial`}
+          title={toolFtueCopy[activeTool].title}
+          body={toolFtueCopy[activeTool].body}
+          compact
+          primaryAction={{
+            label: "Got it",
+            onClick: () => dismissFtueStep(ftueToolKey),
+          }}
+          secondaryAction={{
+            label: "Hide this tip",
+            onClick: () => dismissFtueStep(ftueToolKey),
+          }}
+        />
+      ) : null}
 
       {activeTool === "feature" ? (
         <section className="feature-workspace-shell" aria-label="Feature Builder workspace">
