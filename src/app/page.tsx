@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 
 const differentiators = [
@@ -147,12 +148,6 @@ export default function LandingPage() {
               Buy Credits
             </Link>
           </div>
-
-          <div className="qatalyst-hero-proof" aria-label="Product strengths">
-            <span>Reviewable AI guardrails</span>
-            <span>Project Context / Source Vault</span>
-            <span>Jira + TestRail workflow</span>
-          </div>
         </div>
 
         <div className="qatalyst-product-preview" aria-label="QAtalyst product preview">
@@ -211,22 +206,34 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="qatalyst-section" aria-labelledby="qatalyst-differentiators-title">
-        <div className="qatalyst-section-heading">
-          <p className="qatalyst-eyebrow">Not just generated test cases</p>
-          <h2 id="qatalyst-differentiators-title">A QA planning system for messy real-world product work.</h2>
-          <p>
-            The value is not only writing tests faster. It is carrying context across workflows,
-            exposing gaps early, and keeping every AI-assisted step reviewable.
-          </p>
+      <section className="qatalyst-section" id="workflow" aria-labelledby="qatalyst-workflow-title">
+        <div className="qatalyst-section-heading qatalyst-section-heading-center">
+          <p className="qatalyst-eyebrow">Workflow</p>
+          <h2 id="qatalyst-workflow-title">Bring context → choose workflow → triage gaps → create/export.</h2>
+        </div>
+
+        <div className="qatalyst-workflow-lane">
+          {workflowSteps.map((item) => (
+            <article className="qatalyst-step-card" key={item.step}>
+              <span>{item.step}</span>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="qatalyst-section" aria-labelledby="qatalyst-tools-title">
+        <div className="qatalyst-section-heading qatalyst-section-heading-center">
+          <p className="qatalyst-eyebrow">Tools</p>
+          <h2 id="qatalyst-tools-title">Six focused workflows. One cleaner QA operating surface.</h2>
         </div>
 
         <div className="qatalyst-card-grid qatalyst-card-grid-3">
-          {differentiators.map((item) => (
-            <article className={`qatalyst-card qatalyst-card-${item.tone}`} key={item.title}>
-              <p className="qatalyst-card-eyebrow">{item.eyebrow}</p>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
+          {tools.map((tool) => (
+            <article className={`qatalyst-tool-card qatalyst-tool-card-${tool.tone}`} key={tool.name}>
+              <h3>{tool.name}</h3>
+              <p>{tool.body}</p>
             </article>
           ))}
         </div>
@@ -249,6 +256,47 @@ export default function LandingPage() {
               <span key={item}>{item}</span>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="qatalyst-section qatalyst-integrations-section" aria-labelledby="qatalyst-integrations-title">
+        <div className="qatalyst-section-heading">
+          <p className="qatalyst-eyebrow">Integrations</p>
+          <h2 id="qatalyst-integrations-title">Designed to meet the tools QA teams already use.</h2>
+          <p>
+            Keep the planning layer polished and reviewable, then move useful output toward Jira,
+            TestRail, and automation setup without pretending AI should blindly own the release.
+          </p>
+        </div>
+
+        <div className="qatalyst-card-grid qatalyst-card-grid-4">
+          {integrations.map((item) => (
+            <article className={`qatalyst-mini-card qatalyst-mini-card-${item.tone}`} key={item.name}>
+              <h3>{item.name}</h3>
+              <p>{item.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="qatalyst-section" aria-labelledby="qatalyst-differentiators-title">
+        <div className="qatalyst-section-heading">
+          <p className="qatalyst-eyebrow">Not just generated test cases</p>
+          <h2 id="qatalyst-differentiators-title">A QA planning system for messy real-world product work.</h2>
+          <p>
+            The value is not only writing tests faster. It is carrying context across workflows,
+            exposing gaps early, and keeping every AI-assisted step reviewable.
+          </p>
+        </div>
+
+        <div className="qatalyst-card-grid qatalyst-card-grid-3">
+          {differentiators.map((item) => (
+            <article className={`qatalyst-card qatalyst-card-${item.tone}`} key={item.title}>
+              <p className="qatalyst-card-eyebrow">{item.eyebrow}</p>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -275,59 +323,6 @@ export default function LandingPage() {
               ))}
             </ul>
           </div>
-        </div>
-      </section>
-
-      <section className="qatalyst-section" id="workflow" aria-labelledby="qatalyst-workflow-title">
-        <div className="qatalyst-section-heading qatalyst-section-heading-center">
-          <p className="qatalyst-eyebrow">Workflow</p>
-          <h2 id="qatalyst-workflow-title">Bring context → choose workflow → triage gaps → create/export.</h2>
-        </div>
-
-        <div className="qatalyst-workflow-lane">
-          {workflowSteps.map((item) => (
-            <article className="qatalyst-step-card" key={item.step}>
-              <span>{item.step}</span>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="qatalyst-section qatalyst-integrations-section" aria-labelledby="qatalyst-integrations-title">
-        <div className="qatalyst-section-heading">
-          <p className="qatalyst-eyebrow">Integrations</p>
-          <h2 id="qatalyst-integrations-title">Designed to meet the tools QA teams already use.</h2>
-          <p>
-            Keep the planning layer polished and reviewable, then move useful output toward Jira,
-            TestRail, and automation setup without pretending AI should blindly own the release.
-          </p>
-        </div>
-
-        <div className="qatalyst-card-grid qatalyst-card-grid-4">
-          {integrations.map((item) => (
-            <article className={`qatalyst-mini-card qatalyst-mini-card-${item.tone}`} key={item.name}>
-              <h3>{item.name}</h3>
-              <p>{item.detail}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="qatalyst-section" aria-labelledby="qatalyst-tools-title">
-        <div className="qatalyst-section-heading qatalyst-section-heading-center">
-          <p className="qatalyst-eyebrow">Tools</p>
-          <h2 id="qatalyst-tools-title">Six focused workflows. One cleaner QA operating surface.</h2>
-        </div>
-
-        <div className="qatalyst-card-grid qatalyst-card-grid-3">
-          {tools.map((tool) => (
-            <article className={`qatalyst-tool-card qatalyst-tool-card-${tool.tone}`} key={tool.name}>
-              <h3>{tool.name}</h3>
-              <p>{tool.body}</p>
-            </article>
-          ))}
         </div>
       </section>
 
@@ -374,3 +369,4 @@ export default function LandingPage() {
     </main>
   );
 }
+
