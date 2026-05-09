@@ -195,7 +195,8 @@ export type CreditActionId =
   | "test_improver_generate"
   | "feature_builder_generate"
   | "feature_builder_refine"
-  | "feature_builder_jira_create";
+  | "feature_builder_jira_create"
+  | "feature_builder_prompt_suggestions";
 
 export type PaidCreditAction = CreditActionId;
 
@@ -264,6 +265,14 @@ export const CREDIT_ACTIONS: Record<CreditActionId, CreditAction> = {
     cost: 1,
     reason: "usage_feature_builder_jira_create",
     description: "Create Jira-ready work items from the generated feature plan.",
+  },
+  feature_builder_prompt_suggestions: {
+    id: "feature_builder_prompt_suggestions",
+    label: "Ask AI for Prompts",
+    shortLabel: "AI Prompts",
+    cost: 1,
+    reason: "usage_feature_builder_prompt_suggestions",
+    description: "Generate targeted prompt suggestions for a rough feature idea.",
   },
 };
 

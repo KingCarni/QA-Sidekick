@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { apiError, apiOk, getErrorMessage } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
 import { normalizeJiraErrorMessage } from "@/lib/jira-error-normalizer";
-import { getUserJiraConfigStatus } from "@/lib/jira-config";
+import { getUserJiraConfigStatus, getUserJiraConfigWithSecret } from "@/lib/jira-config";
 import { fetchJiraIssueByKey } from "@/lib/jira-issue-fetch";
 import { durationSince, nowMs, serverLog } from "@/lib/server-log";
 
@@ -59,8 +59,18 @@ export async function GET(req: Request, context: RouteContext): Promise<Response
       });
     }
 
+    const jiraConfigWithSecret = await getUserJiraConfigWithSecret(userId);
+
+    if (!jiraConfigWithSecret?.jiraApiToken) {
+      return apiError(req, {
+        status: 400,
+        code: "VALIDATION_ERROR",
+        message: "Jira API token is missing or could not be read. Re-save your Jira API token in Jira settings.",
+      });
+    }
+
     const result = await fetchJiraIssueByKey({
-      config: jiraStatus.config,
+      config: jiraConfigWithSecret,
       issueKeyOrUrl,
     });
 
@@ -73,6 +83,8 @@ export async function GET(req: Request, context: RouteContext): Promise<Response
         meta: {
           issueKeyOrUrl,
           projectKey: jiraStatus.config.projectKey,
+          usesSavedUserConfig: true,
+          hasSavedToken: Boolean(jiraConfigWithSecret?.jiraApiToken),
           error: result.error,
         },
       });

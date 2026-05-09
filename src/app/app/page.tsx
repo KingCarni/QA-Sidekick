@@ -2782,6 +2782,13 @@ export default function Home() {
       setBugContextAnswers("");
     }
   }
+
+  function handleUseFeatureBriefForTool(args: { tool: "tests" | "risk"; markdown: string }) {
+    handleToolChange(args.tool);
+    setInput(args.markdown);
+    setOutput("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
   const rawImproveFollowUpQuestions = currentTestImprovement
     ? meaningfulLines(currentTestImprovement.followUpQuestions)
     : [];
@@ -3632,7 +3639,7 @@ export default function Home() {
       <ToolToolbar tools={tools} activeTool={activeTool} onToolChange={handleToolChange} />
 
       {activeTool === "feature" ? (
-        <FeatureBuilderTool activeProject={activeProject} />
+        <FeatureBuilderTool activeProject={activeProject} onUseForTool={handleUseFeatureBriefForTool} />
       ) : (
       <section className="workspace">
         <aside className="panel input-panel">

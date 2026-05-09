@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { publishCreditBalanceUpdated } from "@/lib/credit-balance-events";
 
 type PromptCategory = "brainstorm" | "scope" | "qa" | "acceptance" | "jira";
 
@@ -30,6 +31,9 @@ type AiPromptResponse = {
   error?: string;
   prompts?: CompanionPrompt[];
   nextQuestion?: string;
+  credits?: {
+    balanceAfter?: number;
+  };
 };
 
 const CATEGORY_LABELS: Record<PromptCategory, string> = {
@@ -346,6 +350,9 @@ export default function FeatureBuilderCompanionPanel({
 
       setAiPrompts(payload?.prompts ?? []);
       setAiNextQuestion(payload?.nextQuestion ?? "");
+      if (typeof payload?.credits?.balanceAfter === "number") {
+        publishCreditBalanceUpdated(payload.credits.balanceAfter);
+      }
     } catch (error) {
       setAiError(error instanceof Error ? error.message : "Could not generate AI prompt suggestions.");
     } finally {
@@ -394,30 +401,12 @@ export default function FeatureBuilderCompanionPanel({
         ))}
       </div>
 
-      <section className="feature-companion-missing-panel" aria-label="Feature readiness callouts">
-        <h4>This idea is missing...</h4>
-        <div className="feature-companion-callouts">
-          {missingCallouts.map((callout) => (
-            <div className={callout.isReady ? "ready" : ""} key={callout.label}>
-              <strong>{callout.isReady ? "✓ " : ""}{callout.label}</strong>
-              <span>{callout.detail}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="feature-companion-next-question">
-        <h4>Suggested next question</h4>
-        <button onClick={() => onAppendPrompt(nextQuestion)} type="button">
-          {nextQuestion}
-        </button>
-      </section>
-
       <section className="feature-companion-prompt-section">
         <div className="feature-companion-section-header">
           <h4>{CATEGORY_LABELS[activeCategory]} prompts</h4>
-          <button disabled={!canAskAi} onClick={requestAiPrompts} type="button">
-            {isLoadingAiPrompts ? "Thinking..." : "Ask AI for prompts"}
+          <button className="feature-ai-prompt-button" disabled={!canAskAi} onClick={requestAiPrompts} type="button">
+            <span>{isLoadingAiPrompts ? "Asking AI..." : "Ask AI for prompts"}</span>
+            <strong>1 credit</strong>
           </button>
         </div>
 
@@ -444,6 +433,25 @@ export default function FeatureBuilderCompanionPanel({
           ))}
         </div>
       </section>
+      <section className="feature-companion-missing-panel" aria-label="Feature readiness callouts">
+        <h4>This idea is missing...</h4>
+        <div className="feature-companion-callouts">
+          {missingCallouts.map((callout) => (
+            <div className={callout.isReady ? "ready" : ""} key={callout.label}>
+              <strong>{callout.isReady ? "✓ " : ""}{callout.label}</strong>
+              <span>{callout.detail}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="feature-companion-next-question">
+        <h4>Suggested next question</h4>
+        <button onClick={() => onAppendPrompt(nextQuestion)} type="button">
+          {nextQuestion}
+        </button>
+      </section>
+
     </aside>
   );
 }

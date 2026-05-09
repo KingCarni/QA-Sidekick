@@ -10,6 +10,8 @@ import { durationSince, nowMs, serverLog } from "@/lib/server-log";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const FEATURE_JIRA_CHILD_ITEM_LIMIT = 10;
+
 type FeatureBrief = {
   title?: string;
   summary?: string;
@@ -69,6 +71,12 @@ type JiraConfigWithSecret = {
   jiraApiToken?: string;
   projectKey: string;
   defaultIssueType: string;
+};
+
+type JiraProjectIssueType = {
+  id: string;
+  name: string;
+  subtask: boolean;
 };
 
 type JiraAdfTextNode = {
@@ -289,6 +297,7 @@ async function createRawJiraIssue(args: {
   summary: string;
   descriptionMarkdown: string;
   issueType: string;
+  issueTypeId?: string;
   parentKey?: string;
 }): Promise<
   | { ok: true; issue: JiraCreatedIssue }
@@ -302,7 +311,7 @@ async function createRawJiraIssue(args: {
     project: { key: args.config.projectKey },
     summary,
     description: markdownToAdf(args.descriptionMarkdown),
-    issuetype: { name: args.issueType },
+    issuetype: args.issueTypeId ? { id: args.issueTypeId } : { name: args.issueType },
   };
 
   if (args.parentKey) {
@@ -353,6 +362,59 @@ async function createRawJiraIssue(args: {
       browseUrl: `${siteUrl}/browse/${key}`,
     },
   };
+}
+
+async function loadProjectIssueTypes(args: {
+  config: JiraConfigWithSecret;
+  authHeader: string;
+}): Promise<JiraProjectIssueType[]> {
+  const siteUrl = cleanSiteUrl(args.config.siteUrl);
+  const endpoint = `${siteUrl}/rest/api/3/project/${encodeURIComponent(args.config.projectKey)}?expand=issueTypes`;
+
+  const response = await fetch(endpoint, {
+    method: "GET",
+    headers: {
+      Authorization: args.authHeader,
+      Accept: "application/json",
+    },
+  });
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    serverLog.warn("Could not load Jira project issue types for Feature Builder.", {
+      route: "/api/feature-builder/jira/create",
+      status: response.status,
+      meta: {
+        projectKey: args.config.projectKey,
+        error: getJiraErrorMessage(payload, "Could not load Jira issue types."),
+      },
+    });
+
+    return [];
+  }
+
+  const rawIssueTypes: unknown[] = Array.isArray(payload?.issueTypes) ? payload.issueTypes : [];
+
+  return rawIssueTypes
+    .map((item) => {
+      const record = item && typeof item === "object" ? (item as Record<string, unknown>) : {};
+      return {
+        id: String(record.id ?? ""),
+        name: String(record.name ?? ""),
+        subtask: Boolean(record.subtask),
+      };
+    })
+    .filter((item) => item.id && item.name);
+}
+
+function getSubtaskIssueType(issueTypes: JiraProjectIssueType[]) {
+  return (
+    issueTypes.find((type) => type.subtask) ||
+    issueTypes.find((type) => type.name.toLowerCase() === "subtask") ||
+    issueTypes.find((type) => type.name.toLowerCase() === "sub-task") ||
+    null
+  );
 }
 
 async function linkIssues(args: {
@@ -524,12 +586,23 @@ export async function POST(req: Request): Promise<Response> {
     }
 
     const childIssues: JiraCreatedIssue[] = [];
+    const failedChildIssues: Array<{ summary: string; error: string; status: number }> = [];
     const createChildTasks = Boolean(options.createChildTasks);
     const childTaskMode = asText(options.childTaskMode) === "subtask" ? "subtask" : "task";
-    const childIssueType = childTaskMode === "subtask" ? "Sub-task" : jiraConfig.defaultIssueType || "Task";
+    const projectIssueTypes = await loadProjectIssueTypes({
+      config: jiraConfigWithSecret,
+      authHeader,
+    });
+    const subtaskIssueType = getSubtaskIssueType(projectIssueTypes);
+    const childIssueType =
+      childTaskMode === "subtask"
+        ? subtaskIssueType?.name || "Subtask"
+        : jiraConfig.defaultIssueType || "Task";
+    const childIssueTypeId = childTaskMode === "subtask" ? subtaskIssueType?.id : undefined;
 
     if (createChildTasks) {
-      const childTasks = getPreviewChildTasks(preview);
+      const allChildTasks = getPreviewChildTasks(preview);
+      const childTasks = allChildTasks.slice(0, FEATURE_JIRA_CHILD_ITEM_LIMIT);
 
       for (const task of childTasks) {
         const result = await createRawJiraIssue({
@@ -544,6 +617,7 @@ export async function POST(req: Request): Promise<Response> {
             .filter(Boolean)
             .join("\n"),
           issueType: childIssueType,
+          issueTypeId: childIssueTypeId,
           parentKey: childTaskMode === "subtask" ? parentResult.issue.key : undefined,
         });
 
@@ -559,6 +633,12 @@ export async function POST(req: Request): Promise<Response> {
             });
           }
         } else {
+          failedChildIssues.push({
+            summary: task.summary ? String(task.summary) : "Feature child task",
+            error: normalizeJiraErrorMessage(result.error),
+            status: result.status,
+          });
+
           serverLog.warn("Feature Builder child Jira work creation failed.", {
             route,
             userId,
@@ -628,9 +708,13 @@ export async function POST(req: Request): Promise<Response> {
       childIssues,
       qaIssue,
       warning:
-        createChildTasks && childIssues.length === 0 && getPreviewChildTasks(preview).length > 0
-          ? "Parent issue was created, but no child work items were created. Check whether the selected child issue type is supported by this Jira project."
+        failedChildIssues.length > 0
+          ? `Parent issue was created, but ${failedChildIssues.length} child work item(s) failed to create. ${failedChildIssues[0]?.error || "Check Jira issue type and subtask permissions."}`
           : null,
+      failedChildIssues,
+      childWorkLimit: FEATURE_JIRA_CHILD_ITEM_LIMIT,
+      childWorkCreatedCount: childIssues.length,
+      childWorkTruncated: getPreviewChildTasks(preview).length > FEATURE_JIRA_CHILD_ITEM_LIMIT,
     };
       },
     });
@@ -640,6 +724,10 @@ export async function POST(req: Request): Promise<Response> {
       childIssues: paidResult.childIssues,
       qaIssue: paidResult.qaIssue,
       warning: paidResult.warning,
+      failedChildIssues: paidResult.failedChildIssues,
+      childWorkLimit: paidResult.childWorkLimit,
+      childWorkCreatedCount: paidResult.childWorkCreatedCount,
+      childWorkTruncated: paidResult.childWorkTruncated,
       credits: {
         action: paidResult.creditSpend.action,
         cost: paidResult.creditSpend.cost,

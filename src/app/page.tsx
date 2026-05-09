@@ -1,61 +1,121 @@
 import Link from "next/link";
 
-const featureCards = [
+const workflowCards = [
   {
-    title: "Generate test cases",
-    body: "Paste a Jira ticket, user story, or acceptance criteria and get practical test coverage fast.",
+    kicker: "Project Context",
+    title: "Project context that actually helps",
+    body: "Save notes, specs, tickets, edge cases, and prior QA decisions into reusable context. QAtalyst can use that context when generating tests, risks, bugs, and feature plans.",
+    accent: "green",
   },
   {
-    title: "Expose delivery risk",
-    body: "Catch vague requirements, missing acceptance criteria, bottlenecks, and QA blind spots before dev work goes sideways.",
+    kicker: "Feature Builder",
+    title: "Shape rough ideas before they become bad tickets",
+    body: "Turn scratch notes into a structured feature brief with brainstorming prompts, missing-info checks, and follow-up questions.",
+    accent: "blue",
   },
   {
-    title: "Improve bug reports",
-    body: "Turn rough repro notes into a triaged, team-ready report with clearer context, impact, evidence, and next steps.",
+    kicker: "Follow-up Questions",
+    title: "Follow-up questions that feel like QA triage",
+    body: "Surface the same questions a QA team would ask in triage: what is missing, what is risky, and what needs a decision before release?",
+    accent: "gold",
   },
   {
-    title: "Refine test cases",
-    body: "Strengthen existing tests with clearer steps, better coverage, missing info, and follow-up questions.",
+    kicker: "Jira Integration",
+    title: "From scratch notes to Jira-ready work",
+    body: "Start from rough notes or fetch a Jira ticket, then preview parent tickets, child work, and QA tasks before creating anything.",
+    accent: "red",
+  },
+  {
+    kicker: "TestRail Integration",
+    title: "Move from generated tests to TestRail faster",
+    body: "Prepare useful coverage faster and shape it into a TestRail-ready structure for the workflow your team already uses.",
+    accent: "cyan",
+  },
+  {
+    kicker: "Automation Setup",
+    title: "Start automation from a usable skeleton",
+    body: "Use generated coverage as a starting point for automation setup and starter skeletons instead of beginning from a blank page.",
+    accent: "purple",
   },
 ];
 
-const audienceCards = ["QA analysts", "solo devs", "indie game teams", "small product teams"];
-
-const triageCards = [
+const flowCards = [
   {
-    title: "Spot missing context",
-    body: "QAtalyst highlights the details that are missing before a ticket becomes a slow back-and-forth thread.",
+    title: "Bring the context",
+    body: "Paste notes, fetch a Jira ticket, or use saved project context.",
+    accent: "green",
   },
   {
-    title: "Ask targeted follow-ups",
-    body: "The workspace prompts for repro rate, environment, edge cases, risks, and unclear acceptance criteria when they matter.",
+    title: "Choose the QA workflow",
+    body: "Generate test cases, review risks, improve a bug, shape a feature, or prepare TestRail/Jira output.",
+    accent: "blue",
   },
   {
-    title: "Rebuild the output",
-    body: "Answer the questions, reassess, and export a cleaner QA plan, bug report, or test set.",
+    title: "Triage the gaps",
+    body: "Review follow-up questions, missing acceptance criteria, unclear scope, edge cases, and release risks.",
+    accent: "gold",
+  },
+  {
+    title: "Create or export",
+    body: "Create Jira work, prepare TestRail cases, copy markdown, save context, or carry the brief into Test Cases/Risk Review.",
+    accent: "red",
   },
 ];
+
+const guardrailCards = [
+  { body: "Preview Jira work before anything is created.", accent: "green" },
+  { body: "Project context is user-controlled.", accent: "blue" },
+  { body: "Follow-up questions expose missing info.", accent: "gold" },
+  { body: "Credit costs are visible before paid actions.", accent: "red" },
+  { body: "Failed actions do not charge.", accent: "cyan" },
+  { body: "Outputs are editable before use.", accent: "purple" },
+];
+
+const toolPills = [
+  { label: "Test Cases", accent: "green" },
+  { label: "Risk Review", accent: "red" },
+  { label: "Bug Writer", accent: "gold" },
+  { label: "Test Improver", accent: "blue" },
+  { label: "Feature Builder", accent: "purple" },
+  { label: "Automation Setup", accent: "cyan" },
+];
+
+const integrationPills = [
+  { label: "Jira", className: "is-blue" },
+  { label: "TestRail", className: "is-green" },
+  { label: "Playwright", className: "is-purple" },
+  { label: "More to come", className: "is-muted" },
+];
+
+function accentClass(accent: string) {
+  return `landing-card-accent landing-accent-${accent}`;
+}
+
+function titleAccentClass(accent: string) {
+  return `landing-title-accent-${accent}`;
+}
 
 export default function LandingPage() {
   return (
-    <main className="landing-page">
+    <main className="landing-page landing-page-v2">
       <section className="landing-hero landing-hero-refined">
         <div className="landing-hero-copy">
           <p className="report-kicker">QAtalyst</p>
-          <h1>Turn rough tickets into release-ready QA plans.</h1>
+          <h1>Turn rough product work into release-ready QA plans.</h1>
           <p className="landing-hero-subtitle">
-            Generate test cases, expose risks, improve bug reports, and tighten QA coverage from
-            one clean workspace.
+            Paste scratch notes, fetch a Jira ticket, or shape a new feature idea. QAtalyst helps
+            you turn messy inputs into test cases, risk reviews, bug reports, follow-up questions,
+            Jira-ready tickets, TestRail cases, and automation-ready test skeletons.
           </p>
 
           <p className="landing-hero-note">
-            Built to triage unclear tickets with focused follow-up questions, so teams can avoid
-            days of avoidable back and forth.
+            Built around real QA workflow: unclear tickets, missing context, release risk, and the
+            follow-up questions that turn vague work into something testable.
           </p>
 
           <div className="landing-cta-row">
             <Link className="landing-primary-cta" href="/app">
-              Launch App
+              Launch QAtalyst
             </Link>
             <Link className="landing-secondary-cta" href="/buy-credits">
               Buy Credits
@@ -73,87 +133,130 @@ export default function LandingPage() {
             </div>
 
             <div className="landing-preview-block">
-              <small>Risk</small>
-              <p>Missing acceptance criteria could cause inconsistent test coverage.</p>
+              <small>Context</small>
+              <p>Use saved project notes, Jira tickets, specs, and prior QA decisions.</p>
             </div>
 
             <div className="landing-preview-block">
               <small>Follow-up</small>
-              <p>Which roles, devices, repro rates, and edge cases need to be confirmed?</p>
+              <p>What is missing, risky, unclear, or blocked before this can ship?</p>
             </div>
 
             <div className="landing-preview-block landing-preview-block-red">
-              <small>Bug quality</small>
-              <p>Attach screenshots/logs, clarify repro rate, and define expected vs actual results.</p>
+              <small>Creation</small>
+              <p>Preview Jira work, TestRail-ready coverage, and automation skeletons before use.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="landing-section landing-tools-section">
+      <section className="landing-section landing-workflow-system-section">
         <div className="landing-section-heading landing-section-heading-left">
-          <p className="report-kicker">What it does</p>
-          <h2>Four QA tools in one workspace.</h2>
+          <p className="report-kicker">QA Workflow System</p>
+          <h2>More than an AI test case generator.</h2>
         </div>
 
-        <div className="landing-feature-grid">
-          {featureCards.map((feature) => (
-            <article className="landing-feature-card" key={feature.title}>
-              <h3>{feature.title}</h3>
-              <p>{feature.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="landing-section landing-triage-section">
-        <div className="landing-section-heading landing-section-heading-left landing-triage-heading">
-          <p className="report-kicker">Triage loop</p>
-          <h2>Ask the questions before the ticket burns a sprint.</h2>
-        </div>
-
-        <div className="landing-triage-grid">
-          {triageCards.map((card) => (
-            <article className="landing-triage-card" key={card.title}>
-              <h3>{card.title}</h3>
+        <div className="landing-grid-3 landing-workflow-system-grid">
+          {workflowCards.map((card) => (
+            <article className={accentClass(card.accent)} key={card.kicker}>
+              <p className="report-kicker">{card.kicker}</p>
+              <h3 className={titleAccentClass(card.accent)}>{card.title}</h3>
               <p>{card.body}</p>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="landing-split-section">
-        <div className="landing-panel">
-          <p className="report-kicker">Built for</p>
-          <h2>QA-minded teams that need clarity fast.</h2>
-          <div className="landing-audience-grid">
-            {audienceCards.map((audience) => (
-              <span key={audience}>{audience}</span>
-            ))}
-          </div>
+      <section className="landing-section landing-flow-section">
+        <div className="landing-section-heading landing-section-heading-left">
+          <p className="report-kicker">Workflow</p>
+          <h2 className="landing-section-heading-narrow">
+            Bring context, choose the flow, triage the gaps, then create or export.
+          </h2>
         </div>
 
-        <div className="landing-panel landing-credits-panel">
-          <p className="report-kicker">Credits</p>
-          <h2>Start free, top up when needed.</h2>
-          <p className="landing-credits-copy">
-            New accounts get signup credits and a daily login bonus. Buy credits when you want more
-            AI passes across test cases, risk reviews, bug reports, and test improvement.
-          </p>
-          <Link className="landing-secondary-cta landing-panel-link" href="/buy-credits">
-            View Credits
-          </Link>
+        <div className="landing-grid-2 landing-flow-grid">
+          {flowCards.map((card) => (
+            <article className={accentClass(card.accent)} key={card.title}>
+              <h3 className={titleAccentClass(card.accent)}>{card.title}</h3>
+              <p>{card.body}</p>
+            </article>
+          ))}
         </div>
       </section>
 
-      <section className="landing-final-cta">
+      <section className="landing-split-section landing-integrations-tools-row">
+        <div className="landing-panel landing-integrations-panel">
+          <p className="report-kicker">Integrations</p>
+          <h2>Connect QA planning to the tools your team already uses.</h2>
+
+          <div className="landing-integration-pill-row" aria-label="Supported and planned integrations">
+            {integrationPills.map((pill) => (
+              <span className={`landing-integration-pill ${pill.className}`} key={pill.label}>
+                {pill.label}
+              </span>
+            ))}
+          </div>
+
+          <p className="landing-panel-support-copy">
+            Fetch tickets, prepare TestRail-ready cases, and move generated coverage toward
+            automation planning.
+          </p>
+        </div>
+
+        <div className="landing-panel landing-tools-panel">
+          <p className="report-kicker">Tools</p>
+          <h2>Built around the QA work you already do.</h2>
+
+          <div className="landing-tool-pill-grid" aria-label="QAtalyst tools">
+            {toolPills.map((tool) => (
+              <span
+                className={`landing-tool-pill landing-tool-pill-${tool.accent}`}
+                key={tool.label}
+              >
+                {tool.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-section landing-guardrails-section">
+        <div className="landing-section-heading landing-section-heading-left">
+          <p className="report-kicker">Guardrails</p>
+          <h2>Built for reviewable QA work, not AI chaos.</h2>
+        </div>
+
+        <div className="landing-grid-3 landing-guardrail-grid">
+          {guardrailCards.map((card) => (
+            <article
+              className={`${accentClass(card.accent)} landing-guardrail-card`}
+              key={card.body}
+            >
+              <p>{card.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-final-cta landing-final-cta-v2">
         <div>
           <p className="report-kicker">Ready</p>
-          <h2>Paste a ticket. Get a QA plan.</h2>
+          <h2>Start with a messy ticket. Leave with a QA plan.</h2>
+          <p className="landing-ready-copy">
+            Turn rough product work into structured test cases, risks, Jira tickets,
+            TestRail-ready cases, and automation starting points.
+          </p>
         </div>
-        <Link className="landing-primary-cta" href="/app">
-          Launch QAtalyst
-        </Link>
+
+        <div className="landing-ready-actions">
+          <Link className="landing-primary-cta" href="/app">
+            Launch QAtalyst
+          </Link>
+          <Link className="landing-donate-button" href="https://git-a-job.com/donate">
+            Donate
+          </Link>
+        </div>
       </section>
     </main>
   );
