@@ -25841,3 +25841,1789 @@ body:has(.qatalyst-app-shell-v3)::before {
     width: 100%;
   }
 }
+
+/* QAS-155 landing hero logo/background correction
+   Source page preserved from qas-126-credit-jira-review. Append only. */
+body:has(.qatalyst-landing-qas155) {
+  background: #030303 !important;
+}
+
+body:has(.qatalyst-landing-qas155)::before {
+  opacity: 0.22;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.008) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent 86%);
+}
+
+.qatalyst-landing-qas155 {
+  background: transparent !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero {
+  background:
+    radial-gradient(circle at 88% 20%, rgba(127, 29, 29, 0.14), transparent 30%),
+    linear-gradient(135deg, rgba(10, 14, 22, 0.94), rgba(5, 5, 6, 0.98) 48%, rgba(15, 7, 8, 0.94)) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero::before,
+.qatalyst-landing-qas155 .qatalyst-hero::after {
+  opacity: 0.42;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+  position: relative;
+  display: grid;
+  min-height: 520px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 32px;
+  isolation: isolate;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-stage::before {
+  content: "";
+  position: absolute;
+  inset: 10%;
+  z-index: -2;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 0.08), transparent 20%),
+    radial-gradient(circle at 50% 52%, rgba(220, 38, 38, 0.16), transparent 44%),
+    radial-gradient(circle at 42% 56%, rgba(37, 99, 235, 0.08), transparent 48%);
+  filter: blur(24px);
+  opacity: 0.9;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-glow {
+  position: absolute;
+  width: min(520px, 86vw);
+  height: min(520px, 86vw);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.07), transparent 18%),
+    radial-gradient(circle, rgba(220, 38, 38, 0.12), transparent 58%);
+  filter: blur(16px);
+  opacity: 0.78;
+  pointer-events: none;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-large-logo {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: min(520px, 88%);
+  height: auto;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 26px 50px rgba(0, 0, 0, 0.58))
+    drop-shadow(0 0 32px rgba(239, 68, 68, 0.12));
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-caption {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(18px, 4vw, 48px);
+  z-index: 1;
+  width: min(420px, calc(100% - 48px));
+  margin: 0;
+  transform: translateX(-50%);
+  color: rgba(244, 244, 245, 0.72);
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.qatalyst-landing-qas155 .qatalyst-product-preview,
+.qatalyst-landing-qas155 .qatalyst-preview-shell,
+.qatalyst-landing-qas155 .qatalyst-preview-glow {
+  display: none !important;
+}
+
+@media (max-width: 920px) {
+  .qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+    min-height: 360px;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero-large-logo {
+    width: min(420px, 84%);
+  }
+}
+
+@media (max-width: 640px) {
+  .qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+    min-height: 280px;
+    margin-top: 20px;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero-logo-caption {
+    bottom: 12px;
+    font-size: 0.84rem;
+  }
+}
+/* QAS-155 v2 black-background correction
+   Append after the previous QAS-155 landing CSS block.
+   Keeps the fuller qas-126-credit-jira-review landing page structure intact. */
+
+body:has(.qatalyst-landing-qas155) {
+  background: #030303 !important;
+}
+
+body:has(.qatalyst-landing-qas155)::before {
+  opacity: 0.16 !important;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.008) 1px, transparent 1px) !important;
+  background-size: 48px 48px !important;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent 86%) !important;
+}
+
+.qatalyst-landing-qas155 {
+  background: #030303 !important;
+}
+
+.qatalyst-landing-qas155::before,
+.qatalyst-landing-qas155::after {
+  display: none !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero {
+  background:
+    linear-gradient(145deg, rgba(14, 14, 16, 0.98), rgba(5, 5, 6, 0.99) 52%, rgba(8, 8, 9, 0.98)) !important;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero::before,
+.qatalyst-landing-qas155 .qatalyst-hero::after {
+  display: none !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+  background: transparent !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-stage::before {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 0.075), transparent 22%),
+    radial-gradient(circle at 50% 52%, rgba(220, 38, 38, 0.105), transparent 48%) !important;
+  opacity: 0.74 !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-glow {
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.065), transparent 20%),
+    radial-gradient(circle, rgba(220, 38, 38, 0.09), transparent 58%) !important;
+  opacity: 0.64 !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-section,
+.qatalyst-landing-qas155 .qatalyst-vault-section,
+.qatalyst-landing-qas155 .qatalyst-integrations-section,
+.qatalyst-landing-qas155 .qatalyst-builder-section,
+.qatalyst-landing-qas155 .qatalyst-guardrails-section {
+  background: transparent !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-final-cta,
+.qatalyst-landing-qas155 .qatalyst-vault-panel,
+.qatalyst-landing-qas155 .qatalyst-builder-card {
+  background:
+    linear-gradient(145deg, rgba(15, 15, 16, 0.98), rgba(6, 6, 7, 0.99)) !important;
+}
+/* QAS-155 v3 landing black-page + colored-window correction
+   Append to the bottom of src/app/globals.css, after any previous QAS-155 CSS block.
+   Main page background stays black; color is restored only inside hero/section windows and cards. */
+
+body:has(.qatalyst-landing-qas155) {
+  background: #030303 !important;
+}
+
+body:has(.qatalyst-landing-qas155)::before {
+  opacity: 0.14 !important;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.008) 1px, transparent 1px) !important;
+  background-size: 48px 48px !important;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent 86%) !important;
+}
+
+.qatalyst-landing-qas155 {
+  background: #030303 !important;
+}
+
+.qatalyst-landing-qas155::before,
+.qatalyst-landing-qas155::after {
+  display: none !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(37, 99, 235, 0.12), transparent 34%),
+    radial-gradient(circle at 88% 18%, rgba(220, 38, 38, 0.18), transparent 34%),
+    radial-gradient(circle at 70% 86%, rgba(245, 158, 11, 0.06), transparent 38%),
+    linear-gradient(145deg, rgba(11, 15, 24, 0.98), rgba(5, 5, 6, 0.99) 52%, rgba(18, 8, 10, 0.98)) !important;
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.065) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero::before,
+.qatalyst-landing-qas155 .qatalyst-hero::after {
+  display: block !important;
+  opacity: 0.28 !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+  position: relative !important;
+  display: grid !important;
+  min-height: 520px !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border-radius: 32px !important;
+  isolation: isolate !important;
+  background: transparent !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-stage::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 10% !important;
+  z-index: -2 !important;
+  display: block !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 0.09), transparent 20%),
+    radial-gradient(circle at 50% 52%, rgba(220, 38, 38, 0.18), transparent 44%),
+    radial-gradient(circle at 42% 56%, rgba(37, 99, 235, 0.1), transparent 48%) !important;
+  filter: blur(24px) !important;
+  opacity: 0.95 !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-glow {
+  position: absolute !important;
+  width: min(520px, 86vw) !important;
+  height: min(520px, 86vw) !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 18%),
+    radial-gradient(circle, rgba(220, 38, 38, 0.14), transparent 58%) !important;
+  filter: blur(16px) !important;
+  opacity: 0.82 !important;
+  pointer-events: none !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-large-logo {
+  position: relative !important;
+  z-index: 1 !important;
+  display: block !important;
+  width: min(520px, 88%) !important;
+  height: auto !important;
+  object-fit: contain !important;
+  filter:
+    drop-shadow(0 26px 50px rgba(0, 0, 0, 0.6))
+    drop-shadow(0 0 34px rgba(239, 68, 68, 0.16)) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-caption {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: clamp(18px, 4vw, 48px) !important;
+  z-index: 1 !important;
+  width: min(420px, calc(100% - 48px)) !important;
+  margin: 0 !important;
+  transform: translateX(-50%) !important;
+  color: rgba(244, 244, 245, 0.74) !important;
+  font-size: 0.98rem !important;
+  font-weight: 800 !important;
+  line-height: 1.55 !important;
+  text-align: center !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-product-preview,
+.qatalyst-landing-qas155 .qatalyst-preview-shell,
+.qatalyst-landing-qas155 .qatalyst-preview-glow {
+  display: none !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-section {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(37, 99, 235, 0.09), transparent 34%),
+    radial-gradient(circle at 92% 0%, rgba(220, 38, 38, 0.11), transparent 32%),
+    linear-gradient(145deg, rgba(10, 13, 19, 0.96), rgba(4, 4, 5, 0.98) 54%, rgba(10, 6, 7, 0.96)) !important;
+  border-color: rgba(255, 255, 255, 0.105) !important;
+  box-shadow:
+    0 22px 70px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-vault-panel,
+.qatalyst-landing-qas155 .qatalyst-builder-card,
+.qatalyst-landing-qas155 .qatalyst-final-cta {
+  background:
+    radial-gradient(circle at 10% 8%, rgba(37, 99, 235, 0.1), transparent 34%),
+    radial-gradient(circle at 88% 12%, rgba(220, 38, 38, 0.12), transparent 34%),
+    radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.045), transparent 36%),
+    linear-gradient(145deg, rgba(10, 13, 19, 0.97), rgba(5, 5, 6, 0.99) 54%, rgba(13, 7, 9, 0.97)) !important;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  box-shadow:
+    0 24px 72px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-card,
+.qatalyst-landing-qas155 .qatalyst-tool-card,
+.qatalyst-landing-qas155 .qatalyst-mini-card,
+.qatalyst-landing-qas155 .qatalyst-step-card,
+.qatalyst-landing-qas155 .qatalyst-guardrail-item {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(96, 165, 250, 0.07), transparent 36%),
+    radial-gradient(circle at 100% 0%, rgba(248, 113, 113, 0.06), transparent 34%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.105) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-card-green,
+.qatalyst-landing-qas155 .qatalyst-tool-card-green,
+.qatalyst-landing-qas155 .qatalyst-mini-card-green {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(34, 197, 94, 0.14), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(34, 197, 94, 0.22) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-card-red,
+.qatalyst-landing-qas155 .qatalyst-tool-card-red {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(239, 68, 68, 0.15), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(248, 113, 113, 0.24) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-card-gold,
+.qatalyst-landing-qas155 .qatalyst-tool-card-gold {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(245, 158, 11, 0.14), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(245, 158, 11, 0.22) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-card-blue,
+.qatalyst-landing-qas155 .qatalyst-tool-card-blue,
+.qatalyst-landing-qas155 .qatalyst-mini-card-blue {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.14), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(96, 165, 250, 0.22) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-tool-card-purple,
+.qatalyst-landing-qas155 .qatalyst-mini-card-purple {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(168, 85, 247, 0.13), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(192, 132, 252, 0.2) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-tool-card-cyan {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(6, 182, 212, 0.13), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(103, 232, 249, 0.2) !important;
+}
+
+@media (max-width: 920px) {
+  .qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+    min-height: 360px !important;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero-large-logo {
+    width: min(420px, 84%) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+    min-height: 280px !important;
+    margin-top: 20px !important;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero-logo-caption {
+    bottom: 12px !important;
+    font-size: 0.84rem !important;
+  }
+}
+/* QAS-155 v3 landing black-page + colored-window correction
+   Append to the bottom of src/app/globals.css, after any previous QAS-155 CSS block.
+   Main page background stays black; color is restored only inside hero/section windows and cards. */
+
+body:has(.qatalyst-landing-qas155) {
+  background: #030303 !important;
+}
+
+body:has(.qatalyst-landing-qas155)::before {
+  opacity: 0.14 !important;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.008) 1px, transparent 1px) !important;
+  background-size: 48px 48px !important;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent 86%) !important;
+}
+
+.qatalyst-landing-qas155 {
+  background: #030303 !important;
+}
+
+.qatalyst-landing-qas155::before,
+.qatalyst-landing-qas155::after {
+  display: none !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(37, 99, 235, 0.12), transparent 34%),
+    radial-gradient(circle at 88% 18%, rgba(220, 38, 38, 0.18), transparent 34%),
+    radial-gradient(circle at 70% 86%, rgba(245, 158, 11, 0.06), transparent 38%),
+    linear-gradient(145deg, rgba(11, 15, 24, 0.98), rgba(5, 5, 6, 0.99) 52%, rgba(18, 8, 10, 0.98)) !important;
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.065) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero::before,
+.qatalyst-landing-qas155 .qatalyst-hero::after {
+  display: block !important;
+  opacity: 0.28 !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+  position: relative !important;
+  display: grid !important;
+  min-height: 520px !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border-radius: 32px !important;
+  isolation: isolate !important;
+  background: transparent !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-stage::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 10% !important;
+  z-index: -2 !important;
+  display: block !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 0.09), transparent 20%),
+    radial-gradient(circle at 50% 52%, rgba(220, 38, 38, 0.18), transparent 44%),
+    radial-gradient(circle at 42% 56%, rgba(37, 99, 235, 0.1), transparent 48%) !important;
+  filter: blur(24px) !important;
+  opacity: 0.95 !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-glow {
+  position: absolute !important;
+  width: min(520px, 86vw) !important;
+  height: min(520px, 86vw) !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 18%),
+    radial-gradient(circle, rgba(220, 38, 38, 0.14), transparent 58%) !important;
+  filter: blur(16px) !important;
+  opacity: 0.82 !important;
+  pointer-events: none !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-large-logo {
+  position: relative !important;
+  z-index: 1 !important;
+  display: block !important;
+  width: min(520px, 88%) !important;
+  height: auto !important;
+  object-fit: contain !important;
+  filter:
+    drop-shadow(0 26px 50px rgba(0, 0, 0, 0.6))
+    drop-shadow(0 0 34px rgba(239, 68, 68, 0.16)) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-caption {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: clamp(18px, 4vw, 48px) !important;
+  z-index: 1 !important;
+  width: min(420px, calc(100% - 48px)) !important;
+  margin: 0 !important;
+  transform: translateX(-50%) !important;
+  color: rgba(244, 244, 245, 0.74) !important;
+  font-size: 0.98rem !important;
+  font-weight: 800 !important;
+  line-height: 1.55 !important;
+  text-align: center !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-product-preview,
+.qatalyst-landing-qas155 .qatalyst-preview-shell,
+.qatalyst-landing-qas155 .qatalyst-preview-glow {
+  display: none !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-section {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(37, 99, 235, 0.09), transparent 34%),
+    radial-gradient(circle at 92% 0%, rgba(220, 38, 38, 0.11), transparent 32%),
+    linear-gradient(145deg, rgba(10, 13, 19, 0.96), rgba(4, 4, 5, 0.98) 54%, rgba(10, 6, 7, 0.96)) !important;
+  border-color: rgba(255, 255, 255, 0.105) !important;
+  box-shadow:
+    0 22px 70px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-vault-panel,
+.qatalyst-landing-qas155 .qatalyst-builder-card,
+.qatalyst-landing-qas155 .qatalyst-final-cta {
+  background:
+    radial-gradient(circle at 10% 8%, rgba(37, 99, 235, 0.1), transparent 34%),
+    radial-gradient(circle at 88% 12%, rgba(220, 38, 38, 0.12), transparent 34%),
+    radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.045), transparent 36%),
+    linear-gradient(145deg, rgba(10, 13, 19, 0.97), rgba(5, 5, 6, 0.99) 54%, rgba(13, 7, 9, 0.97)) !important;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  box-shadow:
+    0 24px 72px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-card,
+.qatalyst-landing-qas155 .qatalyst-tool-card,
+.qatalyst-landing-qas155 .qatalyst-mini-card,
+.qatalyst-landing-qas155 .qatalyst-step-card,
+.qatalyst-landing-qas155 .qatalyst-guardrail-item {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(96, 165, 250, 0.07), transparent 36%),
+    radial-gradient(circle at 100% 0%, rgba(248, 113, 113, 0.06), transparent 34%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.105) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-card-green,
+.qatalyst-landing-qas155 .qatalyst-tool-card-green,
+.qatalyst-landing-qas155 .qatalyst-mini-card-green {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(34, 197, 94, 0.14), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(34, 197, 94, 0.22) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-card-red,
+.qatalyst-landing-qas155 .qatalyst-tool-card-red {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(239, 68, 68, 0.15), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(248, 113, 113, 0.24) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-card-gold,
+.qatalyst-landing-qas155 .qatalyst-tool-card-gold {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(245, 158, 11, 0.14), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(245, 158, 11, 0.22) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-card-blue,
+.qatalyst-landing-qas155 .qatalyst-tool-card-blue,
+.qatalyst-landing-qas155 .qatalyst-mini-card-blue {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.14), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(96, 165, 250, 0.22) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-tool-card-purple,
+.qatalyst-landing-qas155 .qatalyst-mini-card-purple {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(168, 85, 247, 0.13), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(192, 132, 252, 0.2) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-tool-card-cyan {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(6, 182, 212, 0.13), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(103, 232, 249, 0.2) !important;
+}
+
+@media (max-width: 920px) {
+  .qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+    min-height: 360px !important;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero-large-logo {
+    width: min(420px, 84%) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+    min-height: 280px !important;
+    margin-top: 20px !important;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero-logo-caption {
+    bottom: 12px !important;
+    font-size: 0.84rem !important;
+  }
+}
+
+
+/* QAS-155 v4 compact hero/title-window correction
+   Keep page background black and keep window color, but reduce the hero/title window footprint. */
+
+.qatalyst-landing-qas155 .qatalyst-hero {
+  min-height: auto !important;
+  padding: clamp(32px, 4.5vw, 64px) clamp(28px, 5vw, 72px) !important;
+  gap: clamp(28px, 4vw, 54px) !important;
+  align-items: center !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-copy {
+  max-width: min(660px, 100%) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero h1,
+.qatalyst-landing-qas155 #qatalyst-hero-title {
+  max-width: 680px !important;
+  font-size: clamp(3.1rem, 6vw, 6.25rem) !important;
+  line-height: 0.92 !important;
+  letter-spacing: -0.075em !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-subcopy {
+  max-width: 620px !important;
+  margin-top: clamp(16px, 2.2vw, 24px) !important;
+  font-size: clamp(0.98rem, 1.15vw, 1.1rem) !important;
+  line-height: 1.55 !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-actions {
+  margin-top: clamp(22px, 2.8vw, 34px) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+  min-height: clamp(300px, 34vw, 380px) !important;
+  border-radius: 28px !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-stage::before {
+  inset: 8% !important;
+  filter: blur(20px) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-glow {
+  width: min(390px, 78vw) !important;
+  height: min(390px, 78vw) !important;
+  filter: blur(14px) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-large-logo {
+  width: min(390px, 82%) !important;
+}
+
+.qatalyst-landing-qas155 .qatalyst-hero-logo-caption {
+  bottom: clamp(8px, 2.2vw, 24px) !important;
+  font-size: 0.9rem !important;
+  line-height: 1.45 !important;
+}
+
+@media (max-width: 980px) {
+  .qatalyst-landing-qas155 .qatalyst-hero {
+    padding: 34px 24px 40px !important;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero h1,
+  .qatalyst-landing-qas155 #qatalyst-hero-title {
+    font-size: clamp(2.85rem, 12vw, 4.8rem) !important;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+    min-height: 240px !important;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero-large-logo {
+    width: min(320px, 78%) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .qatalyst-landing-qas155 .qatalyst-hero {
+    padding: 28px 18px 32px !important;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero h1,
+  .qatalyst-landing-qas155 #qatalyst-hero-title {
+    font-size: clamp(2.4rem, 14vw, 3.6rem) !important;
+    line-height: 0.96 !important;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero-logo-stage {
+    min-height: 210px !important;
+    margin-top: 16px !important;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero-large-logo {
+    width: min(280px, 78%) !important;
+  }
+
+  .qatalyst-landing-qas155 .qatalyst-hero-logo-caption {
+    position: static !important;
+    width: min(320px, 100%) !important;
+    margin-top: 12px !important;
+    transform: none !important;
+  }
+}
+
+/* QAS-156 premium dark theme for account/settings/reports/donate/buy credits pages */
+body:has(.account-page),
+body:has(.reports-page),
+body:has(.report-detail-page),
+body:has(main a[href="#primary-packs"]) {
+  background: #020202 !important;
+}
+
+body:has(.account-page)::before,
+body:has(.reports-page)::before,
+body:has(.report-detail-page)::before,
+body:has(main a[href="#primary-packs"])::before {
+  opacity: 0.28;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.011) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.009) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 86%);
+}
+
+.account-page,
+.reports-page,
+.report-detail-page {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 34px 0 92px;
+}
+
+.account-card,
+.reports-header-card,
+.reports-hero,
+.report-detail-card,
+.report-source-card,
+.saved-report-empty,
+.purchase-panel,
+.settings-wide-panel,
+.settings-module-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.09), transparent 32%),
+    radial-gradient(circle at 88% 4%, rgba(220, 38, 38, 0.12), transparent 34%),
+    linear-gradient(135deg, rgba(15, 18, 28, 0.96), rgba(5, 5, 7, 0.98) 56%, rgba(18, 8, 10, 0.94));
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.46),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.account-card::before,
+.reports-header-card::before,
+.reports-hero::before,
+.report-detail-card::before,
+.report-source-card::before,
+.saved-report-empty::before,
+.purchase-panel::before,
+.settings-wide-panel::before,
+.settings-module-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 22%, transparent 78%),
+    linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+  background-size: auto, 46px 46px, 46px 46px;
+  opacity: 0.8;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent 92%);
+}
+
+.account-card > *,
+.reports-header-card > *,
+.reports-hero > *,
+.report-detail-card > *,
+.report-source-card > *,
+.saved-report-empty > *,
+.purchase-panel > *,
+.settings-wide-panel > *,
+.settings-module-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.account-card,
+.reports-header-card,
+.reports-hero,
+.report-detail-card,
+.report-source-card,
+.saved-report-empty,
+.purchase-panel,
+.settings-wide-panel {
+  padding: 30px;
+}
+
+.account-card + .account-card,
+.report-source-card + .report-source-card,
+.reports-header-card + .reports-grid,
+.reports-header-card + .saved-report-empty,
+.reports-hero + .settings-wide-panel {
+  margin-top: 22px;
+}
+
+.account-header-row,
+.account-section-heading,
+.purchase-header,
+.saved-report-meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.account-header-row h1,
+.reports-header-card h1,
+.reports-hero h1,
+.report-detail-card h1,
+.purchase-header h1,
+.saved-report-empty h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2.1rem, 5vw, 4.35rem);
+  line-height: 0.98;
+  letter-spacing: -0.065em;
+}
+
+.account-card h2,
+.reports-header-card h2,
+.report-source-card h2,
+.settings-wide-panel h2,
+.purchase-panel h2,
+.saved-report-card h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(1.15rem, 2vw, 1.55rem);
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+}
+
+.account-card p,
+.reports-header-card p,
+.reports-hero p,
+.report-detail-card p,
+.report-source-card p,
+.saved-report-empty p,
+.purchase-panel p,
+.settings-wide-panel p,
+.saved-report-card p {
+  color: rgba(226, 232, 240, 0.72);
+  line-height: 1.65;
+}
+
+.account-header-actions,
+.saved-report-actions,
+.settings-hero-actions,
+.reports-filter-row,
+.reports-project-filter-row,
+.settings-area-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.account-buy-link,
+.account-back-link,
+.reports-filter,
+.reports-project-filter,
+.settings-area-tab,
+.active-project-settings-strip button,
+.saved-report-actions button,
+.donation-card,
+.purchase-panel a,
+.purchase-panel button {
+  min-height: 40px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(34, 34, 38, 0.98), rgba(12, 12, 14, 0.98));
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.account-buy-link,
+.account-back-link,
+.reports-filter,
+.reports-project-filter,
+.settings-area-tab,
+.active-project-settings-strip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.account-buy-link,
+.reports-filter-active,
+.reports-project-filter-active,
+.settings-area-tab-active,
+.active-project-settings-strip button {
+  border-color: rgba(248, 113, 113, 0.42);
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  box-shadow:
+    0 14px 30px rgba(220, 38, 38, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.13);
+}
+
+.account-back-link:hover,
+.account-buy-link:hover,
+.reports-filter:hover,
+.reports-project-filter:hover,
+.settings-area-tab:hover,
+.active-project-settings-strip button:hover,
+.saved-report-actions button:hover,
+.donation-card:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(248, 113, 113, 0.42);
+}
+
+.account-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.account-stat-card {
+  min-height: 112px;
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.1), transparent 42%),
+    rgba(2, 6, 23, 0.52);
+}
+
+.account-stat-primary {
+  border-color: rgba(34, 197, 94, 0.32);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.14), transparent 44%),
+    rgba(2, 6, 23, 0.56);
+}
+
+.account-stat-card span,
+.account-table-row span,
+.saved-report-meta span,
+.saved-report-project-pill span,
+.reports-project-filter small,
+.settings-area-strip .report-kicker,
+.active-project-settings-strip span {
+  color: rgba(226, 232, 240, 0.68);
+}
+
+.account-stat-card strong {
+  display: block;
+  margin-top: 10px;
+  color: #ffffff;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.account-table {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.account-table-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.account-table-row-two {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.account-delta-positive {
+  color: #86efac;
+}
+
+.account-delta-negative {
+  color: #fca5a5;
+}
+
+.reports-filter-row {
+  margin-top: 24px;
+}
+
+.reports-project-filter-card,
+.report-detail-project-card,
+.active-project-settings-strip {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 38%),
+    rgba(2, 6, 23, 0.48);
+}
+
+.reports-project-filter-card strong,
+.report-detail-project-card strong,
+.active-project-settings-strip strong {
+  display: block;
+  color: #ffffff;
+  font-size: 1.05rem;
+}
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.saved-report-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 260px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.105);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.1), transparent 36%),
+    radial-gradient(circle at bottom right, rgba(220, 38, 38, 0.1), transparent 42%),
+    linear-gradient(180deg, rgba(15, 18, 28, 0.96), rgba(5, 5, 7, 0.98));
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.34);
+}
+
+.saved-report-project-pill {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 14px 0;
+  padding: 8px 11px;
+  border: 1px solid rgba(34, 197, 94, 0.24);
+  border-radius: 14px;
+  background: rgba(22, 101, 52, 0.15);
+}
+
+.report-source-card pre,
+.report-markdown-preview {
+  max-width: 100%;
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  color: #e5e7eb;
+  background: rgba(2, 6, 23, 0.64);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.settings-hero-real-logo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 28px;
+}
+
+.settings-real-logo-wrap {
+  display: grid;
+  place-items: center;
+  min-width: min(280px, 36vw);
+}
+
+.settings-real-logo {
+  filter: drop-shadow(0 24px 40px rgba(220, 38, 38, 0.18));
+}
+
+.settings-area-strip,
+.settings-wide-section {
+  position: relative;
+  z-index: 1;
+}
+
+.settings-area-tabs {
+  margin-top: 12px;
+}
+
+.settings-wide-section,
+.dev-only-account-setup,
+.account-setup-section > section,
+.settings-wide-panel form,
+.settings-wide-panel .settings-module-card {
+  margin-top: 18px;
+}
+
+.settings-wide-panel input,
+.settings-wide-panel textarea,
+.settings-wide-panel select,
+.account-page input,
+.reports-page input,
+.report-detail-page input,
+.purchase-panel input {
+  color: #f8fafc;
+  background: rgba(2, 6, 23, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 13px;
+}
+
+.settings-wide-panel input:focus,
+.settings-wide-panel textarea:focus,
+.settings-wide-panel select:focus {
+  border-color: rgba(248, 113, 113, 0.52);
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.1);
+  outline: none;
+}
+
+.donation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.donation-card {
+  display: grid;
+  gap: 8px;
+  min-height: 160px;
+  padding: 18px;
+  text-align: left;
+  background:
+    radial-gradient(circle at top left, rgba(220, 38, 38, 0.13), transparent 38%),
+    rgba(2, 6, 23, 0.55);
+}
+
+.donation-card span {
+  color: #fecaca;
+  font-size: 0.72rem;
+  font-weight: 1000;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.donation-card strong {
+  color: #ffffff;
+  font-size: 1.8rem;
+  letter-spacing: -0.04em;
+}
+
+.purchase-error,
+.purchase-note {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  line-height: 1.5;
+}
+
+.purchase-error {
+  border: 1px solid rgba(248, 113, 113, 0.42);
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.24);
+}
+
+.purchase-note {
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  color: #bbf7d0;
+  background: rgba(22, 101, 52, 0.14);
+}
+
+/* Buy Credits page currently uses inline styles. These targeted overrides keep behavior intact while aligning the page with QAtalyst dark theme. */
+main:has(a[href="#primary-packs"]) {
+  width: min(1180px, calc(100% - 32px)) !important;
+  max-width: none !important;
+  padding: 34px 0 92px !important;
+}
+
+main:has(a[href="#primary-packs"]) > section[style] {
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  border-radius: 28px !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.1), transparent 32%),
+    radial-gradient(circle at 88% 4%, rgba(220, 38, 38, 0.13), transparent 34%),
+    linear-gradient(135deg, rgba(15, 18, 28, 0.96), rgba(5, 5, 7, 0.98) 56%, rgba(18, 8, 10, 0.94)) !important;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+main:has(a[href="#primary-packs"]) h1[style] {
+  font-size: clamp(2.35rem, 5.2vw, 4.7rem) !important;
+  line-height: 0.98 !important;
+}
+
+main:has(a[href="#primary-packs"]) article[style] {
+  border-radius: 22px !important;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.07), transparent 34%),
+    rgba(2, 6, 23, 0.55) !important;
+}
+
+main:has(a[href="#primary-packs"]) button[style],
+main:has(a[href="#primary-packs"]) a[style] {
+  border-radius: 14px !important;
+}
+
+@media (max-width: 900px) {
+  .account-page,
+  .reports-page,
+  .report-detail-page,
+  main:has(a[href="#primary-packs"]) {
+    width: min(100% - 24px, 1180px) !important;
+    padding-top: 18px !important;
+    padding-bottom: 56px !important;
+  }
+
+  .account-card,
+  .reports-header-card,
+  .reports-hero,
+  .report-detail-card,
+  .report-source-card,
+  .saved-report-empty,
+  .purchase-panel,
+  .settings-wide-panel {
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .account-header-row,
+  .account-section-heading,
+  .purchase-header,
+  .reports-project-filter-card,
+  .report-detail-project-card,
+  .active-project-settings-strip,
+  .settings-hero-real-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .account-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .account-table-row {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .account-header-actions,
+  .saved-report-actions,
+  .settings-hero-actions {
+    width: 100%;
+  }
+
+  .account-buy-link,
+  .account-back-link,
+  .saved-report-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .account-stat-grid,
+  .reports-grid,
+  .donation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-header-row h1,
+  .reports-header-card h1,
+  .reports-hero h1,
+  .report-detail-card h1,
+  .purchase-header h1 {
+    font-size: clamp(2rem, 14vw, 3.2rem);
+  }
+}
+
+/* QAS-156 V2 account + donate full theme pass */
+body:has(.qas156-shell) {
+  background: #000 !important;
+}
+
+body:has(.qas156-shell)::before {
+  opacity: 0.22;
+}
+
+.qas156-shell {
+  position: relative;
+  z-index: 1;
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 48px 0 96px;
+  color: #f8fafc;
+}
+
+.qas156-window {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 6% 0%, rgba(37, 99, 235, 0.15), transparent 30%),
+    radial-gradient(circle at 96% 0%, rgba(220, 38, 38, 0.2), transparent 34%),
+    linear-gradient(135deg, rgba(18, 18, 22, 0.96), rgba(5, 5, 7, 0.99));
+  box-shadow:
+    0 34px 90px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.qas156-window::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.014) 1px, transparent 1px);
+  background-size: 44px 44px;
+  opacity: 0.28;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent 88%);
+}
+
+.qas156-window > * {
+  position: relative;
+  z-index: 1;
+}
+
+.qas156-account-hero,
+.qas156-donate-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.78fr);
+  align-items: center;
+  gap: 32px;
+  min-height: 340px;
+  padding: 46px 50px;
+}
+
+.qas156-account-hero-signed-out {
+  min-height: 420px;
+}
+
+.qas156-hero-copy h1 {
+  max-width: 780px;
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(3.1rem, 7vw, 6.2rem);
+  line-height: 0.88;
+  letter-spacing: -0.082em;
+}
+
+.qas156-hero-copy p {
+  max-width: 650px;
+  margin: 18px 0 0;
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 1.02rem;
+  line-height: 1.62;
+}
+
+.qas156-identity-line {
+  margin-top: 8px !important;
+  color: #bfdbfe !important;
+  font-weight: 800;
+}
+
+.qas156-kicker {
+  margin: 0 0 12px;
+  color: #fecaca;
+  font-size: 0.74rem;
+  font-weight: 1000;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+}
+
+.qas156-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.qas156-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 15px;
+  font-size: 0.92rem;
+  font-weight: 1000;
+  text-decoration: none;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    filter 0.18s ease;
+}
+
+.qas156-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.07);
+}
+
+.qas156-button-primary {
+  color: #ffffff;
+  border: 1px solid rgba(248, 113, 113, 0.42);
+  background: linear-gradient(135deg, #ef4444, #991b1b);
+  box-shadow: 0 16px 36px rgba(220, 38, 38, 0.24);
+}
+
+.qas156-button-secondary {
+  color: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.86), rgba(15, 15, 19, 0.92));
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+}
+
+.qas156-logo-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+  padding: 28px;
+  text-align: center;
+}
+
+.qas156-logo-panel img {
+  width: min(100%, 360px);
+  height: auto;
+  filter: drop-shadow(0 24px 58px rgba(220, 38, 38, 0.24));
+}
+
+.qas156-logo-panel span {
+  display: block;
+  max-width: 380px;
+  margin-top: 18px;
+  color: rgba(226, 232, 240, 0.74);
+  font-weight: 850;
+  line-height: 1.5;
+}
+
+.qas156-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.qas156-stat-card {
+  min-height: 120px;
+  padding: 22px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 42%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.78), rgba(5, 5, 8, 0.95));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.qas156-stat-card-primary {
+  border-color: rgba(34, 197, 94, 0.36);
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.15), transparent 42%),
+    linear-gradient(135deg, rgba(6, 45, 29, 0.72), rgba(5, 5, 8, 0.95));
+}
+
+.qas156-stat-card span,
+.qas156-section-header > span,
+.qas156-donation-card span {
+  display: block;
+  color: rgba(203, 213, 225, 0.82);
+  font-size: 0.76rem;
+  font-weight: 1000;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.qas156-stat-card strong {
+  display: block;
+  margin-top: 12px;
+  color: #ffffff;
+  font-size: clamp(2.2rem, 5vw, 3.35rem);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+}
+
+.qas156-account-feature-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  margin-top: 22px;
+  padding: 30px;
+}
+
+.qas156-account-feature-card h2,
+.qas156-section-header h2,
+.qas156-donation-heading h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(1.5rem, 3vw, 2.35rem);
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.qas156-account-feature-card p,
+.qas156-empty-copy,
+.qas156-donation-heading p {
+  margin: 14px 0 0;
+  color: rgba(226, 232, 240, 0.76);
+  line-height: 1.62;
+}
+
+.qas156-account-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.8fr);
+  gap: 22px;
+  margin-top: 22px;
+}
+
+.qas156-ledger-card,
+.qas156-activity-card,
+.qas156-donation-panel {
+  padding: 30px;
+}
+
+.qas156-section-header,
+.qas156-donation-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 22px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.qas156-section-header > span {
+  color: #fecaca;
+  white-space: nowrap;
+}
+
+.qas156-ledger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qas156-ledger-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.qas156-ledger-row-two {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.qas156-ledger-row span {
+  min-width: 0;
+  overflow: hidden;
+  color: #e2e8f0;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qas156-ledger-row small {
+  color: rgba(203, 213, 225, 0.72);
+  font-size: 0.82rem;
+}
+
+.qas156-delta-positive {
+  color: #86efac;
+}
+
+.qas156-delta-negative {
+  color: #fecaca;
+}
+
+.qas156-donate-page {
+  max-width: 1120px;
+}
+
+.qas156-donate-hero {
+  min-height: 440px;
+}
+
+.qas156-donation-panel {
+  margin-top: 22px;
+}
+
+.qas156-donation-heading p {
+  max-width: 500px;
+  margin-top: 0;
+}
+
+.qas156-donation-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.qas156-donation-card {
+  min-height: 160px;
+  padding: 20px;
+  text-align: left;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top left, rgba(248, 113, 113, 0.1), transparent 42%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(5, 5, 8, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.qas156-donation-card:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: rgba(248, 113, 113, 0.44);
+  background:
+    radial-gradient(circle at top left, rgba(248, 113, 113, 0.17), transparent 42%),
+    linear-gradient(135deg, rgba(30, 41, 59, 0.88), rgba(15, 5, 8, 0.98));
+}
+
+.qas156-donation-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.qas156-donation-card strong {
+  display: block;
+  margin-top: 20px;
+  color: #ffffff;
+  font-size: 1.65rem;
+  letter-spacing: -0.045em;
+}
+
+.qas156-donation-card p {
+  margin: 14px 0 0;
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.qas156-error-box {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(248, 113, 113, 0.44);
+  border-radius: 16px;
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.22);
+  font-weight: 850;
+}
+
+.qas156-trust-note {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border: 1px solid rgba(34, 197, 94, 0.32);
+  border-radius: 16px;
+  color: #bbf7d0;
+  background: rgba(6, 78, 59, 0.2);
+  line-height: 1.5;
+}
+
+@media (max-width: 980px) {
+  .qas156-account-hero,
+  .qas156-donate-hero {
+    grid-template-columns: 1fr;
+    padding: 34px;
+  }
+
+  .qas156-hero-copy h1 {
+    font-size: clamp(3rem, 12vw, 5.2rem);
+  }
+
+  .qas156-stat-grid,
+  .qas156-account-grid,
+  .qas156-donation-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .qas156-shell {
+    width: min(100% - 24px, 1180px);
+    padding: 24px 0 64px;
+  }
+
+  .qas156-account-hero,
+  .qas156-donate-hero,
+  .qas156-ledger-card,
+  .qas156-activity-card,
+  .qas156-donation-panel,
+  .qas156-account-feature-card {
+    padding: 24px;
+    border-radius: 22px;
+  }
+
+  .qas156-stat-grid,
+  .qas156-account-grid,
+  .qas156-donation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .qas156-account-feature-card,
+  .qas156-section-header,
+  .qas156-donation-heading {
+    flex-direction: column;
+  }
+
+  .qas156-button,
+  .qas156-account-feature-card .qas156-button {
+    width: 100%;
+  }
+
+  .qas156-ledger-row {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}

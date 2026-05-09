@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 
 const differentiators = [
@@ -128,7 +127,7 @@ const guardrails = [
 
 export default function LandingPage() {
   return (
-    <main className="qatalyst-landing">
+    <main className="qatalyst-landing qatalyst-landing-qas155">
       <section className="qatalyst-hero" aria-labelledby="qatalyst-hero-title">
         <div className="qatalyst-hero-copy">
           <p className="qatalyst-eyebrow">QAtalyst QA Workflow SaaS</p>
@@ -150,59 +149,10 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="qatalyst-product-preview" aria-label="QAtalyst product preview">
-          <div className="qatalyst-preview-glow" aria-hidden="true" />
-          <div className="qatalyst-preview-shell">
-            <div className="qatalyst-preview-topbar">
-              <div className="qatalyst-window-dots" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-              </div>
-              <img src="/qatalyst-header.png" alt="QAtalyst" className="qatalyst-preview-logo" />
-              <span className="qatalyst-preview-status">Ready for review</span>
-            </div>
-
-            <div className="qatalyst-preview-grid">
-              <aside className="qatalyst-preview-rail" aria-label="Workflow list">
-                <span className="is-active">Feature Builder</span>
-                <span>Test Cases</span>
-                <span>Risk Review</span>
-                <span>Bug Writer</span>
-                <span>Automation Setup</span>
-              </aside>
-
-              <div className="qatalyst-preview-main">
-                <div className="qatalyst-preview-card qatalyst-preview-card-strong">
-                  <p>Source Vault</p>
-                  <strong>Checkout refactor + saved QA context</strong>
-                  <span>Jira ticket, prior risks, payment notes, release checklist</span>
-                </div>
-
-                <div className="qatalyst-preview-card-row">
-                  <div className="qatalyst-preview-card">
-                    <p>Gap triage</p>
-                    <strong>4 follow-up questions</strong>
-                    <span>Permissions, rollback, empty states, mobile behavior</span>
-                  </div>
-                  <div className="qatalyst-preview-card">
-                    <p>Output</p>
-                    <strong>12 test cases</strong>
-                    <span>Happy path, negative, edge, regression</span>
-                  </div>
-                </div>
-
-                <div className="qatalyst-preview-output">
-                  <div>
-                    <span className="qatalyst-output-tag">Jira-ready</span>
-                    <span className="qatalyst-output-tag">TestRail-ready</span>
-                    <span className="qatalyst-output-tag">Skeleton starter</span>
-                  </div>
-                  <p>Preview, edit, then create or export.</p>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="qatalyst-hero-logo-stage" aria-label="QAtalyst brand mark">
+          <div className="qatalyst-hero-logo-glow" aria-hidden="true" />
+          <img src="/qatalyst-header.png" alt="QAtalyst" className="qatalyst-hero-large-logo" />
+          <p className="qatalyst-hero-logo-caption">Reviewable QA workflow support for practical teams.</p>
         </div>
       </section>
 
@@ -369,4 +319,3 @@ export default function LandingPage() {
     </main>
   );
 }
-
