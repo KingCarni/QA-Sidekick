@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import JiraCredentialFields from "@/components/JiraCredentialFields";
+import { normalizeJiraErrorMessage } from "@/lib/jira-error-normalizer";
 import type { SafeJiraConfig } from "@/lib/jira-config";
 
 type JiraSettingsFormProps = {
@@ -21,6 +22,19 @@ type IssueTypesResponse = {
   ok?: boolean;
   error?: string;
   issueTypes?: IssueTypeOption[];
+};
+
+type JiraConnectionResponse = {
+  ok?: boolean;
+  error?: string;
+  connected?: boolean;
+  accountEmail?: string;
+  displayName?: string;
+  projectKey?: string;
+  projectVisible?: boolean;
+  canCreateIssues?: boolean;
+  canEditIssues?: boolean;
+  canLinkIssues?: boolean;
 };
 
 const FALLBACK_ISSUE_TYPES = ["Task", "Story", "Epic"];
@@ -56,6 +70,13 @@ function uniqueIssueTypeNames(issueTypes: IssueTypeOption[]) {
   return Array.from(new Set(allNames));
 }
 
+function formatUpdatedAt(value?: string) {
+  if (!value) return "Not saved";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Unknown";
+  return date.toLocaleString();
+}
+
 export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProps) {
   const [siteUrl, setSiteUrl] = useState(initialConfig?.siteUrl ?? "");
   const [jiraEmail, setJiraEmail] = useState(initialConfig?.jiraEmail ?? "");
@@ -69,6 +90,14 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
   const [issueTypes, setIssueTypes] = useState<IssueTypeOption[]>([]);
   const [issueTypeState, setIssueTypeState] = useState<"idle" | "loading" | "loaded" | "error">("idle");
   const [issueTypeMessage, setIssueTypeMessage] = useState("");
+  const [connectionState, setConnectionState] = useState<"idle" | "testing" | "connected" | "warning" | "error">("idle");
+  const [connectionMessage, setConnectionMessage] = useState("");
+  const [connectionDetails, setConnectionDetails] = useState<{
+    projectVisible?: boolean;
+    canCreateIssues?: boolean;
+    canEditIssues?: boolean;
+    canLinkIssues?: boolean;
+  }>({});
 
   const jiraProjectUrl = useMemo(() => buildJiraProjectUrl(siteUrl, projectKey), [siteUrl, projectKey]);
   const jiraIssuesUrl = useMemo(() => buildJiraIssuesUrl(siteUrl, projectKey), [siteUrl, projectKey]);
@@ -98,7 +127,7 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
         const payload = (await response.json().catch(() => null)) as IssueTypesResponse | null;
 
         if (!response.ok || payload?.ok === false) {
-          throw new Error(payload?.error || "Could not load Jira issue types.");
+          throw new Error(normalizeJiraErrorMessage(payload?.error || payload || "Could not load Jira issue types."));
         }
 
         const loadedIssueTypes = payload?.issueTypes ?? [];
@@ -129,7 +158,7 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
         setDefaultIssueType(preferredDefaultType);
       } catch (error) {
         setIssueTypeState("error");
-        setIssueTypeMessage(error instanceof Error ? error.message : "Could not load Jira issue types.");
+        setIssueTypeMessage(normalizeJiraErrorMessage(error, "Could not load Jira issue types."));
       }
     }
 
@@ -154,7 +183,7 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
       const payload = (await response.json().catch(() => null)) as IssueTypesResponse | null;
 
       if (!response.ok || payload?.ok === false) {
-        throw new Error(payload?.error || "Could not load Jira issue types.");
+        throw new Error(normalizeJiraErrorMessage(payload?.error || payload || "Could not load Jira issue types."));
       }
 
       const loadedIssueTypes = payload?.issueTypes ?? [];
@@ -167,7 +196,49 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
       );
     } catch (error) {
       setIssueTypeState("error");
-      setIssueTypeMessage(error instanceof Error ? error.message : "Could not load Jira issue types.");
+      setIssueTypeMessage(normalizeJiraErrorMessage(error, "Could not load Jira issue types."));
+    }
+  }
+
+  async function handleTestConnection() {
+    setConnectionState("testing");
+    setConnectionMessage("");
+
+    try {
+      const response = await fetch("/api/jira/test-connection", {
+        method: "GET",
+      });
+
+      const payload = (await response.json().catch(() => null)) as JiraConnectionResponse | null;
+
+      if (!response.ok || payload?.ok === false || !payload?.connected) {
+        throw new Error(normalizeJiraErrorMessage(payload?.error || payload || "Could not test Jira connection."));
+      }
+
+      const account = payload.displayName || payload.accountEmail || "Jira account";
+      const projectKeyText = payload.projectKey || projectKey || "project";
+
+      setConnectionDetails({
+        projectVisible: payload.projectVisible,
+        canCreateIssues: payload.canCreateIssues,
+        canEditIssues: payload.canEditIssues,
+        canLinkIssues: payload.canLinkIssues,
+      });
+
+      if (payload.projectVisible && payload.canCreateIssues) {
+        setConnectionState("connected");
+        setConnectionMessage(`Connected to Jira as ${account}. Project ${projectKeyText} is visible and issue creation is allowed.`);
+      } else {
+        setConnectionState("warning");
+        setConnectionMessage(
+          payload.projectVisible
+            ? `Connected to Jira as ${account}, but this account cannot create issues in ${projectKeyText}.`
+            : `Connected to Jira as ${account}, but project ${projectKeyText} is not visible to this account.`
+        );
+      }
+    } catch (error) {
+      setConnectionState("error");
+      setConnectionMessage(normalizeJiraErrorMessage(error, "Could not test Jira connection."));
     }
   }
 
@@ -203,7 +274,8 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
       setJiraApiToken("");
       setHasSavedJiraApiToken(true);
       setSaveState("saved");
-      setMessage("Jira config saved. QAtalyst can use these defaults for future Jira actions.");
+      setMessage("Saved Jira settings.");
+      await handleTestConnection();
     } catch (error) {
       setSaveState("error");
       setMessage(error instanceof Error ? error.message : "Could not save Jira config.");
@@ -323,7 +395,7 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
         </div>
 
         <button
-          className="secondary-action-button"
+          className="qatalyst-pill-button secondary"
           disabled={issueTypeState === "loading" || !siteUrl.trim() || !jiraEmail.trim() || (!jiraApiToken.trim() && !hasSavedJiraApiToken) || !projectKey.trim()}
           onClick={handleRefreshIssueTypes}
           type="button"
@@ -331,6 +403,60 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
           {issueTypeState === "loading" ? "Loading..." : "Refresh Issue Types"}
         </button>
       </div>
+
+      <div className="jira-issue-type-helper">
+        <div>
+          <strong>Connection test</strong>
+          <span>
+            {connectionMessage ||
+              "Your Jira API token must belong to the same email entered here, with Browse Projects permission for the selected project."}
+          </span>
+        </div>
+
+        <button
+          className="qatalyst-pill-button secondary"
+          disabled={connectionState === "testing" || !configured}
+          onClick={handleTestConnection}
+          type="button"
+        >
+          {connectionState === "testing" ? "Testing..." : "Test Jira Connection"}
+        </button>
+      </div>
+
+      <section className="jira-diagnostics-card">
+        <div className="jira-diagnostics-header">
+          <div>
+            <p className="report-kicker">Saved Jira Diagnostics</p>
+            <h3>Connection status</h3>
+          </div>
+          <span
+            className={`jira-status-pill ${
+              connectionState === "connected" ? "ready" : connectionState === "warning" ? "warning" : connectionState === "error" ? "error" : ""
+            }`}
+          >
+            {connectionState === "connected"
+              ? "Ready"
+              : connectionState === "warning"
+                ? "Needs permission"
+                : connectionState === "error"
+                  ? "Failed"
+                  : connectionState === "testing"
+                    ? "Testing"
+                    : "Unknown"}
+          </span>
+        </div>
+        <div className="jira-diagnostics-grid">
+          <div><span>Site URL</span><strong>{siteUrl || "Not set"}</strong></div>
+          <div><span>Jira email</span><strong>{jiraEmail || "Not set"}</strong></div>
+          <div><span>Project key</span><strong>{projectKey || "Not set"}</strong></div>
+          <div><span>API token saved</span><strong>{hasSavedJiraApiToken ? "Yes" : "No"}</strong></div>
+          <div><span>Project visible</span><strong>{connectionDetails.projectVisible === undefined ? "Unknown" : connectionDetails.projectVisible ? "Yes" : "No"}</strong></div>
+          <div><span>Can create issues</span><strong>{connectionDetails.canCreateIssues === undefined ? "Unknown" : connectionDetails.canCreateIssues ? "Yes" : "No"}</strong></div>
+        </div>
+        <p className="jira-diagnostics-help">
+          Your Jira API token must belong to the same Atlassian account email saved here. That account must have Browse Projects permission for the selected project.
+        </p>
+      </section>
 
       <div className="jira-insight-panel jira-insight-panel-v2">
         <div>
@@ -344,7 +470,7 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
         <div className="jira-insight-actions jira-insight-actions-v2">
           <a
             aria-disabled={!jiraProjectUrl}
-            className={jiraProjectUrl ? "jira-open-link-button" : "jira-open-link-button jira-link-button-disabled"}
+            className={jiraProjectUrl ? "qatalyst-pill-button green" : "qatalyst-pill-button green jira-link-button-disabled"}
             href={jiraProjectUrl || "#"}
             rel="noreferrer"
             target="_blank"
@@ -354,7 +480,7 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
 
           <a
             aria-disabled={!jiraIssuesUrl}
-            className={jiraIssuesUrl ? "jira-open-link-button jira-open-link-button-blue" : "jira-open-link-button jira-open-link-button-blue jira-link-button-disabled"}
+            className={jiraIssuesUrl ? "qatalyst-pill-button" : "qatalyst-pill-button jira-link-button-disabled"}
             href={jiraIssuesUrl || "#"}
             rel="noreferrer"
             target="_blank"
@@ -365,11 +491,11 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
       </div>
 
       <div className="jira-settings-actions jira-settings-actions-polished">
-        <button className="copy-all-button jira-primary-action" disabled={saveState === "saving"} onClick={handleSave} type="button">
+        <button className="qatalyst-pill-button red" disabled={saveState === "saving"} onClick={handleSave} type="button">
           {saveState === "saving" ? "Saving..." : "Save Jira Config"}
         </button>
 
-        <button className="secondary-action-button jira-danger-action" disabled={saveState === "saving"} onClick={handleDelete} type="button">
+        <button className="qatalyst-pill-button secondary" disabled={saveState === "saving"} onClick={handleDelete} type="button">
           Remove Config
         </button>
       </div>

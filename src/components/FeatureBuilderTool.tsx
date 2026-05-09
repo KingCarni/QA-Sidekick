@@ -1,8 +1,11 @@
 "use client";
 
 import { useMemo, useState, type CSSProperties } from "react";
+import CreditCostBadge from "@/components/CreditCostBadge";
 import FeatureBuilderCompanionPanel from "@/components/FeatureBuilderCompanionPanel";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
+import { publishCreditBalanceUpdated } from "@/lib/credit-balance-events";
+import { normalizeJiraErrorMessage } from "@/lib/jira-error-normalizer";
 
 type FeatureBuilderToolProps = {
   activeProject: SafeQAProject | null;
@@ -32,6 +35,9 @@ type FeatureBuilderResponse = {
   error?: string;
   brief?: FeatureBrief;
   markdown?: string;
+  credits?: {
+    balanceAfter?: number;
+  };
 };
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -85,6 +91,9 @@ type FeatureJiraCreateResponse = {
     browseUrl: string;
     summary: string;
   } | null;
+  credits?: {
+    balanceAfter?: number;
+  };
 };
 
 type CompanionPrompt = {
@@ -1012,6 +1021,10 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
         throw new Error(payload?.error || "Could not generate feature brief.");
       }
 
+      if (typeof payload.credits?.balanceAfter === "number") {
+        publishCreditBalanceUpdated(payload.credits.balanceAfter);
+      }
+
       const normalized = normalizeBrief(payload.brief);
       const nextMarkdown = payload.markdown?.trim() || buildFeatureMarkdown(normalized);
 
@@ -1125,6 +1138,10 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
         throw new Error(payload?.error || "Could not create Jira feature work.");
       }
 
+      if (typeof payload.credits?.balanceAfter === "number") {
+        publishCreditBalanceUpdated(payload.credits.balanceAfter);
+      }
+
       setJiraCreatedParent(payload.parentIssue);
       setJiraCreatedChildren(payload.childIssues ?? []);
       setJiraCreatedQaIssue(payload.qaIssue ?? null);
@@ -1132,7 +1149,7 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
       setJiraCreateMessage(`Created ${payload.parentIssue.key} in Jira.`);
     } catch (err) {
       setJiraCreateState("error");
-      setJiraCreateMessage(err instanceof Error ? err.message : "Could not create Jira feature work.");
+      setJiraCreateMessage(normalizeJiraErrorMessage(err, "Could not create Jira feature work."));
     }
   }
 
@@ -1186,13 +1203,18 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
           <span className={signals.hasRisk ? "ready" : ""}>Risk</span>
         </div>
 
+        <CreditCostBadge action="feature_builder_generate" />
+        <p className="credit-action-cost-line">
+          Generate Feature Brief: <strong>5 credits</strong>. Credits are only charged after a successful run.
+        </p>
+
         <button
           className="feature-builder-primary"
           disabled={!canGenerate}
           onClick={generateFeatureBrief}
           type="button"
         >
-          {isGenerating ? "Building Feature Brief..." : "Build Feature Brief"}
+          {isGenerating ? "Building Feature Brief..." : "Generate Feature Brief - 5 credits"}
         </button>
 
         {error ? <p className="feature-builder-error">{error}</p> : null}
@@ -1324,6 +1346,9 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
                 <p style={{ color: "rgba(229, 231, 235, 0.68)", margin: "7px 0 0" }}>
                   Refinements use your current edited brief, not just the original AI output.
                 </p>
+                <p className="credit-action-cost-line">
+                  Each AI refinement costs <strong>1 credit</strong>.
+                </p>
               </div>
             </div>
 
@@ -1341,7 +1366,7 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
                   type="button"
                 >
                   <strong style={refinementLabelStyle}>
-                    {refiningActionId === action.id ? "Working..." : action.label}
+                    {refiningActionId === action.id ? "Working..." : `${action.label} - 1 credit`}
                   </strong>
                   <span style={refinementDescriptionStyle}>{action.description}</span>
                 </button>
@@ -1361,6 +1386,10 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
                 </h3>
                 <p style={{ color: "rgba(229, 231, 235, 0.7)", margin: "7px 0 0" }}>
                   Create the main feature issue, optional child work items, and an optional linked QA planning task.
+                </p>
+                <CreditCostBadge action="feature_builder_jira_create" />
+                <p className="credit-action-cost-line">
+                  Creating Jira work costs <strong>1 credit</strong>.
                 </p>
               </div>
             </div>
@@ -1460,7 +1489,7 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
                 }}
                 type="button"
               >
-                {jiraCreateState === "creating" ? "Creating Jira Work..." : "Create Jira Feature Work"}
+                {jiraCreateState === "creating" ? "Creating Jira Work..." : "Create Jira Work - 1 credit"}
               </button>
               <button
                 disabled={!jiraPreview.parentDescription}

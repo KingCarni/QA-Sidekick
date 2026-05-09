@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { parseJiraTicket, type ParsedJiraTicket } from "@/lib/jira-ticket";
+import { normalizeJiraErrorMessage } from "@/lib/jira-error-normalizer";
 
 type StackedProjectJiraControlsProps = {
   onJiraImport: (normalizedText: string, ticket: ParsedJiraTicket) => void;
@@ -69,7 +70,7 @@ export default function StackedProjectJiraControls({ onJiraImport }: StackedProj
       onJiraImport(payload.issue.normalizedText, payload.issue.parsedTicket);
     } catch (error) {
       setFetchState("error");
-      setFetchMessage(error instanceof Error ? error.message : "Could not fetch Jira issue.");
+      setFetchMessage(normalizeJiraErrorMessage(error, "Could not fetch Jira issue."));
     }
   }
 

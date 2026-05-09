@@ -1,5 +1,8 @@
 "use client";
 
+import CreditCostBadge from "@/components/CreditCostBadge";
+import type { CreditActionId } from "@/lib/credits-config";
+
 export type QatalystToolId = "tests" | "bug" | "risk" | "improve" | "feature";
 export type QatalystToolTone = "green" | "yellow" | "red" | "blue";
 
@@ -18,6 +21,14 @@ type ToolToolbarProps = {
   onToolChange: (toolId: QatalystToolId) => void;
 };
 
+const TOOL_CREDIT_ACTIONS: Record<QatalystToolId, CreditActionId> = {
+  tests: "test_cases_generate",
+  bug: "bug_writer_generate",
+  risk: "risk_review_generate",
+  improve: "test_improver_generate",
+  feature: "feature_builder_generate",
+};
+
 export default function ToolToolbar({ tools, activeTool, onToolChange }: ToolToolbarProps) {
   return (
     <section className="tool-toolbar-panel" aria-label="QAtalyst tool selector">
@@ -26,7 +37,6 @@ export default function ToolToolbar({ tools, activeTool, onToolChange }: ToolToo
           <p className="report-kicker">QAtalyst Toolbelt</p>
           <h2>Choose your workflow</h2>
         </div>
-        <span>Feature Builder is now available for rough feature shaping.</span>
       </div>
 
       <div className="tool-toolbar-grid" role="tablist" aria-label="Available QAtalyst tools">
@@ -56,6 +66,7 @@ export default function ToolToolbar({ tools, activeTool, onToolChange }: ToolToo
               }}
             >
               <strong>{tool.label}</strong>
+              <CreditCostBadge action={TOOL_CREDIT_ACTIONS[tool.id]} />
               <span>{tool.description}</span>
               {isDisabled ? <em>Coming soon</em> : null}
             </button>

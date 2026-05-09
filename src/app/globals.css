@@ -20519,3 +20519,667 @@ body [data-q84-sources-menu="true"] {
   }
 }
 
+/* QAS-90 Credits + Monetization MVP */
+.qa-credits-pill{align-items:center;background:radial-gradient(circle at top left,rgba(74,222,128,.18),transparent 42%),linear-gradient(135deg,rgba(10,10,12,.94),rgba(0,0,0,.98));border:1px solid rgba(74,222,128,.34);border-radius:14px;box-shadow:0 14px 28px rgba(34,197,94,.14);color:#fff;display:flex;flex-direction:column;gap:2px;justify-content:center;min-height:42px;padding:7px 12px;text-decoration:none;width:100%}.qa-credits-pill span{color:#bbf7d0;font-size:.64rem;font-weight:1000;letter-spacing:.11em;text-transform:uppercase}.qa-credits-pill strong{color:#fff;font-size:.95rem;font-weight:1000;line-height:1}.buy-credits-page{margin:0 auto;max-width:1180px;padding:42px 20px 70px}.buy-credits-hero,.buy-credit-section{border:1px solid rgba(248,113,113,.2);border-radius:28px;background:radial-gradient(circle at top left,rgba(248,113,113,.12),transparent 42%),linear-gradient(135deg,rgba(18,18,20,.96),rgba(5,5,7,.98));box-shadow:0 28px 70px rgba(0,0,0,.42);padding:26px}.buy-credits-hero h1{color:#fff;font-size:clamp(2rem,5vw,4.2rem);letter-spacing:-.06em;line-height:.95;margin:8px 0 14px}.buy-credits-hero p,.buy-credit-section-heading p,.buy-credit-card p{color:rgba(229,231,235,.76);line-height:1.55}.buy-credit-section{margin-top:20px}.buy-credit-section-heading{align-items:end;display:flex;gap:14px;justify-content:space-between;margin-bottom:18px}.buy-credit-section-heading h2{color:#fff;font-size:1.45rem;letter-spacing:-.03em;margin:0}.buy-credit-section-heading p{margin:0;max-width:560px}.buy-credit-grid{display:grid;gap:14px;grid-template-columns:repeat(3,minmax(0,1fr))}.buy-credit-card{border:1px solid rgba(148,163,184,.18);border-radius:22px;background:radial-gradient(circle at top left,rgba(255,255,255,.06),transparent 36%),rgba(0,0,0,.34);display:flex;flex-direction:column;gap:16px;justify-content:space-between;min-height:240px;padding:20px}.buy-credit-card-primary{border-color:rgba(96,165,250,.32)}.buy-credit-card-addon{border-color:rgba(74,222,128,.28)}.buy-credit-card-support{border-color:rgba(250,204,21,.3)}.buy-credit-card h3{color:#fff;font-size:1.35rem;margin:6px 0 8px}.buy-credit-card-meta{align-items:baseline;display:flex;gap:10px}.buy-credit-card-meta strong{color:#fff;font-size:2rem;letter-spacing:-.04em}.buy-credit-card-meta span{color:#bbf7d0;font-size:.86rem;font-weight:900}.buy-credit-card button{border:1px solid rgba(147,197,253,.42);border-radius:14px;background:radial-gradient(circle at top left,rgba(255,255,255,.12),transparent 36%),linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;cursor:pointer;font-weight:1000;min-height:44px;padding:11px 14px}.buy-credit-card button:disabled{cursor:not-allowed;filter:grayscale(.65);opacity:.58}.buy-credit-error{border:1px solid rgba(248,113,113,.4);border-radius:14px;background:rgba(127,29,29,.22);color:#fecaca!important;font-weight:900;margin-top:16px;padding:12px 14px}@media(max-width:920px){.buy-credit-grid{grid-template-columns:1fr}.buy-credit-section-heading{align-items:start;flex-direction:column}}
+
+/* QAS-126 — Buy Credits UI Polish */
+
+.q126-buy-page {
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 42px 20px 82px;
+}
+
+.q126-hero-window,
+.q126-section-window {
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at top left, rgba(248, 113, 113, 0.14), transparent 36%),
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 38%),
+    linear-gradient(135deg, rgba(17, 17, 19, 0.96), rgba(3, 3, 5, 0.98));
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.48);
+}
+
+.q126-hero-window {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  padding: 34px;
+}
+
+.q126-hero-copy h1 {
+  color: #fff;
+  font-size: clamp(2.4rem, 6vw, 5.25rem);
+  letter-spacing: -0.075em;
+  line-height: 0.92;
+  margin: 10px 0 18px;
+  max-width: 820px;
+}
+
+.q126-hero-copy p,
+.q126-section-heading p,
+.q126-pack-copy p,
+.q126-balance-window p {
+  color: rgba(229, 231, 235, 0.76);
+  line-height: 1.55;
+}
+
+.q126-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.q126-hero-actions a {
+  align-items: center;
+  border: 1px solid rgba(147, 197, 253, 0.42);
+  border-radius: 15px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 18px 38px rgba(37, 99, 235, 0.24);
+  color: #fff;
+  display: inline-flex;
+  font-weight: 1000;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  text-decoration: none;
+}
+
+.q126-hero-actions a:first-child {
+  border-color: rgba(74, 222, 128, 0.42);
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  box-shadow: 0 18px 38px rgba(34, 197, 94, 0.22);
+}
+
+.q126-balance-window {
+  align-self: center;
+  border: 1px solid rgba(74, 222, 128, 0.26);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(74, 222, 128, 0.16), transparent 48%),
+    rgba(0, 0, 0, 0.34);
+  padding: 22px;
+}
+
+.q126-balance-pill {
+  align-items: center;
+  border: 1px solid rgba(74, 222, 128, 0.36);
+  border-radius: 18px;
+  background: rgba(22, 101, 52, 0.24);
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 14px 0;
+  padding: 14px 16px;
+}
+
+.q126-balance-pill span,
+.q126-price-pill span,
+.q126-credit-pill span {
+  color: rgba(220, 252, 231, 0.72);
+  font-size: 0.68rem;
+  font-weight: 1000;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.q126-balance-pill strong {
+  color: #fff;
+  font-size: 1.8rem;
+  letter-spacing: -0.04em;
+}
+
+.q126-status {
+  border-radius: 18px;
+  font-weight: 950;
+  margin: 18px 0;
+  padding: 14px 18px;
+}
+
+.q126-status-success {
+  border: 1px solid rgba(74, 222, 128, 0.34);
+  background: rgba(22, 101, 52, 0.2);
+  color: #bbf7d0;
+}
+
+.q126-status-cancelled {
+  border: 1px solid rgba(250, 204, 21, 0.34);
+  background: rgba(113, 63, 18, 0.18);
+  color: #fde68a;
+}
+
+.q126-status-error {
+  border: 1px solid rgba(248, 113, 113, 0.42);
+  background: rgba(127, 29, 29, 0.22);
+  color: #fecaca;
+}
+
+.q126-section-window {
+  margin-top: 22px;
+  padding: 26px;
+}
+
+.q126-section-heading {
+  align-items: end;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.q126-section-heading h2 {
+  color: #fff;
+  font-size: clamp(1.45rem, 3vw, 2.2rem);
+  letter-spacing: -0.045em;
+  line-height: 1;
+  margin: 6px 0 0;
+}
+
+.q126-section-heading > p {
+  margin: 0;
+  max-width: 470px;
+}
+
+.q126-pack-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.q126-pack {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.075), transparent 34%),
+    rgba(0, 0, 0, 0.38);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  justify-content: space-between;
+  min-height: 250px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.q126-pack::before {
+  background: linear-gradient(90deg, rgba(96, 165, 250, 0.68), transparent);
+  bottom: 0;
+  content: "";
+  height: 3px;
+  left: 18px;
+  position: absolute;
+  right: 18px;
+}
+
+.q126-pack-featured {
+  border-color: rgba(74, 222, 128, 0.42);
+  box-shadow: 0 0 42px rgba(34, 197, 94, 0.14);
+  transform: translateY(-6px);
+}
+
+.q126-pack-featured::before {
+  background: linear-gradient(90deg, #22c55e, #60a5fa);
+}
+
+.q126-pack-addon {
+  border-color: rgba(250, 204, 21, 0.28);
+}
+
+.q126-pack-addon::before {
+  background: linear-gradient(90deg, rgba(250, 204, 21, 0.7), transparent);
+}
+
+.q126-pack-support {
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.q126-pack-support::before {
+  background: linear-gradient(90deg, rgba(248, 113, 113, 0.7), transparent);
+}
+
+.q126-pack-topline {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.q126-pack-topline span,
+.q126-pack-topline strong {
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 1000;
+  letter-spacing: 0.1em;
+  padding: 6px 9px;
+  text-transform: uppercase;
+}
+
+.q126-pack-topline span {
+  border: 1px solid rgba(147, 197, 253, 0.3);
+  background: rgba(37, 99, 235, 0.16);
+  color: #bfdbfe;
+}
+
+.q126-pack-topline strong {
+  color: #fecaca;
+}
+
+.q126-pack-copy h3 {
+  color: #fff;
+  font-size: 1.55rem;
+  letter-spacing: -0.04em;
+  margin: 0 0 8px;
+}
+
+.q126-pack-copy p {
+  margin: 0;
+}
+
+.q126-pack-price-row {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.q126-price-pill,
+.q126-credit-pill {
+  border-radius: 16px;
+  min-height: 76px;
+  padding: 12px;
+}
+
+.q126-price-pill {
+  border: 1px solid rgba(147, 197, 253, 0.26);
+  background: rgba(30, 64, 175, 0.14);
+}
+
+.q126-credit-pill {
+  border: 1px solid rgba(74, 222, 128, 0.28);
+  background: rgba(22, 101, 52, 0.16);
+}
+
+.q126-credit-pill-muted {
+  border-color: rgba(248, 113, 113, 0.24);
+  background: rgba(127, 29, 29, 0.12);
+}
+
+.q126-price-pill strong,
+.q126-credit-pill strong {
+  color: #fff;
+  display: block;
+  font-size: 1.45rem;
+  letter-spacing: -0.045em;
+  line-height: 1.1;
+  margin-top: 6px;
+  white-space: nowrap;
+}
+
+.q126-pack-button {
+  border: 1px solid rgba(147, 197, 253, 0.42);
+  border-radius: 15px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.12), transparent 36%),
+    linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 18px 34px rgba(37, 99, 235, 0.2);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 1000;
+  min-height: 46px;
+  padding: 11px 14px;
+}
+
+.q126-pack-featured .q126-pack-button,
+.q126-pack-addon .q126-pack-button {
+  border-color: rgba(74, 222, 128, 0.42);
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  box-shadow: 0 18px 34px rgba(34, 197, 94, 0.2);
+}
+
+.q126-pack-support .q126-pack-button {
+  border-color: rgba(248, 113, 113, 0.42);
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  box-shadow: 0 18px 34px rgba(220, 38, 38, 0.2);
+}
+
+.q126-pack-button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.55);
+  opacity: 0.62;
+}
+
+@media (max-width: 980px) {
+  .q126-hero-window {
+    grid-template-columns: 1fr;
+  }
+
+  .q126-pack-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .q126-pack-featured {
+    transform: none;
+  }
+
+  .q126-section-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 620px) {
+  .q126-buy-page {
+    padding: 24px 12px 60px;
+  }
+
+  .q126-hero-window,
+  .q126-section-window {
+    border-radius: 24px;
+    padding: 18px;
+  }
+
+  .q126-pack-price-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.credit-cost-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  border: 1px solid rgba(34, 197, 94, 0.48);
+  background: linear-gradient(135deg, rgba(20, 83, 45, 0.6), rgba(6, 78, 59, 0.35));
+  color: #bbf7d0;
+  border-radius: 999px;
+  padding: 0.28rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.12);
+}
+
+.credit-action-cost-line {
+  margin-top: 0.55rem;
+  color: rgba(226, 232, 240, 0.72);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.credit-action-cost-line strong {
+  color: #bbf7d0;
+}
+
+.credit-button-cost {
+  margin-left: 0.5rem;
+  opacity: 0.95;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.insufficient-credits-alert {
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  background: rgba(127, 29, 29, 0.32);
+  color: #fecaca;
+  border-radius: 1rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.insufficient-credits-alert a {
+  color: #bfdbfe;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.jira-diagnostics-panel {
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.42);
+  margin-top: 16px;
+  padding: 16px;
+}
+
+.jira-diagnostics-grid {
+  display: grid;
+  gap: 8px 14px;
+  grid-template-columns: minmax(120px, 0.45fr) minmax(0, 1fr);
+  margin-top: 10px;
+}
+
+.jira-diagnostics-grid span {
+  color: rgba(226, 232, 240, 0.62);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.jira-diagnostics-grid strong {
+  color: #f8fafc;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.jira-diagnostics-panel p:not(.report-kicker) {
+  color: rgba(226, 232, 240, 0.72);
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin: 12px 0 0;
+}
+
+.metered-cost-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.metered-cost-modal {
+  width: min(520px, 100%);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  background:
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.5), transparent 40%),
+    rgba(8, 8, 12, 0.96);
+  border-radius: 1.25rem;
+  padding: 1.35rem;
+  color: #f8fafc;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+.metered-cost-modal h2 {
+  margin: 0.35rem 0 0.75rem;
+  font-size: 1.35rem;
+}
+
+.metered-cost-modal p {
+  color: rgba(226, 232, 240, 0.82);
+  line-height: 1.5;
+}
+
+.metered-cost-modal ul {
+  margin: 0.75rem 0;
+  padding-left: 1.25rem;
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.metered-cost-total {
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 0.9rem;
+  background: rgba(20, 83, 45, 0.22);
+  padding: 0.75rem 0.9rem;
+}
+
+.metered-cost-total strong {
+  color: #bbf7d0;
+}
+
+.metered-cost-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.metered-cost-modal-actions button {
+  border-radius: 999px;
+  border: 1px solid rgba(248, 250, 252, 0.16);
+  padding: 0.75rem 1rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.metered-cost-modal-actions button:first-child {
+  background: rgba(15, 23, 42, 0.7);
+  color: #e2e8f0;
+}
+
+.metered-cost-modal-actions button:last-child {
+  background: linear-gradient(135deg, #16a34a, #2563eb);
+  color: white;
+}
+
+.metered-cost-modal-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.jira-diagnostics-card {
+  margin-top: 1rem;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 35%),
+    rgba(8, 12, 20, 0.78);
+  border-radius: 1.25rem;
+  padding: 1rem;
+}
+
+.jira-diagnostics-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.jira-diagnostics-header h3 {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+}
+
+.jira-diagnostics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.jira-diagnostics-grid div {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.46);
+  border-radius: 0.9rem;
+  padding: 0.75rem;
+  min-width: 0;
+}
+
+.jira-diagnostics-grid span {
+  display: block;
+  color: rgba(203, 213, 225, 0.66);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.jira-diagnostics-grid strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+.jira-diagnostics-help {
+  margin: 0.9rem 0 0;
+  color: rgba(226, 232, 240, 0.72);
+  line-height: 1.5;
+  font-size: 0.88rem;
+}
+
+.jira-status-pill.ready {
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  background: rgba(20, 83, 45, 0.45);
+  color: #bbf7d0;
+}
+
+.jira-status-pill.warning {
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  background: rgba(113, 63, 18, 0.38);
+  color: #fde68a;
+}
+
+.jira-status-pill.error {
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  background: rgba(127, 29, 29, 0.36);
+  color: #fecaca;
+}
+
+.qatalyst-pill-button,
+button.qatalyst-pill-button,
+a.qatalyst-pill-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(29, 78, 216, 0.88));
+  color: #fff;
+  padding: 0.72rem 1rem;
+  font-weight: 900;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 12px 34px rgba(37, 99, 235, 0.2);
+}
+
+.qatalyst-pill-button.secondary {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.72);
+  color: #e2e8f0;
+  box-shadow: none;
+}
+
+.qatalyst-pill-button.green {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.95), rgba(21, 128, 61, 0.88));
+  box-shadow: 0 12px 34px rgba(34, 197, 94, 0.18);
+}
+
+.qatalyst-pill-button.red {
+  border-color: rgba(248, 113, 113, 0.38);
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.96), rgba(153, 27, 27, 0.9));
+  box-shadow: 0 12px 34px rgba(220, 38, 38, 0.2);
+}
+
+.qatalyst-pill-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+  .jira-diagnostics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jira-diagnostics-header {
+    flex-direction: column;
+  }
+}

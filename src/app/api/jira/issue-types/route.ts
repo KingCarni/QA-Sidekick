@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { apiError, apiOk, getErrorMessage } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
+import { normalizeJiraErrorMessage } from "@/lib/jira-error-normalizer";
 import { getUserJiraConfigStatus, getUserJiraConfigWithSecret } from "@/lib/jira-config";
 import { listJiraProjectIssueTypes } from "@/lib/jira-issue-types";
 import { durationSince, nowMs, serverLog } from "@/lib/server-log";
@@ -59,7 +60,7 @@ export async function GET(req: Request): Promise<Response> {
       return apiError(req, {
         status: result.status >= 400 && result.status < 600 ? result.status : 502,
         code: "UPSTREAM_ERROR",
-        message: result.error,
+        message: normalizeJiraErrorMessage(result.error),
         details: { jira: result.details },
       });
     }
@@ -89,7 +90,7 @@ export async function GET(req: Request): Promise<Response> {
     return apiError(req, {
       status: 500,
       code: "INTERNAL_ERROR",
-      message: getErrorMessage(error, "Could not load Jira issue types."),
+      message: normalizeJiraErrorMessage(error, getErrorMessage(error, "Could not load Jira issue types.")),
     });
   }
 }

@@ -20,9 +20,11 @@ import SaveBugToCollectionButton from "@/components/SaveBugToCollectionButton";
 import SaveGeneratedOutputToSourceButton from "@/components/SaveGeneratedOutputToSourceButton";
 import StackedProjectJiraControls from "@/components/StackedProjectJiraControls";
 import HeaderProjectSourceControls from "@/components/HeaderProjectSourceControls";
+import { publishCreditBalanceUpdated } from "@/lib/credit-balance-events";
 import type { ActiveProjectContext } from "@/components/ProjectContextIndicator";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
 import TestCaseAutomationReadiness from "@/components/TestCaseAutomationReadiness";
+import TestCaseCostConfirmModal from "@/components/TestCaseCostConfirmModal";
 import TestCaseDisplayControls from "@/components/TestCaseDisplayControls";
 import TestCaseQualityBadge from "@/components/TestCaseQualityBadge";
 import TestRailSyncPanel from "@/components/TestRailSyncPanel";
@@ -63,6 +65,14 @@ const RUN_BUTTON_TEST_IDS: Record<ToolId, string> = {
   risk: "run-risk-review-button",
   improve: "run-test-improver-button",
   feature: "build-feature-brief-button",
+};
+
+const TOOL_COST_LABELS: Record<ToolId, string> = {
+  tests: "5+ credits",
+  bug: "2 credits",
+  risk: "3 credits",
+  improve: "2 credits",
+  feature: "5 credits",
 };
 
 type SaveReportStatus = "idle" | "saving" | "saved" | "error";
@@ -245,6 +255,24 @@ function safeText(value: unknown): string {
       .join("\n");
   }
   return String(value);
+}
+
+function getPaidActionErrorMessage(data: unknown, status?: number) {
+  const payload = isPlainObject(data) ? data : {};
+
+  if (status === 402 || payload.code === "INSUFFICIENT_CREDITS") {
+    const details = isPlainObject(payload.details) ? payload.details : {};
+    const required = details.required ?? details.cost;
+    const balance = details.balance;
+
+    if (required !== undefined && balance !== undefined) {
+      return `Not enough credits. This action costs ${required} credits. You currently have ${balance}.`;
+    }
+
+    return "Not enough credits for this action.";
+  }
+
+  return safeText(payload.message || payload.error || "Something went wrong.");
 }
 
 function valueLines(value: unknown): string[] {
@@ -2611,6 +2639,11 @@ export default function Home() {
   const [lastTestGenerationFingerprint, setLastTestGenerationFingerprint] = useState("");
   const [testCaseRefreshNonce, setTestCaseRefreshNonce] = useState(0);
   const [testGenerationNotice, setTestGenerationNotice] = useState("");
+  const [testCaseCostConfirmation, setTestCaseCostConfirmation] = useState<{
+    open: boolean;
+    testCaseCount: number;
+    cost: number;
+  }>({ open: false, testCaseCount: 0, cost: 0 });
   const [activeProject, setActiveProject] = useState<SafeQAProject | null>(null);
   const [activeProjectContext, setActiveProjectContext] = useState<ActiveProjectContext | null>(null);
   const [isProjectContextLoading, setIsProjectContextLoading] = useState(false);
@@ -3178,7 +3211,7 @@ export default function Home() {
     );
   }
 
-  async function runTool(options?: { forceFreshGeneration?: boolean }) {
+  async function runTool(options?: { forceFreshGeneration?: boolean; requestedCount?: number; confirmedCost?: number }) {
     const forceFreshGeneration = options?.forceFreshGeneration ?? false;
 
     if (!input.trim()) {
@@ -3464,6 +3497,19 @@ export default function Home() {
       : input;
 
     try {
+      if (activeTool === "tests" && options?.confirmedCost == null) {
+        const estimate = await estimateTestCaseCost(requestInput);
+
+        if (estimate.requiresConfirmation) {
+          setTestCaseCostConfirmation({
+            open: true,
+            testCaseCount: estimate.testCaseCount,
+            cost: estimate.cost,
+          });
+          return;
+        }
+      }
+
       setOutput("");
       const response = await fetch(route, {
         method: "POST",
@@ -3472,6 +3518,8 @@ export default function Home() {
         },
         body: JSON.stringify({
           input: requestInput,
+          requestedCount: options?.requestedCount,
+          confirmedCost: options?.confirmedCost,
           screenshots: [],
           projectId: projectContextPayload.selectedProjectId || null,
           projectContextBlock: projectContextPayload.projectContextBlock,
@@ -3507,8 +3555,12 @@ export default function Home() {
       const data = await response.json();
 
       if (!response.ok) {
-        setOutput(data?.error ?? "Something went wrong.");
+        setOutput(getPaidActionErrorMessage(data, response.status));
         return;
+      }
+
+      if (typeof data?.credits?.balanceAfter === "number") {
+        publishCreditBalanceUpdated(data.credits.balanceAfter);
       }
 
       const result =
@@ -3526,6 +3578,21 @@ export default function Home() {
     } finally {
       setIsRunning(false);
     }
+  }
+
+  async function estimateTestCaseCost(prompt: string) {
+    const response = await fetch("/api/test-cases/estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
+    const estimate = await response.json().catch(() => null);
+
+    if (!response.ok || estimate?.ok === false) {
+      throw new Error(estimate?.error || "Could not estimate test case cost.");
+    }
+
+    return estimate as { requiresConfirmation?: boolean; testCaseCount: number; cost: number };
   }
 
   return (
@@ -3942,15 +4009,18 @@ export default function Home() {
             {isRunning
               ? "Running..."
               : activeTool === "bug" && currentBugReport
-                ? "Re-improve Bug Report"
+                ? `Re-improve Bug Report - ${TOOL_COST_LABELS.bug}`
                 : activeTool === "risk" && currentRiskReview
-                  ? "Re-assess Risk"
+                  ? `Re-assess Risk - ${TOOL_COST_LABELS.risk}`
                   : activeTool === "tests" && currentTestOutput
-                    ? "Refresh Scores/Export"
+                    ? `Refresh Scores/Export - ${TOOL_COST_LABELS.tests}`
                     : activeTool === "improve" && currentTestImprovement
-                      ? "Re-improve Test Case"
-                      : tool.button}
+                      ? `Re-improve Test Case - ${TOOL_COST_LABELS.improve}`
+                      : `${tool.button} - ${TOOL_COST_LABELS[activeTool]}`}
           </button>
+          <p className="credit-action-cost-line">
+            Costs <strong>{TOOL_COST_LABELS[activeTool]}</strong>. Credits are only charged after a successful run.
+          </p>
 
           {testGenerationNotice ? (
             <p className="generation-consistency-note">{testGenerationNotice}</p>
@@ -4000,6 +4070,21 @@ export default function Home() {
         </section>
       </section>
       )}
+      <TestCaseCostConfirmModal
+        open={testCaseCostConfirmation.open}
+        testCaseCount={testCaseCostConfirmation.testCaseCount}
+        cost={testCaseCostConfirmation.cost}
+        loading={isRunning}
+        onCancel={() => setTestCaseCostConfirmation({ open: false, testCaseCount: 0, cost: 0 })}
+        onConfirm={() => {
+          const confirmation = testCaseCostConfirmation;
+          setTestCaseCostConfirmation({ open: false, testCaseCount: 0, cost: 0 });
+          void runTool({
+            requestedCount: confirmation.testCaseCount,
+            confirmedCost: confirmation.cost,
+          });
+        }}
+      />
     </main>
   );
 }

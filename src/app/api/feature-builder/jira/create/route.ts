@@ -1,7 +1,10 @@
 import { getServerSession } from "next-auth";
+import { randomUUID } from "crypto";
 import { apiError, apiOk, getErrorMessage, readJsonBody } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
+import { normalizeJiraErrorMessage } from "@/lib/jira-error-normalizer";
 import { getUserJiraConfigStatus, getUserJiraConfigWithSecret } from "@/lib/jira-config";
+import { isInsufficientCreditsError, runPaidAction } from "@/lib/paid-action";
 import { durationSince, nowMs, serverLog } from "@/lib/server-log";
 
 export const runtime = "nodejs";
@@ -476,6 +479,8 @@ export async function POST(req: Request): Promise<Response> {
       });
     }
 
+    const jiraConfig = jiraStatus.config;
+
     const jiraConfigWithSecret = await getUserJiraConfigWithSecret(userId);
 
     if (!jiraConfigWithSecret?.jiraApiToken) {
@@ -496,7 +501,13 @@ export async function POST(req: Request): Promise<Response> {
       });
     }
 
-    const parentIssueType = safeIssueType(options.parentIssueType, jiraStatus.config.defaultIssueType || "Story");
+    const paidResult = await runPaidAction({
+      userId,
+      action: "feature_builder_jira_create",
+      requestId: req.headers.get("x-request-id") || randomUUID(),
+      meta: { route },
+      work: async () => {
+    const parentIssueType = safeIssueType(options.parentIssueType, jiraConfig.defaultIssueType || "Story");
     const parentSummary = asText(preview.parentSummary) || asText(brief.title) || "Feature work from QAtalyst";
     const parentDescription = makeParentDescription(brief, markdown, preview);
 
@@ -509,18 +520,13 @@ export async function POST(req: Request): Promise<Response> {
     });
 
     if (!parentResult.ok) {
-      return apiError(req, {
-        status: parentResult.status >= 400 && parentResult.status < 600 ? parentResult.status : 502,
-        code: "UPSTREAM_ERROR",
-        message: parentResult.error,
-        details: { jira: parentResult.details },
-      });
+      throw new Error(normalizeJiraErrorMessage(parentResult.error));
     }
 
     const childIssues: JiraCreatedIssue[] = [];
     const createChildTasks = Boolean(options.createChildTasks);
     const childTaskMode = asText(options.childTaskMode) === "subtask" ? "subtask" : "task";
-    const childIssueType = childTaskMode === "subtask" ? "Sub-task" : jiraStatus.config.defaultIssueType || "Task";
+    const childIssueType = childTaskMode === "subtask" ? "Sub-task" : jiraConfig.defaultIssueType || "Task";
 
     if (createChildTasks) {
       const childTasks = getPreviewChildTasks(preview);
@@ -580,7 +586,7 @@ export async function POST(req: Request): Promise<Response> {
         descriptionMarkdown: [asText(qaTask.description), "", `Parent feature issue: ${parentResult.issue.key}`]
           .filter(Boolean)
           .join("\n"),
-        issueType: jiraStatus.config.defaultIssueType || "Task",
+        issueType: jiraConfig.defaultIssueType || "Task",
       });
 
       if (result.ok) {
@@ -617,7 +623,7 @@ export async function POST(req: Request): Promise<Response> {
       },
     });
 
-    return apiOk(req, {
+    return {
       parentIssue: parentResult.issue,
       childIssues,
       qaIssue,
@@ -625,8 +631,37 @@ export async function POST(req: Request): Promise<Response> {
         createChildTasks && childIssues.length === 0 && getPreviewChildTasks(preview).length > 0
           ? "Parent issue was created, but no child work items were created. Check whether the selected child issue type is supported by this Jira project."
           : null,
+    };
+      },
+    });
+
+    return apiOk(req, {
+      parentIssue: paidResult.parentIssue,
+      childIssues: paidResult.childIssues,
+      qaIssue: paidResult.qaIssue,
+      warning: paidResult.warning,
+      credits: {
+        action: paidResult.creditSpend.action,
+        cost: paidResult.creditSpend.cost,
+        balanceAfter: paidResult.creditSpend.balanceAfter,
+        spendRef: paidResult.creditSpend.ref,
+      },
     });
   } catch (error) {
+    if (isInsufficientCreditsError(error)) {
+      return apiError(req, {
+        status: 402,
+        code: "INSUFFICIENT_CREDITS",
+        message: error.message,
+        details: {
+          action: error.action,
+          cost: error.required,
+          balance: error.balance,
+          required: error.required,
+        },
+      });
+    }
+
     serverLog.error("Feature Builder Jira create route failed.", {
       route,
       status: 500,
@@ -637,7 +672,7 @@ export async function POST(req: Request): Promise<Response> {
     return apiError(req, {
       status: 500,
       code: "INTERNAL_ERROR",
-      message: getErrorMessage(error, "Could not create Jira feature work."),
+      message: normalizeJiraErrorMessage(error, getErrorMessage(error, "Could not create Jira feature work.")),
     });
   }
 }

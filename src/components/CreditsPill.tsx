@@ -1,57 +1,39 @@
+
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { subscribeToCreditBalanceUpdated } from "@/lib/credit-balance-events";
+import { formatCredits } from "@/lib/credits-config";
 
-type CreditsResponse = {
-  ok: boolean;
-  balance?: number;
-  credits?: number;
-  error?: string;
-};
+type CreditsResponse = { ok?: boolean; balance?: number; error?: string };
 
 export default function CreditsPill() {
-  const [credits, setCredits] = useState<number | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
   const [error, setError] = useState("");
 
-  const loadCredits = useCallback(async () => {
-    setError("");
-
+  async function loadCredits() {
     try {
-      const response = await fetch("/api/credits", {
-        method: "GET",
-        cache: "no-store",
-      });
-      const payload = (await response.json()) as CreditsResponse;
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(payload.error || "Could not load credits.");
-      }
-
-      const nextCredits =
-        typeof payload.credits === "number"
-          ? payload.credits
-          : typeof payload.balance === "number"
-            ? payload.balance
-            : null;
-
-      setCredits(nextCredits);
+      const response = await fetch("/api/credits", { cache: "no-store" });
+      const payload = (await response.json().catch(() => null)) as CreditsResponse | null;
+      if (!response.ok || payload?.ok === false) throw new Error(payload?.error || "Could not load credits.");
+      setBalance(typeof payload?.balance === "number" ? payload.balance : 0);
+      setError("");
     } catch (err) {
-      setCredits(null);
       setError(err instanceof Error ? err.message : "Could not load credits.");
     }
-  }, []);
+  }
 
   useEffect(() => {
-    void loadCredits();
-  }, [loadCredits]);
+    loadCredits();
+    function handleFocus() { loadCredits(); }
+    window.addEventListener("focus", handleFocus);
+    const unsubscribe = subscribeToCreditBalanceUpdated(setBalance);
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      unsubscribe();
+    };
+  }, []);
 
-  return (
-    <div className="qa-credits-wrap">
-      <button className="qa-credits-pill" type="button" onClick={loadCredits} title="Refresh credits">
-        <span>Credits</span>
-        <strong>{credits === null ? "—" : credits}</strong>
-      </button>
-      {error ? <span className="qa-credits-error">{error}</span> : null}
-    </div>
-  );
+  return <Link className="qa-credits-pill" href="/buy-credits" title={error || "Buy credits"}><span>Credits</span><strong>{balance === null ? "…" : formatCredits(balance)}</strong></Link>;
 }

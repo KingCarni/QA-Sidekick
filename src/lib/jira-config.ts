@@ -71,6 +71,11 @@ function safeFieldMapping(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
+function isMaskedTokenPlaceholder(value: string) {
+  const trimmed = value.trim();
+  return !trimmed || /^[\u2022*.\-_\s]+$/.test(trimmed);
+}
+
 export function normalizeJiraConfigPayload(value: {
   siteUrl?: unknown;
   jiraEmail?: unknown;
@@ -86,7 +91,9 @@ export function normalizeJiraConfigPayload(value: {
   return {
     siteUrl: normalizeUrl(value.siteUrl),
     jiraEmail: String(value.jiraEmail ?? value.email ?? value.username ?? "").trim(),
-    jiraApiToken: String(value.jiraApiToken ?? value.apiToken ?? "").trim() || undefined,
+    jiraApiToken: isMaskedTokenPlaceholder(String(value.jiraApiToken ?? value.apiToken ?? ""))
+      ? undefined
+      : String(value.jiraApiToken ?? value.apiToken ?? "").trim(),
     projectKey: normalizeProjectKey(value.projectKey),
     defaultIssueType: normalizeIssueType(value.defaultIssueType, "Task"),
     defaultBugIssueType: normalizeIssueType(value.defaultBugIssueType, "Bug"),
