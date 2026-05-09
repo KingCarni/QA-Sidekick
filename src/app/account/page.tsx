@@ -27,14 +27,29 @@ export default async function AccountPage() {
 
   if (!userId) {
     return (
-      <main className="account-page">
-        <section className="account-card account-hero-card">
-          <p className="report-kicker">QAtalyst Account</p>
-          <h1>Sign in to view your QAtalyst account.</h1>
-          <p>Your credits, saved QA reports, and project workspace will appear here.</p>
-          <Link className="account-back-link" href="/">
-            Back to QAtalyst
-          </Link>
+      <main className="qas156-shell qas156-account-page">
+        <section className="qas156-window qas156-account-hero qas156-account-hero-signed-out">
+          <div className="qas156-hero-copy">
+            <p className="qas156-kicker">QAtalyst Account</p>
+            <h1>Sign in to view your QAtalyst workspace.</h1>
+            <p>
+              Your credits, saved QA reports, project workspace, and account activity will appear
+              here once you sign in.
+            </p>
+            <div className="qas156-action-row">
+              <Link className="qas156-button qas156-button-primary" href="/api/auth/signin">
+                Sign in
+              </Link>
+              <Link className="qas156-button qas156-button-secondary" href="/">
+                Back to QAtalyst
+              </Link>
+            </div>
+          </div>
+
+          <div className="qas156-logo-panel" aria-label="QAtalyst">
+            <img src="/qatalyst-header.png" alt="QAtalyst" />
+            <span>Reviewable QA workflow support for practical teams.</span>
+          </div>
         </section>
       </main>
     );
@@ -61,111 +76,121 @@ export default async function AccountPage() {
   const purchaseCount = recentLedger.filter((entry) => entry.reason === "purchase_stripe").length;
 
   return (
-    <main className="account-page">
-      <section className="account-card account-hero-card">
-        <div className="account-header-row">
-          <div>
-            <p className="report-kicker">QAtalyst Account</p>
-            <h1>Account</h1>
-            <p>{displayUser}</p>
-          </div>
+    <main className="qas156-shell qas156-account-page">
+      <section className="qas156-window qas156-account-hero">
+        <div className="qas156-hero-copy">
+          <p className="qas156-kicker">QAtalyst Account</p>
+          <h1>Account</h1>
+          <p className="qas156-identity-line">{displayUser}</p>
+          <p>
+            Monitor credits, saved reports, usage activity, and account shortcuts from one polished
+            QAtalyst control surface.
+          </p>
 
-          <div className="account-header-actions">
-            <Link className="account-buy-link" href="/reports">
+          <div className="qas156-action-row">
+            <Link className="qas156-button qas156-button-primary" href="/reports">
               Saved Reports
             </Link>
-            <Link className="account-buy-link" href="/buy-credits">
+            <Link className="qas156-button qas156-button-primary" href="/buy-credits">
               Buy Credits
             </Link>
-            <Link className="account-back-link" href="/jira/settings">
+            <Link className="qas156-button qas156-button-secondary" href="/jira/settings">
               Settings
             </Link>
-            <Link className="account-back-link" href="/">
+            <Link className="qas156-button qas156-button-secondary" href="/">
               Back to QAtalyst
             </Link>
           </div>
         </div>
 
-        <div className="account-stat-grid">
-          <div className="account-stat-card account-stat-primary">
-            <span>Current credits</span>
-            <strong>{balance}</strong>
-          </div>
-          <div className="account-stat-card">
-            <span>Saved reports</span>
-            <strong>{recentReportsCount}</strong>
-          </div>
-          <div className="account-stat-card">
-            <span>Recent events</span>
-            <strong>{recentEvents.length}</strong>
-          </div>
-          <div className="account-stat-card">
-            <span>Stripe purchases</span>
-            <strong>{purchaseCount}</strong>
-          </div>
+        <div className="qas156-logo-panel" aria-label="QAtalyst">
+          <img src="/qatalyst-header.png" alt="QAtalyst" />
+          <span>Project-aware QA planning, credits, reports, and reusable context.</span>
         </div>
       </section>
 
-      <section className="account-card">
-        <div className="account-section-heading">
-          <div>
-            <p className="report-kicker">Reports</p>
-            <h2>Saved QA reports</h2>
-          </div>
-          <Link className="account-buy-link" href="/reports">
-            View Reports
-          </Link>
-        </div>
-        <p>Save generated test cases, risk reviews, bug reports, and test improvements from the app.</p>
+      <section className="qas156-stat-grid" aria-label="Account summary">
+        <article className="qas156-stat-card qas156-stat-card-primary">
+          <span>Current credits</span>
+          <strong>{balance}</strong>
+        </article>
+        <article className="qas156-stat-card">
+          <span>Saved reports</span>
+          <strong>{recentReportsCount}</strong>
+        </article>
+        <article className="qas156-stat-card">
+          <span>Recent events</span>
+          <strong>{recentEvents.length}</strong>
+        </article>
+        <article className="qas156-stat-card">
+          <span>Stripe purchases</span>
+          <strong>{purchaseCount}</strong>
+        </article>
       </section>
 
-      <section className="account-card">
-        <div className="account-section-heading">
-          <div>
-            <p className="report-kicker">Credits</p>
-            <h2>Credit ledger</h2>
-          </div>
-          <span>{recentLedger.length} recent</span>
+      <section className="qas156-window qas156-account-feature-card">
+        <div>
+          <p className="qas156-kicker">Reports</p>
+          <h2>Saved QA reports</h2>
+          <p>
+            Save generated test cases, risk reviews, bug reports, and test improvements from the app,
+            then return to them when the team needs context.
+          </p>
         </div>
-
-        {recentLedger.length > 0 ? (
-          <div className="account-table">
-            {recentLedger.map((entry) => (
-              <div className="account-table-row" key={entry.id}>
-                <span>{formatReason(entry.reason)}</span>
-                <strong className={entry.delta >= 0 ? "account-delta-positive" : "account-delta-negative"}>
-                  {formatDelta(entry.delta)}
-                </strong>
-                <small>{formatDate(entry.createdAt)}</small>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>No credit history yet.</p>
-        )}
+        <Link className="qas156-button qas156-button-primary" href="/reports">
+          View Reports
+        </Link>
       </section>
 
-      <section className="account-card">
-        <div className="account-section-heading">
-          <div>
-            <p className="report-kicker">Activity</p>
-            <h2>Usage events</h2>
+      <section className="qas156-account-grid">
+        <article className="qas156-window qas156-ledger-card">
+          <div className="qas156-section-header">
+            <div>
+              <p className="qas156-kicker">Credits</p>
+              <h2>Credit ledger</h2>
+            </div>
+            <span>{recentLedger.length} recent</span>
           </div>
-          <span>{recentEvents.length} recent</span>
-        </div>
 
-        {recentEvents.length > 0 ? (
-          <div className="account-table">
-            {recentEvents.map((event) => (
-              <div className="account-table-row account-table-row-two" key={event.id}>
-                <span>{formatReason(event.type)}</span>
-                <small>{formatDate(event.createdAt)}</small>
-              </div>
-            ))}
+          {recentLedger.length > 0 ? (
+            <div className="qas156-ledger-list">
+              {recentLedger.map((entry) => (
+                <div className="qas156-ledger-row" key={entry.id}>
+                  <span>{formatReason(entry.reason)}</span>
+                  <strong className={entry.delta >= 0 ? "qas156-delta-positive" : "qas156-delta-negative"}>
+                    {formatDelta(entry.delta)}
+                  </strong>
+                  <small>{formatDate(entry.createdAt)}</small>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="qas156-empty-copy">No credit history yet.</p>
+          )}
+        </article>
+
+        <article className="qas156-window qas156-activity-card">
+          <div className="qas156-section-header">
+            <div>
+              <p className="qas156-kicker">Activity</p>
+              <h2>Usage events</h2>
+            </div>
+            <span>{recentEvents.length} recent</span>
           </div>
-        ) : (
-          <p>No usage events yet.</p>
-        )}
+
+          {recentEvents.length > 0 ? (
+            <div className="qas156-ledger-list">
+              {recentEvents.map((event) => (
+                <div className="qas156-ledger-row qas156-ledger-row-two" key={event.id}>
+                  <span>{formatReason(event.type)}</span>
+                  <small>{formatDate(event.createdAt)}</small>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="qas156-empty-copy">No usage events yet.</p>
+          )}
+        </article>
       </section>
     </main>
   );

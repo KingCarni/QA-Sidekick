@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getOptionalEnv, isGoogleAuthConfigured } from "@/lib/env";
 
 const SIGNUP_BONUS = 25;
-const DAILY_LOGIN_BONUS = 10;
+const DAILY_LOGIN_BONUS = 5;
 
 function todayKeyUtc(d = new Date()) {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()))
@@ -90,8 +90,8 @@ async function ensureUserBonuses(user: unknown) {
   await grantCreditIfMissing({
     userId,
     delta: DAILY_LOGIN_BONUS,
-    reason: "daily_login_bonus",
-    ref: `daily_login_bonus:${todayKey}`,
+    reason: "daily_bonus",
+    ref: `daily_bonus:${todayKey}`,
     meta: { email, dayUtc: todayKey },
   });
 }

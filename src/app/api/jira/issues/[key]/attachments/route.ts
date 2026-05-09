@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth";
 import { apiError, apiOk, getErrorMessage } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
-import { getUserJiraConfigStatus } from "@/lib/jira-config";
+import { normalizeJiraErrorMessage } from "@/lib/jira-error-normalizer";
+import { getUserJiraConfigStatus, getUserJiraConfigWithSecret } from "@/lib/jira-config";
 import { uploadJiraIssueAttachments } from "@/lib/jira-attachments";
 import { durationSince, nowMs, serverLog } from "@/lib/server-log";
 
@@ -119,8 +120,18 @@ export async function POST(req: Request, context: RouteContext): Promise<Respons
       });
     }
 
+    const jiraConfigWithSecret = await getUserJiraConfigWithSecret(userId);
+
+    if (!jiraConfigWithSecret?.jiraApiToken) {
+      return apiError(req, {
+        status: 400,
+        code: "VALIDATION_ERROR",
+        message: "Jira API token is missing or could not be read. Re-save your Jira API token in Jira settings.",
+      });
+    }
+
     const result = await uploadJiraIssueAttachments({
-      config: jiraStatus.config,
+      config: jiraConfigWithSecret,
       issueKey,
       files,
     });
@@ -134,6 +145,8 @@ export async function POST(req: Request, context: RouteContext): Promise<Respons
         meta: {
           issueKey,
           fileCount: files.length,
+          usesSavedUserConfig: true,
+          hasSavedToken: Boolean(jiraConfigWithSecret?.jiraApiToken),
           error: result.error,
         },
       });
@@ -141,7 +154,7 @@ export async function POST(req: Request, context: RouteContext): Promise<Respons
       return apiError(req, {
         status: result.status >= 400 && result.status < 600 ? result.status : 502,
         code: "UPSTREAM_ERROR",
-        message: result.error,
+        message: normalizeJiraErrorMessage(result.error),
         details: {
           jira: result.details,
           attachments: result.attachments,
@@ -174,7 +187,7 @@ export async function POST(req: Request, context: RouteContext): Promise<Respons
     return apiError(req, {
       status: 500,
       code: "INTERNAL_ERROR",
-      message: getErrorMessage(error, "Could not upload Jira attachments."),
+      message: normalizeJiraErrorMessage(error, getErrorMessage(error, "Could not upload Jira attachments.")),
     });
   }
 }

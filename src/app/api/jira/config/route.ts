@@ -137,12 +137,11 @@ export async function POST(req: Request): Promise<Response> {
       },
     });
 
+    const status = await getUserJiraConfigStatus(userId);
+
     return apiOk(req, {
-      jira: {
-        configured: true,
-        missingFields: [],
-        config: result.config,
-      },
+      jira: status,
+      message: "Saved Jira settings.",
     });
   } catch (error) {
     serverLog.error("Jira config save failed.", {
@@ -198,12 +197,11 @@ export async function DELETE(req: Request): Promise<Response> {
       durationMs: durationSince(startedAt),
     });
 
+    const status = await getUserJiraConfigStatus(userId);
+
     return apiOk(req, {
-      jira: {
-        configured: false,
-        missingFields: ["Jira site URL", "Project key", "Default issue type", "Default bug issue type"],
-        config: null,
-      },
+      jira: status,
+      message: "Jira config removed.",
     });
   } catch (error) {
     serverLog.error("Jira config delete failed.", {

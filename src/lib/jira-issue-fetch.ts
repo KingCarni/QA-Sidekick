@@ -1,6 +1,10 @@
 import type { SafeJiraConfig } from "@/lib/jira-config";
 import { parseJiraTicket, type ParsedJiraTicket } from "@/lib/jira-ticket";
 
+type JiraConfigWithSecret = SafeJiraConfig & {
+  jiraApiToken: string;
+};
+
 export type JiraFetchedIssue = {
   key: string;
   browseUrl: string;
@@ -36,14 +40,14 @@ function normalizeIssueKey(value: unknown) {
     .toUpperCase();
 }
 
-function getJiraAuth() {
-  const email = process.env.JIRA_API_EMAIL || process.env.ATLASSIAN_EMAIL || process.env.JIRA_EMAIL;
-  const token = process.env.JIRA_API_TOKEN || process.env.ATLASSIAN_API_TOKEN;
+function getJiraAuth(config: JiraConfigWithSecret) {
+  const email = config.jiraEmail?.trim();
+  const token = config.jiraApiToken?.trim();
 
   if (!email || !token) {
     return {
       ok: false as const,
-      error: "Jira API credentials are not configured. Add JIRA_API_EMAIL and JIRA_API_TOKEN.",
+      error: "Jira API credentials are not configured. Add Jira username/email and API token in Jira settings.",
     };
   }
 
@@ -254,13 +258,13 @@ function buildNormalizedText(params: {
 }
 
 export async function fetchJiraIssueByKey(params: {
-  config: SafeJiraConfig;
+  config: JiraConfigWithSecret;
   issueKeyOrUrl: string;
 }): Promise<
   | { ok: true; issue: JiraFetchedIssue }
   | { ok: false; status: number; error: string; details?: unknown }
 > {
-  const auth = getJiraAuth();
+  const auth = getJiraAuth(params.config);
 
   if (!auth.ok) {
     return {

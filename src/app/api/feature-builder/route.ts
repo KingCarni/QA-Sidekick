@@ -1,5 +1,9 @@
+import { randomUUID } from "crypto";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { authOptions } from "@/lib/auth";
+import { isInsufficientCreditsError, runPaidAction } from "@/lib/paid-action";
 
 type FeatureBrief = {
   title: string;
@@ -114,6 +118,13 @@ function buildMarkdown(brief: FeatureBrief) {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json({ ok: false, error: "Please sign in to use Feature Builder." }, { status: 401 });
+    }
+
     const body = await req.json().catch(() => null);
 
     const mode = asString(body?.mode) === "refine" ? "refine" : "generate";
@@ -219,35 +230,68 @@ export async function POST(req: NextRequest) {
             extraContext || "None provided.",
           ].join("\n");
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: mode === "refine" ? 0.25 : 0.35,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "user",
-          content: userPrompt,
-        },
-      ],
-    });
+    const paidResult = await runPaidAction({
+      userId,
+      action: mode === "refine" ? "feature_builder_refine" : "feature_builder_generate",
+      requestId: req.headers.get("x-request-id") || randomUUID(),
+      meta: { route: "/api/feature-builder", mode, refinementAction },
+      work: async () => {
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          temperature: mode === "refine" ? 0.25 : 0.35,
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "system",
+              content: systemPrompt,
+            },
+            {
+              role: "user",
+              content: userPrompt,
+            },
+          ],
+        });
 
-    const raw = completion.choices[0]?.message?.content ?? "{}";
-    const parsed = JSON.parse(raw) as unknown;
-    const brief = normalizeBrief(parsed);
-    const markdown = buildMarkdown(brief);
+        const raw = completion.choices[0]?.message?.content ?? "{}";
+        const parsed = JSON.parse(raw) as unknown;
+        const brief = normalizeBrief(parsed);
+        const markdown = buildMarkdown(brief);
+
+        return { brief, markdown };
+      },
+    });
 
     return NextResponse.json({
       ok: true,
       mode,
       refinementAction,
-      brief,
-      markdown,
+      brief: paidResult.brief,
+      markdown: paidResult.markdown,
+      credits: {
+        action: paidResult.creditSpend.action,
+        cost: paidResult.creditSpend.cost,
+        balanceAfter: paidResult.creditSpend.balanceAfter,
+        spendRef: paidResult.creditSpend.ref,
+      },
     });
   } catch (error) {
+    if (isInsufficientCreditsError(error)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          code: "INSUFFICIENT_CREDITS",
+          error: error.message,
+          details: {
+            action: error.action,
+            cost: error.required,
+            balance: error.balance,
+            required: error.required,
+          },
+        },
+        { status: 402 }
+      );
+    }
+
     console.error("Feature Builder failed", error);
 
     return NextResponse.json(

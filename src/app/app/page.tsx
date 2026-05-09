@@ -14,15 +14,18 @@ import BugEvidencePanel, {
 import BugEvidencePreview from "@/components/BugEvidencePreview";
 import CoverageScorePanel from "@/components/CoverageScorePanel";
 import FeatureBuilderTool from "@/components/FeatureBuilderTool";
+import QAtGuideCard from "@/components/QAtGuideCard";
 import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
 import RiskReviewPanel from "@/components/RiskReviewPanel";
 import SaveBugToCollectionButton from "@/components/SaveBugToCollectionButton";
 import SaveGeneratedOutputToSourceButton from "@/components/SaveGeneratedOutputToSourceButton";
 import StackedProjectJiraControls from "@/components/StackedProjectJiraControls";
 import HeaderProjectSourceControls from "@/components/HeaderProjectSourceControls";
+import { publishCreditBalanceUpdated } from "@/lib/credit-balance-events";
 import type { ActiveProjectContext } from "@/components/ProjectContextIndicator";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
 import TestCaseAutomationReadiness from "@/components/TestCaseAutomationReadiness";
+import TestCaseCostConfirmModal from "@/components/TestCaseCostConfirmModal";
 import TestCaseDisplayControls from "@/components/TestCaseDisplayControls";
 import TestCaseQualityBadge from "@/components/TestCaseQualityBadge";
 import TestRailSyncPanel from "@/components/TestRailSyncPanel";
@@ -45,6 +48,12 @@ import {
   buildOutputGenerationKey,
 } from "@/lib/regeneration-guard";
 import type { ParsedJiraTicket } from "@/lib/jira-ticket";
+import {
+  FTUE_KEYS,
+  completeFtueStep,
+  isFtueStepComplete,
+  type FtueStepKey,
+} from "@/lib/ftue-state";
 
 type ToolId = "tests" | "bug" | "risk" | "improve" | "feature";
 type ReportToolId = Exclude<ToolId, "feature">;
@@ -63,6 +72,14 @@ const RUN_BUTTON_TEST_IDS: Record<ToolId, string> = {
   risk: "run-risk-review-button",
   improve: "run-test-improver-button",
   feature: "build-feature-brief-button",
+};
+
+const TOOL_COST_LABELS: Record<ToolId, string> = {
+  tests: "5+ credits",
+  bug: "2 credits",
+  risk: "3 credits",
+  improve: "2 credits",
+  feature: "5 credits",
 };
 
 type SaveReportStatus = "idle" | "saving" | "saved" | "error";
@@ -245,6 +262,24 @@ function safeText(value: unknown): string {
       .join("\n");
   }
   return String(value);
+}
+
+function getPaidActionErrorMessage(data: unknown, status?: number) {
+  const payload = isPlainObject(data) ? data : {};
+
+  if (status === 402 || payload.code === "INSUFFICIENT_CREDITS") {
+    const details = isPlainObject(payload.details) ? payload.details : {};
+    const required = details.required ?? details.cost;
+    const balance = details.balance;
+
+    if (required !== undefined && balance !== undefined) {
+      return `Not enough credits. This action costs ${required} credits. You currently have ${balance}.`;
+    }
+
+    return "Not enough credits for this action.";
+  }
+
+  return safeText(payload.message || payload.error || "Something went wrong.");
 }
 
 function valueLines(value: unknown): string[] {
@@ -2611,6 +2646,11 @@ export default function Home() {
   const [lastTestGenerationFingerprint, setLastTestGenerationFingerprint] = useState("");
   const [testCaseRefreshNonce, setTestCaseRefreshNonce] = useState(0);
   const [testGenerationNotice, setTestGenerationNotice] = useState("");
+  const [testCaseCostConfirmation, setTestCaseCostConfirmation] = useState<{
+    open: boolean;
+    testCaseCount: number;
+    cost: number;
+  }>({ open: false, testCaseCount: 0, cost: 0 });
   const [activeProject, setActiveProject] = useState<SafeQAProject | null>(null);
   const [activeProjectContext, setActiveProjectContext] = useState<ActiveProjectContext | null>(null);
   const [isProjectContextLoading, setIsProjectContextLoading] = useState(false);
@@ -2705,6 +2745,61 @@ export default function Home() {
   );
   const currentTestImprovement = activeTool === "improve" ? getTestImprovementFromOutput(output) : null;
 
+  const TOOL_FTUE_KEYS: Record<ToolId, FtueStepKey> = {
+    tests: FTUE_KEYS.testsIntro,
+    bug: FTUE_KEYS.bugIntro,
+    risk: FTUE_KEYS.riskIntro,
+    improve: FTUE_KEYS.improveIntro,
+    feature: FTUE_KEYS.featureIntro,
+  };
+  const ftueToolKey = TOOL_FTUE_KEYS[activeTool];
+  const [showWelcomeFtue, setShowWelcomeFtue] = useState(false);
+  const [showBrainFtue, setShowBrainFtue] = useState(false);
+  const [showIntegrationsFtue, setShowIntegrationsFtue] = useState(false);
+  const [showToolFtue, setShowToolFtue] = useState(false);
+
+  const toolFtueCopy: Record<ToolId, { title: string; body: string }> = {
+    tests: {
+      title: "QAt can build test coverage from rough source work.",
+      body: "Paste a Jira ticket, user story, or acceptance criteria. QAtalyst will generate reviewable test cases and call out follow-up questions when the source is thin.",
+    },
+    bug: {
+      title: "QAt can turn messy bug notes into a clean defect.",
+      body: "Add repro notes, environment details, screenshots, logs, or tester notes. QAtalyst will structure the report so it is easier for developers to triage.",
+    },
+    risk: {
+      title: "QAt can spot release risks before QA starts.",
+      body: "Paste a ticket or requirements note. QAtalyst will look for unclear acceptance criteria, bottlenecks, fragile areas, and follow-up questions.",
+    },
+    improve: {
+      title: "QAt can strengthen weak test cases.",
+      body: "Paste an existing test case or checklist. QAtalyst will improve structure, coverage, clarity, and missing validation points.",
+    },
+    feature: {
+      title: "QAt can shape rough feature ideas into QA-ready briefs.",
+      body: "Start messy. Feature Builder helps turn early ideas into structured scope, risks, follow-up questions, and QA-ready direction.",
+    },
+  };
+
+  useEffect(() => {
+    setShowWelcomeFtue(!isFtueStepComplete(FTUE_KEYS.welcome));
+    setShowBrainFtue(!isFtueStepComplete(FTUE_KEYS.brainIntro));
+    setShowIntegrationsFtue(!isFtueStepComplete(FTUE_KEYS.integrationsIntro));
+  }, []);
+
+  useEffect(() => {
+    setShowToolFtue(!isFtueStepComplete(ftueToolKey));
+  }, [ftueToolKey]);
+
+  function dismissFtueStep(key: FtueStepKey) {
+    completeFtueStep(key);
+
+    if (key === FTUE_KEYS.welcome) setShowWelcomeFtue(false);
+    if (key === FTUE_KEYS.brainIntro) setShowBrainFtue(false);
+    if (key === FTUE_KEYS.integrationsIntro) setShowIntegrationsFtue(false);
+    if (key === ftueToolKey) setShowToolFtue(false);
+  }
+
   function handleToolChange(toolId: ToolId) {
     setActiveTool(toolId);
     setOutput("");
@@ -2748,6 +2843,13 @@ export default function Home() {
       setFollowUpLoopClosed(false);
       setBugContextAnswers("");
     }
+  }
+
+  function handleUseFeatureBriefForTool(args: { tool: "tests" | "risk"; markdown: string }) {
+    handleToolChange(args.tool);
+    setInput(args.markdown);
+    setOutput("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
   const rawImproveFollowUpQuestions = currentTestImprovement
     ? meaningfulLines(currentTestImprovement.followUpQuestions)
@@ -3178,7 +3280,7 @@ export default function Home() {
     );
   }
 
-  async function runTool(options?: { forceFreshGeneration?: boolean }) {
+  async function runTool(options?: { forceFreshGeneration?: boolean; requestedCount?: number; confirmedCost?: number }) {
     const forceFreshGeneration = options?.forceFreshGeneration ?? false;
 
     if (!input.trim()) {
@@ -3464,6 +3566,19 @@ export default function Home() {
       : input;
 
     try {
+      if (activeTool === "tests" && options?.confirmedCost == null) {
+        const estimate = await estimateTestCaseCost(requestInput);
+
+        if (estimate.requiresConfirmation) {
+          setTestCaseCostConfirmation({
+            open: true,
+            testCaseCount: estimate.testCaseCount,
+            cost: estimate.cost,
+          });
+          return;
+        }
+      }
+
       setOutput("");
       const response = await fetch(route, {
         method: "POST",
@@ -3472,6 +3587,8 @@ export default function Home() {
         },
         body: JSON.stringify({
           input: requestInput,
+          requestedCount: options?.requestedCount,
+          confirmedCost: options?.confirmedCost,
           screenshots: [],
           projectId: projectContextPayload.selectedProjectId || null,
           projectContextBlock: projectContextPayload.projectContextBlock,
@@ -3507,8 +3624,12 @@ export default function Home() {
       const data = await response.json();
 
       if (!response.ok) {
-        setOutput(data?.error ?? "Something went wrong.");
+        setOutput(getPaidActionErrorMessage(data, response.status));
         return;
+      }
+
+      if (typeof data?.credits?.balanceAfter === "number") {
+        publishCreditBalanceUpdated(data.credits.balanceAfter);
       }
 
       const result =
@@ -3528,58 +3649,190 @@ export default function Home() {
     }
   }
 
+  async function estimateTestCaseCost(prompt: string) {
+    const response = await fetch("/api/test-cases/estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
+    const estimate = await response.json().catch(() => null);
+
+    if (!response.ok || estimate?.ok === false) {
+      throw new Error(estimate?.error || "Could not estimate test case cost.");
+    }
+
+    return estimate as { requiresConfirmation?: boolean; testCaseCount: number; cost: number };
+  }
+
   return (
-    <main data-testid="qa-tool">
-      <section className="hero hero-split">
-        <div className="hero-copy">
+    <main className="qatalyst-app-shell qatalyst-app-shell-v2 qatalyst-app-shell-v3 qatalyst-app-shell-v4 qatalyst-app-shell-v5 qatalyst-app-shell-v6 qatalyst-app-shell-v7 qatalyst-app-shell-v8 qatalyst-app-shell-v9" data-testid="qa-tool">
+      <section className="hero hero-split app-workspace-hero" aria-label="QAtalyst workspace command center">
+        <div className="hero-copy app-hero-copy">
+          <p className="app-command-eyebrow">QA workflow cockpit · Project-aware outputs · Reviewable guardrails</p>
           <h1>Turn rough tickets into release-ready QA plans.</h1>
           <p>
-            Generate test cases, expose risks, improve bug reports, and turn vague tickets<br />
-            into actionable QA plans.
+            Bring in Jira tickets, scratch notes, project context, and reusable sources. QAtalyst helps you triage gaps,
+            shape follow-up questions, and generate QA artifacts your team can review before they ship.
           </p>
-          <HeaderProjectSourceControls
-            activeProject={activeProject}
-            activeContext={activeProjectContext}
-            sourceInput={input}
-            toolId={activeTool}
-            selectedSourceIds={selectedProjectSourceIds}
-            onActiveProjectChange={setActiveProject}
-            onSelectedSourceIdsChange={setSelectedProjectSourceIds}
-            onSelectedContextBlockChange={setSelectedProjectContextBlock}
-          />
-        </div>
 
-        <div className="hero-brand-account">
-          <div className="hero-brand-top">
-            <div className="hero-utility-actions" aria-label="QAtalyst purchase and support links">
-              <AppHeaderMenu isSignedIn={Boolean(session?.user)} />
+          <div className="app-hero-status-grid" aria-label="Current workspace status">
+            <div>
+              <span>Active workflow</span>
+              <strong>{tool.label}</strong>
+            </div>
+            <div>
+              <span>Visible cost</span>
+              <strong>{TOOL_COST_LABELS[activeTool]}</strong>
+            </div>
+            <div>
+              <span>Context state</span>
+              <strong>{projectContextPayload.projectContextUsed ? "Project context active" : "Ready for source"}</strong>
+            </div>
+          </div>
+
+          <section className="app-context-card" aria-label="Project context and Source Vault controls">
+            <div className="app-context-card-copy">
+              <p className="app-section-kicker">Project Context / Source Vault</p>
+              <h2>Reuse the right product knowledge before each QA run.</h2>
+              <span>
+                Select a project and choose reusable sources to keep generated QA output grounded in your actual product context.
+              </span>
             </div>
 
+            <HeaderProjectSourceControls
+              activeProject={activeProject}
+              activeContext={activeProjectContext}
+              sourceInput={input}
+              toolId={activeTool}
+              selectedSourceIds={selectedProjectSourceIds}
+              onActiveProjectChange={setActiveProject}
+              onSelectedSourceIdsChange={setSelectedProjectSourceIds}
+              onSelectedContextBlockChange={setSelectedProjectContextBlock}
+            />
+          </section>
+        </div>
+
+        <aside className="hero-brand-account app-account-rail" aria-label="Account and workspace actions">
+          <div className="app-brand-panel" aria-label="QAtalyst brand mark">
             <img src="/qatalyst-header.png" alt="QAtalyst" className="brand-logo hero-brand-logo" />
           </div>
 
           <AuthStatus />
-        </div>
+        </aside>
       </section>
 
-      <ToolToolbar tools={tools} activeTool={activeTool} onToolChange={handleToolChange} />
+      {showWelcomeFtue ? (
+        <QAtGuideCard
+          className="qat-ftue-card"
+          eyebrow="First-time setup"
+          title="Hi, I’m QAt. I’ll help you get release-ready faster."
+          body="QAtalyst works best when it understands your project context. I’ll point you toward the Project Brain, integrations, and the main QA tools without getting in your way."
+          primaryAction={{
+            label: "Start with Project Brain",
+            onClick: () => {
+              dismissFtueStep(FTUE_KEYS.welcome);
+              window.location.href = "/projects";
+            },
+          }}
+          secondaryAction={{
+            label: "Skip for now",
+            onClick: () => dismissFtueStep(FTUE_KEYS.welcome),
+          }}
+        />
+      ) : null}
+
+      {showBrainFtue ? (
+        <QAtGuideCard
+          className="qat-ftue-card"
+          eyebrow="Project Brain"
+          title="QAtalyst gets smarter when your project memory is set up."
+          body="Use Project Brain/Source Vault for rules, terminology, product notes, links, risks, and reusable context. This keeps generated QA output grounded in your actual product instead of generic AI guesses."
+          primaryAction={{
+            label: "Open Project setup",
+            onClick: () => {
+              dismissFtueStep(FTUE_KEYS.brainIntro);
+              window.location.href = "/projects";
+            },
+          }}
+          secondaryAction={{
+            label: "Got it",
+            onClick: () => dismissFtueStep(FTUE_KEYS.brainIntro),
+          }}
+        />
+      ) : null}
+
+      {showIntegrationsFtue ? (
+        <QAtGuideCard
+          className="qat-ftue-card"
+          eyebrow="Integrations"
+          title="Want Jira-ready and TestRail-ready handoff later?"
+          body="Connect integrations when you’re ready. Jira helps QAtalyst pull tickets and create structured QA work; TestRail keeps generated coverage closer to your test management workflow."
+          primaryAction={{
+            label: "Show me integrations",
+            onClick: () => {
+              dismissFtueStep(FTUE_KEYS.integrationsIntro);
+              window.location.href = "/projects";
+            },
+          }}
+          secondaryAction={{
+            label: "Skip integrations",
+            onClick: () => dismissFtueStep(FTUE_KEYS.integrationsIntro),
+          }}
+        />
+      ) : null}
+
+      <div className="app-toolbelt-shell">
+        <ToolToolbar tools={tools} activeTool={activeTool} onToolChange={handleToolChange} />
+      </div>
+
+      {showToolFtue ? (
+        <QAtGuideCard
+          className="qat-ftue-card qat-tool-ftue-card"
+          eyebrow={`${tool.label} tutorial`}
+          title={toolFtueCopy[activeTool].title}
+          body={toolFtueCopy[activeTool].body}
+          compact
+          primaryAction={{
+            label: "Got it",
+            onClick: () => dismissFtueStep(ftueToolKey),
+          }}
+          secondaryAction={{
+            label: "Hide this tip",
+            onClick: () => dismissFtueStep(ftueToolKey),
+          }}
+        />
+      ) : null}
 
       {activeTool === "feature" ? (
-        <FeatureBuilderTool activeProject={activeProject} />
+        <section className="feature-workspace-shell" aria-label="Feature Builder workspace">
+          <FeatureBuilderTool activeProject={activeProject} onUseForTool={handleUseFeatureBriefForTool} />
+        </section>
       ) : (
-      <section className="workspace">
-        <aside className="panel input-panel">
-          <StackedProjectJiraControls onJiraImport={handleJiraTicketImport} />
+      <section className="workspace app-workspace-grid">
+        <aside className="panel input-panel qa-cockpit-panel">
+          <div className="workspace-panel-header compact-input-header">
+            <div>
+              <h2>{tool.label}</h2>
+              <span>{tool.description}</span>
+            </div>
+          </div>
 
-          <textarea
-            data-testid="qa-source-input"
+          <div className="jira-source-shell">
+            <StackedProjectJiraControls onJiraImport={handleJiraTicketImport} />
+          </div>
+
+          <label className="source-textarea-shell">
+            <span>Manual source / notes</span>
+            <textarea
+              data-testid="qa-source-input"
             value={input}
             onChange={(event) => {
               setInput(event.target.value);
               setImportedJiraTicket(null);
             }}
-            placeholder={tool.placeholder}
-          />
+              placeholder={tool.placeholder}
+            />
+          </label>
 
           {activeTool === "tests" && currentTestOutput ? (
             <section className={`follow-up-answer-box test-follow-up-box ${testFollowUpQuestions.length > 0 ? "has-active-followups" : ""}`}>
@@ -3942,15 +4195,24 @@ export default function Home() {
             {isRunning
               ? "Running..."
               : activeTool === "bug" && currentBugReport
-                ? "Re-improve Bug Report"
+                ? `Re-improve Bug Report - ${TOOL_COST_LABELS.bug}`
                 : activeTool === "risk" && currentRiskReview
-                  ? "Re-assess Risk"
+                  ? `Re-assess Risk - ${TOOL_COST_LABELS.risk}`
                   : activeTool === "tests" && currentTestOutput
-                    ? "Refresh Scores/Export"
+                    ? "Refresh Scores/Export - free"
                     : activeTool === "improve" && currentTestImprovement
-                      ? "Re-improve Test Case"
-                      : tool.button}
+                      ? `Re-improve Test Case - ${TOOL_COST_LABELS.improve}`
+                      : `${tool.button} - ${TOOL_COST_LABELS[activeTool]}`}
           </button>
+          {activeTool === "tests" && currentTestOutput ? (
+            <p className="credit-action-cost-line">
+              Refreshing current scores/export is <strong>free</strong>. Generate fresh test cases to spend credits.
+            </p>
+          ) : (
+            <p className="credit-action-cost-line">
+              Costs <strong>{TOOL_COST_LABELS[activeTool]}</strong>. Credits are only charged after a successful run.
+            </p>
+          )}
 
           {testGenerationNotice ? (
             <p className="generation-consistency-note">{testGenerationNotice}</p>
@@ -3958,7 +4220,16 @@ export default function Home() {
 
         </aside>
 
-        <section className="panel output-panel" data-testid="qa-output">
+        <section className="panel output-panel qa-output-cockpit" data-testid="qa-output">
+          <div className="workspace-panel-header output-panel-header">
+            <div>
+              <p className="app-section-kicker">Generated artifact</p>
+              <h2>{output ? "Review QA output" : "Output will appear here"}</h2>
+              <span>{output ? "Scan, refine, save, sync, or export the generated QA artifact." : "Choose a workflow, bring context, then run QAtalyst."}</span>
+            </div>
+            <strong>{output ? "Ready" : "Waiting"}</strong>
+          </div>
+
           {output ? (
             <>
               {projectContextPayload.projectContextUsed ? (
@@ -3995,11 +4266,26 @@ export default function Home() {
               />
             </>
           ) : (
-            <div className="output-empty">Run a tool to see QA output here.</div>
+            <div className="output-empty"><strong>No generated artifact yet.</strong><span>Choose a workflow, paste or fetch one source, select Project Sources when useful, then run QAtalyst.</span></div>
           )}
         </section>
       </section>
       )}
+      <TestCaseCostConfirmModal
+        open={testCaseCostConfirmation.open}
+        testCaseCount={testCaseCostConfirmation.testCaseCount}
+        cost={testCaseCostConfirmation.cost}
+        loading={isRunning}
+        onCancel={() => setTestCaseCostConfirmation({ open: false, testCaseCount: 0, cost: 0 })}
+        onConfirm={() => {
+          const confirmation = testCaseCostConfirmation;
+          setTestCaseCostConfirmation({ open: false, testCaseCount: 0, cost: 0 });
+          void runTool({
+            requestedCount: confirmation.testCaseCount,
+            confirmedCost: confirmation.cost,
+          });
+        }}
+      />
     </main>
   );
 }

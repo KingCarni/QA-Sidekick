@@ -1,5 +1,9 @@
+import { randomUUID } from "crypto";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { authOptions } from "@/lib/auth";
+import { isInsufficientCreditsError, runPaidAction } from "@/lib/paid-action";
 
 type PromptCategory = "brainstorm" | "scope" | "qa" | "acceptance" | "jira";
 
@@ -55,6 +59,16 @@ function normalizePrompts(value: unknown, fallbackCategory: PromptCategory): Pro
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { ok: false, error: "Please sign in before asking AI for prompts." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json().catch(() => null);
 
     const draft = asString(body?.draft);
@@ -82,59 +96,92 @@ export async function POST(req: NextRequest) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0.35,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: [
-            "You are the QAtalyst Feature Builder Live Prompt Companion.",
-            "Your job is not to write the whole feature brief.",
-            "Generate short, high-value prompts/questions that help the user clarify the feature idea.",
-            "Return JSON only.",
-            "",
-            "JSON shape:",
-            "{",
-            '  "nextQuestion": string,',
-            '  "prompts": [',
-            '    { "title": string, "prompt": string, "tone": "blue" | "green" | "yellow" | "red" }',
-            "  ]",
-            "}",
-          ].join("\n"),
-        },
-        {
-          role: "user",
-          content: [
-            `Project: ${projectName || "Not specified"}`,
-            `Product type: ${productType || "Not specified"}`,
-            `Requested prompt category: ${category}`,
-            `Current readiness score: ${Number.isFinite(readinessScore) ? readinessScore : 0}`,
-            "",
-            "Current rough feature idea:",
-            draft,
-            "",
-            "Extra context:",
-            extraContext || "None provided.",
-            "",
-            "Generate 3-4 targeted prompts. Keep each prompt practical, specific, and easy to paste into the draft.",
-          ].join("\n"),
-        },
-      ],
-    });
+    const paidResult = await runPaidAction({
+      userId,
+      action: "feature_builder_prompt_suggestions",
+      requestId: req.headers.get("x-request-id") || randomUUID(),
+      meta: { route: "/api/feature-builder/prompts", category },
+      work: async () => {
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          temperature: 0.35,
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "system",
+              content: [
+                "You are the QAtalyst Feature Builder Live Prompt Companion.",
+                "Your job is not to write the whole feature brief.",
+                "Generate short, high-value prompts/questions that help the user clarify the feature idea.",
+                "Return JSON only.",
+                "",
+                "JSON shape:",
+                "{",
+                '  "nextQuestion": string,',
+                '  "prompts": [',
+                '    { "title": string, "prompt": string, "tone": "blue" | "green" | "yellow" | "red" }',
+                "  ]",
+                "}",
+              ].join("\n"),
+            },
+            {
+              role: "user",
+              content: [
+                `Project: ${projectName || "Not specified"}`,
+                `Product type: ${productType || "Not specified"}`,
+                `Requested prompt category: ${category}`,
+                `Current readiness score: ${Number.isFinite(readinessScore) ? readinessScore : 0}`,
+                "",
+                "Current rough feature idea:",
+                draft,
+                "",
+                "Extra context:",
+                extraContext || "None provided.",
+                "",
+                "Generate 3-4 targeted prompts. Keep each prompt practical, specific, and easy to paste into the draft.",
+              ].join("\n"),
+            },
+          ],
+        });
 
-    const raw = completion.choices[0]?.message?.content ?? "{}";
-    const parsed = JSON.parse(raw) as Record<string, unknown>;
-    const prompts = normalizePrompts(parsed.prompts, category);
-    const nextQuestion = asString(parsed.nextQuestion).slice(0, 240);
+        const raw = completion.choices[0]?.message?.content ?? "{}";
+        const parsed = JSON.parse(raw) as Record<string, unknown>;
+        const prompts = normalizePrompts(parsed.prompts, category);
+        const nextQuestion = asString(parsed.nextQuestion).slice(0, 240);
+
+        return { prompts, nextQuestion };
+      },
+    });
 
     return NextResponse.json({
       ok: true,
-      nextQuestion,
-      prompts,
+      nextQuestion: paidResult.nextQuestion,
+      prompts: paidResult.prompts,
+      credits: {
+        action: paidResult.creditSpend.action,
+        cost: paidResult.creditSpend.cost,
+        balanceAfter: paidResult.creditSpend.balanceAfter,
+        spendRef: paidResult.creditSpend.ref,
+      },
     });
   } catch (error) {
+    if (isInsufficientCreditsError(error)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          code: "INSUFFICIENT_CREDITS",
+          error: "Not enough credits. Ask AI for prompts costs 1 credit.",
+          details: {
+            action: error.action,
+            cost: error.required,
+            balance: error.balance,
+            required: error.required,
+          },
+        },
+        { status: 402 }
+      );
+    }
+
     console.error("Feature Builder prompt companion failed", error);
 
     return NextResponse.json(

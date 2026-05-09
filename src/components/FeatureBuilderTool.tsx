@@ -1,12 +1,16 @@
 "use client";
 
 import { useMemo, useState, type CSSProperties } from "react";
+import CreditCostBadge from "@/components/CreditCostBadge";
 import FeatureBuilderCompanionPanel from "@/components/FeatureBuilderCompanionPanel";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
+import { publishCreditBalanceUpdated } from "@/lib/credit-balance-events";
+import { normalizeJiraErrorMessage } from "@/lib/jira-error-normalizer";
 
 type FeatureBuilderToolProps = {
   activeProject: SafeQAProject | null;
   onSavedToSourceVault?: () => void;
+  onUseForTool?: (args: { tool: "tests" | "risk"; markdown: string }) => void;
 };
 
 type FeatureBrief = {
@@ -32,6 +36,9 @@ type FeatureBuilderResponse = {
   error?: string;
   brief?: FeatureBrief;
   markdown?: string;
+  credits?: {
+    balanceAfter?: number;
+  };
 };
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -85,7 +92,21 @@ type FeatureJiraCreateResponse = {
     browseUrl: string;
     summary: string;
   } | null;
+  warning?: string | null;
+  failedChildIssues?: Array<{
+    summary: string;
+    error: string;
+    status: number;
+  }>;
+  childWorkLimit?: number;
+  childWorkCreatedCount?: number;
+  childWorkTruncated?: boolean;
+  credits?: {
+    balanceAfter?: number;
+  };
 };
+
+const FEATURE_JIRA_CHILD_ITEM_LIMIT = 10;
 
 type CompanionPrompt = {
   title: string;
@@ -783,7 +804,7 @@ function buildFeatureJiraPreview(brief: FeatureBrief | null): FeatureJiraPreview
   return {
     parentSummary,
     parentDescription,
-    childTasks: childTasks.slice(0, 7),
+    childTasks: childTasks.slice(0, FEATURE_JIRA_CHILD_ITEM_LIMIT),
     qaTask,
   };
 }
@@ -822,7 +843,7 @@ function renderList(items: string[] | undefined, key: ListFieldKey, changedField
   );
 }
 
-export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault }: FeatureBuilderToolProps) {
+export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault, onUseForTool }: FeatureBuilderToolProps) {
   const [draft, setDraft] = useState("");
   const [extraContext, setExtraContext] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -850,6 +871,9 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
   const [jiraCreatedParent, setJiraCreatedParent] = useState<FeatureJiraCreateResponse["parentIssue"] | null>(null);
   const [jiraCreatedChildren, setJiraCreatedChildren] = useState<NonNullable<FeatureJiraCreateResponse["childIssues"]>>([]);
   const [jiraCreatedQaIssue, setJiraCreatedQaIssue] = useState<FeatureJiraCreateResponse["qaIssue"] | null>(null);
+  const [jiraCreateWarning, setJiraCreateWarning] = useState("");
+  const [jiraFailedChildIssues, setJiraFailedChildIssues] = useState<NonNullable<FeatureJiraCreateResponse["failedChildIssues"]>>([]);
+  const [pendingHandoffTool, setPendingHandoffTool] = useState<"tests" | "risk" | null>(null);
 
   const companionPrompts = useMemo(() => buildCompanionPrompts(draft), [draft]);
   const signals = useMemo(() => getDraftSignals(draft), [draft]);
@@ -1012,6 +1036,10 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
         throw new Error(payload?.error || "Could not generate feature brief.");
       }
 
+      if (typeof payload.credits?.balanceAfter === "number") {
+        publishCreditBalanceUpdated(payload.credits.balanceAfter);
+      }
+
       const normalized = normalizeBrief(payload.brief);
       const nextMarkdown = payload.markdown?.trim() || buildFeatureMarkdown(normalized);
 
@@ -1106,6 +1134,8 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
     setJiraCreatedParent(null);
     setJiraCreatedChildren([]);
     setJiraCreatedQaIssue(null);
+    setJiraCreateWarning("");
+    setJiraFailedChildIssues([]);
 
     try {
       const response = await fetch("/api/feature-builder/jira/create", {
@@ -1125,14 +1155,20 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
         throw new Error(payload?.error || "Could not create Jira feature work.");
       }
 
+      if (typeof payload.credits?.balanceAfter === "number") {
+        publishCreditBalanceUpdated(payload.credits.balanceAfter);
+      }
+
       setJiraCreatedParent(payload.parentIssue);
       setJiraCreatedChildren(payload.childIssues ?? []);
       setJiraCreatedQaIssue(payload.qaIssue ?? null);
+      setJiraCreateWarning(payload.warning || "");
+      setJiraFailedChildIssues(payload.failedChildIssues ?? []);
       setJiraCreateState("created");
       setJiraCreateMessage(`Created ${payload.parentIssue.key} in Jira.`);
     } catch (err) {
       setJiraCreateState("error");
-      setJiraCreateMessage(err instanceof Error ? err.message : "Could not create Jira feature work.");
+      setJiraCreateMessage(normalizeJiraErrorMessage(err, "Could not create Jira feature work."));
     }
   }
 
@@ -1146,6 +1182,21 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
     setJiraCreatedParent(null);
     setJiraCreatedChildren([]);
     setJiraCreatedQaIssue(null);
+    setJiraCreateWarning("");
+    setJiraFailedChildIssues([]);
+  }
+
+  function handleConfirmFeatureHandoff() {
+    if (!pendingHandoffTool) return;
+
+    const targetTool = pendingHandoffTool;
+    setPendingHandoffTool(null);
+
+    const currentMarkdown = markdown || (brief ? buildFeatureMarkdown(brief) : "");
+    onUseForTool?.({
+      tool: targetTool,
+      markdown: currentMarkdown,
+    });
   }
 
   return (
@@ -1186,13 +1237,18 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
           <span className={signals.hasRisk ? "ready" : ""}>Risk</span>
         </div>
 
+        <CreditCostBadge action="feature_builder_generate" />
+        <p className="credit-action-cost-line">
+          Generate Feature Brief: <strong>5 credits</strong>. Credits are only charged after a successful run.
+        </p>
+
         <button
           className="feature-builder-primary"
           disabled={!canGenerate}
           onClick={generateFeatureBrief}
           type="button"
         >
-          {isGenerating ? "Building Feature Brief..." : "Build Feature Brief"}
+          {isGenerating ? "Building Feature Brief..." : "Generate Feature Brief - 5 credits"}
         </button>
 
         {error ? <p className="feature-builder-error">{error}</p> : null}
@@ -1303,11 +1359,25 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "10px", marginTop: "14px" }}>
               <div style={contextShortcutStyle}>
                 <strong>Use for Test Cases</strong>
-                <p style={{ margin: "6px 0 0", color: "rgba(229, 231, 235, 0.68)" }}>Promote this brief to Source Vault, then select it as project context before generating test cases.</p>
+                <p style={{ margin: "6px 0 0", color: "rgba(229, 231, 235, 0.68)" }}>Send this feature brief directly to Test Cases. You can still promote it to Source Vault later if you want it reused as project context.</p>
+                <button
+                  className="feature-brief-handoff-button"
+                  type="button"
+                  onClick={() => setPendingHandoffTool("tests")}
+                >
+                  Use in Test Cases
+                </button>
               </div>
               <div style={contextShortcutStyle}>
                 <strong>Use for Risk Review</strong>
-                <p style={{ margin: "6px 0 0", color: "rgba(229, 231, 235, 0.68)" }}>Approved briefs make strong planning context for risk and bottleneck review.</p>
+                <p style={{ margin: "6px 0 0", color: "rgba(229, 231, 235, 0.68)" }}>Send this feature brief directly to Risk Review to check gaps, bottlenecks, permissions, edge cases, and release risks.</p>
+                <button
+                  className="feature-brief-handoff-button"
+                  type="button"
+                  onClick={() => setPendingHandoffTool("risk")}
+                >
+                  Use in Risk Review
+                </button>
               </div>
             </div>
           </section>
@@ -1323,6 +1393,9 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
                 </h3>
                 <p style={{ color: "rgba(229, 231, 235, 0.68)", margin: "7px 0 0" }}>
                   Refinements use your current edited brief, not just the original AI output.
+                </p>
+                <p className="credit-action-cost-line">
+                  Each AI refinement costs <strong>1 credit</strong>.
                 </p>
               </div>
             </div>
@@ -1341,7 +1414,7 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
                   type="button"
                 >
                   <strong style={refinementLabelStyle}>
-                    {refiningActionId === action.id ? "Working..." : action.label}
+                    {refiningActionId === action.id ? "Working..." : `${action.label} - 1 credit`}
                   </strong>
                   <span style={refinementDescriptionStyle}>{action.description}</span>
                 </button>
@@ -1361,6 +1434,9 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
                 </h3>
                 <p style={{ color: "rgba(229, 231, 235, 0.7)", margin: "7px 0 0" }}>
                   Create the main feature issue, optional child work items, and an optional linked QA planning task.
+                </p>
+                <p className="credit-action-cost-line">
+                  Creating Jira work costs <strong>1 credit</strong>.
                 </p>
               </div>
             </div>
@@ -1427,7 +1503,7 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
                 <p className="report-kicker">Child Work Preview</p>
                 <p style={{ color: "rgba(229, 231, 235, 0.72)", margin: "6px 0" }}>
                   {jiraOptions.createChildTasks
-                    ? `${jiraPreview.childTasks.length} child work item(s) from scope/test ideas.`
+                    ? `${jiraPreview.childTasks.length} child work item(s) from scope/test ideas. Creates up to ${FEATURE_JIRA_CHILD_ITEM_LIMIT} child work items for 1 credit.`
                     : "Child work creation disabled."}
                 </p>
                 {jiraOptions.createChildTasks && jiraPreview.childTasks.length ? (
@@ -1460,7 +1536,7 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
                 }}
                 type="button"
               >
-                {jiraCreateState === "creating" ? "Creating Jira Work..." : "Create Jira Feature Work"}
+                {jiraCreateState === "creating" ? "Creating Jira Work..." : "Create Jira Work - 1 credit"}
               </button>
               <button
                 disabled={!jiraPreview.parentDescription}
@@ -1476,6 +1552,22 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
               <p className={jiraCreateState === "error" ? "feature-builder-error" : "feature-builder-success"}>
                 {jiraCreateMessage}
               </p>
+            ) : null}
+
+            {jiraCreateWarning ? (
+              <div className="feature-builder-warning">
+                <strong>Created parent issue, but some child work items failed.</strong>
+                <p>Reason: {jiraCreateWarning}</p>
+                {jiraFailedChildIssues.length ? (
+                  <ul>
+                    {jiraFailedChildIssues.slice(0, 4).map((issue) => (
+                      <li key={`${issue.summary}-${issue.status}`}>
+                        {issue.summary}: {issue.error}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
             ) : null}
 
             {jiraCreatedParent ? (
@@ -1583,6 +1675,41 @@ export default function FeatureBuilderTool({ activeProject, onSavedToSourceVault
           <p className={saveState === "error" ? "feature-builder-error" : "feature-builder-success"}>
             {saveMessage}
           </p>
+        ) : null}
+
+        {pendingHandoffTool ? (
+          <div className="feature-leave-modal-backdrop" role="dialog" aria-modal="true">
+            <div className="feature-leave-modal">
+              <p className="report-kicker">Before you leave Feature Builder</p>
+              <h3>Continue to {pendingHandoffTool === "tests" ? "Test Cases" : "Risk Review"}?</h3>
+              <p>
+                Moving away may cause you to lose unsaved progress on this feature brief.
+              </p>
+              <p className="feature-leave-modal-subtitle">Recommended first:</p>
+              <ul>
+                <li>Save Draft Version</li>
+                <li>Copy Markdown</li>
+                <li>Create Jira Work</li>
+                <li>Promote to Source Vault if you want reusable project context</li>
+              </ul>
+              <div className="feature-leave-modal-actions">
+                <button
+                  className="feature-leave-modal-secondary"
+                  type="button"
+                  onClick={() => setPendingHandoffTool(null)}
+                >
+                  Stay here
+                </button>
+                <button
+                  className="feature-leave-modal-primary"
+                  type="button"
+                  onClick={handleConfirmFeatureHandoff}
+                >
+                  Continue to {pendingHandoffTool === "tests" ? "Test Cases" : "Risk Review"}
+                </button>
+              </div>
+            </div>
+          </div>
         ) : null}
       </div>
     </section>

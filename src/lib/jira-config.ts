@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { decryptTestRailSecret, encryptTestRailSecret } from "@/lib/testrail-secret";
+import { decryptJiraSecret, encryptJiraSecret } from "@/lib/jira-secret";
 
 export type JiraConfigPayload = {
   siteUrl: string;
@@ -29,6 +29,11 @@ export type JiraConfigStatus = {
   configured: boolean;
   missingFields: string[];
   config: SafeJiraConfig | null;
+  tokenHealth: {
+    hasSavedToken: boolean;
+    tokenHealth: "missing" | "saved";
+    message: string;
+  };
 };
 
 function toJsonObject(value?: Record<string, unknown>): Prisma.InputJsonObject {
@@ -71,6 +76,11 @@ function safeFieldMapping(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
+function isMaskedTokenPlaceholder(value: string) {
+  const trimmed = value.trim();
+  return !trimmed || /^[\u2022*.\-_\s]+$/.test(trimmed);
+}
+
 export function normalizeJiraConfigPayload(value: {
   siteUrl?: unknown;
   jiraEmail?: unknown;
@@ -86,7 +96,9 @@ export function normalizeJiraConfigPayload(value: {
   return {
     siteUrl: normalizeUrl(value.siteUrl),
     jiraEmail: String(value.jiraEmail ?? value.email ?? value.username ?? "").trim(),
-    jiraApiToken: String(value.jiraApiToken ?? value.apiToken ?? "").trim() || undefined,
+    jiraApiToken: isMaskedTokenPlaceholder(String(value.jiraApiToken ?? value.apiToken ?? ""))
+      ? undefined
+      : String(value.jiraApiToken ?? value.apiToken ?? "").trim(),
     projectKey: normalizeProjectKey(value.projectKey),
     defaultIssueType: normalizeIssueType(value.defaultIssueType, "Task"),
     defaultBugIssueType: normalizeIssueType(value.defaultBugIssueType, "Bug"),
@@ -162,6 +174,30 @@ export async function getUserJiraConfig(userId: string): Promise<SafeJiraConfig 
   return config ? toSafeConfig(config) : null;
 }
 
+export function getJiraTokenHealth(config: SafeJiraConfig | null) {
+  if (!config) {
+    return {
+      hasSavedToken: false,
+      tokenHealth: "missing" as const,
+      message: "No Jira config saved.",
+    };
+  }
+
+  if (!config.hasJiraApiToken) {
+    return {
+      hasSavedToken: false,
+      tokenHealth: "missing" as const,
+      message: "No Jira API key is saved.",
+    };
+  }
+
+  return {
+    hasSavedToken: true,
+    tokenHealth: "saved" as const,
+    message: "A Jira API key is saved.",
+  };
+}
+
 export async function getUserJiraConfigStatus(userId: string): Promise<JiraConfigStatus> {
   const config = await getUserJiraConfig(userId);
 
@@ -178,6 +214,7 @@ export async function getUserJiraConfigStatus(userId: string): Promise<JiraConfi
     configured: missingFields.length === 0,
     missingFields,
     config,
+    tokenHealth: getJiraTokenHealth(config),
   };
 }
 
@@ -201,9 +238,7 @@ export async function saveUserJiraConfig(userId: string, payload: JiraConfigPayl
     };
   }
 
-  const encryptedApiToken = payload.jiraApiToken
-    ? encryptTestRailSecret(payload.jiraApiToken)
-    : existing?.encryptedApiToken;
+  const encryptedApiToken = payload.jiraApiToken ? encryptJiraSecret(payload.jiraApiToken) : existing?.encryptedApiToken;
 
   const config = await prisma.jiraConfig.upsert({
     where: { userId },
@@ -243,7 +278,34 @@ export async function getUserJiraConfigWithSecret(userId: string) {
 
   return {
     ...toSafeConfig(config),
-    jiraApiToken: config.encryptedApiToken ? decryptTestRailSecret(config.encryptedApiToken) : "",
+    jiraApiToken: config.encryptedApiToken ? decryptJiraSecret(config.encryptedApiToken) : "",
+  };
+}
+
+export async function clearUserJiraApiToken(userId: string) {
+  if (!userId) {
+    return { ok: false as const, error: "User is required." };
+  }
+
+  const existing = await prisma.jiraConfig.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+
+  if (!existing) {
+    return { ok: false as const, error: "Jira config was not found." };
+  }
+
+  const config = await prisma.jiraConfig.update({
+    where: { userId },
+    data: {
+      encryptedApiToken: null,
+    },
+  });
+
+  return {
+    ok: true as const,
+    config: toSafeConfig(config),
   };
 }
 

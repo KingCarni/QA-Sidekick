@@ -1,15 +1,26 @@
+import { randomUUID } from "crypto";
+import { getServerSession } from "next-auth";
 import { buildQaPrompt } from "@/lib/qaPrompts";
 import { getOpenAIClient } from "@/lib/openai";
 import { jsonError, qaRequestSchema } from "@/lib/api";
+import { authOptions } from "@/lib/auth";
 import { buildQAS73PromptBlock } from "@/lib/qas73-generator-quality-rules";
 import {
   appendProjectContextToInput,
   buildProjectContextPromptRules,
 } from "@/lib/project-context-injection";
 import { buildAutomationCredentialPromptRules } from "@/lib/automation-credentials";
+import { isInsufficientCreditsError, runPaidAction } from "@/lib/paid-action";
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      return jsonError("Please sign in to use this tool.", 401);
+    }
+
     const body = await req.json();
     const parsed = qaRequestSchema.safeParse(body);
     if (!parsed.success) return jsonError(parsed.error.issues[0]?.message ?? "Invalid request.");
@@ -32,7 +43,13 @@ export async function POST(req: Request) {
       parsed.data.projectContextBlock || parsed.data.projectContext || ""
     );
     const userPrompt = buildQaPrompt("improve-test", sourceWithProjectContext);
-    const response = await client.chat.completions.create({
+    const result = await runPaidAction({
+      userId,
+      action: "test_improver_generate",
+      requestId: req.headers.get("x-request-id") || randomUUID(),
+      meta: { route: "/api/improve-test" },
+      work: async () => {
+        const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.2,
       response_format: { type: "json_object" },
@@ -46,23 +63,53 @@ export async function POST(req: Request) {
           content: userPrompt,
         },
       ],
-    });
+        });
 
-    const content = response.choices[0]?.message?.content;
-    if (!content) return jsonError("No AI response was returned.", 502);
+        const content = response.choices[0]?.message?.content;
+        if (!content) throw new Error("No AI response was returned.");
+
+        return {
+          result: JSON.parse(content),
+          context: {
+            projectContextUsed: Boolean(parsed.data.projectContextUsed),
+            selectedProjectId: parsed.data.selectedProjectId,
+            selectedProjectName: parsed.data.selectedProjectName,
+            selectedProjectSourceIds: parsed.data.selectedProjectSourceIds ?? [],
+            projectContextSummary: parsed.data.projectContextSummary,
+          },
+        };
+      },
+    });
 
     return Response.json({
       ok: true,
-      result: JSON.parse(content),
-      context: {
-        projectContextUsed: Boolean(parsed.data.projectContextUsed),
-        selectedProjectId: parsed.data.selectedProjectId,
-        selectedProjectName: parsed.data.selectedProjectName,
-        selectedProjectSourceIds: parsed.data.selectedProjectSourceIds ?? [],
-        projectContextSummary: parsed.data.projectContextSummary,
+      result: result.result,
+      context: result.context,
+      credits: {
+        action: result.creditSpend.action,
+        cost: result.creditSpend.cost,
+        balanceAfter: result.creditSpend.balanceAfter,
+        spendRef: result.creditSpend.ref,
       },
     });
   } catch (error) {
+    if (isInsufficientCreditsError(error)) {
+      return Response.json(
+        {
+          ok: false,
+          code: "INSUFFICIENT_CREDITS",
+          error: error.message,
+          details: {
+            action: error.action,
+            cost: error.required,
+            balance: error.balance,
+            required: error.required,
+          },
+        },
+        { status: 402 }
+      );
+    }
+
     console.error("/improve-test failed", error);
     return jsonError("QA Sidekick could not complete this request.", 500);
   }

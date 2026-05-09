@@ -1,35 +1,40 @@
-import { NextResponse } from "next/server";
+// src/app/api/credits/route.ts
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getCreditBalance } from "@/lib/credits";
+import { apiError, apiOk } from "@/lib/api-response";
+import { getCreditSnapshot } from "@/lib/credits-service";
+import { CREDIT_ACTIONS } from "@/lib/credits-config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function noStore(payload: unknown, init?: ResponseInit) {
-  return NextResponse.json(payload, {
-    ...init,
-    headers: {
-      "Cache-Control": "no-store, max-age=0",
-      ...(init?.headers ?? {}),
-    },
-  });
-}
+export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
 
-export async function GET() {
+  if (!userId) {
+    return apiOk(req, {
+      credits: 0,
+      balance: 0,
+      actions: CREDIT_ACTIONS,
+      authenticated: false,
+    });
+  }
+
   try {
-    const session = await getServerSession(authOptions);
-    const userId = session?.user?.id;
+    const snapshot = await getCreditSnapshot(userId);
 
-    if (!userId) {
-      return noStore({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    const balance = await getCreditBalance(userId);
-
-    return noStore({ ok: true, balance, credits: balance });
+    return apiOk(req, {
+      credits: snapshot.balance,
+      balance: snapshot.balance,
+      actions: snapshot.actions,
+      authenticated: true,
+    });
   } catch (error) {
-    console.error("/api/credits failed", error);
-    return noStore({ ok: false, error: "Failed to load credits." }, { status: 500 });
+    return apiError(req, {
+      status: 500,
+      code: "INTERNAL_ERROR",
+      message: error instanceof Error ? error.message : "Unable to fetch credits.",
+    });
   }
 }

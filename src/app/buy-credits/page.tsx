@@ -1,26 +1,30 @@
-import Link from "next/link";
-import BuyCreditsButton from "@/components/Billing/BuyCreditsButton";
+import { getServerSession } from "next-auth";
+import BuyCreditsClient from "@/components/BuyCreditsClient";
+import { authOptions } from "@/lib/auth";
+import { getCreditBalance } from "@/lib/credits";
 
-export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export default function BuyCreditsPage() {
-  return (
-    <main className="account-page">
-      <section className="account-card">
-        <div className="account-header-row">
-          <div>
-            <p className="report-kicker">QAtalyst</p>
-            <h1>Buy Credits</h1>
-            <p>Top up your account for QA generation and refinement workflows.</p>
-          </div>
-          <Link className="account-back-link" href="/">
-            Back to app
-          </Link>
-        </div>
-      </section>
+type BuyCreditsPageProps = {
+  searchParams?: Promise<{
+    success?: string;
+    cancelled?: string;
+    pack?: string;
+  }>;
+};
 
-      <BuyCreditsButton />
-    </main>
+export default async function BuyCreditsPage({ searchParams }: BuyCreditsPageProps) {
+  const params = await searchParams;
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id ?? "";
+  const balance = userId ? await getCreditBalance(userId) : null;
+
+  return (
+    <BuyCreditsClient
+      initialBalance={balance}
+      checkoutSuccess={params?.success === "1"}
+      checkoutCancelled={params?.cancelled === "1"}
+      checkoutPackId={params?.pack ?? ""}
+    />
   );
 }
