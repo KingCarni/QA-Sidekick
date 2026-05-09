@@ -3603,57 +3603,96 @@ export default function Home() {
   }
 
   return (
-    <main data-testid="qa-tool">
-      <section className="hero hero-split">
-        <div className="hero-copy">
+    <main className="qatalyst-app-shell qatalyst-app-shell-v2 qatalyst-app-shell-v3 qatalyst-app-shell-v4 qatalyst-app-shell-v5 qatalyst-app-shell-v6 qatalyst-app-shell-v7 qatalyst-app-shell-v8 qatalyst-app-shell-v9" data-testid="qa-tool">
+      <section className="hero hero-split app-workspace-hero" aria-label="QAtalyst workspace command center">
+        <div className="hero-copy app-hero-copy">
+          <p className="app-command-eyebrow">QA workflow cockpit · Project-aware outputs · Reviewable guardrails</p>
           <h1>Turn rough tickets into release-ready QA plans.</h1>
           <p>
-            Generate test cases, expose risks, improve bug reports, and turn vague tickets<br />
-            into actionable QA plans.
+            Bring in Jira tickets, scratch notes, project context, and reusable sources. QAtalyst helps you triage gaps,
+            shape follow-up questions, and generate QA artifacts your team can review before they ship.
           </p>
-          <HeaderProjectSourceControls
-            activeProject={activeProject}
-            activeContext={activeProjectContext}
-            sourceInput={input}
-            toolId={activeTool}
-            selectedSourceIds={selectedProjectSourceIds}
-            onActiveProjectChange={setActiveProject}
-            onSelectedSourceIdsChange={setSelectedProjectSourceIds}
-            onSelectedContextBlockChange={setSelectedProjectContextBlock}
-          />
-        </div>
 
-        <div className="hero-brand-account">
-          <div className="hero-brand-top">
-            <div className="hero-utility-actions" aria-label="QAtalyst purchase and support links">
-              <AppHeaderMenu isSignedIn={Boolean(session?.user)} />
+          <div className="app-hero-status-grid" aria-label="Current workspace status">
+            <div>
+              <span>Active workflow</span>
+              <strong>{tool.label}</strong>
+            </div>
+            <div>
+              <span>Visible cost</span>
+              <strong>{TOOL_COST_LABELS[activeTool]}</strong>
+            </div>
+            <div>
+              <span>Context state</span>
+              <strong>{projectContextPayload.projectContextUsed ? "Project context active" : "Ready for source"}</strong>
+            </div>
+          </div>
+
+          <section className="app-context-card" aria-label="Project context and Source Vault controls">
+            <div className="app-context-card-copy">
+              <p className="app-section-kicker">Project Context / Source Vault</p>
+              <h2>Reuse the right product knowledge before each QA run.</h2>
+              <span>
+                Select a project and choose reusable sources to keep generated QA output grounded in your actual product context.
+              </span>
             </div>
 
+            <HeaderProjectSourceControls
+              activeProject={activeProject}
+              activeContext={activeProjectContext}
+              sourceInput={input}
+              toolId={activeTool}
+              selectedSourceIds={selectedProjectSourceIds}
+              onActiveProjectChange={setActiveProject}
+              onSelectedSourceIdsChange={setSelectedProjectSourceIds}
+              onSelectedContextBlockChange={setSelectedProjectContextBlock}
+            />
+          </section>
+        </div>
+
+        <aside className="hero-brand-account app-account-rail" aria-label="Account and workspace actions">
+          <div className="app-brand-panel" aria-label="QAtalyst brand mark">
             <img src="/qatalyst-header.png" alt="QAtalyst" className="brand-logo hero-brand-logo" />
           </div>
 
           <AuthStatus />
-        </div>
+        </aside>
       </section>
 
-      <ToolToolbar tools={tools} activeTool={activeTool} onToolChange={handleToolChange} />
+      <div className="app-toolbelt-shell">
+        <ToolToolbar tools={tools} activeTool={activeTool} onToolChange={handleToolChange} />
+      </div>
 
       {activeTool === "feature" ? (
-        <FeatureBuilderTool activeProject={activeProject} onUseForTool={handleUseFeatureBriefForTool} />
+        <section className="feature-workspace-shell" aria-label="Feature Builder workspace">
+          <FeatureBuilderTool activeProject={activeProject} onUseForTool={handleUseFeatureBriefForTool} />
+        </section>
       ) : (
-      <section className="workspace">
-        <aside className="panel input-panel">
-          <StackedProjectJiraControls onJiraImport={handleJiraTicketImport} />
+      <section className="workspace app-workspace-grid">
+        <aside className="panel input-panel qa-cockpit-panel">
+          <div className="workspace-panel-header compact-input-header">
+            <div>
+              <h2>{tool.label}</h2>
+              <span>{tool.description}</span>
+            </div>
+          </div>
 
-          <textarea
-            data-testid="qa-source-input"
+          <div className="jira-source-shell">
+            <StackedProjectJiraControls onJiraImport={handleJiraTicketImport} />
+          </div>
+
+          <label className="source-textarea-shell">
+            <span>Manual source / notes</span>
+            <textarea
+              data-testid="qa-source-input"
             value={input}
             onChange={(event) => {
               setInput(event.target.value);
               setImportedJiraTicket(null);
             }}
-            placeholder={tool.placeholder}
-          />
+              placeholder={tool.placeholder}
+            />
+          </label>
 
           {activeTool === "tests" && currentTestOutput ? (
             <section className={`follow-up-answer-box test-follow-up-box ${testFollowUpQuestions.length > 0 ? "has-active-followups" : ""}`}>
@@ -4041,7 +4080,16 @@ export default function Home() {
 
         </aside>
 
-        <section className="panel output-panel" data-testid="qa-output">
+        <section className="panel output-panel qa-output-cockpit" data-testid="qa-output">
+          <div className="workspace-panel-header output-panel-header">
+            <div>
+              <p className="app-section-kicker">Generated artifact</p>
+              <h2>{output ? "Review QA output" : "Output will appear here"}</h2>
+              <span>{output ? "Scan, refine, save, sync, or export the generated QA artifact." : "Choose a workflow, bring context, then run QAtalyst."}</span>
+            </div>
+            <strong>{output ? "Ready" : "Waiting"}</strong>
+          </div>
+
           {output ? (
             <>
               {projectContextPayload.projectContextUsed ? (
@@ -4078,7 +4126,7 @@ export default function Home() {
               />
             </>
           ) : (
-            <div className="output-empty">Run a tool to see QA output here.</div>
+            <div className="output-empty"><strong>No generated artifact yet.</strong><span>Choose a workflow, paste or fetch one source, select Project Sources when useful, then run QAtalyst.</span></div>
           )}
         </section>
       </section>
