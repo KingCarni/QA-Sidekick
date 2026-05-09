@@ -36,7 +36,9 @@ export function normalizeJiraErrorMessage(error: unknown, fallback = "Jira reque
     lower.includes("project not found") ||
     lower.includes("no project with key") ||
     lower.includes("project with key") ||
-    lower.includes("browse projects");
+    lower.includes("browse projects") ||
+    lower.includes("project does not exist") ||
+    lower.includes("permission to browse");
 
   if (projectMissingOrHidden) {
     return (
@@ -63,8 +65,12 @@ export function normalizeJiraErrorMessage(error: unknown, fallback = "Jira reque
   }
 
   const createPermissionDenied =
+    message.includes("æ‚¨æ— æƒåœ¨æ­¤é¡¹ç›®ä¸­åˆ›å»ºäº‹åŠ¡") ||
     message.includes("æ— æƒåœ¨æ­¤é¡¹ç›®ä¸­åˆ›å»ºäº‹åŠ¡") ||
     message.includes("æ²¡æœ‰æƒé™åœ¨æ­¤é¡¹ç›®ä¸­åˆ›å»ºäº‹åŠ¡") ||
+    message.includes("ä¸èƒ½åœ¨æ­¤é¡¹ç›®ä¸­åˆ›å»ºäº‹åŠ¡") ||
+    message.includes("Ã¦â€”Â Ã¦ÂÆ’Ã¥Å“Â¨Ã¦Â­Â¤Ã©Â¡Â¹Ã§â€ºÂ®Ã¤Â¸Â­Ã¥Ë†â€ºÃ¥Â»ÂºÃ¤Âºâ€¹Ã¥Å Â¡") ||
+    message.includes("Ã¦Â²Â¡Ã¦Å“â€°Ã¦ÂÆ’Ã©â„¢ÂÃ¥Å“Â¨Ã¦Â­Â¤Ã©Â¡Â¹Ã§â€ºÂ®Ã¤Â¸Â­Ã¥Ë†â€ºÃ¥Â»ÂºÃ¤Âºâ€¹Ã¥Å Â¡") ||
     lower.includes("do not have permission to create issues") ||
     lower.includes("you don't have permission to create issues") ||
     lower.includes("cannot create issue") ||

@@ -4013,14 +4013,20 @@ export default function Home() {
                 : activeTool === "risk" && currentRiskReview
                   ? `Re-assess Risk - ${TOOL_COST_LABELS.risk}`
                   : activeTool === "tests" && currentTestOutput
-                    ? `Refresh Scores/Export - ${TOOL_COST_LABELS.tests}`
+                    ? "Refresh Scores/Export - free"
                     : activeTool === "improve" && currentTestImprovement
                       ? `Re-improve Test Case - ${TOOL_COST_LABELS.improve}`
                       : `${tool.button} - ${TOOL_COST_LABELS[activeTool]}`}
           </button>
-          <p className="credit-action-cost-line">
-            Costs <strong>{TOOL_COST_LABELS[activeTool]}</strong>. Credits are only charged after a successful run.
-          </p>
+          {activeTool === "tests" && currentTestOutput ? (
+            <p className="credit-action-cost-line">
+              Refreshing current scores/export is <strong>free</strong>. Generate fresh test cases to spend credits.
+            </p>
+          ) : (
+            <p className="credit-action-cost-line">
+              Costs <strong>{TOOL_COST_LABELS[activeTool]}</strong>. Credits are only charged after a successful run.
+            </p>
+          )}
 
           {testGenerationNotice ? (
             <p className="generation-consistency-note">{testGenerationNotice}</p>

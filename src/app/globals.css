@@ -21183,3 +21183,163 @@ a.qatalyst-pill-button {
     flex-direction: column;
   }
 }
+
+/* QAS-126 Pass 1k - scoped Jira settings polish */
+.jira-settings-card-v2 .jira-diagnostics-card {
+  margin-top: 1rem;
+  border: 1px solid rgba(96, 165, 250, 0.32);
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 35%),
+    rgba(8, 12, 20, 0.78);
+  border-radius: 1.25rem;
+  padding: 1rem;
+}
+
+.jira-settings-card-v2 .jira-diagnostics-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.jira-settings-card-v2 .jira-diagnostics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.jira-settings-card-v2 .jira-diagnostics-grid > div {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.46);
+  border-radius: 0.9rem;
+  padding: 0.75rem;
+  min-width: 0;
+}
+
+.jira-settings-card-v2 .jira-diagnostics-grid span {
+  display: block;
+  color: rgba(203, 213, 225, 0.66);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.jira-settings-card-v2 .jira-diagnostics-grid strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.jira-settings-card-v2 .jira-diagnostics-help {
+  margin: 0.9rem 0 0;
+  color: rgba(226, 232, 240, 0.72);
+  line-height: 1.5;
+  font-size: 0.88rem;
+}
+
+.jira-settings-card-v2 .jira-status-pill,
+.jira-status-pill.ready,
+.jira-status-pill.warning,
+.jira-status-pill.error {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.72rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.jira-status-pill.ready {
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  background: rgba(20, 83, 45, 0.45);
+  color: #bbf7d0;
+}
+
+.jira-status-pill.warning {
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  background: rgba(113, 63, 18, 0.38);
+  color: #fde68a;
+}
+
+.jira-status-pill.error {
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  background: rgba(127, 29, 29, 0.36);
+  color: #fecaca;
+}
+
+.jira-settings-card-v2 .qatalyst-pill-button,
+.jira-settings-card-v2 button.qatalyst-pill-button,
+.jira-settings-card-v2 a.qatalyst-pill-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.96), rgba(29, 78, 216, 0.9));
+  color: #fff;
+  padding: 0.72rem 1rem;
+  font-weight: 900;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 12px 34px rgba(37, 99, 235, 0.2);
+}
+
+.jira-settings-card-v2 .qatalyst-pill-button.secondary {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.82);
+  color: #e2e8f0;
+  box-shadow: none;
+}
+
+.jira-settings-card-v2 .qatalyst-pill-button.green {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.95), rgba(21, 128, 61, 0.88));
+  box-shadow: 0 12px 34px rgba(34, 197, 94, 0.18);
+}
+
+.jira-settings-card-v2 .qatalyst-pill-button.red {
+  border-color: rgba(248, 113, 113, 0.38);
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.96), rgba(153, 27, 27, 0.9));
+  box-shadow: 0 12px 34px rgba(220, 38, 38, 0.2);
+}
+
+.jira-settings-card-v2 .qatalyst-pill-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.jira-settings-card-v2 .jira-settings-actions-polished {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 760px) {
+  .jira-settings-card-v2 .jira-diagnostics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jira-settings-card-v2 .jira-diagnostics-header {
+    flex-direction: column;
+  }
+
+  .jira-settings-card-v2 .jira-settings-actions-polished {
+    justify-content: stretch;
+  }
+
+  .jira-settings-card-v2 .jira-settings-actions-polished .qatalyst-pill-button {
+    width: 100%;
+  }
+}
