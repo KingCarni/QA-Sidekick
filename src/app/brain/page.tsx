@@ -29,6 +29,12 @@ type BrainTab = {
   body: string;
 };
 
+type ProjectsApiResponse = {
+  ok?: boolean;
+  error?: string;
+  projects?: SafeQAProject[];
+};
+
 type SafeQAReport = {
   id: string;
   projectId: string | null;
@@ -45,6 +51,8 @@ type ReportsApiResponse = {
   error?: string;
   reports?: SafeQAReport[];
 };
+
+const ACTIVE_PROJECT_STORAGE_KEY = "qatalyst.activeProjectId";
 
 const BRAIN_TABS: BrainTab[] = [
   {
@@ -386,13 +394,84 @@ function SavedReportsPanel({ activeProject }: { activeProject: SafeQAProject | n
 }
 
 export default function BrainPage() {
+  const { status } = useSession();
   const [activeTab, setActiveTab] = useState<BrainTabId>("overview");
   const [activeProject, setActiveProject] = useState<SafeQAProject | null>(null);
+  const [isLoadingActiveProject, setIsLoadingActiveProject] = useState(false);
+  const [activeProjectError, setActiveProjectError] = useState("");
 
   const active = useMemo(
     () => BRAIN_TABS.find((tab) => tab.id === activeTab) ?? BRAIN_TABS[0],
     [activeTab]
   );
+
+  useEffect(() => {
+    if (status !== "authenticated") {
+      setActiveProject(null);
+      setActiveProjectError("");
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadInitialActiveProject() {
+      setIsLoadingActiveProject(true);
+      setActiveProjectError("");
+
+      try {
+        const response = await fetch("/api/projects");
+        const payload = (await response.json().catch(() => null)) as ProjectsApiResponse | null;
+
+        if (!response.ok || payload?.ok === false) {
+          throw new Error(payload?.error || "Could not load projects.");
+        }
+
+        if (cancelled) return;
+
+        const projects = payload?.projects ?? [];
+
+        if (projects.length === 0) {
+          setActiveProject(null);
+          return;
+        }
+
+        const savedProjectId = typeof window !== "undefined" ? window.localStorage.getItem(ACTIVE_PROJECT_STORAGE_KEY) : null;
+        const nextActiveProject = projects.find((project) => project.id === savedProjectId) ?? projects[0];
+
+        setActiveProject(nextActiveProject);
+
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(ACTIVE_PROJECT_STORAGE_KEY, nextActiveProject.id);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setActiveProjectError(error instanceof Error ? error.message : "Could not load projects.");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingActiveProject(false);
+        }
+      }
+    }
+
+    void loadInitialActiveProject();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [status]);
+
+  function handleActiveProjectChange(project: SafeQAProject | null) {
+    setActiveProject(project);
+
+    if (typeof window === "undefined") return;
+
+    if (project?.id) {
+      window.localStorage.setItem(ACTIVE_PROJECT_STORAGE_KEY, project.id);
+    } else {
+      window.localStorage.removeItem(ACTIVE_PROJECT_STORAGE_KEY);
+    }
+  }
 
   return (
     <main className="qatalyst-brain-shell">
@@ -449,7 +528,32 @@ export default function BrainPage() {
             <span>{active.body}</span>
           </div>
 
-          {activeProject ? (
+          {isLoadingActiveProject ? (
+            <div className="brain-active-project-strip">
+              <div>
+                <p className="brain-mini-eyebrow">Active project</p>
+                <strong>Loading project…</strong>
+                <span>Preparing project-scoped Brain sections.</span>
+              </div>
+            </div>
+          ) : null}
+
+          {activeProjectError ? (
+            <div className="brain-active-project-strip brain-active-project-error">
+              <div>
+                <p className="brain-mini-eyebrow">Project load issue</p>
+                <strong>{activeProjectError}</strong>
+                <span>Open Projects to choose or create a workspace.</span>
+              </div>
+              <div className="brain-active-project-actions">
+                <button type="button" onClick={() => setActiveTab("projects")}>
+                  Open projects
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {!isLoadingActiveProject && !activeProjectError && activeProject ? (
             <div className="brain-active-project-strip">
               <div>
                 <p className="brain-mini-eyebrow">Active project</p>
@@ -495,7 +599,7 @@ export default function BrainPage() {
             <section className="brain-live-section">
               <ProjectSettingsPanel
                 activeProjectId={activeProject?.id}
-                onActiveProjectChange={setActiveProject}
+                onActiveProjectChange={handleActiveProjectChange}
               />
             </section>
           ) : null}
