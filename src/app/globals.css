@@ -29271,4 +29271,2222 @@ body:has(.qas156-shell)::before {
 .qatalyst-app-shell .qat-guide-shell.qat-tool-ftue-card .qat-guide-card {
   position: relative !important;
   z-index: 2 !important;
+}/* QAS-170 Project Brain v1 */
+
+.qatalyst-brain-shell {
+  min-height: 100vh;
+  padding: 48px clamp(18px, 4vw, 72px) 80px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(127, 29, 29, 0.28), transparent 34%),
+    radial-gradient(circle at 82% 10%, rgba(30, 64, 175, 0.18), transparent 28%),
+    linear-gradient(180deg, #030508 0%, #07090f 46%, #030508 100%);
+  color: #f8fafc;
+}
+
+.brain-hero-shell,
+.brain-workspace {
+  width: min(1360px, 100%);
+  margin: 0 auto;
+}
+
+.brain-hero-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.65fr);
+  gap: 28px;
+  align-items: stretch;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at top right, rgba(239, 68, 68, 0.12), transparent 38%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(4, 6, 12, 0.96));
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.36);
+  padding: clamp(24px, 4vw, 46px);
+}
+
+.brain-breadcrumb-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 22px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 800;
+}
+
+.brain-breadcrumb-row a {
+  color: #fca5a5;
+  text-decoration: none;
+}
+
+.brain-eyebrow,
+.brain-panel-header p,
+.brain-empty-kicker,
+.brain-integration-card p,
+.brain-next-step-card p,
+.brain-status-card span {
+  margin: 0;
+  color: #fca5a5;
+  font-size: 0.76rem;
+  font-weight: 1000;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.brain-hero-copy h1 {
+  max-width: 820px;
+  margin: 12px 0 18px;
+  font-size: clamp(3rem, 6vw, 6.8rem);
+  line-height: 0.92;
+  letter-spacing: -0.07em;
+}
+
+.brain-hero-copy > p:not(.brain-eyebrow) {
+  max-width: 760px;
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 1.08rem;
+  line-height: 1.65;
+}
+
+.brain-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.brain-primary-link,
+.brain-secondary-link,
+.brain-integration-card a,
+.brain-integration-card button,
+.brain-next-step-card button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  min-height: 44px;
+  padding: 0 18px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 950;
+  text-decoration: none;
+}
+
+.brain-secondary-link,
+.brain-integration-card a,
+.brain-integration-card button,
+.brain-next-step-card button {
+  background: rgba(15, 23, 42, 0.86);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+.brain-account-card {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  min-width: 0;
+}
+
+.brain-brand-block {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+}
+
+.brain-brand-block img {
+  max-width: 280px;
+  width: 80%;
+  height: auto;
+}
+
+.brain-user-chip {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.58);
+  padding: 14px;
+}
+
+.brain-user-chip span {
+  display: block;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.brain-user-chip strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.brain-qat-guide {
+  margin-top: 24px !important;
+}
+
+.brain-workspace {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  gap: 22px;
+  margin-top: 24px;
+}
+
+.brain-tab-rail {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.72);
+  padding: 14px;
+}
+
+.brain-tab-rail button {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 16px;
+  background: rgba(2, 6, 23, 0.42);
+  color: rgba(255, 255, 255, 0.82);
+  cursor: pointer;
+  padding: 14px;
+  text-align: left;
+}
+
+.brain-tab-rail button span {
+  color: rgba(252, 165, 165, 0.78);
+  font-size: 0.66rem;
+  font-weight: 1000;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.brain-tab-rail button strong {
+  font-size: 0.96rem;
+}
+
+.brain-tab-rail button.active {
+  border-color: rgba(248, 113, 113, 0.42);
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.5), rgba(15, 23, 42, 0.82));
+}
+
+.brain-panel {
+  min-height: 520px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.22), transparent 36%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.94));
+  padding: clamp(22px, 3vw, 34px);
+}
+
+.brain-panel-header {
+  max-width: 850px;
+}
+
+.brain-panel-header h2 {
+  margin: 10px 0;
+  font-size: clamp(1.8rem, 3vw, 3.2rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.brain-panel-header span {
+  color: rgba(226, 232, 240, 0.76);
+  line-height: 1.6;
+}
+
+.brain-overview-grid,
+.brain-integrations-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.brain-status-card,
+.brain-next-step-card,
+.brain-empty-state,
+.brain-integration-card {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 20px;
+  background: rgba(2, 6, 23, 0.42);
+  padding: 18px;
+}
+
+.brain-status-card strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 1.4rem;
+}
+
+.brain-status-card p,
+.brain-next-step-card span,
+.brain-empty-state li,
+.brain-integration-card span {
+  color: rgba(226, 232, 240, 0.68);
+  line-height: 1.5;
+}
+
+.brain-next-step-card {
+  grid-column: 1 / -1;
+}
+
+.brain-next-step-card h3,
+.brain-empty-state h3,
+.brain-integration-card h3 {
+  margin: 8px 0;
+  font-size: 1.35rem;
+}
+
+.brain-next-step-card button,
+.brain-integration-card a,
+.brain-integration-card button {
+  margin-top: 16px;
+}
+
+.brain-empty-state {
+  margin-top: 28px;
+}
+
+.brain-empty-state ul {
+  margin: 18px 0 0;
+  padding-left: 20px;
+}
+
+.brain-integration-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 230px;
+}
+
+.brain-integration-card.muted {
+  opacity: 0.72;
+}
+
+.brain-integration-card button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+@media (max-width: 1080px) {
+  .brain-hero-shell,
+  .brain-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .brain-tab-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .brain-account-card .qa-auth-widget {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .qatalyst-brain-shell {
+    padding: 24px 12px 56px;
+  }
+
+  .brain-hero-shell,
+  .brain-panel {
+    border-radius: 22px;
+  }
+
+  .brain-hero-copy h1 {
+    font-size: 3.2rem;
+  }
+
+  .brain-tab-rail,
+  .brain-overview-grid,
+  .brain-integrations-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .brain-brand-block {
+    min-height: 120px;
+  }
+}
+/* QAS-170 Brain UI polish pass
+   Append to the VERY BOTTOM of src/app/globals.css.
+
+   This fixes the first Brain pass looking plain/stacked by forcefully
+   reasserting the intended polished SaaS layout.
+*/
+
+body:has(.qatalyst-brain-shell) {
+  margin: 0;
+  background: #030508;
+}
+
+.qatalyst-brain-shell {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+  padding: 42px clamp(18px, 4vw, 72px) 80px !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(127, 29, 29, 0.3), transparent 34%),
+    radial-gradient(circle at 82% 8%, rgba(37, 99, 235, 0.16), transparent 28%),
+    linear-gradient(180deg, #030508 0%, #07090f 50%, #030508 100%) !important;
+  color: #f8fafc !important;
+}
+
+.qatalyst-brain-shell *,
+.qatalyst-brain-shell *::before,
+.qatalyst-brain-shell *::after {
+  box-sizing: border-box;
+}
+
+.qatalyst-brain-shell a {
+  text-decoration: none;
+}
+
+.qatalyst-brain-shell button {
+  font: inherit;
+}
+
+.qatalyst-brain-shell .brain-hero-shell,
+.qatalyst-brain-shell .brain-workspace,
+.qatalyst-brain-shell .brain-qat-guide {
+  width: min(1360px, 100%) !important;
+  max-width: 1360px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.qatalyst-brain-shell .brain-hero-shell {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.3fr) minmax(340px, 0.7fr) !important;
+  gap: clamp(20px, 3vw, 36px) !important;
+  align-items: stretch !important;
+  min-height: 520px !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 32px !important;
+  background:
+    radial-gradient(circle at top right, rgba(239, 68, 68, 0.13), transparent 38%),
+    radial-gradient(circle at bottom left, rgba(37, 99, 235, 0.08), transparent 28%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(4, 6, 12, 0.97)) !important;
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.38) !important;
+  padding: clamp(26px, 4vw, 52px) !important;
+  overflow: hidden !important;
+}
+
+.qatalyst-brain-shell .brain-hero-copy {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+}
+
+.qatalyst-brain-shell .brain-breadcrumb-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  align-items: center !important;
+  margin-bottom: 24px !important;
+  color: rgba(255, 255, 255, 0.62) !important;
+  font-size: 0.88rem !important;
+  font-weight: 850 !important;
+}
+
+.qatalyst-brain-shell .brain-breadcrumb-row a {
+  color: #fca5a5 !important;
+}
+
+.qatalyst-brain-shell .brain-eyebrow,
+.qatalyst-brain-shell .brain-panel-header p,
+.qatalyst-brain-shell .brain-empty-kicker,
+.qatalyst-brain-shell .brain-integration-card p,
+.qatalyst-brain-shell .brain-next-step-card p,
+.qatalyst-brain-shell .brain-status-card span {
+  display: block !important;
+  margin: 0 !important;
+  color: #fca5a5 !important;
+  font-size: 0.76rem !important;
+  font-weight: 1000 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+.qatalyst-brain-shell .brain-hero-copy h1 {
+  max-width: 860px !important;
+  margin: 14px 0 20px !important;
+  color: #fff !important;
+  font-size: clamp(3.3rem, 6vw, 7.2rem) !important;
+  line-height: 0.9 !important;
+  letter-spacing: -0.075em !important;
+}
+
+.qatalyst-brain-shell .brain-hero-copy > p:not(.brain-eyebrow) {
+  max-width: 780px !important;
+  margin: 0 !important;
+  color: rgba(226, 232, 240, 0.78) !important;
+  font-size: 1.08rem !important;
+  line-height: 1.65 !important;
+}
+
+.qatalyst-brain-shell .brain-hero-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  margin-top: 30px !important;
+}
+
+.qatalyst-brain-shell .brain-primary-link,
+.qatalyst-brain-shell .brain-secondary-link,
+.qatalyst-brain-shell .brain-integration-card a,
+.qatalyst-brain-shell .brain-integration-card button,
+.qatalyst-brain-shell .brain-next-step-card button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 46px !important;
+  width: auto !important;
+  border: 1px solid rgba(248, 113, 113, 0.28) !important;
+  border-radius: 999px !important;
+  padding: 0 18px !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  box-shadow: 0 18px 34px rgba(239, 68, 68, 0.18) !important;
+}
+
+.qatalyst-brain-shell .brain-secondary-link,
+.qatalyst-brain-shell .brain-integration-card a,
+.qatalyst-brain-shell .brain-integration-card button,
+.qatalyst-brain-shell .brain-next-step-card button {
+  background: rgba(15, 23, 42, 0.86) !important;
+  border-color: rgba(148, 163, 184, 0.24) !important;
+  box-shadow: none !important;
+}
+
+.qatalyst-brain-shell .brain-account-card {
+  position: relative !important;
+  display: grid !important;
+  grid-template-rows: auto auto auto !important;
+  gap: 16px !important;
+  align-content: center !important;
+  min-width: 0 !important;
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+  border-radius: 28px !important;
+  background:
+    radial-gradient(circle at top, rgba(239, 68, 68, 0.12), transparent 38%),
+    rgba(2, 6, 23, 0.34) !important;
+  padding: 22px !important;
+}
+
+.qatalyst-brain-shell .brain-brand-block {
+  display: grid !important;
+  place-items: center !important;
+  min-height: 180px !important;
+}
+
+.qatalyst-brain-shell .brain-brand-block img {
+  display: block !important;
+  width: min(300px, 82%) !important;
+  max-width: 300px !important;
+  height: auto !important;
+}
+
+.qatalyst-brain-shell .brain-user-chip {
+  display: block !important;
+  min-width: 0 !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 18px !important;
+  background: rgba(15, 23, 42, 0.62) !important;
+  padding: 14px !important;
+}
+
+.qatalyst-brain-shell .brain-user-chip span {
+  display: block !important;
+  color: rgba(255, 255, 255, 0.52) !important;
+  font-size: 0.76rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.11em !important;
+  text-transform: uppercase !important;
+}
+
+.qatalyst-brain-shell .brain-user-chip strong {
+  display: block !important;
+  overflow: hidden !important;
+  margin-top: 4px !important;
+  color: #fff !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.qatalyst-brain-shell .brain-account-card .qa-auth-widget {
+  width: 100% !important;
+}
+
+.qatalyst-brain-shell .brain-account-card .qa-floating-signed-in {
+  display: none !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide {
+  margin-top: 24px !important;
+  margin-bottom: 0 !important;
+}
+
+.qatalyst-brain-shell .brain-workspace {
+  display: grid !important;
+  grid-template-columns: 300px minmax(0, 1fr) !important;
+  gap: 22px !important;
+  margin-top: 24px !important;
+}
+
+.qatalyst-brain-shell .brain-tab-rail {
+  display: grid !important;
+  gap: 10px !important;
+  align-content: start !important;
+  height: fit-content !important;
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 24px !important;
+  background:
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.14), transparent 34%),
+    rgba(15, 23, 42, 0.72) !important;
+  padding: 14px !important;
+}
+
+.qatalyst-brain-shell .brain-tab-rail button {
+  display: grid !important;
+  gap: 4px !important;
+  width: 100% !important;
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+  border-radius: 16px !important;
+  background: rgba(2, 6, 23, 0.44) !important;
+  color: rgba(255, 255, 255, 0.82) !important;
+  cursor: pointer !important;
+  padding: 14px !important;
+  text-align: left !important;
+}
+
+.qatalyst-brain-shell .brain-tab-rail button span {
+  color: rgba(252, 165, 165, 0.78) !important;
+  font-size: 0.66rem !important;
+  font-weight: 1000 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+}
+
+.qatalyst-brain-shell .brain-tab-rail button strong {
+  color: #fff !important;
+  font-size: 0.96rem !important;
+  line-height: 1.2 !important;
+}
+
+.qatalyst-brain-shell .brain-tab-rail button.active {
+  border-color: rgba(248, 113, 113, 0.44) !important;
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.56), rgba(15, 23, 42, 0.86)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.qatalyst-brain-shell .brain-panel {
+  min-height: 560px !important;
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 28px !important;
+  background:
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.22), transparent 36%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.95)) !important;
+  padding: clamp(22px, 3vw, 34px) !important;
+  overflow: hidden !important;
+}
+
+.qatalyst-brain-shell .brain-panel-header {
+  max-width: 880px !important;
+}
+
+.qatalyst-brain-shell .brain-panel-header h2 {
+  margin: 10px 0 !important;
+  color: #fff !important;
+  font-size: clamp(1.9rem, 3vw, 3.3rem) !important;
+  line-height: 1 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.qatalyst-brain-shell .brain-panel-header span {
+  display: block !important;
+  max-width: 850px !important;
+  color: rgba(226, 232, 240, 0.76) !important;
+  line-height: 1.6 !important;
+}
+
+.qatalyst-brain-shell .brain-overview-grid,
+.qatalyst-brain-shell .brain-integrations-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+  margin-top: 28px !important;
+}
+
+.qatalyst-brain-shell .brain-status-card,
+.qatalyst-brain-shell .brain-next-step-card,
+.qatalyst-brain-shell .brain-empty-state,
+.qatalyst-brain-shell .brain-integration-card {
+  display: block !important;
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 20px !important;
+  background: rgba(2, 6, 23, 0.44) !important;
+  padding: 18px !important;
+}
+
+.qatalyst-brain-shell .brain-status-card strong {
+  display: block !important;
+  margin-top: 10px !important;
+  color: #fff !important;
+  font-size: 1.4rem !important;
+}
+
+.qatalyst-brain-shell .brain-status-card p,
+.qatalyst-brain-shell .brain-next-step-card span,
+.qatalyst-brain-shell .brain-empty-state li,
+.qatalyst-brain-shell .brain-integration-card span {
+  color: rgba(226, 232, 240, 0.68) !important;
+  line-height: 1.5 !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card {
+  grid-column: 1 / -1 !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card h3,
+.qatalyst-brain-shell .brain-empty-state h3,
+.qatalyst-brain-shell .brain-integration-card h3 {
+  margin: 8px 0 !important;
+  color: #fff !important;
+  font-size: 1.35rem !important;
+  line-height: 1.2 !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card button,
+.qatalyst-brain-shell .brain-integration-card a,
+.qatalyst-brain-shell .brain-integration-card button {
+  margin-top: 16px !important;
+}
+
+.qatalyst-brain-shell .brain-empty-state {
+  margin-top: 28px !important;
+}
+
+.qatalyst-brain-shell .brain-empty-state ul {
+  margin: 18px 0 0 !important;
+  padding-left: 20px !important;
+}
+
+.qatalyst-brain-shell .brain-integration-card {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  min-height: 230px !important;
+}
+
+.qatalyst-brain-shell .brain-integration-card.muted {
+  opacity: 0.72 !important;
+}
+
+.qatalyst-brain-shell .brain-integration-card button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.62 !important;
+}
+
+@media (max-width: 1080px) {
+  .qatalyst-brain-shell .brain-hero-shell,
+  .qatalyst-brain-shell .brain-workspace {
+    grid-template-columns: 1fr !important;
+  }
+
+  .qatalyst-brain-shell .brain-tab-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .qatalyst-brain-shell .brain-account-card .qa-auth-widget {
+    display: none !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .qatalyst-brain-shell {
+    padding: 24px 12px 56px !important;
+  }
+
+  .qatalyst-brain-shell .brain-hero-shell,
+  .qatalyst-brain-shell .brain-panel {
+    border-radius: 22px !important;
+  }
+
+  .qatalyst-brain-shell .brain-hero-copy h1 {
+    font-size: 3.2rem !important;
+  }
+
+  .qatalyst-brain-shell .brain-tab-rail,
+  .qatalyst-brain-shell .brain-overview-grid,
+  .qatalyst-brain-shell .brain-integrations-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .qatalyst-brain-shell .brain-brand-block {
+    min-height: 120px !important;
+  }
+}
+/* QAS-170 Brain UI tune pass
+   Append to the VERY BOTTOM of src/app/globals.css.
+
+   Fixes:
+   - Remove the visual "inner window" inside the hero title/account area.
+   - Make Brain FTUE secondary Open integrations button red/primary.
+   - Flip QAt inward on the Brain FTUE card.
+   - Put QAt back into proper left-side peek-from-behind behavior.
+*/
+
+.qatalyst-brain-shell .brain-hero-shell {
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.55fr) !important;
+}
+
+.qatalyst-brain-shell .brain-account-card {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 8px 0 8px 8px !important;
+}
+
+.qatalyst-brain-shell .brain-brand-block {
+  min-height: 170px !important;
+}
+
+.qatalyst-brain-shell .brain-user-chip {
+  background: rgba(15, 23, 42, 0.72) !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide.qat-guide-shell {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: visible !important;
+  max-width: min(1040px, calc(100vw - 72px)) !important;
+  margin-top: 34px !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide .qat-guide-card {
+  position: relative !important;
+  z-index: 2 !important;
+  overflow: hidden !important;
+  padding-left: 118px !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide .qat-guide-peek-layer {
+  position: absolute !important;
+  z-index: 1 !important;
+  left: -58px !important;
+  top: 50% !important;
+  bottom: auto !important;
+  width: 184px !important;
+  height: 166px !important;
+  pointer-events: none !important;
+  transform: translate(-18px, -50%) !important;
+  transition: transform 220ms ease-out !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide:hover .qat-guide-peek-layer,
+.qatalyst-brain-shell .brain-qat-guide:focus-within .qat-guide-peek-layer {
+  transform: translate(-104px, -50%) !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide .qat-guide-media {
+  display: block !important;
+  width: 170px !important;
+  max-width: none !important;
+  height: auto !important;
+  object-fit: contain !important;
+  transform: scaleX(-1) !important;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.5)) !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide .qat-guide-copy {
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide .qat-guide-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide .qat-guide-secondary {
+  color: #fff !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  border-color: rgba(248, 113, 113, 0.38) !important;
+  box-shadow: 0 14px 28px rgba(239, 68, 68, 0.2) !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide .qat-guide-primary {
+  color: rgba(255, 255, 255, 0.88) !important;
+  background: rgba(15, 23, 42, 0.88) !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 1080px) {
+  .qatalyst-brain-shell .brain-hero-shell {
+    grid-template-columns: 1fr !important;
+  }
+
+  .qatalyst-brain-shell .brain-account-card {
+    padding: 0 !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .qatalyst-brain-shell .brain-qat-guide.qat-guide-shell {
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  .qatalyst-brain-shell .brain-qat-guide .qat-guide-card {
+    padding-left: 18px !important;
+  }
+
+  .qatalyst-brain-shell .brain-qat-guide .qat-guide-peek-layer {
+    display: none !important;
+  }
+}
+/* QAS-170 Brain component/layout tune */
+
+.qatalyst-brain-shell .brain-hero-aside {
+  display: grid !important;
+  gap: 16px !important;
+  align-content: center !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.qatalyst-brain-shell .brain-hero-logo {
+  display: block !important;
+  width: min(280px, 82%) !important;
+  max-width: 280px !important;
+  height: auto !important;
+  margin: 0 auto 8px !important;
+}
+
+.qatalyst-brain-shell .brain-hero-aside .brain-user-chip {
+  background: rgba(15, 23, 42, 0.72) !important;
+}
+
+.qatalyst-brain-shell .brain-hero-aside .qa-floating-signed-in {
+  display: none !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide.qat-guide-shell {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: visible !important;
+  max-width: min(1040px, calc(100vw - 72px)) !important;
+  margin-top: 34px !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide .qat-guide-card {
+  position: relative !important;
+  z-index: 2 !important;
+  overflow: hidden !important;
+  padding-left: 118px !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide .qat-guide-peek-layer {
+  position: absolute !important;
+  z-index: 1 !important;
+  left: -58px !important;
+  top: 50% !important;
+  bottom: auto !important;
+  width: 184px !important;
+  height: 166px !important;
+  pointer-events: none !important;
+  transform: translate(-18px, -50%) !important;
+  transition: transform 220ms ease-out !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide:hover .qat-guide-peek-layer,
+.qatalyst-brain-shell .brain-qat-guide:focus-within .qat-guide-peek-layer {
+  transform: translate(-104px, -50%) !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide .qat-guide-media {
+  display: block !important;
+  width: 170px !important;
+  max-width: none !important;
+  height: auto !important;
+  object-fit: contain !important;
+  transform: scaleX(-1) !important;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.5)) !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide .qat-guide-copy {
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+@media (max-width: 720px) {
+  .qatalyst-brain-shell .brain-qat-guide.qat-guide-shell {
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  .qatalyst-brain-shell .brain-qat-guide .qat-guide-card {
+    padding-left: 18px !important;
+  }
+
+  .qatalyst-brain-shell .brain-qat-guide .qat-guide-peek-layer {
+    display: none !important;
+  }
+}
+/* QAS-170 Brain targeted polish pass
+   Append to the VERY BOTTOM of src/app/globals.css.
+
+   Fixes:
+   - Move Brain hero account/menu block left so it does not feel clipped.
+   - Remove strong red/blue background wash from /brain and align closer to main /app theme.
+   - Polish the "Go to integrations" CTA in the recommended next step card.
+   - Keep these changes scoped to /brain only.
+*/
+
+body:has(.qatalyst-brain-shell) {
+  background: #030508 !important;
+}
+
+.qatalyst-brain-shell {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(127, 29, 29, 0.16), transparent 28%),
+    linear-gradient(180deg, #030508 0%, #05070c 48%, #030508 100%) !important;
+}
+
+.qatalyst-brain-shell .brain-hero-shell {
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.1), transparent 34%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(4, 6, 12, 0.97)) !important;
+}
+
+.qatalyst-brain-shell .brain-hero-aside {
+  transform: translateX(-42px) !important;
+  justify-self: start !important;
+  width: min(390px, 100%) !important;
+}
+
+.qatalyst-brain-shell .brain-hero-aside .qa-auth-widget,
+.qatalyst-brain-shell .brain-hero-aside .qa-auth-card {
+  width: 100% !important;
+  max-width: 390px !important;
+}
+
+.qatalyst-brain-shell .brain-hero-aside .brain-user-chip {
+  width: 100% !important;
+  max-width: 390px !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  column-gap: 18px !important;
+  row-gap: 8px !important;
+  align-items: end !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card p,
+.qatalyst-brain-shell .brain-next-step-card h3,
+.qatalyst-brain-shell .brain-next-step-card span {
+  grid-column: 1 !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card button {
+  grid-column: 2 !important;
+  grid-row: 1 / span 3 !important;
+  align-self: center !important;
+  margin-top: 0 !important;
+  min-width: 178px !important;
+  min-height: 48px !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  border-color: rgba(248, 113, 113, 0.42) !important;
+  box-shadow: 0 16px 34px rgba(239, 68, 68, 0.2) !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 20px 42px rgba(239, 68, 68, 0.26) !important;
+}
+
+@media (max-width: 1080px) {
+  .qatalyst-brain-shell .brain-hero-aside {
+    transform: none !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 780px) {
+  .qatalyst-brain-shell .brain-next-step-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  .qatalyst-brain-shell .brain-next-step-card p,
+  .qatalyst-brain-shell .brain-next-step-card h3,
+  .qatalyst-brain-shell .brain-next-step-card span,
+  .qatalyst-brain-shell .brain-next-step-card button {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+
+  .qatalyst-brain-shell .brain-next-step-card button {
+    width: fit-content !important;
+    margin-top: 12px !important;
+  }
+}
+/* QAS-170 Brain native auth + background polish */
+
+.qatalyst-brain-shell {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(127, 29, 29, 0.12), transparent 26%),
+    linear-gradient(180deg, #030508 0%, #05070c 48%, #030508 100%) !important;
+}
+
+.qatalyst-brain-shell .brain-native-account {
+  justify-self: start !important;
+  align-self: center !important;
+  width: min(360px, 100%) !important;
+  display: grid !important;
+  gap: 16px !important;
+  transform: translateX(-54px) !important;
+}
+
+.qatalyst-brain-shell .brain-native-logo {
+  display: block !important;
+  width: min(270px, 82%) !important;
+  height: auto !important;
+  margin: 0 auto 6px !important;
+}
+
+.qatalyst-brain-shell .brain-native-user {
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  border-radius: 16px !important;
+  background: rgba(15, 23, 42, 0.72) !important;
+  padding: 12px 14px !important;
+}
+
+.qatalyst-brain-shell .brain-native-user span {
+  display: block !important;
+  color: rgba(252, 165, 165, 0.86) !important;
+  font-size: 0.7rem !important;
+  font-weight: 1000 !important;
+  letter-spacing: 0.13em !important;
+  text-transform: uppercase !important;
+}
+
+.qatalyst-brain-shell .brain-native-user strong {
+  display: block !important;
+  overflow: hidden !important;
+  margin-top: 4px !important;
+  color: #fff !important;
+  font-size: 0.9rem !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.qatalyst-brain-shell .brain-native-actions {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(92px, 1fr)) !important;
+  gap: 10px !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 18px !important;
+  background: rgba(12, 14, 18, 0.78) !important;
+  padding: 10px !important;
+}
+
+.qatalyst-brain-shell .brain-native-menu {
+  grid-column: 1 / -1 !important;
+}
+
+.qatalyst-brain-shell .brain-native-menu,
+.qatalyst-brain-shell .brain-native-account-link,
+.qatalyst-brain-shell .brain-native-ghost,
+.qatalyst-brain-shell .brain-native-primary {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 38px !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  border-radius: 12px !important;
+  background: rgba(15, 23, 42, 0.78) !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  font-weight: 900 !important;
+  text-decoration: none !important;
+}
+
+.qatalyst-brain-shell .brain-native-menu {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.92), rgba(30, 64, 175, 0.78)) !important;
+}
+
+.qatalyst-brain-shell .brain-native-primary {
+  grid-column: 2 / -1 !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+
+.qatalyst-brain-shell .brain-native-credits {
+  min-width: 0 !important;
+}
+
+.qatalyst-brain-shell .brain-native-credits .credits-pill,
+.qatalyst-brain-shell .brain-native-credits [class*="credits"] {
+  width: 100% !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  column-gap: 18px !important;
+  row-gap: 8px !important;
+  align-items: center !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card p,
+.qatalyst-brain-shell .brain-next-step-card h3,
+.qatalyst-brain-shell .brain-next-step-card span {
+  grid-column: 1 !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card button {
+  grid-column: 2 !important;
+  grid-row: 1 / span 3 !important;
+  align-self: center !important;
+  margin-top: 0 !important;
+  min-width: 178px !important;
+  min-height: 48px !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  border-color: rgba(248, 113, 113, 0.42) !important;
+  box-shadow: 0 16px 34px rgba(239, 68, 68, 0.2) !important;
+}
+
+@media (max-width: 1080px) {
+  .qatalyst-brain-shell .brain-native-account {
+    transform: none !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 780px) {
+  .qatalyst-brain-shell .brain-native-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .qatalyst-brain-shell .brain-native-menu,
+  .qatalyst-brain-shell .brain-native-primary {
+    grid-column: auto !important;
+  }
+
+  .qatalyst-brain-shell .brain-next-step-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  .qatalyst-brain-shell .brain-next-step-card p,
+  .qatalyst-brain-shell .brain-next-step-card h3,
+  .qatalyst-brain-shell .brain-next-step-card span,
+  .qatalyst-brain-shell .brain-next-step-card button {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+
+  .qatalyst-brain-shell .brain-next-step-card button {
+    width: fit-content !important;
+    margin-top: 12px !important;
+  }
+}
+/* QAS-170 Brain final theme alignment pass
+   Append to the VERY BOTTOM of src/app/globals.css.
+
+   Fixes:
+   - Align /brain page background with /app: black page, colored cards/windows.
+   - Move Brain account/sign-in block down to align with hero CTA buttons.
+   - Keep Brain-native account block controlled without touching /app AuthStatus.
+   - Small CTA polish for Go to integrations.
+*/
+
+html:has(.qatalyst-brain-shell),
+body:has(.qatalyst-brain-shell) {
+  background: #000 !important;
+}
+
+body:has(.qatalyst-brain-shell)::before,
+body:has(.qatalyst-brain-shell)::after {
+  display: none !important;
+  content: none !important;
+}
+
+.qatalyst-brain-shell {
+  background: #000 !important;
+  background-image: none !important;
+}
+
+.qatalyst-brain-shell .brain-hero-shell,
+.qatalyst-brain-shell .brain-workspace,
+.qatalyst-brain-shell .brain-qat-guide {
+  width: min(1360px, calc(100vw - 96px)) !important;
+}
+
+.qatalyst-brain-shell .brain-hero-shell {
+  align-items: stretch !important;
+  background:
+    radial-gradient(circle at top left, rgba(30, 41, 59, 0.26), transparent 34%),
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(5, 7, 12, 0.98)) !important;
+}
+
+.qatalyst-brain-shell .brain-native-account {
+  align-self: end !important;
+  justify-self: start !important;
+  width: min(360px, 100%) !important;
+  transform: translate(-54px, -34px) !important;
+}
+
+.qatalyst-brain-shell .brain-native-logo {
+  margin-bottom: 22px !important;
+}
+
+.qatalyst-brain-shell .brain-native-user,
+.qatalyst-brain-shell .brain-native-actions {
+  width: 100% !important;
+}
+
+.qatalyst-brain-shell .brain-native-actions {
+  background:
+    radial-gradient(circle at bottom left, rgba(22, 163, 74, 0.12), transparent 34%),
+    rgba(12, 14, 18, 0.84) !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 10px 18px !important;
+  align-items: center !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card p,
+.qatalyst-brain-shell .brain-next-step-card h3,
+.qatalyst-brain-shell .brain-next-step-card span {
+  grid-column: 1 !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card button {
+  grid-column: 2 !important;
+  grid-row: 1 / span 3 !important;
+  align-self: center !important;
+  margin: 0 !important;
+  min-width: 176px !important;
+  min-height: 46px !important;
+  border-color: rgba(248, 113, 113, 0.46) !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  box-shadow: 0 16px 34px rgba(239, 68, 68, 0.22) !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 20px 42px rgba(239, 68, 68, 0.28) !important;
+}
+
+@media (max-width: 1080px) {
+  .qatalyst-brain-shell .brain-hero-shell,
+  .qatalyst-brain-shell .brain-workspace,
+  .qatalyst-brain-shell .brain-qat-guide {
+    width: min(1360px, calc(100vw - 32px)) !important;
+  }
+
+  .qatalyst-brain-shell .brain-native-account {
+    transform: none !important;
+    justify-self: stretch !important;
+    align-self: stretch !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 780px) {
+  .qatalyst-brain-shell .brain-next-step-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  .qatalyst-brain-shell .brain-next-step-card p,
+  .qatalyst-brain-shell .brain-next-step-card h3,
+  .qatalyst-brain-shell .brain-next-step-card span,
+  .qatalyst-brain-shell .brain-next-step-card button {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+
+  .qatalyst-brain-shell .brain-next-step-card button {
+    width: fit-content !important;
+    margin-top: 12px !important;
+  }
+}
+/* QAS-170 Account simplification + Brain ownership pass */
+
+.qatalyst-account-shell {
+  min-height: 100vh;
+  padding: 48px clamp(18px, 4vw, 72px) 80px;
+  background: #000;
+  color: #f8fafc;
+}
+
+.qatalyst-account-shell *,
+.qatalyst-account-shell *::before,
+.qatalyst-account-shell *::after {
+  box-sizing: border-box;
+}
+
+.account-hero-card,
+.account-grid {
+  width: min(1180px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.account-hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top left, rgba(30, 41, 59, 0.26), transparent 34%),
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(5, 7, 12, 0.98));
+  padding: clamp(24px, 4vw, 44px);
+}
+
+.account-eyebrow {
+  margin: 0 0 10px;
+  color: #fca5a5;
+  font-size: 0.76rem;
+  font-weight: 1000;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.account-hero-card h1 {
+  max-width: 760px;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2.4rem, 5vw, 5rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.account-hero-card p:not(.account-eyebrow),
+.account-panel p:not(.account-eyebrow) {
+  color: rgba(226, 232, 240, 0.76);
+  line-height: 1.6;
+}
+
+.account-hero-actions,
+.account-link-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.account-primary-link,
+.account-secondary-link,
+.account-danger-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 1px solid rgba(248, 113, 113, 0.34);
+  border-radius: 999px;
+  padding: 0 18px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 950;
+  text-decoration: none;
+}
+
+.account-secondary-link,
+.account-link-list a {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.86);
+}
+
+.account-danger-button {
+  margin-top: 16px;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.account-panel {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.14), transparent 34%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.94));
+  padding: 22px;
+}
+
+.account-panel h2 {
+  margin: 0 0 8px;
+  color: #fff;
+  font-size: 1.35rem;
+}
+
+.account-brain-panel {
+  grid-column: 1 / -1;
+}
+
+.account-link-list {
+  margin-top: 18px;
+}
+
+.account-link-list a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  padding: 0 14px;
+  color: #fff;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+@media (max-width: 820px) {
+  .account-hero-card,
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-hero-actions {
+    justify-content: flex-start;
+  }
+}
+/* QAS-170 Account UI repair pass */
+
+html:has(.qatalyst-account-shell),
+body:has(.qatalyst-account-shell) {
+  background: #000 !important;
+}
+
+body:has(.qatalyst-account-shell)::before,
+body:has(.qatalyst-account-shell)::after {
+  display: none !important;
+  content: none !important;
+}
+
+.qatalyst-account-shell {
+  box-sizing: border-box !important;
+  min-height: 100vh !important;
+  padding: 48px clamp(18px, 4vw, 72px) 80px !important;
+  background: #000 !important;
+  color: #f8fafc !important;
+}
+
+.qatalyst-account-shell *,
+.qatalyst-account-shell *::before,
+.qatalyst-account-shell *::after {
+  box-sizing: border-box !important;
+}
+
+.qatalyst-account-shell a {
+  text-decoration: none !important;
+}
+
+.account-hero-card,
+.account-dashboard-grid,
+.account-brain-handoff {
+  width: min(1180px, calc(100vw - 64px)) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.account-hero-card {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.55fr) !important;
+  gap: clamp(22px, 4vw, 46px) !important;
+  align-items: stretch !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 30px !important;
+  background:
+    radial-gradient(circle at top left, rgba(30, 41, 59, 0.26), transparent 34%),
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(5, 7, 12, 0.98)) !important;
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.36) !important;
+  padding: clamp(26px, 4vw, 48px) !important;
+}
+
+.account-hero-copy {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+.account-breadcrumb-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  align-items: center !important;
+  margin-bottom: 24px !important;
+  color: rgba(255, 255, 255, 0.62) !important;
+  font-size: 0.88rem !important;
+  font-weight: 850 !important;
+}
+
+.account-breadcrumb-row a {
+  color: #fca5a5 !important;
+}
+
+.account-eyebrow {
+  display: block !important;
+  margin: 0 0 10px !important;
+  color: #fca5a5 !important;
+  font-size: 0.76rem !important;
+  font-weight: 1000 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+.account-hero-card h1 {
+  max-width: 760px !important;
+  margin: 0 !important;
+  color: #fff !important;
+  font-size: clamp(2.8rem, 5vw, 5.8rem) !important;
+  line-height: 0.93 !important;
+  letter-spacing: -0.065em !important;
+}
+
+.account-hero-card p:not(.account-eyebrow),
+.account-panel p:not(.account-eyebrow),
+.account-brain-handoff p:not(.account-eyebrow),
+.account-summary-card span {
+  color: rgba(226, 232, 240, 0.76) !important;
+  line-height: 1.6 !important;
+}
+
+.account-hero-actions,
+.account-summary-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-top: 28px !important;
+}
+
+.account-primary-link,
+.account-secondary-link,
+.account-danger-button,
+.account-secondary-button,
+.account-brain-link-grid a {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 44px !important;
+  border: 1px solid rgba(248, 113, 113, 0.34) !important;
+  border-radius: 999px !important;
+  padding: 0 18px !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  font-weight: 950 !important;
+  text-decoration: none !important;
+  box-shadow: 0 18px 34px rgba(239, 68, 68, 0.18) !important;
+}
+
+.account-secondary-link,
+.account-secondary-button,
+.account-brain-link-grid a {
+  border-color: rgba(148, 163, 184, 0.24) !important;
+  background: rgba(15, 23, 42, 0.86) !important;
+  box-shadow: none !important;
+}
+
+.account-summary-card {
+  align-self: center !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 24px !important;
+  background:
+    radial-gradient(circle at bottom left, rgba(22, 163, 74, 0.12), transparent 34%),
+    rgba(2, 6, 23, 0.52) !important;
+  padding: 22px !important;
+}
+
+.account-summary-card h2 {
+  overflow: hidden !important;
+  margin: 0 0 8px !important;
+  color: #fff !important;
+  font-size: 1.2rem !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.account-dashboard-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+  margin-top: 22px !important;
+}
+
+.account-panel,
+.account-brain-handoff {
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 22px !important;
+  background:
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.14), transparent 34%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.94)) !important;
+  padding: 22px !important;
+}
+
+.account-panel h2,
+.account-brain-handoff h2 {
+  margin: 0 0 8px !important;
+  color: #fff !important;
+  font-size: 1.35rem !important;
+  line-height: 1.18 !important;
+}
+
+.account-detail-list {
+  display: grid !important;
+  gap: 12px !important;
+  margin: 18px 0 0 !important;
+}
+
+.account-detail-list div {
+  border-top: 1px solid rgba(148, 163, 184, 0.12) !important;
+  padding-top: 12px !important;
+}
+
+.account-detail-list dt {
+  color: rgba(252, 165, 165, 0.86) !important;
+  font-size: 0.7rem !important;
+  font-weight: 1000 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+}
+
+.account-detail-list dd {
+  overflow-wrap: anywhere !important;
+  margin: 4px 0 0 !important;
+  color: #fff !important;
+  font-weight: 850 !important;
+}
+
+.account-credit-display {
+  margin: 16px 0 !important;
+}
+
+.account-mini-list {
+  display: grid !important;
+  gap: 10px !important;
+  margin-top: 18px !important;
+}
+
+.account-mini-list span {
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+  border-radius: 14px !important;
+  background: rgba(2, 6, 23, 0.44) !important;
+  color: rgba(226, 232, 240, 0.78) !important;
+  padding: 10px 12px !important;
+}
+
+.account-brain-handoff {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.7fr) !important;
+  gap: 22px !important;
+  align-items: center !important;
+  margin-top: 22px !important;
+}
+
+.account-brain-link-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.account-brain-link-grid a:first-child {
+  grid-column: 1 / -1 !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  border-color: rgba(248, 113, 113, 0.42) !important;
+  box-shadow: 0 16px 34px rgba(239, 68, 68, 0.2) !important;
+}
+
+@media (max-width: 1100px) {
+  .account-dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .account-hero-card,
+  .account-brain-handoff {
+    grid-template-columns: 1fr !important;
+  }
+
+  .account-dashboard-grid,
+  .account-brain-link-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .account-hero-card,
+  .account-dashboard-grid,
+  .account-brain-handoff {
+    width: min(1180px, calc(100vw - 28px)) !important;
+  }
+}
+/* QAS-170 Account human polish pass */
+
+.qatalyst-account-shell .account-hero-card h1 {
+  max-width: 720px !important;
+  font-size: clamp(2.9rem, 5vw, 5.4rem) !important;
+  line-height: 0.94 !important;
+}
+
+.qatalyst-account-shell .account-hero-subtitle {
+  display: block !important;
+  max-width: 720px !important;
+  margin: 18px 0 0 !important;
+  color: rgba(226, 232, 240, 0.78) !important;
+  font-size: 1.02rem !important;
+  line-height: 1.65 !important;
+}
+
+.qatalyst-account-shell .account-summary-card {
+  display: flex !important;
+  min-height: 238px !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  background:
+    radial-gradient(circle at bottom left, rgba(22, 163, 74, 0.12), transparent 34%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.94)) !important;
+}
+
+.qatalyst-account-shell .account-summary-card h2 {
+  font-size: 1.08rem !important;
+}
+
+.qatalyst-account-shell .account-summary-actions {
+  margin-top: 28px !important;
+}
+
+.qatalyst-account-shell .account-dashboard-grid-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.qatalyst-account-shell .account-panel {
+  min-height: 300px !important;
+}
+
+.qatalyst-account-shell .account-credits-panel {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.qatalyst-account-shell .account-credits-panel .account-bottom-action {
+  width: fit-content !important;
+  margin-top: auto !important;
+}
+
+.qatalyst-account-shell .account-danger-button {
+  width: fit-content !important;
+}
+
+.qatalyst-account-shell .account-detail-list dd {
+  font-size: 0.96rem !important;
+}
+
+.qatalyst-account-shell .account-brain-handoff h2 {
+  font-size: clamp(1.55rem, 2.5vw, 2.25rem) !important;
+}
+
+@media (max-width: 1100px) {
+  .qatalyst-account-shell .account-dashboard-grid-three {
+    grid-template-columns: 1fr !important;
+  }
+
+  .qatalyst-account-shell .account-panel {
+    min-height: auto !important;
+  }
+}
+/* QAS-170 Account logo/profile-actions polish */
+
+.qatalyst-account-shell .account-logo-card {
+  align-self: center !important;
+  display: grid !important;
+  place-items: center !important;
+  min-height: 260px !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 24px !important;
+  background:
+    radial-gradient(circle at center, rgba(248, 113, 113, 0.08), transparent 40%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.72), rgba(2, 6, 23, 0.38)) !important;
+  padding: 24px !important;
+}
+
+.qatalyst-account-shell .account-logo-card img {
+  display: block !important;
+  width: min(310px, 88%) !important;
+  height: auto !important;
+  filter: drop-shadow(0 24px 36px rgba(0, 0, 0, 0.42)) !important;
+}
+
+.qatalyst-account-shell .account-summary-card {
+  display: none !important;
+}
+
+.qatalyst-account-shell .account-status-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 14px !important;
+  align-items: center !important;
+}
+
+.qatalyst-account-shell .account-status-row > div {
+  border-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.qatalyst-account-shell .account-inline-signout {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 36px !important;
+  border: 1px solid rgba(148, 163, 184, 0.24) !important;
+  border-radius: 999px !important;
+  padding: 0 14px !important;
+  background: rgba(15, 23, 42, 0.86) !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  font-size: 0.86rem !important;
+  font-weight: 950 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+.qatalyst-account-shell .account-inline-signout:hover {
+  border-color: rgba(248, 113, 113, 0.42) !important;
+  background: rgba(127, 29, 29, 0.32) !important;
+}
+
+.qatalyst-account-shell .account-credits-panel .account-bottom-action,
+.qatalyst-account-shell .account-credits-panel .account-primary-link {
+  display: none !important;
+}
+
+.qatalyst-account-shell .account-credits-panel {
+  justify-content: flex-start !important;
+}
+
+.qatalyst-account-shell .account-credit-display {
+  margin: 18px 0 18px !important;
+}
+
+@media (max-width: 820px) {
+  .qatalyst-account-shell .account-logo-card {
+    min-height: 180px !important;
+  }
+
+  .qatalyst-account-shell .account-status-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .qatalyst-account-shell .account-inline-signout {
+    width: fit-content !important;
+  }
+}
+/* QAS-170 Account theme alignment pass
+   Append to the VERY BOTTOM of src/app/globals.css.
+
+   Fixes:
+   - Removes the window/card around the QAtalyst logo in the Account hero.
+   - Reduces blue/navy tint so Account matches the main app/landing theme better.
+   - Keeps current Account structure intact.
+*/
+
+.qatalyst-account-shell .account-hero-card {
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.22), transparent 34%),
+    radial-gradient(circle at bottom left, rgba(255, 255, 255, 0.035), transparent 34%),
+    linear-gradient(135deg, rgba(10, 12, 17, 0.96), rgba(3, 4, 7, 0.98)) !important;
+}
+
+.qatalyst-account-shell .account-panel,
+.qatalyst-account-shell .account-brain-handoff {
+  background:
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.16), transparent 34%),
+    linear-gradient(145deg, rgba(10, 12, 17, 0.95), rgba(2, 3, 6, 0.96)) !important;
+}
+
+.qatalyst-account-shell .account-logo-card {
+  min-height: 260px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.qatalyst-account-shell .account-logo-card img {
+  width: min(340px, 92%) !important;
+  filter:
+    drop-shadow(0 26px 38px rgba(0, 0, 0, 0.52))
+    drop-shadow(0 0 24px rgba(248, 113, 113, 0.08)) !important;
+}
+
+.qatalyst-account-shell .account-billing-panel,
+.qatalyst-account-shell .account-credits-panel,
+.qatalyst-account-shell .account-profile-panel {
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.12), transparent 38%),
+    linear-gradient(145deg, rgba(10, 12, 17, 0.96), rgba(3, 4, 7, 0.98)) !important;
+}
+
+.qatalyst-account-shell .account-secondary-link,
+.qatalyst-account-shell .account-secondary-button,
+.qatalyst-account-shell .account-brain-link-grid a,
+.qatalyst-account-shell .account-inline-signout {
+  background: rgba(12, 14, 18, 0.88) !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+}
+
+.qatalyst-account-shell .account-mini-list span {
+  background: rgba(7, 8, 12, 0.72) !important;
+}
+
+@media (max-width: 820px) {
+  .qatalyst-account-shell .account-logo-card {
+    min-height: 150px !important;
+  }
+
+  .qatalyst-account-shell .account-logo-card img {
+    width: min(260px, 80%) !important;
+  }
+}
+/* QAS-170 Account TSX logo + theme alignment pass
+   Append to the VERY BOTTOM of src/app/globals.css.
+*/
+
+.qatalyst-account-shell {
+  background: #000 !important;
+}
+
+.qatalyst-account-shell .account-hero-card {
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.22), transparent 34%),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.035), transparent 34%),
+    linear-gradient(135deg, rgba(10, 12, 17, 0.96), rgba(3, 4, 7, 0.98)) !important;
+}
+
+.qatalyst-account-shell .account-hero-logo {
+  align-self: center !important;
+  display: grid !important;
+  place-items: center !important;
+  min-height: 260px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.qatalyst-account-shell .account-hero-logo img {
+  display: block !important;
+  width: min(350px, 94%) !important;
+  height: auto !important;
+  filter:
+    drop-shadow(0 26px 38px rgba(0, 0, 0, 0.52))
+    drop-shadow(0 0 20px rgba(248, 113, 113, 0.08)) !important;
+}
+
+.qatalyst-account-shell .account-logo-card,
+.qatalyst-account-shell .account-summary-card {
+  display: none !important;
+}
+
+.qatalyst-account-shell .account-panel,
+.qatalyst-account-shell .account-brain-handoff,
+.qatalyst-account-shell .account-billing-panel,
+.qatalyst-account-shell .account-credits-panel,
+.qatalyst-account-shell .account-profile-panel {
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.13), transparent 38%),
+    linear-gradient(145deg, rgba(10, 12, 17, 0.96), rgba(3, 4, 7, 0.98)) !important;
+}
+
+.qatalyst-account-shell .account-secondary-link,
+.qatalyst-account-shell .account-secondary-button,
+.qatalyst-account-shell .account-brain-link-grid a,
+.qatalyst-account-shell .account-inline-signout {
+  background: rgba(12, 14, 18, 0.9) !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+}
+
+.qatalyst-account-shell .account-mini-list span {
+  background: rgba(7, 8, 12, 0.74) !important;
+}
+
+@media (max-width: 820px) {
+  .qatalyst-account-shell .account-hero-logo {
+    min-height: 150px !important;
+  }
+
+  .qatalyst-account-shell .account-hero-logo img {
+    width: min(260px, 80%) !important;
+  }
+}
+/* QAS-170 Brain theme match pass
+   Append to the VERY BOTTOM of src/app/globals.css.
+
+   Goal:
+   Make /brain visually match the newer /account theme:
+   - black page
+   - centered compact hero width
+   - charcoal/red windows
+   - less blue/navy
+   - logo floats without an inner logo/account window
+*/
+
+html:has(.qatalyst-brain-shell),
+body:has(.qatalyst-brain-shell) {
+  background: #000 !important;
+}
+
+body:has(.qatalyst-brain-shell)::before,
+body:has(.qatalyst-brain-shell)::after {
+  display: none !important;
+  content: none !important;
+}
+
+.qatalyst-brain-shell {
+  background: #000 !important;
+  background-image: none !important;
+  padding-top: 42px !important;
+}
+
+.qatalyst-brain-shell .brain-hero-shell,
+.qatalyst-brain-shell .brain-workspace,
+.qatalyst-brain-shell .brain-qat-guide {
+  width: min(1180px, calc(100vw - 64px)) !important;
+  max-width: 1180px !important;
+}
+
+.qatalyst-brain-shell .brain-hero-shell {
+  min-height: 470px !important;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.55fr) !important;
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.22), transparent 34%),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.035), transparent 34%),
+    linear-gradient(135deg, rgba(10, 12, 17, 0.96), rgba(3, 4, 7, 0.98)) !important;
+}
+
+.qatalyst-brain-shell .brain-hero-copy h1 {
+  max-width: 720px !important;
+  font-size: clamp(3rem, 5vw, 5.6rem) !important;
+  line-height: 0.94 !important;
+}
+
+.qatalyst-brain-shell .brain-hero-copy > p:not(.brain-eyebrow) {
+  max-width: 720px !important;
+  margin-top: 18px !important;
+}
+
+.qatalyst-brain-shell .brain-native-account {
+  align-self: center !important;
+  justify-self: center !important;
+  width: min(340px, 100%) !important;
+  display: grid !important;
+  gap: 14px !important;
+  transform: none !important;
+}
+
+.qatalyst-brain-shell .brain-native-logo {
+  width: min(330px, 92%) !important;
+  margin: 0 auto 20px !important;
+  filter:
+    drop-shadow(0 26px 38px rgba(0, 0, 0, 0.52))
+    drop-shadow(0 0 20px rgba(248, 113, 113, 0.08)) !important;
+}
+
+.qatalyst-brain-shell .brain-native-user {
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.12), transparent 38%),
+    linear-gradient(145deg, rgba(10, 12, 17, 0.96), rgba(3, 4, 7, 0.98)) !important;
+}
+
+.qatalyst-brain-shell .brain-native-actions {
+  background: rgba(7, 8, 12, 0.82) !important;
+}
+
+.qatalyst-brain-shell .brain-panel,
+.qatalyst-brain-shell .brain-tab-rail,
+.qatalyst-brain-shell .brain-status-card,
+.qatalyst-brain-shell .brain-next-step-card,
+.qatalyst-brain-shell .brain-empty-state,
+.qatalyst-brain-shell .brain-integration-card {
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.13), transparent 38%),
+    linear-gradient(145deg, rgba(10, 12, 17, 0.96), rgba(3, 4, 7, 0.98)) !important;
+}
+
+.qatalyst-brain-shell .brain-tab-rail button {
+  background: rgba(7, 8, 12, 0.74) !important;
+}
+
+.qatalyst-brain-shell .brain-tab-rail button.active {
+  background:
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.32), transparent 44%),
+    rgba(12, 14, 18, 0.9) !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide.qat-guide-shell {
+  max-width: min(1040px, calc(100vw - 96px)) !important;
+}
+
+.qatalyst-brain-shell .brain-qat-guide .qat-guide-card {
+  background:
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.22), transparent 38%),
+    linear-gradient(145deg, rgba(10, 12, 17, 0.96), rgba(3, 4, 7, 0.98)) !important;
+}
+
+.qatalyst-brain-shell .brain-secondary-link,
+.qatalyst-brain-shell .brain-integration-card a,
+.qatalyst-brain-shell .brain-integration-card button,
+.qatalyst-brain-shell .brain-next-step-card button,
+.qatalyst-brain-shell .brain-native-account-link,
+.qatalyst-brain-shell .brain-native-ghost {
+  background: rgba(12, 14, 18, 0.9) !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+}
+
+.qatalyst-brain-shell .brain-next-step-card button {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  border-color: rgba(248, 113, 113, 0.42) !important;
+}
+
+@media (max-width: 1080px) {
+  .qatalyst-brain-shell .brain-hero-shell,
+  .qatalyst-brain-shell .brain-workspace,
+  .qatalyst-brain-shell .brain-qat-guide {
+    width: min(1180px, calc(100vw - 32px)) !important;
+  }
+
+  .qatalyst-brain-shell .brain-native-account {
+    justify-self: stretch !important;
+    width: 100% !important;
+  }
 }
