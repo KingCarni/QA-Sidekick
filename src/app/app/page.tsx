@@ -3731,7 +3731,7 @@ export default function Home() {
             label: "Start with Project Brain",
             onClick: () => {
               dismissFtueStep(FTUE_KEYS.welcome);
-              window.location.href = "/projects";
+              window.location.href = "/brain";
             },
           }}
           secondaryAction={{
@@ -3751,7 +3751,7 @@ export default function Home() {
             label: "Open Project setup",
             onClick: () => {
               dismissFtueStep(FTUE_KEYS.brainIntro);
-              window.location.href = "/projects";
+              window.location.href = "/brain";
             },
           }}
           secondaryAction={{
@@ -3771,7 +3771,7 @@ export default function Home() {
             label: "Show me integrations",
             onClick: () => {
               dismissFtueStep(FTUE_KEYS.integrationsIntro);
-              window.location.href = "/projects";
+              window.location.href = "/brain?tab=integrations";
             },
           }}
           secondaryAction={{

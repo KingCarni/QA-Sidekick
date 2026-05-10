@@ -1,196 +1,120 @@
-import { getServerSession } from "next-auth";
+"use client";
+
 import Link from "next/link";
-import { authOptions } from "@/lib/auth";
-import { getCreditBalance } from "@/lib/credits";
-import { prisma } from "@/lib/prisma";
+import { signOut, useSession } from "next-auth/react";
+import CreditsPill from "@/components/CreditsPill";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+export default function AccountPage() {
+  const { data: session, status } = useSession();
 
-function formatReason(value: string) {
-  return value
-    .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-function formatDelta(value: number) {
-  return value > 0 ? `+${value}` : String(value);
-}
-
-function formatDate(value: Date) {
-  return value.toISOString().slice(0, 10);
-}
-
-export default async function AccountPage() {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-
-  if (!userId) {
-    return (
-      <main className="qas156-shell qas156-account-page">
-        <section className="qas156-window qas156-account-hero qas156-account-hero-signed-out">
-          <div className="qas156-hero-copy">
-            <p className="qas156-kicker">QAtalyst Account</p>
-            <h1>Sign in to view your QAtalyst workspace.</h1>
-            <p>
-              Your credits, saved QA reports, project workspace, and account activity will appear
-              here once you sign in.
-            </p>
-            <div className="qas156-action-row">
-              <Link className="qas156-button qas156-button-primary" href="/api/auth/signin">
-                Sign in
-              </Link>
-              <Link className="qas156-button qas156-button-secondary" href="/">
-                Back to QAtalyst
-              </Link>
-            </div>
-          </div>
-
-          <div className="qas156-logo-panel" aria-label="QAtalyst">
-            <img src="/qatalyst-header.png" alt="QAtalyst" />
-            <span>Reviewable QA workflow support for practical teams.</span>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  const [balance, recentLedger, recentEvents, recentReportsCount] = await Promise.all([
-    getCreditBalance(userId),
-    prisma.creditsLedger.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
-    prisma.event.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
-    prisma.qAReport.count({
-      where: { userId },
-    }),
-  ]);
-
-  const displayUser = session.user?.email ?? session.user?.name ?? "Signed-in user";
-  const purchaseCount = recentLedger.filter((entry) => entry.reason === "purchase_stripe").length;
+  const email = session?.user?.email ?? "Not signed in";
+  const name = session?.user?.name ?? "QAtalyst user";
+  const isSignedIn = Boolean(session?.user);
 
   return (
-    <main className="qas156-shell qas156-account-page">
-      <section className="qas156-window qas156-account-hero">
-        <div className="qas156-hero-copy">
-          <p className="qas156-kicker">QAtalyst Account</p>
-          <h1>Account</h1>
-          <p className="qas156-identity-line">{displayUser}</p>
-          <p>
-            Monitor credits, saved reports, usage activity, and account shortcuts from one polished
-            QAtalyst control surface.
+    <main className="qatalyst-account-shell">
+      <section className="account-hero-card">
+        <div className="account-hero-copy">
+          <div className="account-breadcrumb-row">
+            <Link href="/app">QAtalyst app</Link>
+            <span>/</span>
+            <strong>Account</strong>
+          </div>
+
+          <p className="account-eyebrow">Account · Credits · Billing</p>
+          <h1>Manage your QAtalyst account.</h1>
+          <p className="account-hero-subtitle">
+            Update the basics, check your credits, and jump back into Project Brain when you need workspace setup.
           </p>
 
-          <div className="qas156-action-row">
-            <Link className="qas156-button qas156-button-primary" href="/reports">
-              Saved Reports
+          <div className="account-hero-actions">
+            <Link className="account-primary-link" href="/buy-credits">
+              Buy credits
             </Link>
-            <Link className="qas156-button qas156-button-primary" href="/buy-credits">
-              Buy Credits
+            <Link className="account-secondary-link" href="/brain">
+              Open Project Brain
             </Link>
-            <Link className="qas156-button qas156-button-secondary" href="/jira/settings">
-              Settings
-            </Link>
-            <Link className="qas156-button qas156-button-secondary" href="/">
-              Back to QAtalyst
+            <Link className="account-secondary-link" href="/app">
+              Back to toolbelt
             </Link>
           </div>
         </div>
 
-        <div className="qas156-logo-panel" aria-label="QAtalyst">
+        <aside className="account-hero-logo" aria-label="QAtalyst">
           <img src="/qatalyst-header.png" alt="QAtalyst" />
-          <span>Project-aware QA planning, credits, reports, and reusable context.</span>
-        </div>
+        </aside>
       </section>
 
-      <section className="qas156-stat-grid" aria-label="Account summary">
-        <article className="qas156-stat-card qas156-stat-card-primary">
-          <span>Current credits</span>
-          <strong>{balance}</strong>
+      <section className="account-dashboard-grid account-dashboard-grid-three" aria-label="Account dashboard">
+        <article className="account-panel account-profile-panel">
+          <p className="account-eyebrow">Profile</p>
+          <h2>Your profile</h2>
+          <dl className="account-detail-list">
+            <div>
+              <dt>Email</dt>
+              <dd>{status === "loading" ? "Loading…" : email}</dd>
+            </div>
+            <div>
+              <dt>Name</dt>
+              <dd>{name}</dd>
+            </div>
+            <div className="account-status-row">
+              <div>
+                <dt>Status</dt>
+                <dd>{isSignedIn ? "Signed in" : "Not signed in"}</dd>
+              </div>
+              {isSignedIn ? (
+                <button className="account-inline-signout" type="button" onClick={() => signOut()}>
+                  Sign out
+                </button>
+              ) : (
+                <Link className="account-inline-signout" href="/api/auth/signin">
+                  Sign in
+                </Link>
+              )}
+            </div>
+          </dl>
         </article>
-        <article className="qas156-stat-card">
-          <span>Saved reports</span>
-          <strong>{recentReportsCount}</strong>
-        </article>
-        <article className="qas156-stat-card">
-          <span>Recent events</span>
-          <strong>{recentEvents.length}</strong>
-        </article>
-        <article className="qas156-stat-card">
-          <span>Stripe purchases</span>
-          <strong>{purchaseCount}</strong>
-        </article>
-      </section>
 
-      <section className="qas156-window qas156-account-feature-card">
-        <div>
-          <p className="qas156-kicker">Reports</p>
-          <h2>Saved QA reports</h2>
+        <article className="account-panel account-credits-panel">
+          <p className="account-eyebrow">Credits</p>
+          <h2>Your credits</h2>
+          <div className="account-credit-display">
+            <CreditsPill />
+          </div>
+          <p>Use credits to generate test cases, risk reviews, bug reports, and improvement passes.</p>
+        </article>
+
+        <article className="account-panel account-billing-panel">
+          <p className="account-eyebrow">Billing</p>
+          <h2>Purchases and billing</h2>
           <p>
-            Save generated test cases, risk reviews, bug reports, and test improvements from the app,
-            then return to them when the team needs context.
+            Credits, purchases, receipts, and future billing controls stay here in Account.
+          </p>
+          <div className="account-mini-list">
+            <span>Credit purchases</span>
+            <span>Billing history later</span>
+            <span>Team billing later</span>
+          </div>
+        </article>
+      </section>
+
+      <section className="account-brain-handoff">
+        <div>
+          <p className="account-eyebrow">Project Brain</p>
+          <h2>Workspace setup moved to Brain.</h2>
+          <p>
+            Source Vault, Bug Collection, Jira, TestRail, saved reports, QA rules, terminology, and risk hotspots now belong in Project Brain.
           </p>
         </div>
-        <Link className="qas156-button qas156-button-primary" href="/reports">
-          View Reports
-        </Link>
-      </section>
 
-      <section className="qas156-account-grid">
-        <article className="qas156-window qas156-ledger-card">
-          <div className="qas156-section-header">
-            <div>
-              <p className="qas156-kicker">Credits</p>
-              <h2>Credit ledger</h2>
-            </div>
-            <span>{recentLedger.length} recent</span>
-          </div>
-
-          {recentLedger.length > 0 ? (
-            <div className="qas156-ledger-list">
-              {recentLedger.map((entry) => (
-                <div className="qas156-ledger-row" key={entry.id}>
-                  <span>{formatReason(entry.reason)}</span>
-                  <strong className={entry.delta >= 0 ? "qas156-delta-positive" : "qas156-delta-negative"}>
-                    {formatDelta(entry.delta)}
-                  </strong>
-                  <small>{formatDate(entry.createdAt)}</small>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="qas156-empty-copy">No credit history yet.</p>
-          )}
-        </article>
-
-        <article className="qas156-window qas156-activity-card">
-          <div className="qas156-section-header">
-            <div>
-              <p className="qas156-kicker">Activity</p>
-              <h2>Usage events</h2>
-            </div>
-            <span>{recentEvents.length} recent</span>
-          </div>
-
-          {recentEvents.length > 0 ? (
-            <div className="qas156-ledger-list">
-              {recentEvents.map((event) => (
-                <div className="qas156-ledger-row qas156-ledger-row-two" key={event.id}>
-                  <span>{formatReason(event.type)}</span>
-                  <small>{formatDate(event.createdAt)}</small>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="qas156-empty-copy">No usage events yet.</p>
-          )}
-        </article>
+        <div className="account-brain-link-grid">
+          <Link href="/brain">Brain overview</Link>
+          <Link href="/brain?tab=sources">Source Vault</Link>
+          <Link href="/brain?tab=bugs">Bug Collection</Link>
+          <Link href="/brain?tab=reports">Saved Reports</Link>
+          <Link href="/brain?tab=integrations">Integrations</Link>
+        </div>
       </section>
     </main>
   );
