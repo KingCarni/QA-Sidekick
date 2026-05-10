@@ -1,0 +1,120 @@
+/* QAS-170 integration settings theme/alignment patch */
+.integrations-settings-page .reports-hero,
+.integrations-settings-page .settings-wide-panel,
+.integrations-settings-page .jira-settings-card,
+.integrations-settings-page .settings-wide-section,
+.integrations-settings-page .jira-diagnostics-card,
+.integrations-settings-page .jira-insight-panel,
+.integrations-settings-page .jira-issue-type-helper {
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.16), transparent 42%),
+    radial-gradient(circle at top left, rgba(15, 15, 18, 0.28), transparent 34%),
+    linear-gradient(145deg, rgba(10, 10, 13, 0.98), rgba(4, 4, 6, 0.98)) !important;
+  border-color: rgba(248, 113, 113, 0.16) !important;
+}
+
+.integrations-settings-page .settings-wide-panel,
+.integrations-settings-page .jira-settings-card {
+  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.035) !important;
+}
+
+.integrations-settings-page .settings-area-tabs,
+.integrations-settings-page .integrations-settings-tabs,
+.integrations-settings-page .settings-hero-actions,
+.integrations-settings-page .integrations-settings-actions {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+}
+
+.integrations-settings-page .settings-area-tab,
+.integrations-settings-page .account-buy-link,
+.integrations-settings-page .account-back-link,
+.integrations-settings-page .qatalyst-pill-button {
+  min-height: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 14px !important;
+}
+
+.integrations-settings-page .jira-settings-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr) minmax(0, 0.92fr) !important;
+  column-gap: 18px !important;
+  row-gap: 22px !important;
+  align-items: start !important;
+}
+
+.integrations-settings-page .jira-settings-grid > label,
+.integrations-settings-page .jira-settings-grid > div {
+  min-width: 0 !important;
+}
+
+.integrations-settings-page .jira-settings-grid > label:nth-of-type(1) {
+  grid-column: 1 / 2 !important;
+  grid-row: 1 !important;
+}
+
+.integrations-settings-page .jira-settings-grid > div:first-of-type {
+  grid-column: 2 / 4 !important;
+  grid-row: 1 !important;
+  align-self: end !important;
+}
+
+.integrations-settings-page .jira-settings-grid > label:nth-of-type(2) {
+  grid-column: 1 / 2 !important;
+  grid-row: 2 !important;
+}
+
+.integrations-settings-page .jira-settings-grid > label:nth-of-type(3) {
+  grid-column: 2 / 4 !important;
+  grid-row: 2 !important;
+  align-self: start !important;
+}
+
+.integrations-settings-page .jira-settings-grid > label:nth-of-type(4) {
+  grid-column: 1 / 2 !important;
+  grid-row: 3 !important;
+}
+
+.integrations-settings-page input,
+.integrations-settings-page select,
+.integrations-settings-page textarea {
+  background: rgba(5, 6, 10, 0.96) !important;
+  border-color: rgba(148, 163, 184, 0.18) !important;
+  box-shadow: inset 0 18px 42px rgba(0, 0, 0, 0.22) !important;
+}
+
+.integrations-settings-page input:focus,
+.integrations-settings-page select:focus,
+.integrations-settings-page textarea:focus {
+  border-color: rgba(248, 113, 113, 0.46) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1), inset 0 18px 42px rgba(0, 0, 0, 0.22) !important;
+}
+
+.integrations-settings-page .settings-area-tab-active {
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.92), rgba(15, 15, 18, 0.96)) !important;
+  border-color: rgba(248, 113, 113, 0.48) !important;
+  box-shadow: 0 14px 34px rgba(127, 29, 29, 0.22) !important;
+}
+
+.integrations-settings-page .jira-status-pill.ready,
+.integrations-settings-page .jira-status-pill.warning,
+.integrations-settings-page .jira-status-pill.error {
+  min-width: 128px !important;
+  justify-content: center !important;
+}
+
+@media (max-width: 920px) {
+  .integrations-settings-page .jira-settings-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .integrations-settings-page .jira-settings-grid > label,
+  .integrations-settings-page .jira-settings-grid > div {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+}
