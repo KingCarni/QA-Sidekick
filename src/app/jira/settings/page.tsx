@@ -18,10 +18,18 @@ export default async function SettingsPage() {
       <main className="reports-page">
         <section className="reports-hero settings-hero-real-logo">
           <div className="settings-hero-copy">
+            <p className="brain-eyebrow">Legacy setup route · Integrations now live in Brain</p>
             <h1>Settings</h1>
-            <p>Sign in to manage QAtalyst integrations, defaults, and account tools.</p>
+            <p>
+              Sign in to manage QAtalyst integrations, defaults, and account tools.
+              Project setup, Source Vault, Bug Collection, and Saved Reports now live in Project Brain.
+            </p>
 
             <div className="settings-hero-actions">
+              <Link className="account-buy-link" href="/brain">
+                Open Project Brain
+              </Link>
+
               <Link className="account-back-link" href="/">
                 Back to QAtalyst
               </Link>
@@ -49,13 +57,21 @@ export default async function SettingsPage() {
     <main className="reports-page">
       <section className="reports-hero settings-hero-real-logo">
         <div className="settings-hero-copy">
-          <h1>Settings</h1>
-          <p>Manage QAtalyst integrations, project memory, product defaults, and testing tools.</p>
+          <p className="brain-eyebrow">Legacy setup route · Prefer Project Brain</p>
+          <h1>Integrations & Settings</h1>
+          <p>
+            Jira setup still works here during transition, but Project Brain is now the primary workspace for projects, reusable QA memory, Source Vault, Bug Collection, and Saved Reports.
+          </p>
 
           <div className="settings-hero-actions">
-            <Link className="account-buy-link" href="/app">
+            <Link className="account-buy-link" href="/brain">
+              Open Project Brain
+            </Link>
+
+            <Link className="account-back-link" href="/app">
               Launch App
             </Link>
+
             <Link className="account-back-link" href="/account">
               Account
             </Link>
