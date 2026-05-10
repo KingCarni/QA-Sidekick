@@ -15,22 +15,15 @@ export default async function SettingsPage() {
 
   if (!userId) {
     return (
-      <main className="reports-page">
-        <section className="reports-hero settings-hero-real-logo">
+      <main className="reports-page integrations-settings-page">
+        <section className="reports-hero settings-hero-real-logo integrations-settings-hero">
           <div className="settings-hero-copy">
-            <p className="brain-eyebrow">Legacy setup route · Integrations now live in Brain</p>
-            <h1>Settings</h1>
-            <p>
-              Sign in to manage QAtalyst integrations, defaults, and account tools.
-              Project setup, Source Vault, Bug Collection, and Saved Reports now live in Project Brain.
-            </p>
+            <p className="brain-eyebrow">Integrations</p>
+            <h1>Integration Settings</h1>
+            <p>Sign in to connect external workflow tools used by QAtalyst.</p>
 
-            <div className="settings-hero-actions">
-              <Link className="account-buy-link" href="/brain">
-                Open Project Brain
-              </Link>
-
-              <Link className="account-back-link" href="/">
+            <div className="settings-hero-actions integrations-settings-actions">
+              <Link className="account-buy-link" href="/">
                 Back to QAtalyst
               </Link>
             </div>
@@ -54,16 +47,14 @@ export default async function SettingsPage() {
   const config = await getUserJiraConfig(userId);
 
   return (
-    <main className="reports-page">
-      <section className="reports-hero settings-hero-real-logo">
+    <main className="reports-page integrations-settings-page">
+      <section className="reports-hero settings-hero-real-logo integrations-settings-hero">
         <div className="settings-hero-copy">
-          <p className="brain-eyebrow">Legacy setup route · Prefer Project Brain</p>
-          <h1>Integrations & Settings</h1>
-          <p>
-            Jira setup still works here during transition, but Project Brain is now the primary workspace for projects, reusable QA memory, Source Vault, Bug Collection, and Saved Reports.
-          </p>
+          <p className="brain-eyebrow">Integrations</p>
+          <h1>Integration Settings</h1>
+          <p>Connect Jira and TestRail so QAtalyst can move reviewed QA work into the tools your team already uses.</p>
 
-          <div className="settings-hero-actions">
+          <div className="settings-hero-actions integrations-settings-actions">
             <Link className="account-buy-link" href="/brain">
               Open Project Brain
             </Link>
