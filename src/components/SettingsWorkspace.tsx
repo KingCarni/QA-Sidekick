@@ -91,16 +91,19 @@ export default function SettingsWorkspace({
   }
 
   return (
-    <section className="settings-wide-panel settings-wide-panel-with-projects" data-testid="settings-workspace">
-      <div className="settings-area-strip">
-        <p className="report-kicker">Integration Settings</p>
-        <h2>Legacy integration setup</h2>
-        <p className="settings-transition-copy">
-          Project setup, Source Vault, Bug Collection, Saved Reports, and account profile now live in Project Brain or Account.
-          This page stays focused on external tool connection settings during the migration.
-        </p>
+    <section className="settings-wide-panel integrations-settings-panel" data-testid="settings-workspace">
+      <div className="settings-area-strip integrations-settings-strip">
+        <div className="integrations-settings-header">
+          <div>
+            <p className="report-kicker">Connected Workflow Tools</p>
+            <h2>External integrations</h2>
+            <p className="settings-transition-copy">
+              Configure the external QA systems QAtalyst uses for ticket sync, report export, and future workflow automation.
+            </p>
+          </div>
+        </div>
 
-        <nav className="settings-area-tabs" aria-label="Settings areas">
+        <nav className="settings-area-tabs integrations-settings-tabs" aria-label="Settings areas">
           <button className={tabClass("jira")} data-testid="settings-tab-jira-integration" onClick={() => setActiveArea("jira")} type="button">
             Jira Integration
           </button>
@@ -109,29 +112,29 @@ export default function SettingsWorkspace({
           </button>
           {isAdmin ? (
             <button className={tabClass("admin")} onClick={() => setActiveArea("admin")} type="button">
-              Admin Debug
+              Admin Tools
             </button>
           ) : null}
         </nav>
       </div>
 
       {activeArea === "jira" ? (
-        <section className="settings-wide-section" id="jira-integration">
+        <section className="settings-wide-section integrations-settings-section" id="jira-integration">
           <JiraSettingsForm initialConfig={initialJiraConfig} />
         </section>
       ) : null}
 
       {activeArea === "testrail" ? (
-        <section className="settings-wide-section" id="testrail-integration">
+        <section className="settings-wide-section integrations-settings-section" id="testrail-integration">
           <TestRailSettingsForm />
         </section>
       ) : null}
 
       {activeArea === "admin" && isAdmin ? (
-        <section className="settings-module-card admin-debug-card settings-wide-section" id="admin-debug">
-          <p className="report-kicker">Admin Debug</p>
-          <h2>Testing shortcuts</h2>
-          <p>Admin-only debug hooks for faster local and beta testing.</p>
+        <section className="settings-module-card admin-debug-card settings-wide-section integrations-settings-section" id="admin-debug">
+          <p className="report-kicker">Internal Tools</p>
+          <h2>Automation utilities</h2>
+          <p>Internal QA and automation setup helpers used during development and beta testing.</p>
 
           {showInternalE2ESetup ? (
             <section className="dev-only-account-setup">
@@ -151,7 +154,6 @@ export default function SettingsWorkspace({
             <code>User: {userEmail ?? "unknown"}</code>
             <code>Jira configured: {initialJiraConfig ? "yes" : "no"}</code>
             <code>Project key: {initialJiraConfig?.projectKey ?? "none"}</code>
-            <code>Next: wire smoke/debug actions</code>
           </div>
         </section>
       ) : null}
