@@ -2,13 +2,19 @@
 
 import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import BugCollectionPanel from "@/components/BugCollectionPanel";
 import CreditsPill from "@/components/CreditsPill";
+import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSettingsPanel";
+import ProjectSourceVaultPanel from "@/components/ProjectSourceVaultPanel";
 import QAtGuideCard from "@/components/QAtGuideCard";
 
 type BrainTabId =
   | "overview"
+  | "projects"
   | "sources"
+  | "bugs"
+  | "reports"
   | "rules"
   | "terminology"
   | "risks"
@@ -23,6 +29,23 @@ type BrainTab = {
   body: string;
 };
 
+type SafeQAReport = {
+  id: string;
+  projectId: string | null;
+  type: string;
+  title: string | null;
+  markdown: string | null;
+  sourceInput: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ReportsApiResponse = {
+  ok?: boolean;
+  error?: string;
+  reports?: SafeQAReport[];
+};
+
 const BRAIN_TABS: BrainTab[] = [
   {
     id: "overview",
@@ -30,7 +53,15 @@ const BRAIN_TABS: BrainTab[] = [
     eyebrow: "Brain overview",
     title: "Give QAtalyst a reusable memory of your product.",
     body:
-      "Project Brain is where project context, reusable sources, team QA rules, terminology, risks, features, and integrations live.",
+      "Project Brain is where project context, reusable sources, saved reports, team QA rules, terminology, risks, bug collections, features, and integrations live.",
+  },
+  {
+    id: "projects",
+    label: "Projects",
+    eyebrow: "Project foundation",
+    title: "Create the project containers your QA memory attaches to.",
+    body:
+      "Projects hold source memories, saved reports, saved bugs, Jira links, generated QA outputs, and product context.",
   },
   {
     id: "sources",
@@ -39,6 +70,22 @@ const BRAIN_TABS: BrainTab[] = [
     title: "Store the source material QAtalyst should reuse.",
     body:
       "Use Source Vault for specs, product notes, saved outputs, imported context, important links, and release notes that should ground future QA work.",
+  },
+  {
+    id: "bugs",
+    label: "Bug Collection",
+    eyebrow: "Saved defects",
+    title: "Keep saved Bug Writer outputs attached to the right project.",
+    body:
+      "Bug Collection stores generated or saved defects separately from reusable source memory, so triage output does not pollute your product context.",
+  },
+  {
+    id: "reports",
+    label: "Saved Reports",
+    eyebrow: "Generated artifacts",
+    title: "Review saved QA reports and generated artifacts.",
+    body:
+      "Saved Reports keeps generated test plans, risk reviews, improved test cases, and other outputs available from the same project workspace.",
   },
   {
     id: "rules",
@@ -83,26 +130,22 @@ const BRAIN_TABS: BrainTab[] = [
 ];
 
 const BRAIN_STATUS_CARDS = [
-  { label: "Source Vault", value: "Ready", text: "Reusable context and saved project sources." },
+  { label: "Projects", value: "Live", text: "Project containers now live in Brain." },
+  { label: "Source Vault", value: "Live", text: "Reusable context and saved project sources." },
+  { label: "Bug Collection", value: "Live", text: "Saved defects now live in Brain." },
+  { label: "Saved Reports", value: "Foundation", text: "Report history shell now lives in Brain." },
   { label: "QA Rules", value: "Planned", text: "Team standards and release expectations." },
-  { label: "Terminology", value: "Planned", text: "Product vocabulary, acronyms, and roles." },
-  { label: "Risks", value: "Planned", text: "Regression hotspots and known fragile areas." },
   { label: "Integrations", value: "Available", text: "Jira and TestRail setup lives here." },
 ];
 
-const SECTION_EMPTY_STATES: Record<Exclude<BrainTabId, "overview" | "integrations">, string[]> = {
-  sources: [
-    "Add product notes, docs, release goals, or saved generated outputs.",
-    "Keep context concise and reusable so future QA runs stay grounded.",
-    "This will become the main Source Vault management area.",
-  ],
+const SECTION_EMPTY_STATES: Record<Exclude<BrainTabId, "overview" | "projects" | "sources" | "bugs" | "reports" | "integrations">, string[]> = {
   rules: [
     "Add severity/priority rules, release gates, and coverage expectations.",
     "Capture how your team wants QA output structured.",
     "Use this to reduce generic AI output.",
   ],
   terminology: [
-    "Define acronyms, user roles, feature names, and product vocabulary.",
+    "Define acronyms, user roles, domain terms, and product vocabulary.",
     "Keep domain language consistent across generated artifacts.",
     "This helps QAtalyst ask better follow-up questions.",
   ],
@@ -117,6 +160,28 @@ const SECTION_EMPTY_STATES: Record<Exclude<BrainTabId, "overview" | "integration
     "Future Feature Builder work can feed this registry.",
   ],
 };
+
+function formatReportDate(value: string) {
+  if (!value) return "";
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(new Date(value));
+  } catch {
+    return "";
+  }
+}
+
+function labelForReportType(type: string) {
+  return type
+    .split(/[-_]/)
+    .filter(Boolean)
+    .map((word) => word.slice(0, 1).toUpperCase() + word.slice(1))
+    .join(" ") || "Report";
+}
 
 function BrainHeroAccount() {
   const { data: session, status } = useSession();
@@ -158,8 +223,171 @@ function BrainHeroAccount() {
   );
 }
 
+function SavedReportsPanel({ activeProject }: { activeProject: SafeQAProject | null }) {
+  const [reports, setReports] = useState<SafeQAReport[]>([]);
+  const [selectedReportId, setSelectedReportId] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const selectedReport = useMemo(
+    () => reports.find((report) => report.id === selectedReportId) ?? reports[0] ?? null,
+    [reports, selectedReportId]
+  );
+
+  const reportTypes = useMemo(() => {
+    return Array.from(new Set(reports.map((report) => report.type).filter(Boolean))).sort();
+  }, [reports]);
+
+  const filteredReports = useMemo(() => {
+    if (typeFilter === "all") return reports;
+    return reports.filter((report) => report.type === typeFilter);
+  }, [reports, typeFilter]);
+
+  useEffect(() => {
+    setReports([]);
+    setSelectedReportId("");
+    setMessage("");
+    setError("");
+
+    if (activeProject?.id) {
+      void loadReports(activeProject.id);
+    }
+  }, [activeProject?.id]);
+
+  async function loadReports(projectId: string) {
+    setIsLoading(true);
+    setMessage("");
+    setError("");
+
+    try {
+      const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/reports`);
+      const payload = (await response.json().catch(() => null)) as ReportsApiResponse | null;
+
+      if (!response.ok || payload?.ok === false) {
+        throw new Error(payload?.error || "Could not load saved reports.");
+      }
+
+      const nextReports = payload?.reports ?? [];
+      setReports(nextReports);
+      setSelectedReportId(nextReports[0]?.id ?? "");
+      setMessage(nextReports.length ? `Loaded ${nextReports.length} saved report${nextReports.length === 1 ? "" : "s"}.` : "");
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Could not load saved reports.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  if (!activeProject) {
+    return (
+      <section className="saved-reports-panel saved-reports-empty">
+        <p className="report-kicker">Saved Reports</p>
+        <h2>Select a project first</h2>
+        <p>Saved reports attach to a project. Create or select a project before reviewing generated QA artifacts.</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="saved-reports-panel">
+      <div className="saved-reports-header">
+        <div>
+          <p className="report-kicker">Saved Reports</p>
+          <h2>{activeProject.name} reports</h2>
+          <p>Review generated QA artifacts that were saved against this project.</p>
+        </div>
+
+        <button type="button" onClick={() => loadReports(activeProject.id)} disabled={isLoading}>
+          {isLoading ? "Refreshing..." : "Refresh"}
+        </button>
+      </div>
+
+      <div className="saved-reports-stats">
+        <div><strong>{reports.length}</strong><span>Total reports</span></div>
+        <div><strong>{reportTypes.length}</strong><span>Report types</span></div>
+        <div><strong>{filteredReports.length}</strong><span>Visible</span></div>
+      </div>
+
+      <div className="saved-reports-toolbar">
+        <label>
+          Type
+          <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
+            <option value="all">All</option>
+            {reportTypes.map((type) => (
+              <option key={type} value={type}>{labelForReportType(type)}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {message ? <p className="saved-reports-message">{message}</p> : null}
+      {error ? <p className="saved-reports-error">{error}</p> : null}
+
+      <div className="saved-reports-grid">
+        <aside className="saved-reports-list-card">
+          <p className="report-kicker">Report History</p>
+
+          {isLoading ? <p className="saved-reports-muted">Loading reports...</p> : null}
+          {!isLoading && filteredReports.length === 0 ? (
+            <p className="saved-reports-muted">No saved reports match this filter yet.</p>
+          ) : null}
+
+          <div className="saved-reports-list">
+            {filteredReports.map((report) => (
+              <button
+                className={report.id === selectedReport?.id ? "saved-report-list-item saved-report-list-item-active" : "saved-report-list-item"}
+                key={report.id}
+                type="button"
+                onClick={() => setSelectedReportId(report.id)}
+              >
+                <strong>{report.title || labelForReportType(report.type)}</strong>
+                <span>{labelForReportType(report.type)}</span>
+                <small>{formatReportDate(report.updatedAt || report.createdAt)}</small>
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        <article className="saved-report-detail-card">
+          {selectedReport ? (
+            <>
+              <div className="saved-report-detail-top">
+                <div>
+                  <p className="report-kicker">Selected Report</p>
+                  <h3>{selectedReport.title || labelForReportType(selectedReport.type)}</h3>
+                  <p>{labelForReportType(selectedReport.type)} · {formatReportDate(selectedReport.updatedAt || selectedReport.createdAt)}</p>
+                </div>
+              </div>
+
+              {selectedReport.markdown ? (
+                <div className="saved-report-markdown-preview">
+                  <pre>{selectedReport.markdown}</pre>
+                </div>
+              ) : (
+                <p className="saved-reports-muted">No markdown saved for this report.</p>
+              )}
+
+              {selectedReport.sourceInput ? (
+                <details className="saved-report-source-details">
+                  <summary>View original source input</summary>
+                  <pre>{selectedReport.sourceInput}</pre>
+                </details>
+              ) : null}
+            </>
+          ) : (
+            <p className="saved-reports-muted">Select a report to view details.</p>
+          )}
+        </article>
+      </div>
+    </section>
+  );
+}
+
 export default function BrainPage() {
   const [activeTab, setActiveTab] = useState<BrainTabId>("overview");
+  const [activeProject, setActiveProject] = useState<SafeQAProject | null>(null);
 
   const active = useMemo(
     () => BRAIN_TABS.find((tab) => tab.id === activeTab) ?? BRAIN_TABS[0],
@@ -179,15 +407,15 @@ export default function BrainPage() {
           <p className="brain-eyebrow">Project Brain · Reusable context · Workflow intelligence</p>
           <h1>Project Brain gives QAtalyst product memory.</h1>
           <p>
-            Configure the context, sources, rules, terms, risks, features, and integrations that keep generated QA work grounded in your actual product.
+            Configure the context, sources, rules, terms, risks, bug collections, saved reports, features, and integrations that keep generated QA work grounded in your actual product.
           </p>
 
           <div className="brain-hero-actions">
             <Link className="brain-primary-link" href="/app">
               Back to toolbelt
             </Link>
-            <button className="brain-secondary-link" type="button" onClick={() => setActiveTab("integrations")}>
-              Open integrations
+            <button className="brain-secondary-link" type="button" onClick={() => setActiveTab("sources")}>
+              Open Source Vault
             </button>
           </div>
         </div>
@@ -198,10 +426,10 @@ export default function BrainPage() {
       <QAtGuideCard
         className="qat-ftue-card brain-qat-guide"
         eyebrow="QAt setup guide"
-        title="Start with context, then connect workflow tools."
-        body="Brain is the home for the product knowledge QAtalyst should reuse. Jira and TestRail are integrations inside that workspace, not the whole setup flow."
-        primaryAction={{ label: "Open integrations", onClick: () => setActiveTab("integrations") }}
-        secondaryAction={{ label: "Review overview", onClick: () => setActiveTab("overview") }}
+        title="Start with your project memory."
+        body="Brain now owns reusable project context. Create/select a project, add source notes or docs, keep saved defects in Bug Collection, and review generated artifacts in Saved Reports."
+        primaryAction={{ label: "Open Source Vault", onClick: () => setActiveTab("sources") }}
+        secondaryAction={{ label: "Saved Reports", onClick: () => setActiveTab("reports") }}
       />
 
       <section className="brain-workspace">
@@ -221,6 +449,27 @@ export default function BrainPage() {
             <span>{active.body}</span>
           </div>
 
+          {activeProject ? (
+            <div className="brain-active-project-strip">
+              <div>
+                <p className="brain-mini-eyebrow">Active project</p>
+                <strong>{activeProject.name}</strong>
+                <span>{activeProject.productType || "other"}</span>
+              </div>
+              <div className="brain-active-project-actions">
+                <button type="button" onClick={() => setActiveTab("sources")}>
+                  Manage sources
+                </button>
+                <button type="button" onClick={() => setActiveTab("bugs")}>
+                  View bugs
+                </button>
+                <button type="button" onClick={() => setActiveTab("reports")}>
+                  Saved reports
+                </button>
+              </div>
+            </div>
+          ) : null}
+
           {activeTab === "overview" ? (
             <div className="brain-overview-grid">
               {BRAIN_STATUS_CARDS.map((card) => (
@@ -233,16 +482,43 @@ export default function BrainPage() {
 
               <article className="brain-next-step-card">
                 <p>Recommended next step</p>
-                <h3>Move Jira and TestRail setup under Brain → Integrations.</h3>
-                <span>This gives FTUE a real destination and removes the confusing Jira/settings mental model.</span>
-                <button type="button" onClick={() => setActiveTab("integrations")}>
-                  Go to integrations
+                <h3>Move reusable context, saved defects, and reports into Brain.</h3>
+                <span>Create/select a project, then manage Source Vault, Bug Collection, and Saved Reports from one setup hub.</span>
+                <button type="button" onClick={() => setActiveTab(activeProject ? "reports" : "projects")}>
+                  {activeProject ? "Open Saved Reports" : "Set up project"}
                 </button>
               </article>
             </div>
           ) : null}
 
-          {activeTab !== "overview" && activeTab !== "integrations" ? (
+          {activeTab === "projects" ? (
+            <section className="brain-live-section">
+              <ProjectSettingsPanel
+                activeProjectId={activeProject?.id}
+                onActiveProjectChange={setActiveProject}
+              />
+            </section>
+          ) : null}
+
+          {activeTab === "sources" ? (
+            <section className="brain-live-section">
+              <ProjectSourceVaultPanel activeProject={activeProject} />
+            </section>
+          ) : null}
+
+          {activeTab === "bugs" ? (
+            <section className="brain-live-section">
+              <BugCollectionPanel activeProject={activeProject} />
+            </section>
+          ) : null}
+
+          {activeTab === "reports" ? (
+            <section className="brain-live-section">
+              <SavedReportsPanel activeProject={activeProject} />
+            </section>
+          ) : null}
+
+          {activeTab !== "overview" && activeTab !== "projects" && activeTab !== "sources" && activeTab !== "bugs" && activeTab !== "reports" && activeTab !== "integrations" ? (
             <div className="brain-empty-state">
               <p className="brain-empty-kicker">V1 foundation</p>
               <h3>{active.label} is ready for the next build pass.</h3>

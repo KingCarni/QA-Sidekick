@@ -1,192 +1,106 @@
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { apiError, apiOk, getErrorMessage, readJsonBody } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { durationSince, nowMs, serverLog } from "@/lib/server-log";
-import { makeReportTitle, normalizeReportType, serializeReport, toPrismaJson } from "@/lib/reports";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type CreateReportBody = {
+type SaveReportPayload = {
   type?: unknown;
   title?: unknown;
   markdown?: unknown;
   structuredData?: unknown;
   sourceInput?: unknown;
   projectId?: unknown;
-  projectName?: unknown;
-  projectSourceIds?: unknown;
-  projectContextSummary?: unknown;
-  projectContextUsed?: unknown;
 };
 
-function normalizeLimit(value: string | null) {
-  const parsed = Number(value ?? "");
-  if (!Number.isFinite(parsed)) return 50;
-  return Math.min(Math.max(Math.trunc(parsed), 1), 100);
+function asString(value: unknown, fallback = "") {
+  return typeof value === "string" ? value : fallback;
 }
 
-export async function GET(req: Request) {
-  const startedAt = nowMs();
-  const route = "/api/reports";
+function safeJsonValue(value: unknown): Prisma.InputJsonValue | typeof Prisma.JsonNull {
+  if (value === undefined || value === null) return Prisma.JsonNull;
 
   try {
-    const session = await getServerSession(authOptions);
-    const userId = session?.user?.id;
-
-    if (!userId) {
-      serverLog.warn("Saved reports list blocked: unauthenticated user.", {
-        route,
-        status: 401,
-        durationMs: durationSince(startedAt),
-      });
-
-      return apiError(req, {
-        status: 401,
-        code: "UNAUTHORIZED",
-        message: "Please sign in to view saved reports.",
-      });
-    }
-
-    const url = new URL(req.url);
-    const type = normalizeReportType(url.searchParams.get("type"));
-    const limit = normalizeLimit(url.searchParams.get("limit"));
-
-    const where: Prisma.QAReportWhereInput = {
-      userId,
-      ...(type ? { type } : {}),
-    };
-
-    const reports = await prisma.qAReport.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      take: limit,
-    });
-
-    serverLog.info("Saved reports listed.", {
-      route,
-      userId,
-      status: 200,
-      durationMs: durationSince(startedAt),
-      meta: { count: reports.length, type: type ?? "all", limit },
-    });
-
-    return apiOk(req, { reports: reports.map(serializeReport) });
-  } catch (error) {
-    serverLog.error("Saved reports list failed.", {
-      route,
-      status: 500,
-      durationMs: durationSince(startedAt),
-      error,
-    });
-
-    return apiError(req, {
-      status: 500,
-      code: "INTERNAL_ERROR",
-      message: getErrorMessage(error, "Could not load saved reports."),
-    });
+    JSON.stringify(value);
+    return value as Prisma.InputJsonValue;
+  } catch {
+    return Prisma.JsonNull;
   }
 }
 
-export async function POST(req: Request) {
-  const startedAt = nowMs();
-  const route = "/api/reports";
+function serializeReport(report: {
+  id: string;
+  projectId: string | null;
+  type: string;
+  title: string | null;
+  markdown: string | null;
+  sourceInput: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: report.id,
+    projectId: report.projectId,
+    type: report.type,
+    title: report.title,
+    markdown: report.markdown,
+    sourceInput: report.sourceInput,
+    createdAt: report.createdAt.toISOString(),
+    updatedAt: report.updatedAt.toISOString(),
+  };
+}
 
+export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
     if (!userId) {
-      serverLog.warn("Saved report create blocked: unauthenticated user.", {
-        route,
-        status: 401,
-        durationMs: durationSince(startedAt),
-      });
-
-      return apiError(req, {
-        status: 401,
-        code: "UNAUTHORIZED",
-        message: "Please sign in to save reports.",
-      });
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await readJsonBody<CreateReportBody>(req);
-    const type = normalizeReportType(body.type);
+    const payload = (await request.json().catch(() => null)) as SaveReportPayload | null;
 
-    if (!type) {
-      serverLog.warn("Saved report create blocked: invalid report type.", {
-        route,
-        userId,
-        status: 400,
-        durationMs: durationSince(startedAt),
-        meta: { type: String(body.type ?? "") },
-      });
-
-      return apiError(req, {
-        status: 400,
-        code: "VALIDATION_ERROR",
-        message: "Invalid report type.",
-      });
+    if (!payload) {
+      return NextResponse.json({ ok: false, error: "Invalid report payload." }, { status: 400 });
     }
 
-    const markdown = String(body.markdown ?? "").trim();
-    const hasStructuredData = body.structuredData !== undefined && body.structuredData !== null;
+    const markdown = asString(payload.markdown).trim();
 
-    if (!markdown && !hasStructuredData) {
-      serverLog.warn("Saved report create blocked: empty report.", {
-        route,
-        userId,
-        status: 400,
-        durationMs: durationSince(startedAt),
-        meta: { type },
-      });
-
-      return apiError(req, {
-        status: 400,
-        code: "VALIDATION_ERROR",
-        message: "A saved report needs Markdown output or structured data.",
-      });
+    if (!markdown) {
+      return NextResponse.json({ ok: false, error: "Report markdown is required." }, { status: 400 });
     }
 
-    const projectId = String(body.projectId ?? "").trim() || null;
+    const type = asString(payload.type, "report").trim() || "report";
+    const title = asString(payload.title).trim() || "QA Report";
+    const sourceInput = asString(payload.sourceInput);
+    const requestedProjectId = asString(payload.projectId).trim();
 
-    if (projectId) {
+    let projectId: string | null = null;
+
+    if (requestedProjectId) {
       const project = await prisma.qAProject.findFirst({
-        where: { id: projectId, userId },
-        select: { id: true },
+        where: {
+          id: requestedProjectId,
+          userId,
+        },
+        select: {
+          id: true,
+        },
       });
 
       if (!project) {
-        return apiError(req, {
-          status: 404,
-          code: "NOT_FOUND",
-          message: "Project not found.",
-        });
+        return NextResponse.json(
+          { ok: false, error: "Selected project was not found or does not belong to this account." },
+          { status: 404 }
+        );
       }
-    }
 
-    const title = makeReportTitle({
-      type,
-      title: body.title,
-      markdown,
-      sourceInput: body.sourceInput,
-    });
-    const structuredData =
-      body.structuredData && typeof body.structuredData === "object" && !Array.isArray(body.structuredData)
-        ? {
-            ...body.structuredData,
-            projectContextMeta: {
-              ...((body.structuredData as { projectContextMeta?: Record<string, unknown> }).projectContextMeta ?? {}),
-              projectId,
-              projectName: String(body.projectName ?? "").trim() || null,
-              projectSourceIds: Array.isArray(body.projectSourceIds) ? body.projectSourceIds : [],
-              projectContextSummary: String(body.projectContextSummary ?? "").trim() || null,
-              projectContextUsed: Boolean(body.projectContextUsed),
-            },
-          }
-        : body.structuredData;
+      projectId = project.id;
+    }
 
     const report = await prisma.qAReport.create({
       data: {
@@ -194,33 +108,81 @@ export async function POST(req: Request) {
         projectId,
         type,
         title,
-        markdown: markdown || null,
-        structuredData: toPrismaJson(structuredData),
-        sourceInput: String(body.sourceInput ?? "").trim() || null,
+        markdown,
+        sourceInput,
+        structuredData: safeJsonValue(payload.structuredData),
+      },
+      select: {
+        id: true,
+        projectId: true,
+        type: true,
+        title: true,
+        markdown: true,
+        sourceInput: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
-    serverLog.info("Saved report created.", {
-      route,
-      userId,
-      status: 200,
-      durationMs: durationSince(startedAt),
-      meta: { reportId: report.id, type },
+    return NextResponse.json({
+      ok: true,
+      report: serializeReport(report),
     });
-
-    return apiOk(req, { report: serializeReport(report) });
   } catch (error) {
-    serverLog.error("Saved report create failed.", {
-      route,
-      status: 500,
-      durationMs: durationSince(startedAt),
-      error,
+    console.error("Save report failed", error);
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error: error instanceof Error ? error.message : "Could not save report.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    const reports = await prisma.qAReport.findMany({
+      where: {
+        userId,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      take: 50,
+      select: {
+        id: true,
+        projectId: true,
+        type: true,
+        title: true,
+        markdown: true,
+        sourceInput: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
-    return apiError(req, {
-      status: 500,
-      code: "INTERNAL_ERROR",
-      message: getErrorMessage(error, "Could not save report."),
+    return NextResponse.json({
+      ok: true,
+      reports: reports.map(serializeReport),
     });
+  } catch (error) {
+    console.error("Load reports failed", error);
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error: error instanceof Error ? error.message : "Could not load reports.",
+      },
+      { status: 500 }
+    );
   }
 }

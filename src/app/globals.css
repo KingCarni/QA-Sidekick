@@ -31490,3 +31490,377 @@ body:has(.qatalyst-brain-shell)::after {
     width: 100% !important;
   }
 }
+/* QAS-170 Pass 1: Brain Source Vault integration */
+
+.qatalyst-brain-shell .brain-live-section {
+  margin-top: 28px !important;
+}
+
+.qatalyst-brain-shell .brain-active-project-strip {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  margin-top: 22px !important;
+  border: 1px solid rgba(22, 163, 74, 0.24) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at top left, rgba(22, 163, 74, 0.14), transparent 34%),
+    linear-gradient(145deg, rgba(10, 12, 17, 0.94), rgba(3, 4, 7, 0.96)) !important;
+  padding: 16px !important;
+}
+
+.qatalyst-brain-shell .brain-active-project-strip > div {
+  display: grid !important;
+  gap: 4px !important;
+}
+
+.qatalyst-brain-shell .brain-active-project-strip strong {
+  color: #fff !important;
+  font-size: 1rem !important;
+}
+
+.qatalyst-brain-shell .brain-active-project-strip span {
+  color: rgba(226, 232, 240, 0.68) !important;
+  font-size: 0.9rem !important;
+}
+
+.qatalyst-brain-shell .brain-mini-eyebrow {
+  margin: 0 !important;
+  color: #bbf7d0 !important;
+  font-size: 0.7rem !important;
+  font-weight: 1000 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+.qatalyst-brain-shell .brain-active-project-strip button {
+  min-height: 40px !important;
+  border: 1px solid rgba(248, 113, 113, 0.34) !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  font-weight: 950 !important;
+  padding: 0 16px !important;
+}
+
+.qatalyst-brain-shell .brain-live-section .project-settings-panel,
+.qatalyst-brain-shell .brain-live-section .project-source-vault-panel {
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 22px !important;
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.13), transparent 38%),
+    linear-gradient(145deg, rgba(10, 12, 17, 0.96), rgba(3, 4, 7, 0.98)) !important;
+  padding: 22px !important;
+}
+
+.qatalyst-brain-shell .brain-live-section .project-settings-header,
+.qatalyst-brain-shell .brain-live-section .source-vault-header {
+  margin-bottom: 18px !important;
+}
+
+.qatalyst-brain-shell .brain-live-section .project-settings-grid,
+.qatalyst-brain-shell .brain-live-section .source-vault-grid {
+  margin-top: 18px !important;
+}
+
+.qatalyst-brain-shell .brain-live-section .project-list-card,
+.qatalyst-brain-shell .brain-live-section .project-editor-card,
+.qatalyst-brain-shell .brain-live-section .source-list-card,
+.qatalyst-brain-shell .brain-live-section .source-editor-card {
+  background: rgba(7, 8, 12, 0.74) !important;
+}
+
+@media (max-width: 780px) {
+  .qatalyst-brain-shell .brain-active-project-strip {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+}
+/* QAS-170 Pass 2: Brain Bug Collection integration */
+
+.qatalyst-brain-shell .brain-active-project-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  justify-content: flex-end !important;
+}
+
+.qatalyst-brain-shell .brain-live-section .bug-collection-panel {
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 22px !important;
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.13), transparent 38%),
+    linear-gradient(145deg, rgba(10, 12, 17, 0.96), rgba(3, 4, 7, 0.98)) !important;
+  padding: 22px !important;
+}
+
+.qatalyst-brain-shell .brain-live-section .bug-collection-header {
+  margin-bottom: 18px !important;
+}
+
+.qatalyst-brain-shell .brain-live-section .bug-collection-grid {
+  margin-top: 18px !important;
+}
+
+.qatalyst-brain-shell .brain-live-section .bug-collection-list-card,
+.qatalyst-brain-shell .brain-live-section .bug-collection-detail-card {
+  background: rgba(7, 8, 12, 0.74) !important;
+}
+
+.qatalyst-brain-shell .brain-live-section .bug-collection-list-item {
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.09), transparent 36%),
+    rgba(12, 14, 18, 0.9) !important;
+}
+
+.qatalyst-brain-shell .brain-live-section .bug-collection-list-item-active {
+  border-color: rgba(96, 165, 250, 0.42) !important;
+}
+
+@media (max-width: 780px) {
+  .qatalyst-brain-shell .brain-active-project-actions {
+    justify-content: flex-start !important;
+  }
+}
+/* QAS-170 Pass 3: Brain Saved Reports + bug metadata polish */
+
+.qatalyst-brain-shell .brain-live-section .saved-reports-panel,
+.qatalyst-brain-shell .brain-live-section .saved-reports-empty {
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 22px !important;
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.13), transparent 38%),
+    linear-gradient(145deg, rgba(10, 12, 17, 0.96), rgba(3, 4, 7, 0.98)) !important;
+  padding: 22px !important;
+}
+
+.qatalyst-brain-shell .saved-reports-header {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+  margin-bottom: 18px !important;
+}
+
+.qatalyst-brain-shell .saved-reports-header h2 {
+  margin: 0 !important;
+  color: #fff !important;
+  font-size: clamp(2rem, 3vw, 3.2rem) !important;
+  letter-spacing: -0.055em !important;
+  line-height: 0.98 !important;
+}
+
+.qatalyst-brain-shell .saved-reports-header p:not(.report-kicker),
+.qatalyst-brain-shell .saved-reports-muted {
+  color: rgba(226, 232, 240, 0.72) !important;
+}
+
+.qatalyst-brain-shell .saved-reports-header button,
+.qatalyst-brain-shell .brain-active-project-actions button {
+  min-height: 40px !important;
+  border: 1px solid rgba(248, 113, 113, 0.34) !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  font-weight: 950 !important;
+  padding: 0 16px !important;
+}
+
+.qatalyst-brain-shell .saved-reports-stats {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin: 18px 0 !important;
+}
+
+.qatalyst-brain-shell .saved-reports-stats div {
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 16px !important;
+  background: rgba(7, 8, 12, 0.74) !important;
+  padding: 14px !important;
+}
+
+.qatalyst-brain-shell .saved-reports-stats strong {
+  display: block !important;
+  color: #fff !important;
+  font-size: 1.7rem !important;
+  line-height: 1 !important;
+}
+
+.qatalyst-brain-shell .saved-reports-stats span {
+  color: rgba(226, 232, 240, 0.7) !important;
+  font-size: 0.88rem !important;
+}
+
+.qatalyst-brain-shell .saved-reports-toolbar {
+  margin-bottom: 16px !important;
+}
+
+.qatalyst-brain-shell .saved-reports-toolbar label {
+  display: grid !important;
+  gap: 8px !important;
+  max-width: 280px !important;
+  color: #fca5a5 !important;
+  font-size: 0.72rem !important;
+  font-weight: 1000 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+.qatalyst-brain-shell .saved-reports-toolbar select {
+  min-height: 42px !important;
+  border: 1px solid rgba(148, 163, 184, 0.24) !important;
+  border-radius: 12px !important;
+  background: #05070a !important;
+  color: #fff !important;
+  padding: 0 12px !important;
+}
+
+.qatalyst-brain-shell .saved-reports-grid {
+  display: grid !important;
+  grid-template-columns: minmax(220px, 0.42fr) minmax(0, 1fr) !important;
+  gap: 18px !important;
+  margin-top: 18px !important;
+}
+
+.qatalyst-brain-shell .saved-reports-list-card,
+.qatalyst-brain-shell .saved-report-detail-card {
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 18px !important;
+  background: rgba(7, 8, 12, 0.74) !important;
+  padding: 16px !important;
+}
+
+.qatalyst-brain-shell .saved-reports-list {
+  display: grid !important;
+  gap: 10px !important;
+  margin-top: 12px !important;
+}
+
+.qatalyst-brain-shell .saved-report-list-item {
+  display: grid !important;
+  gap: 6px !important;
+  width: 100% !important;
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 14px !important;
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.09), transparent 36%),
+    rgba(12, 14, 18, 0.9) !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  padding: 14px !important;
+  text-align: left !important;
+}
+
+.qatalyst-brain-shell .saved-report-list-item-active {
+  border-color: rgba(96, 165, 250, 0.42) !important;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.26), transparent 44%),
+    rgba(12, 14, 18, 0.94) !important;
+}
+
+.qatalyst-brain-shell .saved-report-list-item span,
+.qatalyst-brain-shell .saved-report-list-item small {
+  color: rgba(226, 232, 240, 0.68) !important;
+}
+
+.qatalyst-brain-shell .saved-report-detail-top h3 {
+  margin: 0 0 8px !important;
+  color: #fff !important;
+  font-size: 1.45rem !important;
+  line-height: 1.12 !important;
+}
+
+.qatalyst-brain-shell .saved-report-markdown-preview,
+.qatalyst-brain-shell .saved-report-source-details pre {
+  max-height: 520px !important;
+  overflow: auto !important;
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 14px !important;
+  background: #05070a !important;
+  padding: 14px !important;
+}
+
+.qatalyst-brain-shell .saved-report-markdown-preview pre,
+.qatalyst-brain-shell .saved-report-source-details pre {
+  margin: 0 !important;
+  color: rgba(226, 232, 240, 0.84) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 0.82rem !important;
+  line-height: 1.55 !important;
+  white-space: pre-wrap !important;
+}
+
+.qatalyst-brain-shell .saved-report-source-details {
+  margin-top: 14px !important;
+  color: rgba(226, 232, 240, 0.82) !important;
+}
+
+.qatalyst-brain-shell .saved-reports-message,
+.qatalyst-brain-shell .saved-reports-error {
+  border-radius: 14px !important;
+  padding: 10px 12px !important;
+}
+
+.qatalyst-brain-shell .saved-reports-message {
+  border: 1px solid rgba(34, 197, 94, 0.28) !important;
+  background: rgba(22, 163, 74, 0.12) !important;
+  color: #bbf7d0 !important;
+}
+
+.qatalyst-brain-shell .saved-reports-error {
+  border: 1px solid rgba(248, 113, 113, 0.32) !important;
+  background: rgba(127, 29, 29, 0.18) !important;
+  color: #fecaca !important;
+}
+
+/* Phase 3 carry-forward polish: Bug Collection metadata tiles */
+.qatalyst-brain-shell .bug-collection-detail-meta {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin: 18px 0 !important;
+}
+
+.qatalyst-brain-shell .bug-collection-detail-meta div {
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 16px !important;
+  background:
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.1), transparent 38%),
+    rgba(7, 8, 12, 0.78) !important;
+  padding: 14px !important;
+}
+
+.qatalyst-brain-shell .bug-collection-detail-meta span {
+  display: block !important;
+  margin-bottom: 6px !important;
+  color: #fca5a5 !important;
+  font-size: 0.68rem !important;
+  font-weight: 1000 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+.qatalyst-brain-shell .bug-collection-detail-meta strong {
+  display: block !important;
+  overflow: hidden !important;
+  color: #fff !important;
+  font-size: 0.98rem !important;
+  line-height: 1.25 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 900px) {
+  .qatalyst-brain-shell .saved-reports-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .qatalyst-brain-shell .saved-reports-stats,
+  .qatalyst-brain-shell .bug-collection-detail-meta {
+    grid-template-columns: 1fr !important;
+  }
+}
