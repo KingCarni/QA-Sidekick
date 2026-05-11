@@ -6,12 +6,6 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type RouteContext = {
-  params: Promise<{
-    id: string;
-  }>;
-};
-
 function serializeReport(report: {
   id: string;
   projectId: string | null;
@@ -34,7 +28,7 @@ function serializeReport(report: {
   };
 }
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
@@ -43,30 +37,9 @@ export async function GET(_request: Request, context: RouteContext) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await context.params;
-
-    if (!id) {
-      return NextResponse.json({ ok: false, error: "Missing project id." }, { status: 400 });
-    }
-
-    const project = await prisma.qAProject.findFirst({
-      where: {
-        id,
-        userId,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!project) {
-      return NextResponse.json({ ok: false, error: "Project not found." }, { status: 404 });
-    }
-
     const reports = await prisma.qAReport.findMany({
       where: {
         userId,
-        projectId: id,
       },
       orderBy: {
         updatedAt: "desc",
@@ -89,7 +62,7 @@ export async function GET(_request: Request, context: RouteContext) {
       reports: reports.map(serializeReport),
     });
   } catch (error) {
-    console.error("Load project reports failed", error);
+    console.error("Load reports failed", error);
 
     return NextResponse.json(
       {
