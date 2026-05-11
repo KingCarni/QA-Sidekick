@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import AppHeaderMenu from "@/components/AppHeaderMenu";
 import AuthStatus from "@/components/AuthStatus";
+import AdminDebugMenu from "@/components/AdminDebugMenu";
 import AutomationExportPanel from "@/components/AutomationExportPanel";
 import BugEvidencePanel, {
   EMPTY_BUG_EVIDENCE,
@@ -3903,7 +3904,12 @@ export default function Home() {
               </div>
             </section>
           ) : null}
-
+              <AdminDebugMenu
+                userEmail={session?.user?.email}
+                activeTool={activeTool}
+                activeProjectId={activeProject?.id}
+                activeProjectName={activeProject?.name}
+              />
           {activeTool === "improve" && currentTestImprovement ? (
             <section className={`follow-up-answer-box test-follow-up-box ${improveFollowUpQuestions.length > 0 ? "has-active-followups" : ""}`}>
               <div className="follow-up-answer-header">
