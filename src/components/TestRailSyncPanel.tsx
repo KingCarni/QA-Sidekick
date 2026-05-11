@@ -33,6 +33,12 @@ type SyncResult = {
   error?: string;
 };
 
+type TestRailTarget = {
+  projectId?: number;
+  suiteId?: number | null;
+  defaultSectionId?: number;
+};
+
 type PanelState = "idle" | "previewing" | "ready" | "syncing" | "synced" | "partial" | "error";
 
 function messageClassForState(state: PanelState) {
@@ -54,9 +60,15 @@ function statusTone(status: string) {
   return "neutral";
 }
 
+function buildTestRailCaseUrl(caseId?: number) {
+  if (!caseId) return "";
+  return `https://gitajobautomation.testrail.io/index.php?/cases/view/${caseId}`;
+}
+
 export default function TestRailSyncPanel({ reportId, testCases, sourceJiraKey, sourceJiraUrl }: TestRailSyncPanelProps) {
   const [preview, setPreview] = useState<PreviewCase[]>([]);
   const [results, setResults] = useState<SyncResult[]>([]);
+  const [target, setTarget] = useState<TestRailTarget | null>(null);
   const [state, setState] = useState<PanelState>("idle");
   const [message, setMessage] = useState("");
   const [mode, setMode] = useState<"create" | "update">("create");
@@ -69,10 +81,21 @@ export default function TestRailSyncPanel({ reportId, testCases, sourceJiraKey, 
     return { failed, created, updated, total: results.length };
   }, [results]);
 
-  async function buildPreview() {
-    setState("previewing");
-    setMessage("");
-    setResults([]);
+  const previewSummary = useMemo(() => {
+    const synced = preview.filter((item) => item.status === "synced").length;
+    const notSynced = preview.filter((item) => item.status === "not_synced").length;
+    const stale = preview.filter((item) => item.status === "stale").length;
+    const sectionIds = Array.from(new Set(preview.map((item) => item.sectionId))).join(", ");
+
+    return { synced, notSynced, stale, sectionIds };
+  }, [preview]);
+
+  async function buildPreview(options?: { silent?: boolean }) {
+    if (!options?.silent) {
+      setState("previewing");
+      setMessage("");
+      setResults([]);
+    }
 
     try {
       const response = await fetch("/api/testrail/sync-preview", {
@@ -88,8 +111,12 @@ export default function TestRailSyncPanel({ reportId, testCases, sourceJiraKey, 
 
       const nextPreview = Array.isArray(payload?.preview) ? payload.preview : [];
       setPreview(nextPreview);
-      setState("ready");
-      setMessage(`Preview ready: ${nextPreview.length} case(s). Review the mapped payload before syncing.`);
+      setTarget(payload?.testrail ?? null);
+
+      if (!options?.silent) {
+        setState("ready");
+        setMessage(`Preview ready: ${nextPreview.length} reviewed case(s) mapped for TestRail. Check the target and payloads before syncing.`);
+      }
     } catch (error) {
       setPreview([]);
       setState("error");
@@ -98,7 +125,9 @@ export default function TestRailSyncPanel({ reportId, testCases, sourceJiraKey, 
   }
 
   async function syncCases() {
-    const confirmed = window.confirm("Create/update these cases in TestRail? Review the preview first. This action writes to TestRail.");
+    const confirmed = window.confirm(
+      `Send ${preview.length} reviewed case(s) to TestRail?\n\nMode: ${mode === "update" ? "Update mapped cases" : "Create new cases"}\nProject: ${target?.projectId ?? "configured project"}\nSuite: ${target?.suiteId ?? "default"}\nSection(s): ${previewSummary.sectionIds || target?.defaultSectionId || "configured section"}\n\nQAtalyst will write to TestRail only after this approval.`
+    );
     if (!confirmed) return;
 
     setState("syncing");
@@ -125,8 +154,10 @@ export default function TestRailSyncPanel({ reportId, testCases, sourceJiraKey, 
       setMessage(
         failed
           ? `Sync completed with ${failed} failed case(s). Review the result rows below.`
-          : `Synced ${nextResults.length} case(s) to TestRail.`
+          : `Synced ${nextResults.length} reviewed case(s) directly to TestRail.`
       );
+
+      await buildPreview({ silent: true });
     } catch (error) {
       setState("error");
       setMessage(error instanceof Error ? error.message : "Could not sync TestRail cases.");
@@ -140,10 +171,10 @@ export default function TestRailSyncPanel({ reportId, testCases, sourceJiraKey, 
       <div className="testrail-sync-header">
         <div>
           <p className="report-kicker">TestRail Sync</p>
-          <h3>Preview before writing cases</h3>
+          <h3>Push reviewed QA cases directly into TestRail</h3>
           <p>
-            QAtalyst maps generated test cases into TestRail fields, shows the exact write payload,
-            then requires approval before anything is created or updated.
+            Turn QAtalyst-generated coverage into TestRail cases without copy/paste. Preview every mapped field,
+            approve the write, then jump straight into the created or updated TestRail cases.
           </p>
         </div>
 
@@ -160,10 +191,10 @@ export default function TestRailSyncPanel({ reportId, testCases, sourceJiraKey, 
           <button
             className="secondary-action-button testrail-preview-sync-button"
             disabled={state === "previewing" || state === "syncing"}
-            onClick={buildPreview}
+            onClick={() => buildPreview()}
             type="button"
           >
-            {state === "previewing" ? "Previewing..." : "Preview Sync"}
+            {state === "previewing" ? "Previewing..." : "Preview TestRail Sync"}
           </button>
 
           <button
@@ -172,77 +203,110 @@ export default function TestRailSyncPanel({ reportId, testCases, sourceJiraKey, 
             onClick={syncCases}
             type="button"
           >
-            {state === "syncing" ? "Syncing..." : "Approve & Sync"}
+            {state === "syncing" ? "Syncing..." : "Approve & Send to TestRail"}
           </button>
         </div>
       </div>
 
       <div className="testrail-safe-sync-note">
-        <strong>Safe sync rule:</strong> QAtalyst will not write to TestRail until you generate a preview and approve the sync.
-        Create mode is the default. Update mode only updates cases that already have a stored TestRail mapping.
+        <strong>Safe TestRail handoff:</strong> Generate reviewed QA coverage → preview the exact TestRail payload → approve sync → open the created cases.
+        No silent writes, and update mode only touches cases with an existing QAtalyst mapping.
       </div>
+
+      {preview.length ? (
+        <div className="testrail-sync-result-summary">
+          <strong>Target summary</strong>
+          <span>
+            {preview.length} case(s) · {mode === "update" ? "update mapped cases" : "create new cases"} · Project {target?.projectId ?? "configured"} · Suite {target?.suiteId ?? "default"} · Section(s) {previewSummary.sectionIds || target?.defaultSectionId || "configured"}
+          </span>
+        </div>
+      ) : null}
 
       {message ? <p className={messageClassForState(state)}>{message}</p> : null}
 
       {results.length ? (
         <div className="testrail-sync-result-list" data-testid="testrail-sync-results">
           <div className="testrail-sync-result-summary">
-            <strong>Sync Results</strong>
+            <strong>TestRail Results</strong>
             <span>
               {syncSummary.created} created · {syncSummary.updated} updated · {syncSummary.failed} failed
             </span>
           </div>
 
-          {results.map((item, index) => (
-            <article className={`testrail-sync-result-row testrail-sync-result-row-${statusTone(item.status)}`} key={`${item.title}-${index}`}>
-              <div>
-                <strong>{item.title}</strong>
-                {item.error ? <span>{item.error}</span> : <span>{item.testRailCaseId ? `C${item.testRailCaseId}` : "No TestRail case ID returned"}</span>}
-              </div>
-              <em>{statusLabel(item.status)}</em>
-            </article>
-          ))}
+          {results.map((item, index) => {
+            const caseUrl = buildTestRailCaseUrl(item.testRailCaseId);
+
+            return (
+              <article className={`testrail-sync-result-row testrail-sync-result-row-${statusTone(item.status)}`} key={`${item.title}-${index}`}>
+                <div>
+                  <strong>{item.title}</strong>
+                  {item.error ? (
+                    <span>{item.error}</span>
+                  ) : caseUrl ? (
+                    <a href={caseUrl} target="_blank" rel="noreferrer">
+                      Open C{item.testRailCaseId} in TestRail ↗
+                    </a>
+                  ) : (
+                    <span>No TestRail case ID returned</span>
+                  )}
+                </div>
+                <em>{statusLabel(item.status)}</em>
+              </article>
+            );
+          })}
         </div>
       ) : null}
 
       {preview.length ? (
         <div className="testrail-preview-list">
-          {preview.map((item) => (
-            <article className={`testrail-preview-card testrail-preview-card-${statusTone(item.status)}`} key={item.contentHash}>
-              <div className="testrail-preview-card-header">
-                <strong>{item.title}</strong>
-                <span>{statusLabel(item.status)}</span>
-              </div>
+          {preview.map((item) => {
+            const existingCaseUrl = buildTestRailCaseUrl(item.existingTestRailCaseId ?? undefined);
 
-              <dl>
-                <div>
-                  <dt>Section</dt>
-                  <dd>{item.sectionId}</dd>
+            return (
+              <article className={`testrail-preview-card testrail-preview-card-${statusTone(item.status)}`} key={item.contentHash}>
+                <div className="testrail-preview-card-header">
+                  <strong>{item.title}</strong>
+                  <span>{statusLabel(item.status)}</span>
                 </div>
-                <div>
-                  <dt>Priority</dt>
-                  <dd>{item.priority}</dd>
-                </div>
-                <div>
-                  <dt>Type</dt>
-                  <dd>{item.type}</dd>
-                </div>
-                <div>
-                  <dt>Steps</dt>
-                  <dd>{item.steps.length}</dd>
-                </div>
-                <div>
-                  <dt>Existing Case</dt>
-                  <dd>{item.existingTestRailCaseId ? `C${item.existingTestRailCaseId}` : "None"}</dd>
-                </div>
-              </dl>
 
-              <details>
-                <summary>View mapped payload</summary>
-                <pre>{JSON.stringify(item.payload, null, 2)}</pre>
-              </details>
-            </article>
-          ))}
+                <dl>
+                  <div>
+                    <dt>Section</dt>
+                    <dd>{item.sectionId}</dd>
+                  </div>
+                  <div>
+                    <dt>Priority</dt>
+                    <dd>{item.priority}</dd>
+                  </div>
+                  <div>
+                    <dt>Type</dt>
+                    <dd>{item.type}</dd>
+                  </div>
+                  <div>
+                    <dt>Steps</dt>
+                    <dd>{item.steps.length}</dd>
+                  </div>
+                  <div>
+                    <dt>Existing Case</dt>
+                    <dd>
+                      {existingCaseUrl ? (
+                        <a href={existingCaseUrl} target="_blank" rel="noreferrer">
+                          C{item.existingTestRailCaseId} ↗
+                        </a>
+                      ) : (
+                        "None"
+                      )}
+                    </dd>
+                  </div>
+                </dl>
+
+                <details>
+                  <summary>View mapped TestRail payload</summary>
+                  <pre>{JSON.stringify(item.payload, null, 2)}</pre>
+                </details>
+              </article>
+            );
+          })}
         </div>
       ) : null}
     </section>
