@@ -7,10 +7,10 @@
 .integrations-settings-page .jira-insight-panel,
 .integrations-settings-page .jira-issue-type-helper {
   background:
-    radial-gradient(circle at top right, rgba(127, 29, 29, 0.12), transparent 40%),
-    radial-gradient(circle at top left, rgba(12, 12, 15, 0.36), transparent 34%),
+    radial-gradient(circle at top right, rgba(127, 29, 29, 0.08), transparent 38%),
+    radial-gradient(circle at top left, rgba(12, 12, 15, 0.38), transparent 34%),
     linear-gradient(145deg, rgba(10, 10, 13, 0.98), rgba(4, 4, 6, 0.98)) !important;
-  border-color: rgba(248, 113, 113, 0.14) !important;
+  border-color: rgba(248, 113, 113, 0.12) !important;
 }
 
 .integrations-settings-page .settings-wide-panel,
@@ -48,8 +48,15 @@
 }
 
 .integrations-settings-page .jira-settings-grid > label,
-.integrations-settings-page .jira-settings-grid > div {
+.integrations-settings-page .jira-settings-grid > div,
+.integrations-settings-page .jira-credential-grid > label {
   min-width: 0 !important;
+}
+
+.integrations-settings-page .jira-credential-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 18px !important;
 }
 
 .integrations-settings-page .jira-settings-grid > label:nth-of-type(1) {
@@ -60,7 +67,7 @@
 .integrations-settings-page .jira-settings-grid > div:first-of-type {
   grid-column: 2 / 4 !important;
   grid-row: 1 !important;
-  align-self: end !important;
+  align-self: start !important;
 }
 
 .integrations-settings-page .jira-settings-grid > label:nth-of-type(2) {
@@ -113,7 +120,8 @@
 }
 
 @media (max-width: 920px) {
-  .integrations-settings-page .jira-settings-grid {
+  .integrations-settings-page .jira-settings-grid,
+  .integrations-settings-page .jira-credential-grid {
     grid-template-columns: 1fr !important;
   }
 
