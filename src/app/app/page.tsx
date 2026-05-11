@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -1429,7 +1429,7 @@ function TestCaseCards({
                 <span>Question {index + 1}</span>
                 <strong>{item.question}</strong>
                 <p>{item.answer}</p>
-                <small>{item.answerType} · {item.resolution}</small>
+                <small>{item.answerType} Â· {item.resolution}</small>
               </article>
             ))}
           </div>
@@ -1916,7 +1916,7 @@ function RiskReviewCards({
                   <span>Question {index + 1}</span>
                   <strong>{item.question}</strong>
                   <p>{item.answer}</p>
-                  <small>{item.answerType} · {item.resolution}</small>
+                  <small>{item.answerType} Â· {item.resolution}</small>
                 </article>
               ))}
             </div>
@@ -2032,8 +2032,11 @@ function BugReportCards({
     <div className="report-wrap bug-report-wrap">
       <div className="report-header">
         <div>
-          <p className="report-kicker">Bug Writer Report</p>
-          <h2>Structured Bug Report</h2>
+          <p className="report-kicker">Bug Writer Report · Jira handoff ready</p>
+          <h2>Jira-ready Bug Report</h2>
+          <p className="bug-report-subtitle">
+            Review the generated defect, tighten any missing context, then save it, track it, or send it straight into Jira.
+          </p>
         </div>
         <div className="report-action-stack">
           <div className="report-actions compact-report-actions bug-report-actions report-action-row">
@@ -2080,10 +2083,9 @@ function BugReportCards({
 
       <section className="bug-readiness-card">
         <p className="report-kicker">Bug Report Readiness</p>
-        <h3>Ready for triage</h3>
+        <h3>Ready for Jira triage</h3>
         <p>
-          This bug report has enough structure to create a Jira issue. Add screenshots, logs, device details,
-          build/version, and repro rate when available.
+          This report is structured for developer review with a clear summary, environment, repro steps, expected and actual results, impact, and triage notes. Add screenshots, logs, device details, build/version, and repro rate when available to make the defect even stronger.
         </p>
       </section>
 
@@ -2185,7 +2187,7 @@ function BugReportCards({
                   <span>Question {index + 1}</span>
                   <strong>{item.question}</strong>
                   <p>{item.answer}</p>
-                  <small>{item.answerType} · {item.resolution}</small>
+                  <small>{item.answerType} Â· {item.resolution}</small>
                 </article>
               ))}
             </div>
@@ -2782,36 +2784,11 @@ export default function Home() {
     },
   };
 
-  function syncFtueVisibilityFromStorage() {
-  setShowWelcomeFtue(!isFtueStepComplete(FTUE_KEYS.welcome));
-  setShowBrainFtue(!isFtueStepComplete(FTUE_KEYS.brainIntro));
-  setShowIntegrationsFtue(!isFtueStepComplete(FTUE_KEYS.integrationsIntro));
-  setShowToolFtue(!isFtueStepComplete(ftueToolKey));
-}
-
-useEffect(() => {
-  syncFtueVisibilityFromStorage();
-
-  function handlePageShow() {
-    syncFtueVisibilityFromStorage();
-  }
-
-  function handleVisibilityChange() {
-    if (document.visibilityState === "visible") {
-      syncFtueVisibilityFromStorage();
-    }
-  }
-
-  window.addEventListener("pageshow", handlePageShow);
-  document.addEventListener("visibilitychange", handleVisibilityChange);
-  window.addEventListener("focus", handlePageShow);
-
-  return () => {
-    window.removeEventListener("pageshow", handlePageShow);
-    document.removeEventListener("visibilitychange", handleVisibilityChange);
-    window.removeEventListener("focus", handlePageShow);
-  };
-}, [ftueToolKey]);
+  useEffect(() => {
+    setShowWelcomeFtue(!isFtueStepComplete(FTUE_KEYS.welcome));
+    setShowBrainFtue(!isFtueStepComplete(FTUE_KEYS.brainIntro));
+    setShowIntegrationsFtue(!isFtueStepComplete(FTUE_KEYS.integrationsIntro));
+  }, []);
 
   useEffect(() => {
     setShowToolFtue(!isFtueStepComplete(ftueToolKey));
@@ -3694,7 +3671,7 @@ useEffect(() => {
     <main className="qatalyst-app-shell qatalyst-app-shell-v2 qatalyst-app-shell-v3 qatalyst-app-shell-v4 qatalyst-app-shell-v5 qatalyst-app-shell-v6 qatalyst-app-shell-v7 qatalyst-app-shell-v8 qatalyst-app-shell-v9" data-testid="qa-tool">
       <section className="hero hero-split app-workspace-hero" aria-label="QAtalyst workspace command center">
         <div className="hero-copy app-hero-copy">
-          <p className="app-command-eyebrow">QA workflow cockpit · Project-aware outputs · Reviewable guardrails</p>
+          <p className="app-command-eyebrow">QA workflow cockpit Â· Project-aware outputs Â· Reviewable guardrails</p>
           <h1>Turn rough tickets into release-ready QA plans.</h1>
           <p>
             Bring in Jira tickets, scratch notes, project context, and reusable sources. QAtalyst helps you triage gaps,
@@ -3751,8 +3728,8 @@ useEffect(() => {
         <QAtGuideCard
           className="qat-ftue-card"
           eyebrow="First-time setup"
-          title="Hi, I’m QAt. Let’s get your QA workspace grounded."
-          body="QAtalyst works best when it knows which project you’re testing and what context matters. Start with Project Brain, then come back here to generate test cases, bug reports, risk reviews, improved tests, and feature briefs."
+          title="Hi, Iâ€™m QAt. Letâ€™s get your QA workspace grounded."
+          body="QAtalyst works best when it knows which project youâ€™re testing and what context matters. Start with Project Brain, then come back here to generate test cases, bug reports, risk reviews, improved tests, and feature briefs."
           primaryAction={{
             label: "Open Project Brain",
             onClick: () => {
@@ -3791,7 +3768,7 @@ useEffect(() => {
         <QAtGuideCard
           className="qat-ftue-card"
           eyebrow="Integrations"
-          title="Connect Jira and TestRail when you’re ready for handoff."
+          title="Connect Jira and TestRail when youâ€™re ready for handoff."
           body="Integrations are now part of the Brain workflow. Jira helps pull tickets and create structured QA work; TestRail keeps generated test coverage closer to your test management process."
           primaryAction={{
             label: "Open integrations",
@@ -4320,3 +4297,5 @@ useEffect(() => {
     </main>
   );
 }
+
+
