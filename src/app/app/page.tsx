@@ -2782,11 +2782,36 @@ export default function Home() {
     },
   };
 
-  useEffect(() => {
-    setShowWelcomeFtue(!isFtueStepComplete(FTUE_KEYS.welcome));
-    setShowBrainFtue(!isFtueStepComplete(FTUE_KEYS.brainIntro));
-    setShowIntegrationsFtue(!isFtueStepComplete(FTUE_KEYS.integrationsIntro));
-  }, []);
+  function syncFtueVisibilityFromStorage() {
+  setShowWelcomeFtue(!isFtueStepComplete(FTUE_KEYS.welcome));
+  setShowBrainFtue(!isFtueStepComplete(FTUE_KEYS.brainIntro));
+  setShowIntegrationsFtue(!isFtueStepComplete(FTUE_KEYS.integrationsIntro));
+  setShowToolFtue(!isFtueStepComplete(ftueToolKey));
+}
+
+useEffect(() => {
+  syncFtueVisibilityFromStorage();
+
+  function handlePageShow() {
+    syncFtueVisibilityFromStorage();
+  }
+
+  function handleVisibilityChange() {
+    if (document.visibilityState === "visible") {
+      syncFtueVisibilityFromStorage();
+    }
+  }
+
+  window.addEventListener("pageshow", handlePageShow);
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  window.addEventListener("focus", handlePageShow);
+
+  return () => {
+    window.removeEventListener("pageshow", handlePageShow);
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+    window.removeEventListener("focus", handlePageShow);
+  };
+}, [ftueToolKey]);
 
   useEffect(() => {
     setShowToolFtue(!isFtueStepComplete(ftueToolKey));
@@ -3726,17 +3751,17 @@ export default function Home() {
         <QAtGuideCard
           className="qat-ftue-card"
           eyebrow="First-time setup"
-          title="Hi, I’m QAt. I’ll help you get release-ready faster."
-          body="QAtalyst works best when it understands your project context. I’ll point you toward the Project Brain, integrations, and the main QA tools without getting in your way."
+          title="Hi, I’m QAt. Let’s get your QA workspace grounded."
+          body="QAtalyst works best when it knows which project you’re testing and what context matters. Start with Project Brain, then come back here to generate test cases, bug reports, risk reviews, improved tests, and feature briefs."
           primaryAction={{
-            label: "Start with Project Brain",
+            label: "Open Project Brain",
             onClick: () => {
               dismissFtueStep(FTUE_KEYS.welcome);
               window.location.href = "/brain";
             },
           }}
           secondaryAction={{
-            label: "Skip for now",
+            label: "Stay in toolbelt",
             onClick: () => dismissFtueStep(FTUE_KEYS.welcome),
           }}
         />
@@ -3746,10 +3771,10 @@ export default function Home() {
         <QAtGuideCard
           className="qat-ftue-card"
           eyebrow="Project Brain"
-          title="QAtalyst gets smarter when your project memory is set up."
-          body="Use Project Brain/Source Vault for rules, terminology, product notes, links, risks, and reusable context. This keeps generated QA output grounded in your actual product instead of generic AI guesses."
+          title="Project Brain is where QAtalyst stores reusable product memory."
+          body="Use Brain for projects, Source Vault, saved reports, bug collections, team QA rules, terminology, risks, features, and integrations. The more useful context you add there, the less generic your generated QA work becomes."
           primaryAction={{
-            label: "Open Project setup",
+            label: "Set up Project Brain",
             onClick: () => {
               dismissFtueStep(FTUE_KEYS.brainIntro);
               window.location.href = "/brain";
@@ -3766,10 +3791,10 @@ export default function Home() {
         <QAtGuideCard
           className="qat-ftue-card"
           eyebrow="Integrations"
-          title="Want Jira-ready and TestRail-ready handoff later?"
-          body="Connect integrations when you’re ready. Jira helps QAtalyst pull tickets and create structured QA work; TestRail keeps generated coverage closer to your test management workflow."
+          title="Connect Jira and TestRail when you’re ready for handoff."
+          body="Integrations are now part of the Brain workflow. Jira helps pull tickets and create structured QA work; TestRail keeps generated test coverage closer to your test management process."
           primaryAction={{
-            label: "Show me integrations",
+            label: "Open integrations",
             onClick: () => {
               dismissFtueStep(FTUE_KEYS.integrationsIntro);
               window.location.href = "/brain?tab=integrations";
