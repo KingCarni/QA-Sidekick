@@ -2030,16 +2030,13 @@ function BugReportCards({
 
   return (
     <div className="report-wrap bug-report-wrap">
-            <div className="report-header">
+      <div className="report-header">
         <div>
-          <h2>Jira-ready Bug Report</h2>
-          <p className="bug-report-subtitle">
-            Review the generated defect, tighten any missing context, then save it, track it, or send it straight into Jira.
-          </p>
+          <p className="report-kicker">Bug Writer Report</p>
+          <h2>Structured Bug Report</h2>
         </div>
-
-        <div className="bug-handoff-panel">
-          <div className="bug-utility-actions">
+        <div className="report-action-stack">
+          <div className="report-actions compact-report-actions bug-report-actions report-action-row">
             <button className="copy-all-button" type="button" onClick={handleCopy}>
               {copied ? "Copied" : "Copy Bug Report"}
             </button>
@@ -2050,13 +2047,18 @@ function BugReportCards({
               {isEditingMarkdown ? "Close Editor" : "Edit Report"}
             </button>
           </div>
-
-          <div className="bug-primary-actions">
+          <div className="bug-secondary-action-row">
             <SaveReportControl
               saveReportStatus={saveReportStatus}
               saveReportMessage={saveReportMessage}
               savedReportId={savedReportId}
               onSaveReport={() => onSaveReport(evidenceAwareBugMarkdown)}
+            />
+            <SaveBugToCollectionButton
+              activeProject={activeProject}
+              markdown={evidenceAwareBugMarkdown}
+              structuredData={{ bugReport: editableBugReport }}
+              sourceInput={sourceInput}
             />
             <JiraCreateIssueButton
               reportType="bug"
@@ -2077,10 +2079,11 @@ function BugReportCards({
       ) : null}
 
       <section className="bug-readiness-card">
-        
-        <h3>Ready for Jira triage</h3>
+        <p className="report-kicker">Bug Report Readiness</p>
+        <h3>Ready for triage</h3>
         <p>
-          This report is structured for developer review with a clear summary, environment, repro steps, expected and actual results, impact, and triage notes. Add screenshots, logs, device details, build/version, and repro rate when available to make the defect even stronger.
+          This bug report has enough structure to create a Jira issue. Add screenshots, logs, device details,
+          build/version, and repro rate when available.
         </p>
       </section>
 
@@ -4226,7 +4229,8 @@ export default function Home() {
         <section className="panel output-panel qa-output-cockpit" data-testid="qa-output">
           <div className="workspace-panel-header output-panel-header">
             <div>
-               <h2>{output ? "Review QA output" : "Output will appear here"}</h2>
+              <p className="app-section-kicker">Generated artifact</p>
+              <h2>{output ? "Review QA output" : "Output will appear here"}</h2>
               <span>{output ? "Scan, refine, save, sync, or export the generated QA artifact." : "Choose a workflow, bring context, then run QAtalyst."}</span>
             </div>
             <strong>{output ? "Ready" : "Waiting"}</strong>
@@ -4291,4 +4295,3 @@ export default function Home() {
     </main>
   );
 }
-
