@@ -2030,15 +2030,15 @@ function BugReportCards({
 
   return (
     <div className="report-wrap bug-report-wrap">
-      <div className="report-header">
+            <div className="report-header">
         <div>
-                    <p className="report-kicker">Bug Writer Report · Jira handoff ready</p>
           <h2>Jira-ready Bug Report</h2>
           <p className="bug-report-subtitle">
             Review the generated defect, tighten any missing context, then save it, track it, or send it straight into Jira.
           </p>
         </div>
-                <div className="bug-handoff-panel">
+
+        <div className="bug-handoff-panel">
           <div className="bug-utility-actions">
             <button className="copy-all-button" type="button" onClick={handleCopy}>
               {copied ? "Copied" : "Copy Bug Report"}
@@ -2051,27 +2051,13 @@ function BugReportCards({
             </button>
           </div>
 
-          <div className="bug-save-actions">
-            <div className="bug-save-report-slot">
-              <SaveReportControl
-                saveReportStatus={saveReportStatus}
-                saveReportMessage={saveReportMessage}
-                savedReportId={savedReportId}
-                onSaveReport={() => onSaveReport(evidenceAwareBugMarkdown)}
-              />
-            </div>
-
-            <div className="bug-save-collection-slot">
-              <SaveBugToCollectionButton
-                activeProject={activeProject}
-                markdown={evidenceAwareBugMarkdown}
-                structuredData={{ bugReport: editableBugReport }}
-                sourceInput={sourceInput}
-              />
-            </div>
-          </div>
-
-          <div className="bug-jira-handoff-action">
+          <div className="bug-primary-actions">
+            <SaveReportControl
+              saveReportStatus={saveReportStatus}
+              saveReportMessage={saveReportMessage}
+              savedReportId={savedReportId}
+              onSaveReport={() => onSaveReport(evidenceAwareBugMarkdown)}
+            />
             <JiraCreateIssueButton
               reportType="bug"
               markdown={evidenceAwareBugMarkdown}
@@ -2091,7 +2077,7 @@ function BugReportCards({
       ) : null}
 
       <section className="bug-readiness-card">
-        <p className="report-kicker">Bug Report Readiness</p>
+        
         <h3>Ready for Jira triage</h3>
         <p>
           This report is structured for developer review with a clear summary, environment, repro steps, expected and actual results, impact, and triage notes. Add screenshots, logs, device details, build/version, and repro rate when available to make the defect even stronger.
@@ -4240,8 +4226,7 @@ export default function Home() {
         <section className="panel output-panel qa-output-cockpit" data-testid="qa-output">
           <div className="workspace-panel-header output-panel-header">
             <div>
-              <p className="app-section-kicker">Generated artifact</p>
-              <h2>{output ? "Review QA output" : "Output will appear here"}</h2>
+               <h2>{output ? "Review QA output" : "Output will appear here"}</h2>
               <span>{output ? "Scan, refine, save, sync, or export the generated QA artifact." : "Choose a workflow, bring context, then run QAtalyst."}</span>
             </div>
             <strong>{output ? "Ready" : "Waiting"}</strong>

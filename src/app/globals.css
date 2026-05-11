@@ -32608,3 +32608,198 @@ body:has(.qatalyst-brain-shell)::after {
 .qatalyst-app-shell-v9 .bug-jira-handoff-action {
   margin-top: -2px !important;
 }
+/* QAS-158 force tidy: Bug Collection card compression */
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-actions {
+  grid-template-columns: 120px minmax(0, 1fr) !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-report-slot .save-report-button {
+  min-height: 74px !important;
+  height: 74px !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-collection-slot > * {
+  min-height: 74px !important;
+  height: 74px !important;
+  overflow: hidden !important;
+  padding: 10px 14px !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-collection-slot p,
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-collection-slot small {
+  display: none !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-collection-slot .report-kicker {
+  margin-bottom: 4px !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-collection-slot strong {
+  display: block !important;
+  max-width: 100% !important;
+  margin-bottom: 6px !important;
+  overflow: hidden !important;
+  font-size: 0.82rem !important;
+  line-height: 1.2 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-collection-slot button {
+  min-height: 32px !important;
+  margin-top: 0 !important;
+  padding: 7px 10px !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-jira-handoff-action {
+  margin-top: -4px !important;
+}
+/* QAS-158 final command layout: remove collection copy, align save + Jira */
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-actions {
+  display: none !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-report-slot,
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-collection-slot {
+  display: none !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-handoff-panel {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-utility-actions {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-utility-actions button {
+  width: 100% !important;
+  min-height: 40px !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-jira-handoff-action {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin-top: 0 !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-jira-handoff-action::before {
+  content: "Save Report";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.88), rgba(30, 64, 175, 0.86)),
+    rgba(30, 64, 175, 0.9);
+  color: #eff6ff;
+  font-size: 0.88rem;
+  font-weight: 900;
+  box-shadow:
+    0 14px 28px rgba(30, 64, 175, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-jira-handoff-action button {
+  width: 100% !important;
+  min-height: 46px !important;
+  border-color: rgba(34, 197, 94, 0.48) !important;
+  background:
+    linear-gradient(135deg, rgba(22, 163, 74, 0.98), rgba(21, 128, 61, 0.94)),
+    rgba(22, 163, 74, 0.92) !important;
+  color: #f0fdf4 !important;
+  box-shadow:
+    0 16px 34px rgba(21, 128, 61, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+}
+
+@media (max-width: 1180px) {
+  .qatalyst-app-shell-v9 .bug-report-wrap .bug-jira-handoff-action {
+    grid-template-columns: 1fr !important;
+  }
+}
+/* QAS-158 final clean command panel */
+.qatalyst-app-shell-v9 .app-section-kicker:empty,
+.qatalyst-app-shell-v9 .report-kicker:empty {
+  display: none !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-actions,
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-report-slot,
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-save-collection-slot,
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-jira-handoff-action {
+  display: none !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-handoff-panel {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-utility-actions {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-utility-actions button {
+  width: 100% !important;
+  min-height: 40px !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-primary-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-primary-actions .save-report-row,
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-primary-actions .save-report-button {
+  width: 100% !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-primary-actions .save-report-button {
+  min-height: 46px !important;
+  border-color: rgba(96, 165, 250, 0.35) !important;
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.88), rgba(30, 64, 175, 0.86)),
+    rgba(30, 64, 175, 0.9) !important;
+  color: #eff6ff !important;
+  box-shadow:
+    0 14px 28px rgba(30, 64, 175, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-primary-actions > button,
+.qatalyst-app-shell-v9 .bug-report-wrap .bug-primary-actions [data-testid="jira-create-issue-button"] {
+  width: 100% !important;
+  min-height: 46px !important;
+  border-color: rgba(34, 197, 94, 0.48) !important;
+  background:
+    linear-gradient(135deg, rgba(22, 163, 74, 0.98), rgba(21, 128, 61, 0.94)),
+    rgba(22, 163, 74, 0.92) !important;
+  color: #f0fdf4 !important;
+  box-shadow:
+    0 16px 34px rgba(21, 128, 61, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+}
+
+.qatalyst-app-shell-v9 .bug-readiness-card {
+  padding-top: 24px !important;
+}
+
+@media (max-width: 1180px) {
+  .qatalyst-app-shell-v9 .bug-report-wrap .bug-primary-actions,
+  .qatalyst-app-shell-v9 .bug-report-wrap .bug-utility-actions {
+    grid-template-columns: 1fr !important;
+  }
+}

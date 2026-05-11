@@ -188,7 +188,7 @@ export default function BugEvidencePanel({ value, onChange }: BugEvidencePanelPr
               evidenceReference: event.target.value,
             })
           }
-          placeholder="Paste Jira attachment name, Drive link, screenshot filename, build link..."
+          
           value={value.evidenceReference}
         />
       </label>
@@ -202,8 +202,7 @@ export default function BugEvidencePanel({ value, onChange }: BugEvidencePanelPr
               evidenceNotes: event.target.value,
             })
           }
-          placeholder="Describe what the screenshot shows, timestamps, log errors, or attachment notes..."
-          value={value.evidenceNotes}
+            value={value.evidenceNotes}
         />
       </label>
 
@@ -216,7 +215,7 @@ export default function BugEvidencePanel({ value, onChange }: BugEvidencePanelPr
               logText: event.target.value,
             })
           }
-          placeholder="Paste console errors, stack traces, request IDs, device logs, or relevant log snippets..."
+          
           value={value.logText}
         />
       </label>
@@ -230,7 +229,7 @@ export default function BugEvidencePanel({ value, onChange }: BugEvidencePanelPr
               testerNotes: event.target.value,
             })
           }
-          placeholder="Use this for suspects, known patterns, workarounds, recent changes, or details that answer follow-up questions..."
+          
           value={value.testerNotes}
         />
       </label>
@@ -238,7 +237,7 @@ export default function BugEvidencePanel({ value, onChange }: BugEvidencePanelPr
       {error ? <p className="bug-evidence-error">{error}</p> : null}
 
       <p className="bug-evidence-note">
-        Evidence names and notes are added to the preview/Jira description. Selected files upload after the Jira issue is created.
+        
       </p>
     </section>
   );
