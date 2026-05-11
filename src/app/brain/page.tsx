@@ -137,6 +137,12 @@ const BRAIN_TABS: BrainTab[] = [
   },
 ];
 
+const BRAIN_TAB_IDS = new Set<BrainTabId>(BRAIN_TABS.map((tab) => tab.id));
+
+function normalizeBrainTab(value: string | null): BrainTabId {
+  return value && BRAIN_TAB_IDS.has(value as BrainTabId) ? (value as BrainTabId) : "overview";
+}
+
 const BRAIN_STATUS_CARDS = [
   { label: "Projects", value: "Live", text: "Project containers now live in Brain." },
   { label: "Source Vault", value: "Live", text: "Reusable context and saved project sources." },
@@ -406,6 +412,22 @@ export default function BrainPage() {
   );
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const nextTab = normalizeBrainTab(new URLSearchParams(window.location.search).get("tab"));
+    setActiveTab(nextTab);
+  }, []);
+
+  function selectBrainTab(tabId: BrainTabId) {
+    setActiveTab(tabId);
+
+    if (typeof window === "undefined") return;
+
+    const nextUrl = tabId === "overview" ? "/brain" : `/brain?tab=${tabId}`;
+    window.history.replaceState(null, "", nextUrl);
+  }
+
+  useEffect(() => {
     if (status !== "authenticated") {
       setActiveProject(null);
       setActiveProjectError("");
@@ -504,14 +526,14 @@ export default function BrainPage() {
         eyebrow="QAt setup guide"
         title="Start with your project memory."
         body="Brain now owns reusable project context. Create/select a project, add source notes or docs, keep saved defects in Bug Collection, and review generated artifacts in Saved Reports."
-        primaryAction={{ label: "Open Source Vault", onClick: () => setActiveTab("sources") }}
-        secondaryAction={{ label: "Saved Reports", onClick: () => setActiveTab("reports") }}
+        primaryAction={{ label: "Open Source Vault", onClick: () => selectBrainTab("sources") }}
+        secondaryAction={{ label: "Saved Reports", onClick: () => selectBrainTab("reports") }}
       />
 
       <section className="brain-workspace">
         <nav className="brain-tab-rail" aria-label="Project Brain sections">
           {BRAIN_TABS.map((tab) => (
-            <button key={tab.id} className={activeTab === tab.id ? "active" : ""} type="button" onClick={() => setActiveTab(tab.id)}>
+            <button key={tab.id} className={activeTab === tab.id ? "active" : ""} type="button" onClick={() => selectBrainTab(tab.id)}>
               <span>{tab.eyebrow}</span>
               <strong>{tab.label}</strong>
             </button>
@@ -549,7 +571,7 @@ export default function BrainPage() {
                 <p>Recommended next step</p>
                 <h3>Move reusable context, saved defects, and reports into Brain.</h3>
                 <span>Create/select a project, then manage Source Vault, Bug Collection, and Saved Reports from one setup hub.</span>
-                <button type="button" onClick={() => setActiveTab(activeProject ? "reports" : "projects")}>
+                <button type="button" onClick={() => selectBrainTab(activeProject ? "reports" : "projects")}>
                   {activeProject ? "Open Saved Reports" : "Set up project"}
                 </button>
               </article>
@@ -601,9 +623,9 @@ export default function BrainPage() {
                 <div>
                   <p>Jira integration</p>
                   <h3>Pull tickets and create Jira-ready QA work.</h3>
-                  <span>Keep the existing Jira setup functional for now, but treat it as an integration inside Project Brain.</span>
+                  <span>Jira setup stays available as an integration surface while Brain remains the primary workspace.</span>
                 </div>
-                <Link href="/jira/settings">Open current Jira setup</Link>
+                <Link href="/jira/settings">Open Jira settings</Link>
               </article>
 
               <article className="brain-integration-card">
@@ -612,7 +634,7 @@ export default function BrainPage() {
                   <h3>Keep generated test coverage close to test management.</h3>
                   <span>TestRail-ready output and sync controls should live here as part of the workflow setup story.</span>
                 </div>
-                <Link href="/app">Use TestRail from toolbelt</Link>
+                <Link href="/jira/settings">Open TestRail settings</Link>
               </article>
 
               <article className="brain-integration-card muted">
