@@ -493,9 +493,6 @@ export default function BrainPage() {
             <Link className="brain-primary-link" href="/app">
               Back to toolbelt
             </Link>
-            <button className="brain-secondary-link" type="button" onClick={() => setActiveTab("sources")}>
-              Open Source Vault
-            </button>
           </div>
         </div>
 
@@ -528,48 +525,12 @@ export default function BrainPage() {
             <span>{active.body}</span>
           </div>
 
-          {isLoadingActiveProject ? (
-            <div className="brain-active-project-strip">
-              <div>
-                <p className="brain-mini-eyebrow">Active project</p>
-                <strong>Loading project…</strong>
-                <span>Preparing project-scoped Brain sections.</span>
-              </div>
-            </div>
-          ) : null}
-
           {activeProjectError ? (
             <div className="brain-active-project-strip brain-active-project-error">
               <div>
                 <p className="brain-mini-eyebrow">Project load issue</p>
                 <strong>{activeProjectError}</strong>
                 <span>Open Projects to choose or create a workspace.</span>
-              </div>
-              <div className="brain-active-project-actions">
-                <button type="button" onClick={() => setActiveTab("projects")}>
-                  Open projects
-                </button>
-              </div>
-            </div>
-          ) : null}
-
-          {!isLoadingActiveProject && !activeProjectError && activeProject ? (
-            <div className="brain-active-project-strip">
-              <div>
-                <p className="brain-mini-eyebrow">Active project</p>
-                <strong>{activeProject.name}</strong>
-                <span>{activeProject.productType || "other"}</span>
-              </div>
-              <div className="brain-active-project-actions">
-                <button type="button" onClick={() => setActiveTab("sources")}>
-                  Manage sources
-                </button>
-                <button type="button" onClick={() => setActiveTab("bugs")}>
-                  View bugs
-                </button>
-                <button type="button" onClick={() => setActiveTab("reports")}>
-                  Saved reports
-                </button>
               </div>
             </div>
           ) : null}
