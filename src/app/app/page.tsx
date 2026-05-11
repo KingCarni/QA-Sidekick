@@ -1429,7 +1429,7 @@ function TestCaseCards({
                 <span>Question {index + 1}</span>
                 <strong>{item.question}</strong>
                 <p>{item.answer}</p>
-                <small>{item.answerType} Â· {item.resolution}</small>
+                <small>{item.answerType} · {item.resolution}</small>
               </article>
             ))}
           </div>
@@ -1916,7 +1916,7 @@ function RiskReviewCards({
                   <span>Question {index + 1}</span>
                   <strong>{item.question}</strong>
                   <p>{item.answer}</p>
-                  <small>{item.answerType} Â· {item.resolution}</small>
+                  <small>{item.answerType} · {item.resolution}</small>
                 </article>
               ))}
             </div>
@@ -2032,14 +2032,14 @@ function BugReportCards({
     <div className="report-wrap bug-report-wrap">
       <div className="report-header">
         <div>
-          <p className="report-kicker">Bug Writer Report · Jira handoff ready</p>
+                    <p className="report-kicker">Bug Writer Report · Jira handoff ready</p>
           <h2>Jira-ready Bug Report</h2>
           <p className="bug-report-subtitle">
             Review the generated defect, tighten any missing context, then save it, track it, or send it straight into Jira.
           </p>
         </div>
-        <div className="report-action-stack">
-          <div className="report-actions compact-report-actions bug-report-actions report-action-row">
+                <div className="bug-handoff-panel">
+          <div className="bug-utility-actions">
             <button className="copy-all-button" type="button" onClick={handleCopy}>
               {copied ? "Copied" : "Copy Bug Report"}
             </button>
@@ -2050,19 +2050,28 @@ function BugReportCards({
               {isEditingMarkdown ? "Close Editor" : "Edit Report"}
             </button>
           </div>
-          <div className="bug-secondary-action-row">
-            <SaveReportControl
-              saveReportStatus={saveReportStatus}
-              saveReportMessage={saveReportMessage}
-              savedReportId={savedReportId}
-              onSaveReport={() => onSaveReport(evidenceAwareBugMarkdown)}
-            />
-            <SaveBugToCollectionButton
-              activeProject={activeProject}
-              markdown={evidenceAwareBugMarkdown}
-              structuredData={{ bugReport: editableBugReport }}
-              sourceInput={sourceInput}
-            />
+
+          <div className="bug-save-actions">
+            <div className="bug-save-report-slot">
+              <SaveReportControl
+                saveReportStatus={saveReportStatus}
+                saveReportMessage={saveReportMessage}
+                savedReportId={savedReportId}
+                onSaveReport={() => onSaveReport(evidenceAwareBugMarkdown)}
+              />
+            </div>
+
+            <div className="bug-save-collection-slot">
+              <SaveBugToCollectionButton
+                activeProject={activeProject}
+                markdown={evidenceAwareBugMarkdown}
+                structuredData={{ bugReport: editableBugReport }}
+                sourceInput={sourceInput}
+              />
+            </div>
+          </div>
+
+          <div className="bug-jira-handoff-action">
             <JiraCreateIssueButton
               reportType="bug"
               markdown={evidenceAwareBugMarkdown}
@@ -2187,7 +2196,7 @@ function BugReportCards({
                   <span>Question {index + 1}</span>
                   <strong>{item.question}</strong>
                   <p>{item.answer}</p>
-                  <small>{item.answerType} Â· {item.resolution}</small>
+                  <small>{item.answerType} · {item.resolution}</small>
                 </article>
               ))}
             </div>
@@ -3671,7 +3680,7 @@ export default function Home() {
     <main className="qatalyst-app-shell qatalyst-app-shell-v2 qatalyst-app-shell-v3 qatalyst-app-shell-v4 qatalyst-app-shell-v5 qatalyst-app-shell-v6 qatalyst-app-shell-v7 qatalyst-app-shell-v8 qatalyst-app-shell-v9" data-testid="qa-tool">
       <section className="hero hero-split app-workspace-hero" aria-label="QAtalyst workspace command center">
         <div className="hero-copy app-hero-copy">
-          <p className="app-command-eyebrow">QA workflow cockpit Â· Project-aware outputs Â· Reviewable guardrails</p>
+          <p className="app-command-eyebrow">QA workflow cockpit · Project-aware outputs · Reviewable guardrails</p>
           <h1>Turn rough tickets into release-ready QA plans.</h1>
           <p>
             Bring in Jira tickets, scratch notes, project context, and reusable sources. QAtalyst helps you triage gaps,
@@ -3728,8 +3737,8 @@ export default function Home() {
         <QAtGuideCard
           className="qat-ftue-card"
           eyebrow="First-time setup"
-          title="Hi, Iâ€™m QAt. Letâ€™s get your QA workspace grounded."
-          body="QAtalyst works best when it knows which project youâ€™re testing and what context matters. Start with Project Brain, then come back here to generate test cases, bug reports, risk reviews, improved tests, and feature briefs."
+          title="Hi, I’m QAt. Let’s get your QA workspace grounded."
+          body="QAtalyst works best when it knows which project you’re testing and what context matters. Start with Project Brain, then come back here to generate test cases, bug reports, risk reviews, improved tests, and feature briefs."
           primaryAction={{
             label: "Open Project Brain",
             onClick: () => {
@@ -3768,7 +3777,7 @@ export default function Home() {
         <QAtGuideCard
           className="qat-ftue-card"
           eyebrow="Integrations"
-          title="Connect Jira and TestRail when youâ€™re ready for handoff."
+          title="Connect Jira and TestRail when you’re ready for handoff."
           body="Integrations are now part of the Brain workflow. Jira helps pull tickets and create structured QA work; TestRail keeps generated test coverage closer to your test management process."
           primaryAction={{
             label: "Open integrations",
@@ -4297,5 +4306,4 @@ export default function Home() {
     </main>
   );
 }
-
 
