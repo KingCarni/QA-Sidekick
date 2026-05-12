@@ -193,15 +193,15 @@ type AnsweredFollowUp = {
 };
 
 function getFollowUpActionLabel(resolution: FollowUpResolution): string {
-  if (resolution === "Resolved") return "Submit answer";
-  if (resolution === "Still open") return "Ask QAt follow-up";
-  return "No more questions";
+  if (resolution === "Resolved") return "Queued for re-improve";
+  if (resolution === "Still open") return "Needs deeper QAt follow-up";
+  return "Closed by QA";
 }
 
 function getFollowUpResolutionLabel(resolution: FollowUpResolution): string {
-  if (resolution === "Resolved") return "Submitted";
-  if (resolution === "Still open") return "QAt follow-up requested";
-  return "Closed";
+  if (resolution === "Resolved") return "Queued for re-improve";
+  if (resolution === "Still open") return "Needs deeper QAt follow-up";
+  return "Closed by QA";
 }
 
 function getFollowUpActionHelper(resolution: FollowUpResolution): string {
@@ -211,41 +211,58 @@ function getFollowUpActionHelper(resolution: FollowUpResolution): string {
 }
 
 function getFollowUpActionButtonLabel(resolution: FollowUpResolution): string {
-  if (resolution === "Resolved") return "Submit answer";
-  if (resolution === "Still open") return "Ask QAt follow-up";
+  if (resolution === "Resolved") return "Use in re-improve";
+  if (resolution === "Still open") return "Ask QAt to dig deeper";
   return "Close question";
 }
 
 function buildLocalQAtClarifier(question: string, answer = ""): string {
   const normalizedQuestion = question.toLowerCase();
-  const normalizedAnswer = answer.trim();
-  const answerPrefix = normalizedAnswer ? `Based on “${normalizedAnswer}”, ` : "";
+  const normalizedAnswer = answer.trim().toLowerCase();
+  const answerLooksThin =
+    !normalizedAnswer ||
+    normalizedAnswer.length < 8 ||
+    /^(test|tests|testing|n\/a|na|none|unknown|idk|not sure)$/i.test(normalizedAnswer);
+
+  if (answerLooksThin) {
+    if (normalizedQuestion.includes("device") || normalizedQuestion.includes("operating system") || normalizedQuestion.includes("os") || normalizedQuestion.includes("platform")) {
+      return "Which exact device, OS/platform version, or browser build should developers validate against?";
+    }
+
+    if (normalizedQuestion.includes("version") || normalizedQuestion.includes("build")) {
+      return "Which app version, build number, branch, or release channel should be attached to the Jira issue?";
+    }
+
+    if (normalizedQuestion.includes("reproduce") || normalizedQuestion.includes("repro") || normalizedQuestion.includes("steps")) {
+      return "What exact step, trigger, or user action should developers try first to reproduce this?";
+    }
+  }
 
   if (normalizedQuestion.includes("device") || normalizedQuestion.includes("operating system") || normalizedQuestion.includes("os") || normalizedQuestion.includes("platform")) {
-    return `${answerPrefix}which exact device, OS/platform version, or browser build should developers validate against?`;
+    return "Which exact device, OS/platform version, or browser build should developers validate against?";
   }
 
   if (normalizedQuestion.includes("version") || normalizedQuestion.includes("build")) {
-    return `${answerPrefix}which app version, build number, branch, or release channel should be attached to the Jira issue?`;
+    return "Which app version, build number, branch, or release channel should be attached to the Jira issue?";
   }
 
   if (normalizedQuestion.includes("reproduce") || normalizedQuestion.includes("repro") || normalizedQuestion.includes("steps")) {
-    return `${answerPrefix}what exact step, trigger, or user action should developers try first to reproduce this?`;
+    return "What exact step, trigger, or user action should developers try first to reproduce this?";
   }
 
   if (normalizedQuestion.includes("expected") || normalizedQuestion.includes("actual")) {
-    return `${answerPrefix}what should have happened, and what happened instead, in one developer-readable sentence?`;
+    return "What should have happened, and what happened instead, in one developer-readable sentence?";
   }
 
   if (normalizedQuestion.includes("error") || normalizedQuestion.includes("message") || normalizedQuestion.includes("log") || normalizedQuestion.includes("console")) {
-    return `${answerPrefix}what exact error text, log line, timestamp, or console output should be included?`;
+    return "What exact error text, log line, timestamp, or console output should be included?";
   }
 
   if (normalizedQuestion.includes("account") || normalizedQuestion.includes("role") || normalizedQuestion.includes("user")) {
-    return `${answerPrefix}which account state, user role, permissions, or test data should developers use?`;
+    return "Which account state, user role, permissions, or test data should developers use?";
   }
 
-  return `${answerPrefix}what is the most specific detail developers need before they can confidently triage this?`;
+  return "What is the most specific detail developers need before they can confidently triage this?";
 }
 
 
@@ -2455,11 +2472,11 @@ function BugReportCards({
             <div className="bug-qat-followup-header">
               <div>
                 <span className="bug-qat-eyebrow">QAt triage assistant</span>
-                <h3>{triageState.openCount > 0 ? "Open follow-ups" : "Follow-ups handled"}</h3>
+                <h3>{triageState.openCount > 0 ? "Active triage thread" : "Triage thread ready"}</h3>
                 <p>
                   {triageState.openCount > 0
-                    ? "QAt is tracking the remaining gaps before the next re-improve pass."
-                    : "All QAt follow-ups have been resolved or dismissed for this pass."}
+                    ? "QAt is tracking the open investigation thread so the next re-improve pass can carry the right context."
+                    : "QAt has enough answers for this pass. Re-improve is ready to fold the thread into the bug report."}
                 </p>
               </div>
 
@@ -2472,8 +2489,8 @@ function BugReportCards({
             <div className="bug-qat-question-list">
               {openBugFollowUps.length === 0 ? (
                 <div className="bug-qat-empty-state">
-                  <strong>All follow-ups handled.</strong>
-                  <span>Run Re-improve Bug Report to fold the latest answers into the generated defect.</span>
+                  <strong>QAt has enough answers for this pass.</strong>
+                  <span>Run Re-improve Bug Report to fold this triage thread into the generated defect.</span>
                 </div>
               ) : null}
               {openBugFollowUps.map((question, index) => {
@@ -2514,7 +2531,7 @@ function BugReportCards({
                     ) : null}
 
                     <div className="follow-up-resolution-block">
-                      <p>What should QAt do with this answer?</p>
+                      <p>Next step for this triage thread</p>
                       <div className="follow-up-resolution-actions">
                         {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map((option) => (
                           <button
@@ -3806,7 +3823,7 @@ export default function Home() {
 
     const answeredFollowUps = mergedAnsweredFollowUps.map(
       (item) =>
-        [`Q: ${item.question}`, `A: ${item.answer}`, `Answer type: ${item.answerType}`, `Action: ${getFollowUpResolutionLabel(item.resolution)}`, item.qatFollowUpQuestion ? `QAt follow-up: ${item.qatFollowUpQuestion}` : "", item.qatFollowUpAnswer ? `QAt follow-up answer: ${item.qatFollowUpAnswer}` : ""].filter(Boolean).join("\n")
+        buildFollowUpThreadSummary(item)
     );
 
     const uploadedScreenshotContext = bugEvidence.files
@@ -4342,7 +4359,7 @@ export default function Home() {
                         />
 
                         <div className="follow-up-resolution-block">
-                          <p>What should QAt do with this answer?</p>
+                          <p>Next step for this triage thread</p>
                           <div className="follow-up-resolution-actions">
                             {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
                               (option) => (
@@ -4417,7 +4434,7 @@ export default function Home() {
                         />
 
                         <div className="follow-up-resolution-block">
-                          <p>What should QAt do with this answer?</p>
+                          <p>Next step for this triage thread</p>
                           <div className="follow-up-resolution-actions">
                             {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
                               (option) => (
@@ -4487,7 +4504,7 @@ export default function Home() {
                         />
 
                         <div className="follow-up-resolution-block">
-                          <p>What should QAt do with this answer?</p>
+                          <p>Next step for this triage thread</p>
                           <div className="follow-up-resolution-actions">
                             {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
                               (option) => (
