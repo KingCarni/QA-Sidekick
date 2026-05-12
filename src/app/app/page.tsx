@@ -2127,51 +2127,94 @@ function BugReportCards({
           <p className="field-text">{safeText(editableBugReport.summary)}</p>
         </section>
 
-        <section className="bug-section-card">
-          <h3>Environment</h3>
-          <p className="field-text">{safeText(editableBugReport.environment)}</p>
-        </section>
+          <section className="bug-section-card">
+            <h3>Environment</h3>
+            <p className="field-text">{safeText(editableBugReport.environment)}</p>
+          </section>
 
-        <section className="bug-section-card">
-          <h3>Steps to Reproduce</h3>
-          <ol className="step-list">
-            {steps.map((step, index) => (
-              <li key={`${step}-${index}`}>{step}</li>
-            ))}
-          </ol>
-        </section>
+          <section className="bug-section-card">
+            <h3>Steps to Reproduce</h3>
+            <ol className="step-list">
+              {steps.map((step, index) => (
+                <li key={`${step}-${index}`}>{step}</li>
+              ))}
+            </ol>
+          </section>
 
-        <section className="bug-two-column-grid">
-          <article className="bug-section-card">
-            <h3>Expected Result</h3>
-            <p className="field-text">{safeText(editableBugReport.expectedResult)}</p>
-          </article>
+          <section className="bug-two-column-grid">
+            <article className="bug-section-card">
+              <h3>Expected Result</h3>
+              <p className="field-text">{safeText(editableBugReport.expectedResult)}</p>
+            </article>
 
-          <article className="bug-section-card bug-actual-card">
-            <h3>Actual Result</h3>
-            <p className="field-text">{safeText(editableBugReport.actualResult)}</p>
-          </article>
-        </section>
+            <article className="bug-section-card bug-actual-card">
+              <h3>Actual Result</h3>
+              <p className="field-text">{safeText(editableBugReport.actualResult)}</p>
+            </article>
+          </section>
 
-        <section className="bug-section-card">
-          <h3>Impact</h3>
-          <p className="field-text">{safeText(editableBugReport.impact)}</p>
-        </section>
+          <section className="bug-section-card">
+            <h3>Impact</h3>
+            <p className="field-text">{safeText(editableBugReport.impact)}</p>
+          </section>
 
-        <section className="bug-section-card">
-          <h3>Missing Info</h3>
-          <ValueBlock value={editableBugReport.missingInfo} />
-        </section>
+          <section className="bug-section-card">
+            <h3>Missing Info</h3>
+            <ValueBlock value={editableBugReport.missingInfo} />
+          </section>
 
-        <section className="bug-section-card">
-          <h3>Follow-up Questions</h3>
-          <ValueBlock value={editableBugReport.followUpQuestions} />
-        </section>
+                  <section className="bug-section-card">
+            <h3>QA Notes</h3>
+            <ValueBlock value={editableBugReport.qaNotes} />
+          </section>
 
-        <section className="bug-section-card">
-          <h3>QA Notes</h3>
-          <ValueBlock value={editableBugReport.qaNotes} />
-        </section>
+                {meaningfulLines(editableBugReport.followUpQuestions).length > 0 ? (
+          <section className="bug-section-card bug-qat-followup-card">
+            <div className="bug-qat-followup-header">
+              <div>
+                <span className="bug-qat-eyebrow">QAt triage assistant</span>
+                <h3>Follow-up questions need attention</h3>
+                <p>
+                  QAt found a few gaps that could slow down developer triage. Answer these in the left refine panel,
+                  then re-improve the report to tighten the handoff.
+                </p>
+              </div>
+
+              <div className="bug-qat-speech">
+                <span className="bug-qat-avatar">QAt</span>
+                <p>I still need a little more context before this is fully triage-ready.</p>
+              </div>
+            </div>
+
+            <div className="bug-qat-question-list">
+              {meaningfulLines(editableBugReport.followUpQuestions).map((question, index) => (
+                <article className="bug-qat-question" key={`${question}-${index}`}>
+                  <span>Question {index + 1}</span>
+                  <strong>{question}</strong>
+                </article>
+              ))}
+            </div>
+
+            <p className="bug-qat-answer-hint">
+              Answer these under <strong>Refine bug context → Answer follow-up questions</strong>, then run Re-improve Bug Report.
+            </p>
+          </section>
+        ) : (
+          <section className="bug-section-card bug-qat-followup-card bug-qat-followup-card-resolved">
+            <div className="bug-qat-followup-header">
+              <div>
+                <span className="bug-qat-eyebrow">QAt triage assistant</span>
+                <h3>No active follow-up gaps</h3>
+                <p>QAt did not find any active follow-up questions for this report.</p>
+              </div>
+
+              <div className="bug-qat-speech resolved">
+                <span className="bug-qat-avatar">QAt</span>
+                <p>Nice, this is ready for Jira triage.</p>
+              </div>
+            </div>
+          </section>
+        )}
 
         {answeredFollowUps.length > 0 ? (
           <section className="bug-section-card followup-history-card">
