@@ -183,6 +183,25 @@ type UploadedEvidenceFile = {
 
 type FollowUpResolution = "Resolved" | "Still open" | "No more questions";
 
+function getFollowUpActionLabel(resolution: FollowUpResolution): string {
+  if (resolution === "Resolved") return "Submit answer";
+  if (resolution === "Still open") return "Ask QAt follow-up";
+  return "No more questions";
+}
+
+function getFollowUpResolutionLabel(resolution: FollowUpResolution): string {
+  if (resolution === "Resolved") return "Submitted";
+  if (resolution === "Still open") return "QAt follow-up requested";
+  return "Closed";
+}
+
+function getFollowUpActionHelper(resolution: FollowUpResolution): string {
+  if (resolution === "Resolved") return "Use this answer in the next re-improve pass.";
+  if (resolution === "Still open") return "Keep this open and let QAt ask again if needed.";
+  return "Close this thread for now.";
+}
+
+
 type AnsweredFollowUp = {
   question: string;
   answer: string;
@@ -870,7 +889,7 @@ function buildTestCasesMarkdown(testCases: TestCase[], answeredFollowUps: Answer
           `${index + 1}. Q: ${item.question}`,
           `   A: ${item.answer}`,
           `   Type: ${item.answerType}`,
-          `   Resolution: ${item.resolution}`,
+          `   Action: ${getFollowUpResolutionLabel(item.resolution)}`,
         ])
       : ["- No answered test follow-up questions recorded."]),
   ].join("\n");
@@ -949,7 +968,7 @@ function formatRiskReview(review: RiskReview, answeredFollowUps: AnsweredFollowU
           `${index + 1}. Q: ${item.question}`,
           `   A: ${item.answer}`,
           `   Type: ${item.answerType}`,
-          `   Resolution: ${item.resolution}`,
+          `   Action: ${getFollowUpResolutionLabel(item.resolution)}`,
         ])
       : ["No answered follow-up questions recorded."]),
   ].join("\n");
@@ -1030,7 +1049,7 @@ function formatBugReport(
           `${index + 1}. Q: ${item.question}`,
           `   A: ${item.answer}`,
           `   Type: ${item.answerType}`,
-          `   Resolution: ${item.resolution}`,
+          `   Action: ${getFollowUpResolutionLabel(item.resolution)}`,
         ])
       : ["- No answered follow-up questions recorded."]),
     "",
@@ -1548,7 +1567,7 @@ function TestCaseCards({
                 <span>Question {index + 1}</span>
                 <strong>{item.question}</strong>
                 <p>{item.answer}</p>
-                <small>{item.answerType} · {item.resolution}</small>
+                <small>{item.answerType} · {getFollowUpResolutionLabel(item.resolution)}</small>
               </article>
             ))}
           </div>
@@ -2035,7 +2054,7 @@ function RiskReviewCards({
                   <span>Question {index + 1}</span>
                   <strong>{item.question}</strong>
                   <p>{item.answer}</p>
-                  <small>{item.answerType} · {item.resolution}</small>
+                  <small>{item.answerType} · {getFollowUpResolutionLabel(item.resolution)}</small>
                 </article>
               ))}
             </div>
@@ -2361,7 +2380,7 @@ function BugReportCards({
                     />
 
                     <div className="follow-up-resolution-block">
-                      <p>Did this answer resolve the follow-up?</p>
+                      <p>What should QAt do with this answer?</p>
                       <div className="follow-up-resolution-actions">
                         {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map((option) => (
                           <button
@@ -2372,7 +2391,7 @@ function BugReportCards({
                             type="button"
                             onClick={() => onBugQuestionResolution(question, option)}
                           >
-                            {option}
+                            {getFollowUpActionLabel(option)}
                           </button>
                         ))}
                       </div>
@@ -2414,7 +2433,7 @@ function BugReportCards({
                 return (
                   <article className={`followup-history-item handled-followup-item resolution-${resolution.toLowerCase().replace(/\s+/g, "-")}`} key={`${question}-${index}`}>
                     <div className="handled-followup-topline">
-                      <span>{resolution}</span>
+                      <span>{getFollowUpResolutionLabel(resolution)}</span>
                       <em className={`bug-followup-priority priority-${getFollowUpPriority(question).toLowerCase()}`}>
                         {getFollowUpPriority(question)}
                       </em>
@@ -2440,7 +2459,7 @@ function BugReportCards({
                   <span>Question {index + 1}</span>
                   <strong>{item.question}</strong>
                   <p>{item.answer}</p>
-                  <small>{item.answerType} · {item.resolution}</small>
+                  <small>{item.answerType} · {getFollowUpResolutionLabel(item.resolution)}</small>
                 </article>
               ))}
             </div>
@@ -3605,7 +3624,7 @@ export default function Home() {
 
     const answeredFollowUps = mergedAnsweredFollowUps.map(
       (item) =>
-        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nResolution: ${item.resolution}`
+        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nAction: ${getFollowUpResolutionLabel(item.resolution)}`
     );
 
     const uploadedScreenshotContext = bugEvidence.files
@@ -3666,7 +3685,7 @@ export default function Home() {
 
     const answeredRiskFollowUps = mergedRiskAnsweredFollowUps.map(
       (item) =>
-        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nResolution: ${item.resolution}`
+        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nAction: ${getFollowUpResolutionLabel(item.resolution)}`
     );
 
     const hasRiskReassessmentContext =
@@ -3680,7 +3699,7 @@ export default function Home() {
 
     const answeredTestFollowUps = mergedTestAnsweredFollowUps.map(
       (item) =>
-        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nResolution: ${item.resolution}`
+        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nAction: ${getFollowUpResolutionLabel(item.resolution)}`
     );
 
     const hasTestRegenerationContext =
@@ -3694,7 +3713,7 @@ export default function Home() {
 
     const answeredImproveFollowUps = mergedImproveAnsweredFollowUps.map(
       (item) =>
-        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nResolution: ${item.resolution}`
+        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nAction: ${getFollowUpResolutionLabel(item.resolution)}`
     );
 
     const hasImproveFollowUpContext =
@@ -4141,7 +4160,7 @@ export default function Home() {
                         />
 
                         <div className="follow-up-resolution-block">
-                          <p>Did this answer resolve the follow-up?</p>
+                          <p>What should QAt do with this answer?</p>
                           <div className="follow-up-resolution-actions">
                             {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
                               (option) => (
@@ -4216,7 +4235,7 @@ export default function Home() {
                         />
 
                         <div className="follow-up-resolution-block">
-                          <p>Did this answer resolve the follow-up?</p>
+                          <p>What should QAt do with this answer?</p>
                           <div className="follow-up-resolution-actions">
                             {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
                               (option) => (
@@ -4286,7 +4305,7 @@ export default function Home() {
                         />
 
                         <div className="follow-up-resolution-block">
-                          <p>Did this answer resolve the follow-up?</p>
+                          <p>What should QAt do with this answer?</p>
                           <div className="follow-up-resolution-actions">
                             {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
                               (option) => (
