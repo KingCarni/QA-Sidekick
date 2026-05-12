@@ -33368,3 +33368,119 @@ body:has(.qatalyst-brain-shell)::after {
   color: rgba(226, 232, 240, 0.7);
   line-height: 1.4;
 }
+/* QAS-158 QAt threaded follow-up UX */
+.qatalyst-app-shell-v9 .bug-qat-thread {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+  position: relative;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-thread::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 20px;
+  bottom: 20px;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(96, 165, 250, 0.42),
+    rgba(148, 163, 184, 0.08)
+  );
+}
+
+.qatalyst-app-shell-v9 .bug-qat-thread-row {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  position: relative;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-thread-row > div,
+.qatalyst-app-shell-v9 .bug-qat-thread-row > label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-thread-row small {
+  color: rgba(191, 219, 254, 0.72);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-thread-row.qa small {
+  color: rgba(226, 232, 240, 0.62);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-thread-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.86);
+  color: rgba(226, 232, 240, 0.86);
+  font-size: 0.58rem;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-thread-row.deeper {
+  padding: 10px 12px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  border-radius: 15px;
+  background:
+    linear-gradient(135deg, rgba(30, 64, 175, 0.14), rgba(15, 23, 42, 0.58)),
+    rgba(15, 23, 42, 0.54);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-thread-row.deeper p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.78);
+  line-height: 1.45;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-thread textarea {
+  min-height: 76px;
+}
+/* QAS-158 QAt thread intelligence */
+.qatalyst-app-shell-v9 .bug-qat-thread-insight {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background:
+    linear-gradient(135deg, rgba(30, 64, 175, 0.12), rgba(15, 23, 42, 0.64)),
+    rgba(15, 23, 42, 0.58);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-thread-insight strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #dbeafe;
+  font-size: 0.76rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-thread-insight p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.78);
+  line-height: 1.45;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-thread-insight.handled {
+  border-color: rgba(34, 197, 94, 0.2);
+  background:
+    linear-gradient(135deg, rgba(6, 78, 59, 0.14), rgba(15, 23, 42, 0.58)),
+    rgba(15, 23, 42, 0.52);
+}

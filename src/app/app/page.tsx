@@ -503,6 +503,61 @@ function getFollowUpPriorityReason(priority: "Critical" | "Helpful" | "Optional"
   return "Nice-to-have detail if the team has it available.";
 }
 
+
+function getFollowUpThreadInsight({
+  question,
+  answer = "",
+  qatFollowUpQuestion = "",
+  qatFollowUpAnswer = "",
+  resolution = "Still open",
+}: {
+  question: string;
+  answer?: string;
+  qatFollowUpQuestion?: string;
+  qatFollowUpAnswer?: string;
+  resolution?: FollowUpResolution;
+}): string {
+  const priority = getFollowUpPriority(question);
+  const cleanAnswer = answer.trim();
+  const cleanNestedAnswer = qatFollowUpAnswer.trim();
+
+  if (resolution === "No more questions") {
+    return "QA closed this question for now. QAt will not treat it as an active blocker unless new evidence appears.";
+  }
+
+  if (!cleanAnswer) {
+    if (priority === "Critical") return "This is still a triage blocker. Developers may not be able to reproduce or verify the defect without it.";
+    if (priority === "Helpful") return "This context would make the Jira handoff easier to route, reproduce, and validate.";
+    return "This detail is optional, but answering it can reduce back-and-forth during triage.";
+  }
+
+  if (resolution === "Resolved") {
+    if (cleanNestedAnswer) return "QAt has the original answer and deeper follow-up context queued for the next re-improve pass.";
+    return "QAt will carry this answer into the next re-improve pass.";
+  }
+
+  if (qatFollowUpQuestion && !cleanNestedAnswer) {
+    return "QAt needs the deeper follow-up answer before this thread is ready to fold into the report.";
+  }
+
+  if (qatFollowUpQuestion && cleanNestedAnswer) {
+    return "This thread has deeper context. Use it in re-improve when you are ready.";
+  }
+
+  return "QAt has a first answer, but you can ask it to dig deeper if the detail still feels thin.";
+}
+
+function buildFollowUpThreadSummary(item: AnsweredFollowUp): string {
+  return [
+    `Question: ${item.question}`,
+    `QA answer: ${item.answer}`,
+    item.qatFollowUpQuestion ? `QAt deeper follow-up: ${item.qatFollowUpQuestion}` : "",
+    item.qatFollowUpAnswer ? `QA follow-up answer: ${item.qatFollowUpAnswer}` : "",
+    `Selected action: ${getFollowUpResolutionLabel(item.resolution)}`,
+    `QAt interpretation: ${getFollowUpThreadInsight({ question: item.question, answer: item.answer, qatFollowUpQuestion: item.qatFollowUpQuestion, qatFollowUpAnswer: item.qatFollowUpAnswer, resolution: item.resolution })}`,
+  ].filter(Boolean).join("\n");
+}
+
 function getBugTriageState(
   questions: string[],
   answers: Record<string, string>,
@@ -2109,6 +2164,7 @@ function RiskReviewCards({
                   <p>{item.answer}</p>
                   {item.qatFollowUpQuestion ? <p><strong>QAt follow-up:</strong> {item.qatFollowUpQuestion}</p> : null}
                   {item.qatFollowUpAnswer ? <p><strong>Follow-up answer:</strong> {item.qatFollowUpAnswer}</p> : null}
+                  <p><strong>QAt interpretation:</strong> {getFollowUpThreadInsight({ question: item.question, answer: item.answer, qatFollowUpQuestion: item.qatFollowUpQuestion, qatFollowUpAnswer: item.qatFollowUpAnswer, resolution: item.resolution })}</p>
                   <small>{item.answerType} · {getFollowUpResolutionLabel(item.resolution)}</small>
                 </article>
               ))}
@@ -2525,6 +2581,16 @@ function BugReportCards({
                         <small>{bugQuestionFollowUpAnswers[question]?.trim() || "No follow-up answer recorded."}</small>
                       </div>
                     ) : null}
+                    <div className="bug-qat-thread-insight handled">
+                      <strong>QAt interpretation</strong>
+                      <p>{getFollowUpThreadInsight({
+                        question,
+                        answer: answer ?? "",
+                        qatFollowUpQuestion: bugQuestionFollowUps[question] ?? "",
+                        qatFollowUpAnswer: bugQuestionFollowUpAnswers[question] ?? "",
+                        resolution,
+                      })}</p>
+                    </div>
                   </article>
                 );
               })}
@@ -2546,6 +2612,7 @@ function BugReportCards({
                   <p>{item.answer}</p>
                   {item.qatFollowUpQuestion ? <p><strong>QAt follow-up:</strong> {item.qatFollowUpQuestion}</p> : null}
                   {item.qatFollowUpAnswer ? <p><strong>Follow-up answer:</strong> {item.qatFollowUpAnswer}</p> : null}
+                  <p><strong>QAt interpretation:</strong> {getFollowUpThreadInsight({ question: item.question, answer: item.answer, qatFollowUpQuestion: item.qatFollowUpQuestion, qatFollowUpAnswer: item.qatFollowUpAnswer, resolution: item.resolution })}</p>
                   <small>{item.answerType} · {getFollowUpResolutionLabel(item.resolution)}</small>
                 </article>
               ))}
