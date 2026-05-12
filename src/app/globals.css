@@ -33128,3 +33128,183 @@ body:has(.qatalyst-brain-shell)::after {
     grid-template-columns: 1fr !important;
   }
 }
+/* QAS-158 interactive QAt follow-up controls */
+.qatalyst-app-shell-v9 .bug-qat-question textarea {
+  width: 100%;
+  min-height: 96px;
+  margin-top: 4px;
+  padding: 12px 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(2, 6, 23, 0.72);
+  color: #f8fafc;
+  resize: vertical;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-question textarea::placeholder {
+  color: rgba(148, 163, 184, 0.66);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-question .follow-up-resolution-block {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-question .follow-up-resolution-block p {
+  margin: 0 0 8px;
+  color: rgba(226, 232, 240, 0.72);
+  font-size: 0.82rem;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-question .follow-up-resolution-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-question .follow-up-resolution-actions button {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.88);
+  color: rgba(226, 232, 240, 0.78);
+  padding: 8px 12px;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-question .follow-up-resolution-actions button.active,
+.qatalyst-app-shell-v9 .bug-qat-question .follow-up-resolution-actions button:hover {
+  border-color: rgba(96, 165, 250, 0.5);
+  background: rgba(37, 99, 235, 0.24);
+  color: #dbeafe;
+}
+/* QAS-158 QAt workflow polish */
+.qatalyst-app-shell-v9 .bug-readiness-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.qatalyst-app-shell-v9 .bug-readiness-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 104px;
+  padding: 8px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.72);
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.qatalyst-app-shell-v9 .bug-readiness-metric strong {
+  color: #f8fafc;
+  font-size: 0.92rem;
+}
+
+.qatalyst-app-shell-v9 .bug-readiness-metric-open {
+  border-color: rgba(251, 146, 60, 0.35);
+  background: rgba(124, 45, 18, 0.22);
+}
+
+.qatalyst-app-shell-v9 .bug-readiness-metric-resolved {
+  border-color: rgba(34, 197, 94, 0.34);
+  background: rgba(6, 78, 59, 0.22);
+}
+
+.qatalyst-app-shell-v9 .bug-readiness-metric-dismissed {
+  border-color: rgba(96, 165, 250, 0.28);
+  background: rgba(30, 64, 175, 0.16);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-question-meta,
+.qatalyst-app-shell-v9 .handled-followup-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.qatalyst-app-shell-v9 .bug-followup-priority {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-style: normal;
+}
+
+.qatalyst-app-shell-v9 .bug-followup-priority.priority-critical {
+  border: 1px solid rgba(248, 113, 113, 0.42);
+  background: rgba(127, 29, 29, 0.28);
+  color: #fecaca;
+}
+
+.qatalyst-app-shell-v9 .bug-followup-priority.priority-helpful {
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  background: rgba(30, 64, 175, 0.2);
+  color: #bfdbfe;
+}
+
+.qatalyst-app-shell-v9 .bug-followup-priority.priority-optional {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(51, 65, 85, 0.24);
+  color: rgba(226, 232, 240, 0.76);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-question-reason {
+  margin: -2px 0 2px;
+  color: rgba(226, 232, 240, 0.62);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.qatalyst-app-shell-v9 .handled-followup-item.resolution-resolved {
+  border-color: rgba(34, 197, 94, 0.24);
+}
+
+.qatalyst-app-shell-v9 .handled-followup-item.resolution-no-more-questions {
+  border-color: rgba(96, 165, 250, 0.24);
+}
+
+.qatalyst-app-shell-v9 .bug-followup-history-details {
+  padding: 0;
+  overflow: hidden;
+}
+
+.qatalyst-app-shell-v9 .bug-followup-history-details summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  list-style: none;
+  padding: 18px 20px;
+}
+
+.qatalyst-app-shell-v9 .bug-followup-history-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.qatalyst-app-shell-v9 .bug-followup-history-details summary span {
+  color: #f8fafc;
+  font-weight: 850;
+}
+
+.qatalyst-app-shell-v9 .bug-followup-history-details summary strong {
+  color: rgba(226, 232, 240, 0.68);
+  font-size: 0.8rem;
+}
+
+.qatalyst-app-shell-v9 .bug-followup-history-details .followup-history-list {
+  padding: 0 20px 20px;
+}

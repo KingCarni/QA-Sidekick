@@ -362,6 +362,125 @@ function mergeAnsweredFollowUpHistory(
   return merged;
 }
 
+function isFollowUpClosed(resolution: FollowUpResolution | undefined): boolean {
+  return resolution === "Resolved" || resolution === "No more questions";
+}
+
+function getOpenFollowUpQuestions(
+  questions: string[],
+  resolutions: Record<string, FollowUpResolution>,
+  loopClosed: boolean
+): string[] {
+  if (loopClosed) return [];
+
+  return questions.filter((question) => !isFollowUpClosed(resolutions[question]));
+}
+
+function getFollowUpStats(
+  questions: string[],
+  answers: Record<string, string>,
+  resolutions: Record<string, FollowUpResolution>,
+  loopClosed: boolean
+) {
+  const openQuestions = getOpenFollowUpQuestions(questions, resolutions, loopClosed);
+  const answeredCount = questions.filter((question) => Boolean(answers[question]?.trim())).length;
+  const resolvedCount = questions.filter((question) => resolutions[question] === "Resolved").length;
+  const dismissedCount = questions.filter((question) => resolutions[question] === "No more questions").length;
+  const handledCount = resolvedCount + dismissedCount;
+
+  return {
+    totalCount: questions.length,
+    openQuestions,
+    openCount: openQuestions.length,
+    answeredCount,
+    resolvedCount,
+    dismissedCount,
+    handledCount,
+    loopClosed,
+  };
+}
+
+function getFollowUpPriority(question: string): "Critical" | "Helpful" | "Optional" {
+  const normalized = question.toLowerCase();
+
+  if (
+    normalized.includes("reproduce") ||
+    normalized.includes("repro") ||
+    normalized.includes("expected") ||
+    normalized.includes("actual") ||
+    normalized.includes("error") ||
+    normalized.includes("crash") ||
+    normalized.includes("blocking")
+  ) {
+    return "Critical";
+  }
+
+  if (
+    normalized.includes("device") ||
+    normalized.includes("operating system") ||
+    normalized.includes("os") ||
+    normalized.includes("version") ||
+    normalized.includes("build") ||
+    normalized.includes("browser") ||
+    normalized.includes("platform") ||
+    normalized.includes("environment")
+  ) {
+    return "Helpful";
+  }
+
+  return "Optional";
+}
+
+function getFollowUpPriorityReason(priority: "Critical" | "Helpful" | "Optional") {
+  if (priority === "Critical") return "Likely affects developer repro or fix confidence.";
+  if (priority === "Helpful") return "Useful context for narrowing platform, build, or setup risk.";
+  return "Nice-to-have detail if the team has it available.";
+}
+
+function getBugTriageState(
+  questions: string[],
+  answers: Record<string, string>,
+  resolutions: Record<string, FollowUpResolution>,
+  loopClosed: boolean
+) {
+  const stats = getFollowUpStats(questions, answers, resolutions, loopClosed);
+
+  if (stats.totalCount === 0 || stats.openCount === 0) {
+    return {
+      ...stats,
+      title: "Ready for Jira triage",
+      helper: "QAt does not see any active follow-up blockers. Save it, export it, or create the Jira issue.",
+      speech: "Nice, this handoff is ready for Jira triage.",
+      toneClass: "bug-readiness-card-ready",
+      qatMoodClass: "resolved",
+      cta: "No active follow-ups remain.",
+    };
+  }
+
+  if (stats.answeredCount > 0 || stats.resolvedCount > 0 || stats.dismissedCount > 0) {
+    return {
+      ...stats,
+      title: "Jira triage ready · follow-ups improving",
+      helper: "This report is structurally ready. QAt is tracking remaining follow-ups so the next re-improve pass can tighten the handoff.",
+      speech: "Good progress. I’ll carry these answers into the next re-improve pass.",
+      toneClass: "bug-readiness-card-progress",
+      qatMoodClass: "thinking",
+      cta: "Answer the remaining open items, then re-improve.",
+    };
+  }
+
+  return {
+    ...stats,
+    title: "Jira triage ready · context still thin",
+    helper: "This report has the core Jira structure, but QAt found context gaps that could slow developer triage.",
+    speech: "This is usable for triage, but I’d tighten these gaps before handoff.",
+    toneClass: "bug-readiness-card-needs-context",
+    qatMoodClass: "curious",
+    cta: "Answer QAt’s open questions, then re-improve.",
+  };
+}
+
+
 function arrayFromUnknown<T = unknown>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
@@ -1941,6 +2060,10 @@ function BugReportCards({
   evidenceLink = "",
   answeredFollowUps = [],
   riskAnsweredFollowUps = [],
+  bugQuestionAnswers,
+  bugQuestionResolutions,
+  onBugQuestionAnswer,
+  onBugQuestionResolution,
   onSaveBugMarkdown,
   savedEditedMarkdown = "",
   bugEvidence,
@@ -1962,6 +2085,10 @@ function BugReportCards({
   evidenceLink?: string;
   answeredFollowUps?: AnsweredFollowUp[];
   riskAnsweredFollowUps?: AnsweredFollowUp[];
+  bugQuestionAnswers: Record<string, string>;
+  bugQuestionResolutions: Record<string, FollowUpResolution>;
+  onBugQuestionAnswer: (question: string, answer: string) => void;
+  onBugQuestionResolution: (question: string, resolution: FollowUpResolution) => void;
   onSaveBugMarkdown?: (markdown: string) => void;
   savedEditedMarkdown?: string;
   bugEvidence: BugEvidenceState;
@@ -1991,6 +2118,15 @@ function BugReportCards({
   const generatedMarkdown = formatBugReport(editableBugReport, evidenceFiles, evidenceLink, answeredFollowUps);
   const exportMarkdown = isEditingMarkdown ? editedMarkdown : savedEditedMarkdown || generatedMarkdown;
   const evidenceAwareBugMarkdown = appendBugEvidenceToMarkdown(exportMarkdown, bugEvidence);
+  const rawBugFollowUps = meaningfulLines(editableBugReport.followUpQuestions);
+  const triageState = getBugTriageState(
+    rawBugFollowUps,
+    bugQuestionAnswers,
+    bugQuestionResolutions,
+    false
+  );
+  const openBugFollowUps = triageState.openQuestions;
+  const closedBugFollowUps = rawBugFollowUps.filter((question) => !openBugFollowUps.includes(question));
 
   function handleToggleEditMarkdown() {
     if (!isEditingMarkdown) {
@@ -2076,12 +2212,22 @@ function BugReportCards({
         </div>
       ) : null}
 
-      <section className="bug-readiness-card">
-        
-        <h3>Ready for Jira triage</h3>
-        <p>
-          This report is structured for developer review with a clear summary, environment, repro steps, expected and actual results, impact, and triage notes. Add screenshots, logs, device details, build/version, and repro rate when available to make the defect even stronger.
-        </p>
+      <section className={`bug-readiness-card ${triageState.toneClass}`}>
+        <div>
+          <h3>{triageState.title}</h3>
+          <p>{triageState.helper}</p>
+        </div>
+        <div className="bug-readiness-metrics" aria-label="QAt follow-up state">
+          <span className="bug-readiness-metric bug-readiness-metric-open">
+            <strong>{triageState.openCount}</strong> Open
+          </span>
+          <span className="bug-readiness-metric bug-readiness-metric-resolved">
+            <strong>{triageState.resolvedCount}</strong> Resolved
+          </span>
+          <span className="bug-readiness-metric bug-readiness-metric-dismissed">
+            <strong>{triageState.dismissedCount}</strong> Dismissed
+          </span>
+        </div>
       </section>
 
       {isEditingMarkdown ? (
@@ -2090,7 +2236,7 @@ function BugReportCards({
             <div>
               <p>Edit before export</p>
               <h3>Markdown Report</h3>
-              <span>Cards update live as you type. Save Edits finalizes copy/export and syncs edited Follow-up Questions back to the left panel.</span>
+              <span>Cards update live as you type. Save Edits finalizes copy/export and syncs edited follow-up questions into QAt&apos;s review card.</span>
             </div>
             <button className="copy-all-button save-edit-button" type="button" onClick={handleSaveMarkdownEdits}>
               Save Edits
@@ -2163,40 +2309,81 @@ function BugReportCards({
             <ValueBlock value={editableBugReport.missingInfo} />
           </section>
 
-                  <section className="bug-section-card">
+          <section className="bug-section-card">
             <h3>QA Notes</h3>
             <ValueBlock value={editableBugReport.qaNotes} />
           </section>
 
-                {meaningfulLines(editableBugReport.followUpQuestions).length > 0 ? (
+        {rawBugFollowUps.length > 0 ? (
           <section className="bug-section-card bug-qat-followup-card">
             <div className="bug-qat-followup-header">
               <div>
                 <span className="bug-qat-eyebrow">QAt triage assistant</span>
-                <h3>Follow-up questions need attention</h3>
+                <h3>{triageState.openCount > 0 ? "Open follow-ups" : "Follow-ups handled"}</h3>
                 <p>
-                  QAt found a few gaps that could slow down developer triage. Answer these in the left refine panel,
-                  then re-improve the report to tighten the handoff.
+                  {triageState.openCount > 0
+                    ? "QAt is tracking the remaining gaps before the next re-improve pass."
+                    : "All QAt follow-ups have been resolved or dismissed for this pass."}
                 </p>
               </div>
 
-              <div className="bug-qat-speech">
+              <div className={`bug-qat-speech ${triageState.qatMoodClass}`}>
                 <span className="bug-qat-avatar">QAt</span>
-                <p>I still need a little more context before this is fully triage-ready.</p>
+                <p>{triageState.speech}</p>
               </div>
             </div>
 
             <div className="bug-qat-question-list">
-              {meaningfulLines(editableBugReport.followUpQuestions).map((question, index) => (
-                <article className="bug-qat-question" key={`${question}-${index}`}>
-                  <span>Question {index + 1}</span>
-                  <strong>{question}</strong>
-                </article>
-              ))}
+              {openBugFollowUps.length === 0 ? (
+                <div className="bug-qat-empty-state">
+                  <strong>All follow-ups handled.</strong>
+                  <span>Run Re-improve Bug Report to fold the latest answers into the generated defect.</span>
+                </div>
+              ) : null}
+              {openBugFollowUps.map((question, index) => {
+                const resolution = bugQuestionResolutions[question] ?? "Still open";
+
+                return (
+                  <article className={`bug-qat-question resolution-${resolution.toLowerCase().replace(/\s+/g, "-")}`} key={`${question}-${index}`}>
+                    <div className="bug-qat-question-meta">
+                      <span>Question {index + 1}</span>
+                      <em className={`bug-followup-priority priority-${getFollowUpPriority(question).toLowerCase()}`}>
+                        {getFollowUpPriority(question)}
+                      </em>
+                    </div>
+                    <strong>{question}</strong>
+                    <p className="bug-qat-question-reason">{getFollowUpPriorityReason(getFollowUpPriority(question))}</p>
+
+                    <textarea
+                      value={bugQuestionAnswers[question] ?? ""}
+                      onChange={(event) => onBugQuestionAnswer(question, event.target.value)}
+                      placeholder="Answer QAt&apos;s question..."
+                    />
+
+                    <div className="follow-up-resolution-block">
+                      <p>Did this answer resolve the follow-up?</p>
+                      <div className="follow-up-resolution-actions">
+                        {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map((option) => (
+                          <button
+                            className={`${resolution === option ? "active" : ""} resolution-${option
+                              .toLowerCase()
+                              .replace(/\s+/g, "-")}`}
+                            key={option}
+                            type="button"
+                            onClick={() => onBugQuestionResolution(question, option)}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
 
             <p className="bug-qat-answer-hint">
-              Answer these under <strong>Refine bug context → Answer follow-up questions</strong>, then run Re-improve Bug Report.
+              {triageState.cta} Run <strong>Re-improve Bug Report</strong> when you are ready.
             </p>
           </section>
         ) : (
@@ -2216,9 +2403,37 @@ function BugReportCards({
           </section>
         )}
 
+        {closedBugFollowUps.length > 0 ? (
+          <section className="bug-section-card bug-qat-resolved-summary-card">
+            <h3>Handled follow-ups</h3>
+            <div className="followup-history-list">
+              {closedBugFollowUps.map((question, index) => {
+                const resolution = bugQuestionResolutions[question] ?? "Still open";
+                const answer = bugQuestionAnswers[question]?.trim();
+
+                return (
+                  <article className={`followup-history-item handled-followup-item resolution-${resolution.toLowerCase().replace(/\s+/g, "-")}`} key={`${question}-${index}`}>
+                    <div className="handled-followup-topline">
+                      <span>{resolution}</span>
+                      <em className={`bug-followup-priority priority-${getFollowUpPriority(question).toLowerCase()}`}>
+                        {getFollowUpPriority(question)}
+                      </em>
+                    </div>
+                    <strong>{question}</strong>
+                    {answer ? <p>{answer}</p> : <p>No written answer recorded.</p>}
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
         {answeredFollowUps.length > 0 ? (
-          <section className="bug-section-card followup-history-card">
-            <h3>Follow-up History</h3>
+          <details className="bug-section-card followup-history-card bug-followup-history-details">
+            <summary>
+              <span>View audit history</span>
+              <strong>{answeredFollowUps.length} recorded</strong>
+            </summary>
             <div className="followup-history-list">
               {answeredFollowUps.map((item, index) => (
                 <article className="followup-history-item" key={`${item.question}-${index}`}>
@@ -2229,7 +2444,7 @@ function BugReportCards({
                 </article>
               ))}
             </div>
-          </section>
+          </details>
         ) : null}
 
         {screenshotEvidence.length > 0 || logEvidence.length > 0 ? (
@@ -2536,6 +2751,10 @@ function GenericOutput({
   answeredFollowUps = [],
   riskAnsweredFollowUps = [],
   testAnsweredFollowUps = [],
+  bugQuestionAnswers,
+  bugQuestionResolutions,
+  onBugQuestionAnswer,
+  onBugQuestionResolution,
   onSaveBugMarkdown,
   bugEvidence,
   reportType,
@@ -2557,6 +2776,10 @@ function GenericOutput({
   answeredFollowUps?: AnsweredFollowUp[];
   riskAnsweredFollowUps?: AnsweredFollowUp[];
   testAnsweredFollowUps?: AnsweredFollowUp[];
+  bugQuestionAnswers: Record<string, string>;
+  bugQuestionResolutions: Record<string, FollowUpResolution>;
+  onBugQuestionAnswer: (question: string, answer: string) => void;
+  onBugQuestionResolution: (question: string, resolution: FollowUpResolution) => void;
   onSaveBugMarkdown?: (markdown: string) => void;
   bugEvidence: BugEvidenceState;
   activeProject: SafeQAProject | null;
@@ -2607,6 +2830,10 @@ function GenericOutput({
         evidenceFiles={evidenceFiles}
         evidenceLink={evidenceLink}
         answeredFollowUps={answeredFollowUps}
+        bugQuestionAnswers={bugQuestionAnswers}
+        bugQuestionResolutions={bugQuestionResolutions}
+        onBugQuestionAnswer={onBugQuestionAnswer}
+        onBugQuestionResolution={onBugQuestionResolution}
         onSaveBugMarkdown={onSaveBugMarkdown}
         savedEditedMarkdown={typeof parsed.editedMarkdown === "string" ? parsed.editedMarkdown : ""}
         bugEvidence={bugEvidence}
@@ -2732,11 +2959,10 @@ export default function Home() {
   const activeReportTool: ReportToolId = activeTool === "feature" ? "tests" : activeTool;
   const currentBugReport = activeTool === "bug" ? getBugReportFromOutput(output) : null;
   const rawBugFollowUpQuestions = currentBugReport ? meaningfulLines(currentBugReport.followUpQuestions) : [];
-  const bugFollowUpQuestions = rawBugFollowUpQuestions.filter(
-    (question) =>
-      !followUpLoopClosed &&
-      (bugQuestionResolutions[question] ?? "Still open") !== "Resolved" &&
-      (bugQuestionResolutions[question] ?? "Still open") !== "No more questions"
+  const bugFollowUpQuestions = getOpenFollowUpQuestions(
+    rawBugFollowUpQuestions,
+    bugQuestionResolutions,
+    followUpLoopClosed
   );
   const currentAnsweredFollowUps = buildAnsweredFollowUps(
     rawBugFollowUpQuestions,
@@ -3064,14 +3290,25 @@ export default function Home() {
   }
 
   function updateBugQuestionResolution(question: string, resolution: FollowUpResolution) {
-    setBugQuestionResolutions((current) => ({
-      ...current,
-      [question]: resolution,
-    }));
+    setBugQuestionResolutions((current) => {
+      const next = {
+        ...current,
+        [question]: resolution,
+      };
 
-    if (resolution === "No more questions") {
-      setFollowUpLoopClosed(true);
-    }
+      if (resolution === "No more questions") {
+        const currentQuestions = rawBugFollowUpQuestions.length > 0 ? rawBugFollowUpQuestions : Object.keys(next);
+        const allHandled = currentQuestions.length > 0 && currentQuestions.every((item) => isFollowUpClosed(next[item]));
+
+        setFollowUpLoopClosed(allHandled);
+      }
+
+      if (resolution === "Still open") {
+        setFollowUpLoopClosed(false);
+      }
+
+      return next;
+    });
   }
 
 
@@ -4186,54 +4423,6 @@ export default function Home() {
               </div>
 
               <BugEvidencePanel value={bugEvidence} onChange={setBugEvidence} />
-
-              {currentBugReport && (bugFollowUpQuestions.length > 0 || bugAnsweredFollowUps.length > 0) ? (
-                <div className={`bug-refine-section bug-followup-section ${bugFollowUpQuestions.length > 0 ? "has-active-followups" : ""}`}>
-                  <h4>Answer follow-up questions</h4>
-                  {bugFollowUpQuestions.length > 0 ? (
-                    <div className="follow-up-question-card-list">
-                      {bugFollowUpQuestions.map((question, index) => {
-                        const resolution = bugQuestionResolutions[question] ?? "Still open";
-
-                        return (
-                          <div className="follow-up-question-card" key={`${question}-${index}`}>
-                            <span>Question {index + 1}</span>
-                            <strong>{question}</strong>
-                            <textarea
-                              value={bugQuestionAnswers[question] ?? ""}
-                              onChange={(event) => updateBugQuestionAnswer(question, event.target.value)}
-                              placeholder="Answer this question..."
-                            />
-
-                            <div className="follow-up-resolution-block">
-                              <p>Did this answer resolve the follow-up?</p>
-                              <div className="follow-up-resolution-actions">
-                                {(["Resolved", "Still open", "No more questions"] as FollowUpResolution[]).map(
-                                  (option) => (
-                                    <button
-                                      className={`${resolution === option ? "active" : ""} resolution-${option.toLowerCase().replace(/\s+/g, "-")}`}
-                                      key={option}
-                                      type="button"
-                                      onClick={() => updateBugQuestionResolution(question, option)}
-                                    >
-                                      {option}
-                                    </button>
-                                  )
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <p className="follow-up-answer-empty">
-                      No active follow-up questions. Resolved answers are preserved in Follow-up History.
-                    </p>
-                  )}
-                </div>
-              ) : null}
-
             </section>
           ) : null}
 
@@ -4292,6 +4481,10 @@ export default function Home() {
                 evidenceFiles={[]}
                 evidenceLink=""
                 answeredFollowUps={bugAnsweredFollowUps}
+                bugQuestionAnswers={bugQuestionAnswers}
+                bugQuestionResolutions={bugQuestionResolutions}
+                onBugQuestionAnswer={updateBugQuestionAnswer}
+                onBugQuestionResolution={updateBugQuestionResolution}
                 riskAnsweredFollowUps={riskAnsweredFollowUps}
                 testAnsweredFollowUps={testAnsweredFollowUps}
                 onSaveBugMarkdown={handleSaveBugMarkdown}
