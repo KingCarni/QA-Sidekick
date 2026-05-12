@@ -183,6 +183,15 @@ type UploadedEvidenceFile = {
 
 type FollowUpResolution = "Resolved" | "Still open" | "No more questions";
 
+type AnsweredFollowUp = {
+  question: string;
+  answer: string;
+  answerType: string;
+  resolution: FollowUpResolution;
+  qatFollowUpQuestion?: string;
+  qatFollowUpAnswer?: string;
+};
+
 function getFollowUpActionLabel(resolution: FollowUpResolution): string {
   if (resolution === "Resolved") return "Submit answer";
   if (resolution === "Still open") return "Ask QAt follow-up";
@@ -201,13 +210,44 @@ function getFollowUpActionHelper(resolution: FollowUpResolution): string {
   return "Close this thread for now.";
 }
 
+function getFollowUpActionButtonLabel(resolution: FollowUpResolution): string {
+  if (resolution === "Resolved") return "Submit answer";
+  if (resolution === "Still open") return "Ask QAt follow-up";
+  return "Close question";
+}
 
-type AnsweredFollowUp = {
-  question: string;
-  answer: string;
-  answerType: string;
-  resolution: FollowUpResolution;
-};
+function buildLocalQAtClarifier(question: string, answer = ""): string {
+  const normalizedQuestion = question.toLowerCase();
+  const normalizedAnswer = answer.trim();
+  const answerPrefix = normalizedAnswer ? `Based on “${normalizedAnswer}”, ` : "";
+
+  if (normalizedQuestion.includes("device") || normalizedQuestion.includes("operating system") || normalizedQuestion.includes("os") || normalizedQuestion.includes("platform")) {
+    return `${answerPrefix}which exact device, OS/platform version, or browser build should developers validate against?`;
+  }
+
+  if (normalizedQuestion.includes("version") || normalizedQuestion.includes("build")) {
+    return `${answerPrefix}which app version, build number, branch, or release channel should be attached to the Jira issue?`;
+  }
+
+  if (normalizedQuestion.includes("reproduce") || normalizedQuestion.includes("repro") || normalizedQuestion.includes("steps")) {
+    return `${answerPrefix}what exact step, trigger, or user action should developers try first to reproduce this?`;
+  }
+
+  if (normalizedQuestion.includes("expected") || normalizedQuestion.includes("actual")) {
+    return `${answerPrefix}what should have happened, and what happened instead, in one developer-readable sentence?`;
+  }
+
+  if (normalizedQuestion.includes("error") || normalizedQuestion.includes("message") || normalizedQuestion.includes("log") || normalizedQuestion.includes("console")) {
+    return `${answerPrefix}what exact error text, log line, timestamp, or console output should be included?`;
+  }
+
+  if (normalizedQuestion.includes("account") || normalizedQuestion.includes("role") || normalizedQuestion.includes("user")) {
+    return `${answerPrefix}which account state, user role, permissions, or test data should developers use?`;
+  }
+
+  return `${answerPrefix}what is the most specific detail developers need before they can confidently triage this?`;
+}
+
 
 const tools: Array<QatalystToolOption & { button: string; placeholder: string }> = [
   {
@@ -341,13 +381,18 @@ function isNegativeOrNotApplicableAnswer(value: string): boolean {
 function buildAnsweredFollowUps(
   questions: string[],
   answers: Record<string, string>,
-  resolutions: Record<string, FollowUpResolution>
+  resolutions: Record<string, FollowUpResolution>,
+  qatFollowUpQuestions: Record<string, string> = {},
+  qatFollowUpAnswers: Record<string, string> = {}
 ): AnsweredFollowUp[] {
   return questions
-    .map((question) => {
+    .map<AnsweredFollowUp | null>((question) => {
       const answer = answers[question]?.trim();
 
       if (!answer) return null;
+
+      const qatFollowUpQuestion = qatFollowUpQuestions[question]?.trim();
+      const qatFollowUpAnswer = qatFollowUpAnswers[question]?.trim();
 
       return {
         question,
@@ -356,6 +401,8 @@ function buildAnsweredFollowUps(
           ? "Answered negative / not applicable"
           : "Answered",
         resolution: resolutions[question] ?? "Still open",
+        ...(qatFollowUpQuestion ? { qatFollowUpQuestion } : {}),
+        ...(qatFollowUpAnswer ? { qatFollowUpAnswer } : {}),
       };
     })
     .filter((item): item is AnsweredFollowUp => item !== null);
@@ -890,6 +937,8 @@ function buildTestCasesMarkdown(testCases: TestCase[], answeredFollowUps: Answer
           `   A: ${item.answer}`,
           `   Type: ${item.answerType}`,
           `   Action: ${getFollowUpResolutionLabel(item.resolution)}`,
+          ...(item.qatFollowUpQuestion ? [`   QAt follow-up: ${item.qatFollowUpQuestion}`] : []),
+          ...(item.qatFollowUpAnswer ? [`   QAt follow-up answer: ${item.qatFollowUpAnswer}`] : []),
         ])
       : ["- No answered test follow-up questions recorded."]),
   ].join("\n");
@@ -969,6 +1018,8 @@ function formatRiskReview(review: RiskReview, answeredFollowUps: AnsweredFollowU
           `   A: ${item.answer}`,
           `   Type: ${item.answerType}`,
           `   Action: ${getFollowUpResolutionLabel(item.resolution)}`,
+          ...(item.qatFollowUpQuestion ? [`   QAt follow-up: ${item.qatFollowUpQuestion}`] : []),
+          ...(item.qatFollowUpAnswer ? [`   QAt follow-up answer: ${item.qatFollowUpAnswer}`] : []),
         ])
       : ["No answered follow-up questions recorded."]),
   ].join("\n");
@@ -1050,6 +1101,8 @@ function formatBugReport(
           `   A: ${item.answer}`,
           `   Type: ${item.answerType}`,
           `   Action: ${getFollowUpResolutionLabel(item.resolution)}`,
+          ...(item.qatFollowUpQuestion ? [`   QAt follow-up: ${item.qatFollowUpQuestion}`] : []),
+          ...(item.qatFollowUpAnswer ? [`   QAt follow-up answer: ${item.qatFollowUpAnswer}`] : []),
         ])
       : ["- No answered follow-up questions recorded."]),
     "",
@@ -2054,6 +2107,8 @@ function RiskReviewCards({
                   <span>Question {index + 1}</span>
                   <strong>{item.question}</strong>
                   <p>{item.answer}</p>
+                  {item.qatFollowUpQuestion ? <p><strong>QAt follow-up:</strong> {item.qatFollowUpQuestion}</p> : null}
+                  {item.qatFollowUpAnswer ? <p><strong>Follow-up answer:</strong> {item.qatFollowUpAnswer}</p> : null}
                   <small>{item.answerType} · {getFollowUpResolutionLabel(item.resolution)}</small>
                 </article>
               ))}
@@ -2081,8 +2136,11 @@ function BugReportCards({
   riskAnsweredFollowUps = [],
   bugQuestionAnswers,
   bugQuestionResolutions,
+  bugQuestionFollowUps,
+  bugQuestionFollowUpAnswers,
   onBugQuestionAnswer,
   onBugQuestionResolution,
+  onBugQuestionFollowUpAnswer,
   onSaveBugMarkdown,
   savedEditedMarkdown = "",
   bugEvidence,
@@ -2106,8 +2164,11 @@ function BugReportCards({
   riskAnsweredFollowUps?: AnsweredFollowUp[];
   bugQuestionAnswers: Record<string, string>;
   bugQuestionResolutions: Record<string, FollowUpResolution>;
+  bugQuestionFollowUps: Record<string, string>;
+  bugQuestionFollowUpAnswers: Record<string, string>;
   onBugQuestionAnswer: (question: string, answer: string) => void;
   onBugQuestionResolution: (question: string, resolution: FollowUpResolution) => void;
+  onBugQuestionFollowUpAnswer: (question: string, answer: string) => void;
   onSaveBugMarkdown?: (markdown: string) => void;
   savedEditedMarkdown?: string;
   bugEvidence: BugEvidenceState;
@@ -2379,6 +2440,23 @@ function BugReportCards({
                       placeholder="Answer QAt&apos;s question..."
                     />
 
+                    {bugQuestionFollowUps[question] ? (
+                      <div className="bug-qat-nested-followup">
+                        <div className="bug-qat-nested-followup-header">
+                          <span className="bug-qat-avatar mini">QAt</span>
+                          <div>
+                            <strong>QAt follow-up</strong>
+                            <p>{bugQuestionFollowUps[question]}</p>
+                          </div>
+                        </div>
+                        <textarea
+                          value={bugQuestionFollowUpAnswers[question] ?? ""}
+                          onChange={(event) => onBugQuestionFollowUpAnswer(question, event.target.value)}
+                          placeholder="Answer this QAt follow-up..."
+                        />
+                      </div>
+                    ) : null}
+
                     <div className="follow-up-resolution-block">
                       <p>What should QAt do with this answer?</p>
                       <div className="follow-up-resolution-actions">
@@ -2391,7 +2469,7 @@ function BugReportCards({
                             type="button"
                             onClick={() => onBugQuestionResolution(question, option)}
                           >
-                            {getFollowUpActionLabel(option)}
+                            {getFollowUpActionButtonLabel(option)}
                           </button>
                         ))}
                       </div>
@@ -2440,6 +2518,13 @@ function BugReportCards({
                     </div>
                     <strong>{question}</strong>
                     {answer ? <p>{answer}</p> : <p>No written answer recorded.</p>}
+                    {bugQuestionFollowUps[question] ? (
+                      <div className="bug-qat-nested-followup handled">
+                        <strong>QAt follow-up</strong>
+                        <p>{bugQuestionFollowUps[question]}</p>
+                        <small>{bugQuestionFollowUpAnswers[question]?.trim() || "No follow-up answer recorded."}</small>
+                      </div>
+                    ) : null}
                   </article>
                 );
               })}
@@ -2459,6 +2544,8 @@ function BugReportCards({
                   <span>Question {index + 1}</span>
                   <strong>{item.question}</strong>
                   <p>{item.answer}</p>
+                  {item.qatFollowUpQuestion ? <p><strong>QAt follow-up:</strong> {item.qatFollowUpQuestion}</p> : null}
+                  {item.qatFollowUpAnswer ? <p><strong>Follow-up answer:</strong> {item.qatFollowUpAnswer}</p> : null}
                   <small>{item.answerType} · {getFollowUpResolutionLabel(item.resolution)}</small>
                 </article>
               ))}
@@ -2772,8 +2859,11 @@ function GenericOutput({
   testAnsweredFollowUps = [],
   bugQuestionAnswers,
   bugQuestionResolutions,
+  bugQuestionFollowUps,
+  bugQuestionFollowUpAnswers,
   onBugQuestionAnswer,
   onBugQuestionResolution,
+  onBugQuestionFollowUpAnswer,
   onSaveBugMarkdown,
   bugEvidence,
   reportType,
@@ -2797,8 +2887,11 @@ function GenericOutput({
   testAnsweredFollowUps?: AnsweredFollowUp[];
   bugQuestionAnswers: Record<string, string>;
   bugQuestionResolutions: Record<string, FollowUpResolution>;
+  bugQuestionFollowUps: Record<string, string>;
+  bugQuestionFollowUpAnswers: Record<string, string>;
   onBugQuestionAnswer: (question: string, answer: string) => void;
   onBugQuestionResolution: (question: string, resolution: FollowUpResolution) => void;
+  onBugQuestionFollowUpAnswer: (question: string, answer: string) => void;
   onSaveBugMarkdown?: (markdown: string) => void;
   bugEvidence: BugEvidenceState;
   activeProject: SafeQAProject | null;
@@ -2851,8 +2944,11 @@ function GenericOutput({
         answeredFollowUps={answeredFollowUps}
         bugQuestionAnswers={bugQuestionAnswers}
         bugQuestionResolutions={bugQuestionResolutions}
+        bugQuestionFollowUps={bugQuestionFollowUps}
+        bugQuestionFollowUpAnswers={bugQuestionFollowUpAnswers}
         onBugQuestionAnswer={onBugQuestionAnswer}
         onBugQuestionResolution={onBugQuestionResolution}
+        onBugQuestionFollowUpAnswer={onBugQuestionFollowUpAnswer}
         onSaveBugMarkdown={onSaveBugMarkdown}
         savedEditedMarkdown={typeof parsed.editedMarkdown === "string" ? parsed.editedMarkdown : ""}
         bugEvidence={bugEvidence}
@@ -2906,6 +3002,8 @@ export default function Home() {
   const [bugEvidence, setBugEvidence] = useState<BugEvidenceState>(EMPTY_BUG_EVIDENCE);
   const [bugQuestionAnswers, setBugQuestionAnswers] = useState<Record<string, string>>({});
   const [bugQuestionResolutions, setBugQuestionResolutions] = useState<Record<string, FollowUpResolution>>({});
+  const [bugQuestionFollowUps, setBugQuestionFollowUps] = useState<Record<string, string>>({});
+  const [bugQuestionFollowUpAnswers, setBugQuestionFollowUpAnswers] = useState<Record<string, string>>({});
   const [bugAnsweredFollowUpHistory, setBugAnsweredFollowUpHistory] = useState<AnsweredFollowUp[]>([]);
   const [followUpLoopClosed, setFollowUpLoopClosed] = useState(false);
   const [bugContextAnswers, setBugContextAnswers] = useState("");
@@ -2986,7 +3084,9 @@ export default function Home() {
   const currentAnsweredFollowUps = buildAnsweredFollowUps(
     rawBugFollowUpQuestions,
     bugQuestionAnswers,
-    bugQuestionResolutions
+    bugQuestionResolutions,
+    bugQuestionFollowUps,
+    bugQuestionFollowUpAnswers
   );
   const bugAnsweredFollowUps = mergeAnsweredFollowUpHistory(
     bugAnsweredFollowUpHistory,
@@ -3125,6 +3225,8 @@ export default function Home() {
       setBugLogFiles([]);
       setBugQuestionAnswers({});
       setBugQuestionResolutions({});
+      setBugQuestionFollowUps({});
+      setBugQuestionFollowUpAnswers({});
       setBugAnsweredFollowUpHistory([]);
       setFollowUpLoopClosed(false);
       setBugContextAnswers("");
@@ -3324,10 +3426,21 @@ export default function Home() {
 
       if (resolution === "Still open") {
         setFollowUpLoopClosed(false);
+        setBugQuestionFollowUps((currentFollowUps) => ({
+          ...currentFollowUps,
+          [question]: currentFollowUps[question] || buildLocalQAtClarifier(question, bugQuestionAnswers[question] ?? ""),
+        }));
       }
 
       return next;
     });
+  }
+
+  function updateBugQuestionFollowUpAnswer(question: string, answer: string) {
+    setBugQuestionFollowUpAnswers((current) => ({
+      ...current,
+      [question]: answer,
+    }));
   }
 
 
@@ -3425,6 +3538,8 @@ export default function Home() {
     if (editedFollowUps.length > 0) {
       setBugQuestionAnswers({});
       setBugQuestionResolutions({});
+      setBugQuestionFollowUps({});
+      setBugQuestionFollowUpAnswers({});
     }
   }
 
@@ -3624,7 +3739,7 @@ export default function Home() {
 
     const answeredFollowUps = mergedAnsweredFollowUps.map(
       (item) =>
-        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nAction: ${getFollowUpResolutionLabel(item.resolution)}`
+        [`Q: ${item.question}`, `A: ${item.answer}`, `Answer type: ${item.answerType}`, `Action: ${getFollowUpResolutionLabel(item.resolution)}`, item.qatFollowUpQuestion ? `QAt follow-up: ${item.qatFollowUpQuestion}` : "", item.qatFollowUpAnswer ? `QAt follow-up answer: ${item.qatFollowUpAnswer}` : ""].filter(Boolean).join("\n")
     );
 
     const uploadedScreenshotContext = bugEvidence.files
@@ -3685,7 +3800,7 @@ export default function Home() {
 
     const answeredRiskFollowUps = mergedRiskAnsweredFollowUps.map(
       (item) =>
-        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nAction: ${getFollowUpResolutionLabel(item.resolution)}`
+        [`Q: ${item.question}`, `A: ${item.answer}`, `Answer type: ${item.answerType}`, `Action: ${getFollowUpResolutionLabel(item.resolution)}`, item.qatFollowUpQuestion ? `QAt follow-up: ${item.qatFollowUpQuestion}` : "", item.qatFollowUpAnswer ? `QAt follow-up answer: ${item.qatFollowUpAnswer}` : ""].filter(Boolean).join("\n")
     );
 
     const hasRiskReassessmentContext =
@@ -3699,7 +3814,7 @@ export default function Home() {
 
     const answeredTestFollowUps = mergedTestAnsweredFollowUps.map(
       (item) =>
-        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nAction: ${getFollowUpResolutionLabel(item.resolution)}`
+        [`Q: ${item.question}`, `A: ${item.answer}`, `Answer type: ${item.answerType}`, `Action: ${getFollowUpResolutionLabel(item.resolution)}`, item.qatFollowUpQuestion ? `QAt follow-up: ${item.qatFollowUpQuestion}` : "", item.qatFollowUpAnswer ? `QAt follow-up answer: ${item.qatFollowUpAnswer}` : ""].filter(Boolean).join("\n")
     );
 
     const hasTestRegenerationContext =
@@ -3713,7 +3828,7 @@ export default function Home() {
 
     const answeredImproveFollowUps = mergedImproveAnsweredFollowUps.map(
       (item) =>
-        `Q: ${item.question}\nA: ${item.answer}\nAnswer type: ${item.answerType}\nAction: ${getFollowUpResolutionLabel(item.resolution)}`
+        [`Q: ${item.question}`, `A: ${item.answer}`, `Answer type: ${item.answerType}`, `Action: ${getFollowUpResolutionLabel(item.resolution)}`, item.qatFollowUpQuestion ? `QAt follow-up: ${item.qatFollowUpQuestion}` : "", item.qatFollowUpAnswer ? `QAt follow-up answer: ${item.qatFollowUpAnswer}` : ""].filter(Boolean).join("\n")
     );
 
     const hasImproveFollowUpContext =
@@ -4502,8 +4617,11 @@ export default function Home() {
                 answeredFollowUps={bugAnsweredFollowUps}
                 bugQuestionAnswers={bugQuestionAnswers}
                 bugQuestionResolutions={bugQuestionResolutions}
+                bugQuestionFollowUps={bugQuestionFollowUps}
+                bugQuestionFollowUpAnswers={bugQuestionFollowUpAnswers}
                 onBugQuestionAnswer={updateBugQuestionAnswer}
                 onBugQuestionResolution={updateBugQuestionResolution}
+                onBugQuestionFollowUpAnswer={updateBugQuestionFollowUpAnswer}
                 riskAnsweredFollowUps={riskAnsweredFollowUps}
                 testAnsweredFollowUps={testAnsweredFollowUps}
                 onSaveBugMarkdown={handleSaveBugMarkdown}

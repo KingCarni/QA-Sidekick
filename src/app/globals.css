@@ -33308,3 +33308,63 @@ body:has(.qatalyst-brain-shell)::after {
 .qatalyst-app-shell-v9 .bug-followup-history-details .followup-history-list {
   padding: 0 20px 20px;
 }
+/* QAS-158 nested QAt follow-up continuation */
+.qatalyst-app-shell-v9 .bug-qat-nested-followup {
+  margin-top: 12px;
+  padding: 12px;
+  border-left: 3px solid rgba(96, 165, 250, 0.5);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(30, 64, 175, 0.16), rgba(15, 23, 42, 0.72)),
+    rgba(15, 23, 42, 0.64);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-nested-followup-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  margin-bottom: 10px;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-nested-followup-header strong,
+.qatalyst-app-shell-v9 .bug-qat-nested-followup > strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #dbeafe;
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-nested-followup-header p,
+.qatalyst-app-shell-v9 .bug-qat-nested-followup > p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.78);
+  line-height: 1.45;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-nested-followup textarea {
+  min-height: 76px;
+  margin-top: 8px;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-avatar.mini {
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 0.58rem !important;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-nested-followup.handled {
+  margin-top: 10px;
+  border-left-color: rgba(34, 197, 94, 0.46);
+  background:
+    linear-gradient(135deg, rgba(6, 78, 59, 0.18), rgba(15, 23, 42, 0.62)),
+    rgba(15, 23, 42, 0.54);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-nested-followup.handled small {
+  display: block;
+  margin-top: 6px;
+  color: rgba(226, 232, 240, 0.7);
+  line-height: 1.4;
+}
