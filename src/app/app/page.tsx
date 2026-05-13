@@ -2504,31 +2504,63 @@ function BugReportCards({
                         {getFollowUpPriority(question)}
                       </em>
                     </div>
-                    <strong>{question}</strong>
-                    <p className="bug-qat-question-reason">{getFollowUpPriorityReason(getFollowUpPriority(question))}</p>
-
-                    <textarea
-                      value={bugQuestionAnswers[question] ?? ""}
-                      onChange={(event) => onBugQuestionAnswer(question, event.target.value)}
-                      placeholder="Answer QAt&apos;s question..."
-                    />
-
-                    {bugQuestionFollowUps[question] ? (
-                      <div className="bug-qat-nested-followup">
-                        <div className="bug-qat-nested-followup-header">
-                          <span className="bug-qat-avatar mini">QAt</span>
-                          <div>
-                            <strong>QAt follow-up</strong>
-                            <p>{bugQuestionFollowUps[question]}</p>
-                          </div>
+                    <div className="bug-qat-thread">
+                      <div className="bug-qat-thread-row qat">
+                        <span className="bug-qat-avatar mini">QAt</span>
+                        <div>
+                          <small>QAt question</small>
+                          <strong>{question}</strong>
+                          <p className="bug-qat-question-reason">{getFollowUpPriorityReason(getFollowUpPriority(question))}</p>
                         </div>
-                        <textarea
-                          value={bugQuestionFollowUpAnswers[question] ?? ""}
-                          onChange={(event) => onBugQuestionFollowUpAnswer(question, event.target.value)}
-                          placeholder="Answer this QAt follow-up..."
-                        />
                       </div>
-                    ) : null}
+
+                      <div className="bug-qat-thread-row qa">
+                        <span className="bug-qat-thread-avatar">QA</span>
+                        <label>
+                          <small>Your answer</small>
+                          <textarea
+                            value={bugQuestionAnswers[question] ?? ""}
+                            onChange={(event) => onBugQuestionAnswer(question, event.target.value)}
+                            placeholder="Answer QAt&apos;s question..."
+                          />
+                        </label>
+                      </div>
+
+                      {bugQuestionFollowUps[question] ? (
+                        <>
+                          <div className="bug-qat-thread-row qat deeper">
+                            <span className="bug-qat-avatar mini">QAt</span>
+                            <div>
+                              <small>QAt deeper follow-up</small>
+                              <p>{bugQuestionFollowUps[question]}</p>
+                            </div>
+                          </div>
+
+                          <div className="bug-qat-thread-row qa">
+                            <span className="bug-qat-thread-avatar">QA</span>
+                            <label>
+                              <small>Your follow-up answer</small>
+                              <textarea
+                                value={bugQuestionFollowUpAnswers[question] ?? ""}
+                                onChange={(event) => onBugQuestionFollowUpAnswer(question, event.target.value)}
+                                placeholder="Answer QAt&apos;s deeper follow-up..."
+                              />
+                            </label>
+                          </div>
+                        </>
+                      ) : null}
+                    </div>
+
+                    <div className="bug-qat-thread-insight">
+                      <strong>Current understanding</strong>
+                      <p>{getFollowUpThreadInsight({
+                        question,
+                        answer: bugQuestionAnswers[question] ?? "",
+                        qatFollowUpQuestion: bugQuestionFollowUps[question] ?? "",
+                        qatFollowUpAnswer: bugQuestionFollowUpAnswers[question] ?? "",
+                        resolution,
+                      })}</p>
+                    </div>
 
                     <div className="follow-up-resolution-block">
                       <p>Next step for this triage thread</p>
