@@ -218,36 +218,25 @@ function getFollowUpActionButtonLabel(resolution: FollowUpResolution): string {
 
 function buildLocalQAtClarifier(question: string, answer = ""): string {
   const normalizedQuestion = question.toLowerCase();
-  const normalizedAnswer = answer.trim().toLowerCase();
-  const answerLooksThin =
-    !normalizedAnswer ||
-    normalizedAnswer.length < 8 ||
-    /^(test|tests|testing|n\/a|na|none|unknown|idk|not sure)$/i.test(normalizedAnswer);
 
-  if (answerLooksThin) {
-    if (normalizedQuestion.includes("device") || normalizedQuestion.includes("operating system") || normalizedQuestion.includes("os") || normalizedQuestion.includes("platform")) {
-      return "Which exact device, OS/platform version, or browser build should developers validate against?";
-    }
-
-    if (normalizedQuestion.includes("version") || normalizedQuestion.includes("build")) {
-      return "Which app version, build number, branch, or release channel should be attached to the Jira issue?";
-    }
-
-    if (normalizedQuestion.includes("reproduce") || normalizedQuestion.includes("repro") || normalizedQuestion.includes("steps")) {
-      return "What exact step, trigger, or user action should developers try first to reproduce this?";
-    }
+  if (isThinFollowUpAnswer(answer)) {
+    return getThinAnswerFollowUpPrompt(question);
   }
 
-  if (normalizedQuestion.includes("device") || normalizedQuestion.includes("operating system") || normalizedQuestion.includes("os") || normalizedQuestion.includes("platform")) {
-    return "Which exact device, OS/platform version, or browser build should developers validate against?";
+  if (normalizedQuestion.includes("resize") || normalizedQuestion.includes("bigger") || normalizedQuestion.includes("ui") || normalizedQuestion.includes("element")) {
+    return "Which screen, component, or control should developers inspect first, and what size or readability problem should they confirm?";
+  }
+
+  if (normalizedQuestion.includes("device") || normalizedQuestion.includes("operating system") || normalizedQuestion.includes("os") || normalizedQuestion.includes("platform") || normalizedQuestion.includes("screen size")) {
+    return "Which exact device, viewport, OS/platform version, or browser build should developers validate against?";
   }
 
   if (normalizedQuestion.includes("version") || normalizedQuestion.includes("build")) {
     return "Which app version, build number, branch, or release channel should be attached to the Jira issue?";
   }
 
-  if (normalizedQuestion.includes("reproduce") || normalizedQuestion.includes("repro") || normalizedQuestion.includes("steps")) {
-    return "What exact step, trigger, or user action should developers try first to reproduce this?";
+  if (normalizedQuestion.includes("reproduce") || normalizedQuestion.includes("repro") || normalizedQuestion.includes("steps") || normalizedQuestion.includes("trigger")) {
+    return "What exact click, navigation path, or user action should developers try first to reproduce this?";
   }
 
   if (normalizedQuestion.includes("expected") || normalizedQuestion.includes("actual")) {
@@ -258,12 +247,13 @@ function buildLocalQAtClarifier(question: string, answer = ""): string {
     return "What exact error text, log line, timestamp, or console output should be included?";
   }
 
-  if (normalizedQuestion.includes("account") || normalizedQuestion.includes("role") || normalizedQuestion.includes("user")) {
+  if (normalizedQuestion.includes("account") || normalizedQuestion.includes("role") || normalizedQuestion.includes("user") || normalizedQuestion.includes("permission")) {
     return "Which account state, user role, permissions, or test data should developers use?";
   }
 
-  return "What is the most specific detail developers need before they can confidently triage this?";
+  return "Can you give one concrete example developers can reproduce or validate?";
 }
+
 
 
 const tools: Array<QatalystToolOption & { button: string; placeholder: string }> = [
@@ -393,6 +383,74 @@ function isNegativeOrNotApplicableAnswer(value: string): boolean {
     "no workaround",
     "not reproduced elsewhere",
   ].includes(normalized);
+}
+
+function isThinFollowUpAnswer(value = ""): boolean {
+  const normalized = value.trim().toLowerCase();
+
+  if (!normalized) return true;
+  if (normalized.length < 12) return true;
+
+  const vagueAnswers = [
+    "yes",
+    "yeah",
+    "yep",
+    "no",
+    "nope",
+    "test",
+    "tests",
+    "testing",
+    "sure",
+    "ok",
+    "okay",
+    "n/a",
+    "na",
+    "none",
+    "unknown",
+    "idk",
+    "not sure",
+    "specifically qat",
+    "specifically qatalyst qat",
+  ];
+
+  if (vagueAnswers.includes(normalized)) return true;
+  if (/^(yes|no|test|sure|ok|okay|unknown|none)\b/i.test(normalized) && normalized.length < 24) return true;
+
+  const hasConcreteSignal =
+    /\d/.test(normalized) ||
+    /click|tap|open|navigate|select|submit|save|create|delete|resize|screen|device|browser|chrome|safari|firefox|ios|android|windows|mac|build|version|role|admin|user|error|log|console|expected|actual|repro|attempt/i.test(normalized);
+
+  return !hasConcreteSignal && normalized.split(/\s+/).length < 5;
+}
+
+function getThinAnswerFollowUpPrompt(question: string): string {
+  const normalizedQuestion = question.toLowerCase();
+
+  if (normalizedQuestion.includes("resize") || normalizedQuestion.includes("bigger") || normalizedQuestion.includes("ui") || normalizedQuestion.includes("element")) {
+    return "Which UI element, screen, or control needs resizing, and what usability or accessibility issue does it cause?";
+  }
+
+  if (normalizedQuestion.includes("device") || normalizedQuestion.includes("operating system") || normalizedQuestion.includes("os") || normalizedQuestion.includes("platform") || normalizedQuestion.includes("screen size")) {
+    return "Which device, viewport, OS/platform version, or browser build should developers validate first?";
+  }
+
+  if (normalizedQuestion.includes("reproduce") || normalizedQuestion.includes("repro") || normalizedQuestion.includes("steps") || normalizedQuestion.includes("trigger")) {
+    return "What exact click, navigation path, or user action triggers the issue?";
+  }
+
+  if (normalizedQuestion.includes("expected") || normalizedQuestion.includes("actual")) {
+    return "What should have happened, and what actually happened, in one concrete example?";
+  }
+
+  if (normalizedQuestion.includes("error") || normalizedQuestion.includes("message") || normalizedQuestion.includes("log") || normalizedQuestion.includes("console")) {
+    return "What exact error message, log line, timestamp, or console output should developers inspect?";
+  }
+
+  if (normalizedQuestion.includes("account") || normalizedQuestion.includes("role") || normalizedQuestion.includes("permission") || normalizedQuestion.includes("user")) {
+    return "Which user role, permission state, account setup, or test data should developers use to reproduce this?";
+  }
+
+  return "Can you give one concrete example developers can reproduce or validate?";
 }
 
 function buildAnsweredFollowUps(
@@ -537,9 +595,13 @@ function getFollowUpThreadInsight({
   const priority = getFollowUpPriority(question);
   const cleanAnswer = answer.trim();
   const cleanNestedAnswer = qatFollowUpAnswer.trim();
+  const answerIsThin = isThinFollowUpAnswer(cleanAnswer);
+  const nestedAnswerIsThin = qatFollowUpQuestion ? isThinFollowUpAnswer(cleanNestedAnswer) : false;
 
   if (resolution === "No more questions") {
-    return "QA closed this question for now. QAt will not treat it as an active blocker unless new evidence appears.";
+    return cleanAnswer && !answerIsThin
+      ? "QA closed this thread with enough context to avoid more back-and-forth for now."
+      : "QA closed this question for now. QAt will not treat it as an active blocker unless new evidence appears.";
   }
 
   if (!cleanAnswer) {
@@ -548,21 +610,36 @@ function getFollowUpThreadInsight({
     return "This detail is optional, but answering it can reduce back-and-forth during triage.";
   }
 
-  if (resolution === "Resolved") {
-    if (cleanNestedAnswer) return "QAt has the original answer and deeper follow-up context queued for the next re-improve pass.";
-    return "QAt will carry this answer into the next re-improve pass.";
+  if (answerIsThin) {
+    if (resolution === "Resolved") {
+      return "QAt can carry this forward, but the answer is still thin. Developers may need more concrete repro detail.";
+    }
+
+    return "QAt has a partial answer, but it needs one concrete example, environment detail, or reproducible action before this feels developer-ready.";
   }
 
   if (qatFollowUpQuestion && !cleanNestedAnswer) {
     return "QAt needs the deeper follow-up answer before this thread is ready to fold into the report.";
   }
 
+  if (qatFollowUpQuestion && nestedAnswerIsThin) {
+    return resolution === "Resolved"
+      ? "QAt will carry this context forward, but the deeper follow-up answer is still light and may need validation."
+      : "The deeper follow-up has a partial answer. Add one concrete detail before re-improving if the team needs stronger triage confidence.";
+  }
+
+  if (resolution === "Resolved") {
+    if (cleanNestedAnswer) return "QAt has the original answer and deeper follow-up context queued for the next re-improve pass.";
+    return "QAt has enough actionable context to carry this answer into the next re-improve pass.";
+  }
+
   if (qatFollowUpQuestion && cleanNestedAnswer) {
     return "This thread has deeper context. Use it in re-improve when you are ready.";
   }
 
-  return "QAt has a first answer, but you can ask it to dig deeper if the detail still feels thin.";
+  return "QAt has a first answer. Ask it to dig deeper if you want stronger developer handoff detail before re-improve.";
 }
+
 
 function buildFollowUpThreadSummary(item: AnsweredFollowUp): string {
   return [
@@ -2476,7 +2553,7 @@ function BugReportCards({
                 <p>
                   {triageState.openCount > 0
                     ? "QAt is tracking the open investigation thread so the next re-improve pass can carry the right context."
-                    : "QAt has enough answers for this pass. Re-improve is ready to fold the thread into the bug report."}
+                    : "QAt has handled the active thread and is ready for the next re-improve pass."}
                 </p>
               </div>
 
@@ -2489,8 +2566,8 @@ function BugReportCards({
             <div className="bug-qat-question-list">
               {openBugFollowUps.length === 0 ? (
                 <div className="bug-qat-empty-state">
-                  <strong>QAt has enough answers for this pass.</strong>
-                  <span>Run Re-improve Bug Report to fold this triage thread into the generated defect.</span>
+                  <strong>Re-improve is ready.</strong>
+                  <span>The handled triage thread will be folded into the generated defect.</span>
                 </div>
               ) : null}
               {openBugFollowUps.map((question, index) => {
@@ -4780,4 +4857,3 @@ export default function Home() {
     </main>
   );
 }
-
