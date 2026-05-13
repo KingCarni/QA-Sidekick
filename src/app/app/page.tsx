@@ -696,6 +696,65 @@ function getBugTriageState(
 }
 
 
+
+
+function buildBugReImproveCarryForwardSummary({
+  environmentContext,
+  evidenceContext,
+  answeredFollowUps,
+  testerNotes,
+}: {
+  environmentContext: string[];
+  evidenceContext: string[];
+  answeredFollowUps: string[];
+  testerNotes: string;
+}): string {
+  const sections = [
+    environmentContext.length > 0
+      ? [
+          "Structured environment/repro context supplied by QA:",
+          ...environmentContext.map((item) => `- ${item}`),
+        ].join("\n")
+      : "",
+    evidenceContext.length > 0
+      ? [
+          "Evidence/context supplied by QA:",
+          ...evidenceContext.map((item) => `- ${item.replace(/\n+/g, " | ")}`),
+        ].join("\n")
+      : "",
+    testerNotes.trim()
+      ? [
+          "Tester notes supplied by QA:",
+          testerNotes.trim(),
+        ].join("\n")
+      : "",
+    answeredFollowUps.length > 0
+      ? [
+          "Queued QAt triage thread summaries:",
+          ...answeredFollowUps.map((item, index) => `${index + 1}. ${item.replace(/\n+/g, " | ")}`),
+        ].join("\n")
+      : "",
+  ].filter(Boolean);
+
+  return sections.length > 0
+    ? sections.join("\n\n")
+    : "No additional bug refinement context supplied.";
+}
+
+function buildBugReImproveInstructions(): string {
+  return [
+    "Bug re-improve convergence instructions:",
+    "- Rebuild the bug report from the original rough notes, previous generated report, structured fields, evidence, tester notes, and queued QAt triage threads.",
+    "- Incorporate answered or queued follow-up context into Environment, Steps to Reproduce, Expected Result, Actual Result, Impact, Missing Info, Follow-up Questions, and QA Notes wherever relevant.",
+    "- Remove or reduce Missing Info items that have already been answered by structured fields, tester notes, evidence notes, or QAt thread answers.",
+    "- Do not repeat follow-up questions that QA already answered, queued for re-improve, or closed unless the answer creates a new critical blocker.",
+    "- Preserve tester-provided platform/environment values exactly as flexible context. Do not convert them into fixed vendor categories or infer console/platform taxonomies.",
+    "- Treat thin answers cautiously: carry them forward in QA Notes as partial context, but do not overstate them as fully verified facts.",
+    "- If a supplied field answers a question directly, reflect that answer in the report and do not list the same item as missing info.",
+    "- Keep any new follow-up questions low-noise and only ask for details that materially affect developer reproduction, severity, priority, or verification.",
+  ].join("\n");
+}
+
 function arrayFromUnknown<T = unknown>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
@@ -4136,37 +4195,39 @@ export default function Home() {
           "Original rough bug notes:",
           input.trim(),
           "",
-          "STRUCTURED ENVIRONMENT AND REPRO FIELDS - treat these as already answered:",
-          bugEnvironmentContext.length > 0
-            ? bugEnvironmentContext.join("\n")
-            : "No structured environment/context fields supplied.",
+          "Previous generated bug report JSON:",
+          currentBugReport
+            ? JSON.stringify({ bugReport: currentBugReport }, null, 2)
+            : "No previous generated bug report available.",
+          "",
+          "QAt carry-forward context summary:",
+          buildBugReImproveCarryForwardSummary({
+            environmentContext: bugEnvironmentContext,
+            evidenceContext: bugEvidenceContext,
+            answeredFollowUps,
+            testerNotes,
+          }),
           "",
           "Structured field interpretation rules:",
+          "- Treat structured environment/repro fields as already answered QA context.",
           "- If Device type is supplied, do not ask what device was used.",
           "- If Operating system is supplied, do not ask what OS was used.",
           "- If App/game version or Build number is supplied, do not ask for that same version/build again.",
+          "- If Browser/platform is supplied, preserve that freeform tested platform/context exactly. Do not force it into a vendor list.",
           "- If Repro rate is supplied and is not Unknown, do not ask whether the issue reproduces consistently.",
           "- If Repro notes are supplied, use them to refine impact, priority, and follow-up questions.",
-          "",
-          "Evidence attachments, screenshots, logs, or links:",
-          bugEvidenceContext.length > 0
-            ? bugEvidenceContext.join("\n\n")
-            : "No evidence links, uploads, or notes supplied.",
-          "",
-          "Answered follow-up questions:",
-          answeredFollowUps.length > 0
-            ? answeredFollowUps.join("\n\n")
-            : "No specific follow-up question answers supplied.",
           "",
           "Follow-up loop status:",
           followUpLoopClosed
             ? "No more questions requested by QA. Do not generate additional follow-up questions unless there is a critical missing blocker."
-            : "Follow-up loop is still open.",
+            : "Follow-up loop is still open. Only ask new questions that remain materially unanswered after using the carry-forward context.",
           "",
           "CRITICAL TESTER NOTES - treat as direct answers/context, not optional background:",
           testerNotes || "No critical tester notes supplied.",
           "",
           testerNotesContext,
+          "",
+          buildBugReImproveInstructions(),
         ].join("\n")
       : input;
 
