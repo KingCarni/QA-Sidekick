@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { apiError, apiOk, getErrorMessage, readJsonBody } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { recordSecurityAuditEvent, SECURITY_EVENTS } from "@/lib/security-audit";
 import {
   listProjectSources,
   normalizeProjectSourcePayload,
@@ -60,6 +61,16 @@ export async function GET(req: Request, context: RouteContext): Promise<Response
     const { id: projectId } = await context.params;
 
     if (!(await userOwnsProject(userId, projectId))) {
+      await recordSecurityAuditEvent({
+        userId,
+        type: SECURITY_EVENTS.BLOCKED_PROJECT_SOURCE_LIST,
+        meta: {
+          projectId,
+          route: "/api/projects/[id]/sources",
+          reason: "project_not_owned_or_missing",
+        },
+      });
+
       return apiError(req, {
         status: 404,
         code: "NOT_FOUND",
@@ -68,6 +79,16 @@ export async function GET(req: Request, context: RouteContext): Promise<Response
     }
 
     const sources = await listProjectSources(userId, projectId);
+
+    await recordSecurityAuditEvent({
+      userId,
+      type: SECURITY_EVENTS.PROJECT_SOURCE_LISTED,
+      meta: {
+        projectId,
+        route: "/api/projects/[id]/sources",
+        sourceCount: sources.length,
+      },
+    });
 
     return apiOk(req, { sources });
   } catch (error) {
@@ -100,6 +121,18 @@ export async function POST(req: Request, context: RouteContext): Promise<Respons
     if (!result.ok) {
       const notFound = result.errors.includes("Project not found.") || result.errors.includes("Source not found.");
 
+      await recordSecurityAuditEvent({
+        userId,
+        type: SECURITY_EVENTS.PROJECT_SOURCE_SAVE_BLOCKED,
+        meta: {
+          projectId,
+          sourceId,
+          route: "/api/projects/[id]/sources",
+          notFound,
+          errorCount: result.errors.length,
+        },
+      });
+
       return apiError(req, {
         status: notFound ? 404 : 400,
         code: notFound ? "NOT_FOUND" : "VALIDATION_ERROR",
@@ -107,6 +140,17 @@ export async function POST(req: Request, context: RouteContext): Promise<Respons
         details: { errors: result.errors },
       });
     }
+
+    await recordSecurityAuditEvent({
+      userId,
+      type: SECURITY_EVENTS.PROJECT_SOURCE_SAVED,
+      meta: {
+        projectId,
+        sourceId: result.source?.id,
+        route: "/api/projects/[id]/sources",
+        updatedExisting: Boolean(sourceId),
+      },
+    });
 
     return apiOk(req, { source: result.source });
   } catch (error) {
