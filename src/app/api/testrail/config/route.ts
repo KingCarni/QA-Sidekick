@@ -7,6 +7,7 @@ import {
   normalizeTestRailConfigPayload,
   saveUserTestRailConfig,
 } from "@/lib/testrail-config";
+import { recordSecurityAuditEvent, SECURITY_EVENTS } from "@/lib/security-audit";
 import { durationSince, nowMs, serverLog } from "@/lib/server-log";
 
 export const runtime = "nodejs";
@@ -42,6 +43,17 @@ export async function GET(req: Request): Promise<Response> {
 
     const status = await getUserTestRailConfigStatus(userId);
 
+    await recordSecurityAuditEvent({
+      userId,
+      type: SECURITY_EVENTS.TESTRAIL_CONFIG_VIEWED,
+      meta: {
+        route,
+        configured: status.configured,
+        projectId: status.config?.projectId ?? null,
+        hasToken: Boolean(status.config?.apiKeyMasked),
+      },
+    });
+
     serverLog.info("TestRail config status loaded.", {
       route,
       userId,
@@ -73,6 +85,18 @@ export async function POST(req: Request): Promise<Response> {
     const result = await saveUserTestRailConfig(userId, payload);
 
     if (!result.ok) {
+      await recordSecurityAuditEvent({
+        userId,
+        type: SECURITY_EVENTS.TESTRAIL_CONFIG_SAVE_BLOCKED,
+        meta: {
+          route,
+          projectId: payload.projectId || null,
+          suiteId: payload.suiteId,
+          defaultSectionId: payload.defaultSectionId || null,
+          errorCount: result.errors.length,
+        },
+      });
+
       return apiError(req, {
         status: 400,
         code: "VALIDATION_ERROR",
@@ -80,6 +104,18 @@ export async function POST(req: Request): Promise<Response> {
         details: { errors: result.errors },
       });
     }
+
+    await recordSecurityAuditEvent({
+      userId,
+      type: SECURITY_EVENTS.TESTRAIL_CONFIG_SAVED,
+      meta: {
+        route,
+        projectId: result.config.projectId,
+        suiteId: result.config.suiteId,
+        defaultSectionId: result.config.defaultSectionId,
+        hasToken: Boolean(result.config.apiKeyMasked),
+      },
+    });
 
     serverLog.info("TestRail config saved.", {
       route,
@@ -112,6 +148,14 @@ export async function DELETE(req: Request): Promise<Response> {
     if (!result.ok) {
       return apiError(req, { status: 400, code: "BAD_REQUEST", message: result.error });
     }
+
+    await recordSecurityAuditEvent({
+      userId,
+      type: SECURITY_EVENTS.TESTRAIL_CONFIG_DELETED,
+      meta: {
+        route,
+      },
+    });
 
     serverLog.info("TestRail config deleted.", { route, userId, status: 200, durationMs: durationSince(startedAt) });
 
