@@ -9,6 +9,10 @@ import {
   appendProjectContextToInput,
   buildProjectContextPromptRules,
 } from "@/lib/project-context-injection";
+import {
+  buildAuthorizedProjectContextPayload,
+  serializeAuthorizedProjectContext,
+} from "@/lib/server-project-context";
 import { buildAutomationCredentialPromptRules } from "@/lib/automation-credentials";
 import { isInsufficientCreditsError, runPaidAction } from "@/lib/paid-action";
 
@@ -25,13 +29,15 @@ export async function POST(req: Request) {
     const parsed = qaRequestSchema.safeParse(body);
     if (!parsed.success) return jsonError(parsed.error.issues[0]?.message ?? "Invalid request.");
 
+    const authorizedProjectContext = await buildAuthorizedProjectContextPayload(userId, parsed.data);
+    const authorizedProjectContextMeta = serializeAuthorizedProjectContext(authorizedProjectContext);
     const client = getOpenAIClient();
     const systemPrompt = [
       "You are QAtalyst, a senior QA analyst assistant. Return only valid JSON matching the requested schema. Do not wrap JSON in markdown.",
       buildProjectContextPromptRules(),
-      `Project context used: ${parsed.data.projectContextUsed ? "yes" : "no"}`,
-      `Project: ${parsed.data.selectedProjectName || "none"}`,
-      `Project context summary: ${parsed.data.projectContextSummary || "No project context used."}`,
+      `Project context used: ${authorizedProjectContext.projectContextUsed ? "yes" : "no"}`,
+      `Project: ${authorizedProjectContext.selectedProjectName || "none"}`,
+      `Project context summary: ${authorizedProjectContext.projectContextSummary || "No project context used."}`,
       parsed.data.automationCredentialPromptBlock || "",
       buildAutomationCredentialPromptRules(),
       `Automation credentials used: ${parsed.data.automationCredentialsUsed ? "yes" : "no"}`,
@@ -40,7 +46,7 @@ export async function POST(req: Request) {
     ].join("\n\n");
     const sourceWithProjectContext = appendProjectContextToInput(
       parsed.data.input,
-      parsed.data.projectContextBlock || parsed.data.projectContext || ""
+      authorizedProjectContext.projectContextBlock
     );
     const userPrompt = buildQaPrompt("improve-test", sourceWithProjectContext);
     const result = await runPaidAction({
@@ -50,19 +56,19 @@ export async function POST(req: Request) {
       meta: { route: "/api/improve-test" },
       work: async () => {
         const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0.2,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "user",
-          content: userPrompt,
-        },
-      ],
+          model: "gpt-4o-mini",
+          temperature: 0.2,
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "system",
+              content: systemPrompt,
+            },
+            {
+              role: "user",
+              content: userPrompt,
+            },
+          ],
         });
 
         const content = response.choices[0]?.message?.content;
@@ -70,13 +76,7 @@ export async function POST(req: Request) {
 
         return {
           result: JSON.parse(content),
-          context: {
-            projectContextUsed: Boolean(parsed.data.projectContextUsed),
-            selectedProjectId: parsed.data.selectedProjectId,
-            selectedProjectName: parsed.data.selectedProjectName,
-            selectedProjectSourceIds: parsed.data.selectedProjectSourceIds ?? [],
-            projectContextSummary: parsed.data.projectContextSummary,
-          },
+          context: authorizedProjectContextMeta,
         };
       },
     });
