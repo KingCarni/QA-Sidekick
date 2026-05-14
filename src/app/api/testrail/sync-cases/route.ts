@@ -33,6 +33,22 @@ function isPreviewCase(value: unknown): value is TestRailSyncPreviewCase {
   );
 }
 
+async function getAuthorizedReportId(userId: string, reportId: string | null): Promise<string | null | false> {
+  if (!reportId) return null;
+
+  const report = await prisma.qAReport.findFirst({
+    where: {
+      id: reportId,
+      userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return report?.id ?? false;
+}
+
 export async function POST(req: Request): Promise<Response> {
   const startedAt = nowMs();
   const route = "/api/testrail/sync-cases";
@@ -60,12 +76,23 @@ export async function POST(req: Request): Promise<Response> {
       return apiError(req, { status: 400, code: "VALIDATION_ERROR", message: "No previewed TestRail cases were provided." });
     }
 
+    const requestedReportId = cleanString(body.reportId) || null;
+    const authorizedReportId = await getAuthorizedReportId(userId, requestedReportId);
+
+    if (authorizedReportId === false) {
+      return apiError(req, {
+        status: 404,
+        code: "NOT_FOUND",
+        message: "Saved report not found.",
+      });
+    }
+
     const config = await getUserTestRailConfigWithSecret(userId);
     if (!config) {
       return apiError(req, { status: 400, code: "CONFIG_ERROR", message: "Configure TestRail before syncing cases." });
     }
 
-    const reportId = cleanString(body.reportId) || null;
+    const reportId = authorizedReportId;
     const mode = cleanString(body.mode) === "update" ? "update" : "create";
     const client = new TestRailClient({ baseUrl: config.baseUrl, username: config.username, apiKey: config.apiKey });
     const results: Array<{ title: string; status: string; testRailCaseId?: number; error?: string }> = [];
