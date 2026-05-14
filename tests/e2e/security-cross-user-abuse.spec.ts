@@ -9,6 +9,7 @@ const STANDARD_OWNED_REPORT_ID = process.env.QATALYST_E2E_STANDARD_REPORT_ID;
 const STANDARD_OWNED_BUG_ID = process.env.QATALYST_E2E_STANDARD_BUG_ID;
 
 const SECRET_CANARY = process.env.QATALYST_E2E_SECRET_CANARY ?? "QATALYST_PRIVATE_SOURCE_CANARY";
+const CLIENT_CONTEXT_MARKER = "QATALYST_CLIENT_SUPPLIED_CONTEXT_MARKER_SHOULD_NOT_APPEAR";
 const FORBIDDEN_PROMPT_MARKER = "QATALYST_FORBIDDEN_PROMPT_MARKER_SHOULD_NOT_APPEAR";
 
 function requireEnv(name: string, value: string | undefined): string {
@@ -159,14 +160,22 @@ test.describe("Security: cross-user project isolation", () => {
         selectedProjectId: projectId,
         selectedProjectSourceIds: [sourceId],
         projectContextUsed: true,
-        projectContextBlock: `${SECRET_CANARY} should never be trusted from the client.`,
+        projectContextBlock: `${CLIENT_CONTEXT_MARKER} should never be trusted from the client.`,
         projectContextSummary: "Malicious client supplied context",
       },
     });
 
     expect(response.status()).not.toBe(500);
     const text = await response.text().catch(() => "");
+
     expect(text).not.toContain(SECRET_CANARY);
+    expect(text).not.toContain(CLIENT_CONTEXT_MARKER);
+
+    if (response.status() === 200) {
+      const payload = JSON.parse(text);
+      expect(payload.context?.projectContextUsed).toBe(false);
+      expect(payload.context?.selectedProjectSourceIds ?? []).toEqual([]);
+    }
   });
 
   test("limited-access user cannot use another user's saved report id during TestRail sync", async ({ page }) => {
