@@ -2616,10 +2616,31 @@ function BugReportCards({
                 </p>
               </div>
 
-              <div className={`bug-qat-speech ${triageState.qatMoodClass}`}>
-                <span className="bug-qat-avatar">QAt</span>
+              <div
+              className={`bug-qat-companion bug-qat-companion-peek ${triageState.qatMoodClass}`}
+              tabIndex={0}
+              aria-label={`QAt says: ${triageState.speech}`}
+            >
+              <img
+                className="bug-qat-peek-ear"
+                src="/qat/qat-ear.png"
+                alt=""
+                aria-hidden="true"
+              />
+
+              <div className="bug-qat-peek-reveal" aria-hidden="true">
+                <img
+                  className="bug-qat-peek-mascot"
+                  src="/qat/qat-peek.png"
+                  alt=""
+                />
+              </div>
+
+              <div className="bug-qat-companion-bubble">
+                <strong>QAt</strong>
                 <p>{triageState.speech}</p>
               </div>
+            </div>
             </div>
 
             <div className="bug-qat-question-list">
@@ -2733,9 +2754,15 @@ function BugReportCards({
                 <p>QAt did not find any active follow-up questions for this report.</p>
               </div>
 
-              <div className="bug-qat-speech resolved">
-                <span className="bug-qat-avatar">QAt</span>
-                <p>Nice, this is ready for Jira triage.</p>
+              <div className="bug-qat-companion bug-qat-companion-branded resolved">
+                <div className="bug-qat-companion-mascot" aria-hidden="true">
+                  <img className="bug-qat-companion-ear" src="/qat-ear" alt="" />
+                </div>
+
+                <div className="bug-qat-companion-bubble">
+                  <strong>QAt</strong>
+                  <p>Nice, this is ready for Jira triage.</p>
+                </div>
               </div>
             </div>
           </section>

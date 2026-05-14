@@ -33484,3 +33484,805 @@ body:has(.qatalyst-brain-shell)::after {
     linear-gradient(135deg, rgba(6, 78, 59, 0.14), rgba(15, 23, 42, 0.58)),
     rgba(15, 23, 42, 0.52);
 }
+/* QAS-158 branded QAt peek companion UI - contained overlay fix */
+.qatalyst-app-shell-v9 .bug-qat-followup-card {
+  position: relative;
+  overflow: visible;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-followup-header {
+  position: relative;
+  overflow: visible;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 122px;
+  gap: 18px;
+  align-items: start;
+  min-height: 74px;
+  padding-right: 0;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-peek-anchor {
+  justify-self: end;
+  align-self: start;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion {
+  position: relative;
+  z-index: 6;
+  width: 112px;
+  height: 74px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  overflow: visible;
+  pointer-events: auto;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-visible {
+  outline: 2px solid rgba(147, 197, 253, 0.72);
+  outline-offset: 4px;
+  border-radius: 16px;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-peek-ear {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 54px;
+  height: auto;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 12px 16px rgba(2, 6, 23, 0.56))
+    drop-shadow(0 0 10px rgba(96, 165, 250, 0.16));
+  transform-origin: bottom center;
+  opacity: 1;
+  z-index: 3;
+  transition: opacity 150ms ease, transform 180ms ease;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-peek-reveal {
+  position: absolute;
+  top: -12px;
+  right: -10px;
+  width: 118px;
+  height: 118px;
+  opacity: 0;
+  transform: translateX(18px) rotate(2deg) scale(0.94);
+  transform-origin: right center;
+  transition: opacity 170ms ease, transform 210ms ease;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-peek-mascot {
+  display: block;
+  width: 118px;
+  max-width: none;
+  height: auto;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 16px 20px rgba(2, 6, 23, 0.52))
+    drop-shadow(0 0 12px rgba(248, 113, 113, 0.12));
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion-bubble {
+  position: absolute;
+  top: 0;
+  right: 78px;
+  width: 250px;
+  max-width: 250px;
+  padding: 11px 13px;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.97), rgba(30, 41, 59, 0.88)),
+    rgba(15, 23, 42, 0.92);
+  box-shadow: 0 18px 34px rgba(2, 6, 23, 0.34);
+  opacity: 0;
+  transform: translateX(10px) scale(0.98);
+  transform-origin: right center;
+  transition: opacity 160ms ease, transform 200ms ease;
+  pointer-events: none;
+  z-index: 5;
+  text-align: left;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion-bubble::before {
+  content: "";
+  position: absolute;
+  right: -7px;
+  top: 22px;
+  width: 12px;
+  height: 12px;
+  border-right: 1px solid rgba(96, 165, 250, 0.3);
+  border-top: 1px solid rgba(96, 165, 250, 0.3);
+  background: rgba(15, 23, 42, 0.95);
+  transform: rotate(45deg);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion-bubble strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #bfdbfe;
+  font-size: 0.7rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion-bubble p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion:hover .bug-qat-peek-reveal,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-visible .bug-qat-peek-reveal,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-within .bug-qat-peek-reveal {
+  opacity: 1;
+  transform: translateX(0) rotate(0deg) scale(1);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion:hover .bug-qat-companion-bubble,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-visible .bug-qat-companion-bubble,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-within .bug-qat-companion-bubble {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion:hover .bug-qat-peek-ear,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-visible .bug-qat-peek-ear,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-within .bug-qat-peek-ear {
+  opacity: 0;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion.curious .bug-qat-peek-ear {
+  animation: qat-ear-peek-curious-contained 5.2s ease-in-out infinite;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion.thinking .bug-qat-peek-ear {
+  animation: qat-ear-peek-thinking-contained 5.8s ease-in-out infinite;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion.resolved .bug-qat-peek-ear {
+  animation: qat-ear-peek-resolved-contained 6.2s ease-in-out infinite;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion.resolved .bug-qat-companion-bubble {
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion.resolved .bug-qat-companion-bubble strong {
+  color: #bbf7d0;
+}
+
+@keyframes qat-ear-peek-curious-contained {
+  0%, 72%, 100% { transform: translateY(0) rotate(0deg); }
+  76% { transform: translateY(-3px) rotate(-5deg); }
+  80% { transform: translateY(0) rotate(3deg); }
+  84% { transform: translateY(-1px) rotate(0deg); }
+}
+
+@keyframes qat-ear-peek-thinking-contained {
+  0%, 78%, 100% { transform: translateY(0) rotate(0deg); }
+  82% { transform: translateY(-2px) rotate(-3deg); }
+  86% { transform: translateY(0) rotate(2deg); }
+}
+
+@keyframes qat-ear-peek-resolved-contained {
+  0%, 100% {
+    transform: translateY(0);
+    filter:
+      drop-shadow(0 12px 16px rgba(2, 6, 23, 0.56))
+      drop-shadow(0 0 10px rgba(34, 197, 94, 0.16));
+  }
+  50% {
+    transform: translateY(-1px);
+    filter:
+      drop-shadow(0 13px 18px rgba(2, 6, 23, 0.58))
+      drop-shadow(0 0 14px rgba(34, 197, 94, 0.22));
+  }
+}
+
+@media (max-width: 980px) {
+  .qatalyst-app-shell-v9 .bug-qat-followup-header {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-peek-anchor {
+    justify-self: start;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-companion {
+    width: min(100%, 340px);
+    height: 74px;
+    margin-top: 10px;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-peek-ear {
+    left: 0;
+    right: auto;
+    width: 48px;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-peek-reveal {
+    left: -8px;
+    right: auto;
+    width: 104px;
+    height: 104px;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-peek-mascot {
+    width: 104px;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-companion-bubble {
+    left: 70px;
+    right: auto;
+    width: min(250px, calc(100vw - 132px));
+    max-width: min(250px, calc(100vw - 132px));
+    transform-origin: left center;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-companion-bubble::before {
+    left: -7px;
+    right: auto;
+    border-left: 1px solid rgba(96, 165, 250, 0.3);
+    border-bottom: 1px solid rgba(96, 165, 250, 0.3);
+    border-right: 0;
+    border-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qatalyst-app-shell-v9 .bug-qat-peek-ear,
+  .qatalyst-app-shell-v9 .bug-qat-peek-reveal,
+  .qatalyst-app-shell-v9 .bug-qat-companion-bubble {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+
+/* Reveal full QAt + bubble on hover/focus */
+.qatalyst-app-shell-v9 .bug-qat-companion:hover .bug-qat-peek-reveal,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-visible .bug-qat-peek-reveal,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-within .bug-qat-peek-reveal {
+  opacity: 1;
+  transform: translateX(0) rotate(0deg) scale(1);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion:hover .bug-qat-companion-bubble,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-visible .bug-qat-companion-bubble,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-within .bug-qat-companion-bubble {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion:hover .bug-qat-peek-ear,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-visible .bug-qat-peek-ear,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-within .bug-qat-peek-ear {
+  opacity: 0;
+}
+
+/* Curious / missing context */
+.qatalyst-app-shell-v9 .bug-qat-companion.curious .bug-qat-peek-ear {
+  animation: qat-ear-peek-curious 5.2s ease-in-out infinite;
+}
+
+/* Thinking / improving */
+.qatalyst-app-shell-v9 .bug-qat-companion.thinking .bug-qat-peek-ear {
+  animation: qat-ear-peek-thinking 5.8s ease-in-out infinite;
+}
+
+/* Resolved */
+.qatalyst-app-shell-v9 .bug-qat-companion.resolved .bug-qat-peek-ear {
+  animation: qat-ear-peek-resolved 6.2s ease-in-out infinite;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion.resolved .bug-qat-companion-bubble {
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion.resolved .bug-qat-companion-bubble strong {
+  color: #bbf7d0;
+}
+
+@keyframes qat-ear-peek-curious {
+  0%, 72%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  76% {
+    transform: translateY(-3px) rotate(-5deg);
+  }
+  80% {
+    transform: translateY(0) rotate(3deg);
+  }
+  84% {
+    transform: translateY(-1px) rotate(0deg);
+  }
+}
+
+@keyframes qat-ear-peek-thinking {
+  0%, 78%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  82% {
+    transform: translateY(-2px) rotate(-3deg);
+  }
+  86% {
+    transform: translateY(0) rotate(2deg);
+  }
+}
+
+@keyframes qat-ear-peek-resolved {
+  0%, 100% {
+    transform: translateY(0);
+    filter:
+      drop-shadow(0 14px 18px rgba(2, 6, 23, 0.55))
+      drop-shadow(0 0 12px rgba(34, 197, 94, 0.16));
+  }
+  50% {
+    transform: translateY(-1px);
+    filter:
+      drop-shadow(0 15px 20px rgba(2, 6, 23, 0.58))
+      drop-shadow(0 0 16px rgba(34, 197, 94, 0.22));
+  }
+}
+
+@media (max-width: 980px) {
+  .qatalyst-app-shell-v9 .bug-qat-companion {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: min(100%, 340px);
+    min-height: 96px;
+    margin-top: 14px;
+    justify-self: start;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-peek-ear {
+    top: 12px;
+    right: 0;
+    width: 64px;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-peek-reveal {
+    top: -8px;
+    right: -80px;
+    width: 150px;
+    height: 150px;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-peek-mascot {
+    width: 150px;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-companion-bubble {
+    top: 8px;
+    right: 58px;
+    width: min(220px, calc(100vw - 140px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qatalyst-app-shell-v9 .bug-qat-peek-ear,
+  .qatalyst-app-shell-v9 .bug-qat-peek-reveal,
+  .qatalyst-app-shell-v9 .bug-qat-companion-bubble {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* QAS-158 QAt peek companion scale + edge-position correction
+   Append to VERY bottom of globals.css.
+   Purpose: make QAt peek from behind the right edge and scale mascot about 50% larger. */
+
+.qatalyst-app-shell-v9 .bug-qat-followup-header {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-peek-anchor,
+.qatalyst-app-shell-v9 .bug-qat-companion.bug-qat-companion-peek {
+  position: absolute !important;
+  top: 14px !important;
+  right: -215px !important;
+  z-index: 12 !important;
+  width: 210px !important;
+  height: 190px !important;
+  min-height: 0 !important;
+  pointer-events: none !important;
+  overflow: visible !important;
+}
+
+/* The actual hover/focus hitbox. Keep this small enough that it doesn't cover the questions. */
+.qatalyst-app-shell-v9 .bug-qat-companion.bug-qat-companion-peek {
+  pointer-events: auto !important;
+}
+
+/* Idle state: just the ear, peeking from behind the right edge. */
+.qatalyst-app-shell-v9 .bug-qat-peek-ear {
+  position: absolute !important;
+  top: 14px !important;
+  right: 50px !important;
+  width: 118px !important;
+  height: auto !important;
+  object-fit: contain !important;
+  opacity: 1 !important;
+  z-index: 4 !important;
+  transform-origin: 50% 85% !important;
+  filter:
+    drop-shadow(0 16px 20px rgba(2, 6, 23, 0.58))
+    drop-shadow(0 0 14px rgba(248, 113, 113, 0.16)) !important;
+}
+
+/* Hover reveal: full QAt slides in from the right, but does not affect layout. */
+.qatalyst-app-shell-v9 .bug-qat-peek-reveal {
+  position: absolute !important;
+  top: -16px !important;
+  right: -8px !important;
+  width: 275px !important;
+  height: 275px !important;
+  opacity: 0 !important;
+  transform: translateX(42px) rotate(2deg) scale(0.96) !important;
+  transform-origin: right center !important;
+  transition:
+    opacity 170ms ease,
+    transform 220ms ease !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-peek-mascot {
+  display: block !important;
+  width: 275px !important;
+  max-width: none !important;
+  height: auto !important;
+  object-fit: contain !important;
+  filter:
+    drop-shadow(0 22px 26px rgba(2, 6, 23, 0.56))
+    drop-shadow(0 0 16px rgba(248, 113, 113, 0.14)) !important;
+}
+
+/* Speech bubble: normal readable card, opening leftward into the panel. */
+.qatalyst-app-shell-v9 .bug-qat-companion-bubble {
+  position: absolute !important;
+  top: 8px !important;
+  right: 145px !important;
+  width: 260px !important;
+  max-width: 260px !important;
+  padding: 12px 14px !important;
+  border: 1px solid rgba(96, 165, 250, 0.3) !important;
+  border-radius: 16px !important;
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.97), rgba(30, 41, 59, 0.86)),
+    rgba(15, 23, 42, 0.94) !important;
+  box-shadow: 0 18px 34px rgba(2, 6, 23, 0.36) !important;
+  opacity: 0 !important;
+  transform: translateX(12px) scale(0.98) !important;
+  transform-origin: right center !important;
+  transition:
+    opacity 160ms ease,
+    transform 200ms ease !important;
+  pointer-events: none !important;
+  z-index: 7 !important;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion-bubble::before {
+  content: "" !important;
+  position: absolute !important;
+  right: -7px !important;
+  top: 25px !important;
+  width: 12px !important;
+  height: 12px !important;
+  border-right: 1px solid rgba(96, 165, 250, 0.3) !important;
+  border-top: 1px solid rgba(96, 165, 250, 0.3) !important;
+  background: rgba(15, 23, 42, 0.95) !important;
+  transform: rotate(45deg) !important;
+}
+
+/* Reveal on hover/focus. */
+.qatalyst-app-shell-v9 .bug-qat-companion:hover .bug-qat-peek-reveal,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-visible .bug-qat-peek-reveal,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-within .bug-qat-peek-reveal {
+  opacity: 1 !important;
+  transform: translateX(0) rotate(0deg) scale(1) !important;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion:hover .bug-qat-companion-bubble,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-visible .bug-qat-companion-bubble,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-within .bug-qat-companion-bubble {
+  opacity: 1 !important;
+  transform: translateX(0) scale(1) !important;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion:hover .bug-qat-peek-ear,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-visible .bug-qat-peek-ear,
+.qatalyst-app-shell-v9 .bug-qat-companion:focus-within .bug-qat-peek-ear {
+  opacity: 0 !important;
+}
+
+/* Bigger, subtle ear motion. */
+.qatalyst-app-shell-v9 .bug-qat-companion.curious .bug-qat-peek-ear {
+  animation: qat-ear-peek-curious-large 5.2s ease-in-out infinite !important;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion.thinking .bug-qat-peek-ear {
+  animation: qat-ear-peek-thinking-large 5.8s ease-in-out infinite !important;
+}
+
+.qatalyst-app-shell-v9 .bug-qat-companion.resolved .bug-qat-peek-ear {
+  animation: qat-ear-peek-resolved-large 6.2s ease-in-out infinite !important;
+}
+
+@keyframes qat-ear-peek-curious-large {
+  0%, 72%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  76% {
+    transform: translateY(-4px) rotate(-5deg);
+  }
+  80% {
+    transform: translateY(0) rotate(3deg);
+  }
+  84% {
+    transform: translateY(-2px) rotate(0deg);
+  }
+}
+
+@keyframes qat-ear-peek-thinking-large {
+  0%, 78%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  82% {
+    transform: translateY(-3px) rotate(-3deg);
+  }
+  86% {
+    transform: translateY(0) rotate(2deg);
+  }
+}
+
+@keyframes qat-ear-peek-resolved-large {
+  0%, 100% {
+    transform: translateY(0);
+    filter:
+      drop-shadow(0 16px 20px rgba(2, 6, 23, 0.58))
+      drop-shadow(0 0 14px rgba(34, 197, 94, 0.16));
+  }
+  50% {
+    transform: translateY(-2px);
+    filter:
+      drop-shadow(0 17px 22px rgba(2, 6, 23, 0.6))
+      drop-shadow(0 0 18px rgba(34, 197, 94, 0.22));
+  }
+}
+
+/* Keep mobile from exploding sideways. */
+@media (max-width: 980px) {
+  .qatalyst-app-shell-v9 .bug-qat-peek-anchor,
+  .qatalyst-app-shell-v9 .bug-qat-companion.bug-qat-companion-peek {
+    position: absolute !important;
+    top: 12px !important;
+    right: -44px !important;
+    width: 160px !important;
+    height: 150px !important;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-peek-ear {
+    right: 34px !important;
+    width: 86px !important;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-peek-reveal {
+    right: -16px !important;
+    width: 210px !important;
+    height: 210px !important;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-peek-mascot {
+    width: 210px !important;
+  }
+
+  .qatalyst-app-shell-v9 .bug-qat-companion-bubble {
+    right: 110px !important;
+    width: 220px !important;
+    max-width: 220px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qatalyst-app-shell-v9 .bug-qat-peek-ear,
+  .qatalyst-app-shell-v9 .bug-qat-peek-reveal,
+  .qatalyst-app-shell-v9 .bug-qat-companion-bubble {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* QAS-174 QAt Companion Panel foundation
+   Desktop-first right-side helper window. No FTUE dependency.
+   Visibility fix: the first pass only rendered at 1420px+, which made it look like nothing changed on normal desktops. */
+.app-workspace-with-qat {
+  position: relative;
+}
+
+.qat-companion-panel {
+  display: none;
+}
+
+@media (min-width: 1180px) {
+  .qat-companion-panel {
+    position: fixed;
+    top: 156px;
+    right: 18px;
+    z-index: 9999;
+    display: block;
+    width: 260px;
+    pointer-events: none;
+  }
+
+  .qat-companion-window {
+    pointer-events: auto;
+    overflow: hidden;
+    border: 1px solid rgba(248, 113, 113, 0.24);
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at top right, rgba(220, 38, 38, 0.18), transparent 38%),
+      linear-gradient(180deg, rgba(18, 18, 18, 0.96), rgba(8, 8, 8, 0.94));
+    box-shadow:
+      0 24px 70px rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .qat-companion-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 14px 0;
+  }
+
+  .qat-companion-topline span {
+    color: #fca5a5;
+    font-size: 0.68rem;
+    font-weight: 950;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .qat-companion-toggle {
+    min-height: 26px;
+    padding: 0 9px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.055);
+    color: rgba(248, 250, 252, 0.74);
+    font-size: 0.66rem;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: default;
+  }
+
+  .qat-companion-body {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    padding: 14px;
+  }
+
+  .qat-companion-mascot-frame {
+    display: grid;
+    place-items: center;
+    width: 88px;
+    height: 88px;
+    border: 1px solid rgba(248, 113, 113, 0.18);
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at 50% 18%, rgba(248, 113, 113, 0.16), transparent 48%),
+      rgba(0, 0, 0, 0.28);
+  }
+
+  .qat-companion-mascot-frame img {
+    display: block;
+    width: 76px;
+    max-width: none;
+    height: auto;
+    object-fit: contain;
+    filter:
+      drop-shadow(0 12px 18px rgba(0, 0, 0, 0.46))
+      drop-shadow(0 0 14px rgba(248, 113, 113, 0.12));
+  }
+
+  .qat-companion-copy h3 {
+    margin: 0 0 7px;
+    color: #ffffff;
+    font-size: 1rem;
+    line-height: 1.1;
+  }
+
+  .qat-companion-copy p {
+    margin: 0;
+    color: rgba(244, 244, 245, 0.78);
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .qat-companion-tip {
+    display: grid;
+    gap: 6px;
+    margin: 0 14px 14px;
+    padding: 13px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .qat-companion-tip strong {
+    color: #fecaca;
+    font-size: 0.7rem;
+    font-weight: 950;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .qat-companion-tip span {
+    color: rgba(226, 232, 240, 0.78);
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+}
+
+
+/* QAS-174 render-proof debug marker
+   TEMPORARY: remove after confirming QAtCompanionPanel is mounted in the active app route. */
+.qat-companion-debug-marker {
+  position: fixed !important;
+  top: 18px !important;
+  left: 18px !important;
+  z-index: 2147483647 !important;
+  display: block !important;
+  width: auto !important;
+  min-width: 240px !important;
+  max-width: calc(100vw - 36px) !important;
+  min-height: 48px !important;
+  padding: 14px 18px !important;
+  border: 3px solid #ffffff !important;
+  border-radius: 12px !important;
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 1000 !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.08em !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+  box-shadow:
+    0 0 0 4px rgba(220, 38, 38, 0.55),
+    0 18px 60px rgba(0, 0, 0, 0.55) !important;
+  pointer-events: none !important;
+}
+
+.qat-companion-panel {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: fixed !important;
+  right: 24px !important;
+  bottom: 24px !important;
+  z-index: 2147483646 !important;
+  width: min(360px, calc(100vw - 48px)) !important;
+  pointer-events: auto !important;
+}
+
+.qat-companion-window {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
