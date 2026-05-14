@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { apiError, apiOk, getErrorMessage, readJsonBody } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import {
   listProjectSources,
   normalizeProjectSourcePayload,
@@ -28,6 +29,22 @@ async function getSignedInUserId(): Promise<string | null> {
   return session?.user?.id ?? null;
 }
 
+async function userOwnsProject(userId: string, projectId: string): Promise<boolean> {
+  if (!userId || !projectId) return false;
+
+  const project = await prisma.qAProject.findFirst({
+    where: {
+      id: projectId,
+      userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return Boolean(project);
+}
+
 export async function GET(req: Request, context: RouteContext): Promise<Response> {
   try {
     const userId = await getSignedInUserId();
@@ -41,6 +58,15 @@ export async function GET(req: Request, context: RouteContext): Promise<Response
     }
 
     const { id: projectId } = await context.params;
+
+    if (!(await userOwnsProject(userId, projectId))) {
+      return apiError(req, {
+        status: 404,
+        code: "NOT_FOUND",
+        message: "Project not found.",
+      });
+    }
+
     const sources = await listProjectSources(userId, projectId);
 
     return apiOk(req, { sources });
