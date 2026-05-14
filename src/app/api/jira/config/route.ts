@@ -7,6 +7,7 @@ import {
   normalizeJiraConfigPayload,
   saveUserJiraConfig,
 } from "@/lib/jira-config";
+import { recordSecurityAuditEvent, SECURITY_EVENTS } from "@/lib/security-audit";
 import { durationSince, nowMs, serverLog } from "@/lib/server-log";
 
 export const runtime = "nodejs";
@@ -52,6 +53,17 @@ export async function GET(req: Request): Promise<Response> {
     }
 
     const status = await getUserJiraConfigStatus(userId);
+
+    await recordSecurityAuditEvent({
+      userId,
+      type: SECURITY_EVENTS.JIRA_CONFIG_VIEWED,
+      meta: {
+        route,
+        configured: status.configured,
+        hasToken: status.tokenHealth.hasSavedToken,
+        projectKey: status.config?.projectKey ?? null,
+      },
+    });
 
     serverLog.info("Jira config status loaded.", {
       route,
@@ -107,6 +119,16 @@ export async function POST(req: Request): Promise<Response> {
     const result = await saveUserJiraConfig(userId, payload);
 
     if (!result.ok) {
+      await recordSecurityAuditEvent({
+        userId,
+        type: SECURITY_EVENTS.JIRA_CONFIG_SAVE_BLOCKED,
+        meta: {
+          route,
+          projectKey: payload.projectKey || null,
+          errorCount: result.errors.length,
+        },
+      });
+
       serverLog.warn("Jira config validation failed.", {
         route,
         userId,
@@ -124,6 +146,18 @@ export async function POST(req: Request): Promise<Response> {
         details: { errors: result.errors },
       });
     }
+
+    await recordSecurityAuditEvent({
+      userId,
+      type: SECURITY_EVENTS.JIRA_CONFIG_SAVED,
+      meta: {
+        route,
+        projectKey: result.config.projectKey,
+        defaultIssueType: result.config.defaultIssueType,
+        defaultBugIssueType: result.config.defaultBugIssueType,
+        hasToken: result.config.hasJiraApiToken,
+      },
+    });
 
     serverLog.info("Jira config saved.", {
       route,
@@ -189,6 +223,14 @@ export async function DELETE(req: Request): Promise<Response> {
         message: result.error,
       });
     }
+
+    await recordSecurityAuditEvent({
+      userId,
+      type: SECURITY_EVENTS.JIRA_CONFIG_DELETED,
+      meta: {
+        route,
+      },
+    });
 
     serverLog.info("Jira config deleted.", {
       route,
