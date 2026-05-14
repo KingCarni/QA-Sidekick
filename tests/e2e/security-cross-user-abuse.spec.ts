@@ -1,7 +1,7 @@
 import { expect, test, type APIResponse } from "@playwright/test";
 import { loginAs } from "../support/auth";
 
-type BlockedStatus = 401 | 403 | 404;
+type BlockedStatus = 400 | 401 | 403 | 404;
 
 const STANDARD_OWNED_PROJECT_ID = process.env.QATALYST_E2E_STANDARD_PROJECT_ID;
 const STANDARD_OWNED_SOURCE_ID = process.env.QATALYST_E2E_STANDARD_SOURCE_ID;
