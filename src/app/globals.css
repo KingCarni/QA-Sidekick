@@ -34104,8 +34104,7 @@ body:has(.qatalyst-brain-shell)::after {
 }
 
 /* QAS-174 QAt Companion Panel foundation
-   Desktop-first right-side helper window. No FTUE dependency.
-   Visibility fix: the first pass only rendered at 1420px+, which made it look like nothing changed on normal desktops. */
+   Desktop-first right-side helper window. No FTUE dependency. */
 .app-workspace-with-qat {
   position: relative;
 }
@@ -34114,14 +34113,20 @@ body:has(.qatalyst-brain-shell)::after {
   display: none;
 }
 
-@media (min-width: 1180px) {
+@media (min-width: 1420px) {
+  main:has(.app-workspace-with-qat) {
+    width: min(1180px, calc(100% - 360px));
+    margin-left: max(32px, calc((100vw - 1540px) / 2));
+    margin-right: 0;
+  }
+
   .qat-companion-panel {
     position: fixed;
-    top: 156px;
-    right: 18px;
-    z-index: 9999;
+    top: 228px;
+    right: max(28px, calc((100vw - 1540px) / 2));
+    z-index: 20;
     display: block;
-    width: 260px;
+    width: 286px;
     pointer-events: none;
   }
 
@@ -34238,51 +34243,221 @@ body:has(.qatalyst-brain-shell)::after {
   }
 }
 
+/* QAS-174: Bug Writer report header and actions stable repair */
+.qatalyst-app-shell-v9 .bug-report-wrap > .report-header {
+  display: grid !important;
+  grid-template-columns: minmax(260px, 1fr) minmax(430px, 500px) !important;
+  align-items: center !important;
+  gap: 34px !important;
+  margin-bottom: 32px !important;
+  padding: 40px !important;
+  border: 1px solid rgba(248, 113, 113, 0.22) !important;
+  border-radius: 26px !important;
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.13), transparent 40%),
+    linear-gradient(135deg, rgba(15, 16, 28, 0.96), rgba(20, 8, 13, 0.94)) !important;
+}
 
-/* QAS-174 render-proof debug marker
-   TEMPORARY: remove after confirming QAtCompanionPanel is mounted in the active app route. */
-.qat-companion-debug-marker {
-  position: fixed !important;
-  top: 18px !important;
-  left: 18px !important;
-  z-index: 2147483647 !important;
-  display: block !important;
-  width: auto !important;
-  min-width: 240px !important;
-  max-width: calc(100vw - 36px) !important;
-  min-height: 48px !important;
-  padding: 14px 18px !important;
-  border: 3px solid #ffffff !important;
-  border-radius: 12px !important;
-  background: #dc2626 !important;
-  color: #ffffff !important;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-  font-size: 16px !important;
-  font-weight: 1000 !important;
-  line-height: 1.1 !important;
-  letter-spacing: 0.08em !important;
+.qatalyst-app-shell-v9 .bug-report-heading-copy h2 {
+  max-width: 360px !important;
+  margin: 0 !important;
+  font-size: clamp(2.1rem, 3vw, 3.15rem) !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.065em !important;
+}
+
+.qatalyst-app-shell-v9 .bug-report-subtitle {
+  max-width: 370px !important;
+  margin: 24px 0 0 !important;
+  color: var(--muted-2) !important;
+  font-size: 1rem !important;
+  line-height: 1.55 !important;
+}
+
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 {
+  display: grid !important;
+  grid-template-columns: repeat(3, 148px) !important;
+  gap: 14px !important;
+  justify-content: end !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  max-width: 500px !important;
+  margin-left: auto !important;
+}
+
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 > *,
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-report-row,
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-bug-collection-button-only {
+  width: 148px !important;
+  min-width: 148px !important;
+  max-width: 148px !important;
+  min-height: 50px !important;
+  margin: 0 !important;
+}
+
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 button,
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 .copy-all-button,
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 .secondary-action-button,
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 .edit-report-button,
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-report-button,
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-bug-collection-button,
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 .jira-create-issue-button {
+  width: 148px !important;
+  min-width: 148px !important;
+  max-width: 148px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  padding: 0 10px !important;
+  border-radius: 14px !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   text-align: center !important;
-  text-transform: uppercase !important;
-  box-shadow:
-    0 0 0 4px rgba(220, 38, 38, 0.55),
-    0 18px 60px rgba(0, 0, 0, 0.55) !important;
-  pointer-events: none !important;
+  white-space: normal !important;
+  line-height: 1.08 !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
 }
 
-.qat-companion-panel {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-report-status-card,
+.qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-bug-collection-message {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 980px) {
+  .qatalyst-app-shell-v9 .bug-report-wrap > .report-header {
+    grid-template-columns: 1fr !important;
+    padding: 28px !important;
+  }
+
+  .qatalyst-app-shell-v9 .bug-action-grid-3x2 {
+    grid-template-columns: 1fr !important;
+    max-width: none !important;
+    justify-content: stretch !important;
+  }
+
+  .qatalyst-app-shell-v9 .bug-action-grid-3x2 > *,
+  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-report-row,
+  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-bug-collection-button-only,
+  .qatalyst-app-shell-v9 .bug-action-grid-3x2 button,
+  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .copy-all-button,
+  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .secondary-action-button,
+  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .edit-report-button,
+  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-report-button,
+  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-bug-collection-button,
+  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .jira-create-issue-button {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+}
+
+/* QAS-174: QAt Companion gutter-only positioning
+   Only moves the companion back into the right gutter. */
+@media (min-width: 1280px) {
+  .qatalyst-app-shell-v9 {
+    position: relative;
+    max-width: min(100vw - 48px, 1500px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .qatalyst-app-shell-v9 .qat-companion-panel {
+    position: fixed !important;
+    top: 180px !important;
+    right: max(24px, calc((100vw - 1500px) / 2 + 24px)) !important;
+    left: auto !important;
+    width: 270px !important;
+    max-width: 270px !important;
+    z-index: 8 !important;
+    pointer-events: auto;
+  }
+
+  .qatalyst-app-shell-v9 .qat-companion-window {
+    width: 100% !important;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1520px) {
+  .qatalyst-app-shell-v9 .qat-companion-panel {
+    right: 18px !important;
+    width: 245px !important;
+    max-width: 245px !important;
+  }
+}
+
+@media (max-width: 1279px) {
+  .qatalyst-app-shell-v9 .qat-companion-panel {
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin-top: 18px !important;
+  }
+}
+
+/* QAS-174: QAt Companion right gutter placement only - rebuilt from uploaded file */
+@media (min-width: 1280px) {
+  .qatalyst-app-shell-v9 {
+    overflow: visible !important;
+  }
+
+  .qatalyst-app-shell-v9 .app-workspace,
+  .qatalyst-app-shell-v9 .workspace,
+  .qatalyst-app-shell-v9 .output-panel,
+  .qatalyst-app-shell-v9 .report-wrap,
+  .qatalyst-app-shell-v9 .bug-report-wrap {
+    overflow: visible !important;
+  }
+
+  .qatalyst-app-shell-v9 .qat-companion-panel {
+    position: fixed !important;
+    top: 176px !important;
+    right: max(32px, calc((100vw - 1180px) / 2 - 390px)) !important;
+    left: auto !important;
+    width: 320px !important;
+    max-width: 320px !important;
+    transform: none !important;
+    z-index: 20 !important;
+    pointer-events: auto !important;
+  }
+
+  .qatalyst-app-shell-v9 .qat-companion-window {
+    width: 100% !important;
+  }
+}
+
+@media (min-width: 1680px) {
+  .qatalyst-app-shell-v9 .qat-companion-panel {
+    right: max(48px, calc((100vw - 1180px) / 2 - 430px)) !important;
+  }
+}
+
+@media (max-width: 1279px) {
+  .qatalyst-app-shell-v9 .qat-companion-panel {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin-top: 20px !important;
+    transform: none !important;
+  }
+}
+/* QAS-174: manual QAt Companion position control */
+.qatalyst-app-shell-v9 .qat-companion-panel,
+.qatalyst-app-shell-v9 .qat-companion-card,
+.qatalyst-app-shell-v9 .qat-triage-panel,
+.qatalyst-app-shell-v9 .qat-panel {
   position: fixed !important;
+  top: 160px !important;
   right: 24px !important;
-  bottom: 24px !important;
-  z-index: 2147483646 !important;
-  width: min(360px, calc(100vw - 48px)) !important;
-  pointer-events: auto !important;
-}
-
-.qat-companion-window {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+  z-index: 20 !important;
 }

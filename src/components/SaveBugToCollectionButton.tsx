@@ -28,9 +28,10 @@ function getBugTitle(structuredData: unknown): string {
   }
 
   const record = structuredData as Record<string, unknown>;
-  const bugReport = typeof record.bugReport === "object" && record.bugReport !== null && !Array.isArray(record.bugReport)
-    ? (record.bugReport as Record<string, unknown>)
-    : record;
+  const bugReport =
+    typeof record.bugReport === "object" && record.bugReport !== null && !Array.isArray(record.bugReport)
+      ? (record.bugReport as Record<string, unknown>)
+      : record;
 
   return String(bugReport.title || bugReport.summary || "Saved Bug Report")
     .trim()
@@ -92,19 +93,19 @@ export default function SaveBugToCollectionButton({
   if (!markdown.trim()) return null;
 
   return (
-    <section className="save-bug-collection-control" data-testid="save-bug-collection-control">
-      <div>
-        <p className="report-kicker">Bug Collection</p>
-        <strong>Save this bug report as a tracked defect</strong>
-        <span>Bug Collection keeps generated bug reports separate from reusable Project Source Vault memory.</span>
-      </div>
-
+    <div className="save-bug-collection-button-only" data-testid="save-bug-collection-control">
       <button className="save-bug-collection-button" disabled={!canSave} onClick={handleSave} type="button">
         {state === "saving" ? "Saving..." : "Save Bug to Collection"}
       </button>
 
       {message ? (
-        <p className={state === "error" ? "save-bug-collection-message save-bug-collection-message-error" : "save-bug-collection-message"}>
+        <p
+          className={
+            state === "error"
+              ? "save-bug-collection-message save-bug-collection-message-error"
+              : "save-bug-collection-message"
+          }
+        >
           {message}
         </p>
       ) : null}
@@ -114,6 +115,6 @@ export default function SaveBugToCollectionButton({
           Select or create a project before saving bug reports.
         </p>
       ) : null}
-    </section>
+    </div>
   );
 }
