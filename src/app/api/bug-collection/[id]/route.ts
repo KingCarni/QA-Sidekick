@@ -7,6 +7,7 @@ import {
   saveBugCollectionItem,
   updateBugCollectionStatus,
 } from "@/lib/bug-collection";
+import { recordSecurityAuditEvent, SECURITY_EVENTS } from "@/lib/security-audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,6 +27,8 @@ async function getSignedInUserId(): Promise<string | null> {
 }
 
 export async function PATCH(req: Request, context: RouteContext): Promise<Response> {
+  const route = "/api/bug-collection/[id]";
+
   try {
     const userId = await getSignedInUserId();
 
@@ -44,6 +47,17 @@ export async function PATCH(req: Request, context: RouteContext): Promise<Respon
       const result = await updateBugCollectionStatus(userId, bugId, body.status);
 
       if (!result.ok) {
+        await recordSecurityAuditEvent({
+          userId,
+          type: SECURITY_EVENTS.BUG_COLLECTION_ACCESS_BLOCKED,
+          meta: {
+            route,
+            bugId,
+            action: "status_update",
+            reason: result.error.includes("not found") ? "bug_not_owned_or_missing" : "validation_failed",
+          },
+        });
+
         return apiError(req, {
           status: result.error.includes("not found") ? 404 : 400,
           code: result.error.includes("not found") ? "NOT_FOUND" : "VALIDATION_ERROR",
@@ -60,6 +74,19 @@ export async function PATCH(req: Request, context: RouteContext): Promise<Respon
 
     if (!result.ok) {
       const notFound = result.errors.includes("Project not found.") || result.errors.includes("Bug collection item not found.");
+
+      await recordSecurityAuditEvent({
+        userId,
+        type: SECURITY_EVENTS.BUG_COLLECTION_ACCESS_BLOCKED,
+        meta: {
+          route,
+          bugId,
+          projectId,
+          action: "update",
+          reason: notFound ? "bug_or_project_not_owned_or_missing" : "validation_failed",
+          errorCount: result.errors.length,
+        },
+      });
 
       return apiError(req, {
         status: notFound ? 404 : 400,
@@ -80,6 +107,8 @@ export async function PATCH(req: Request, context: RouteContext): Promise<Respon
 }
 
 export async function DELETE(req: Request, context: RouteContext): Promise<Response> {
+  const route = "/api/bug-collection/[id]";
+
   try {
     const userId = await getSignedInUserId();
 
@@ -95,12 +124,32 @@ export async function DELETE(req: Request, context: RouteContext): Promise<Respo
     const result = await deleteBugCollectionItem(userId, bugId);
 
     if (!result.ok) {
+      await recordSecurityAuditEvent({
+        userId,
+        type: SECURITY_EVENTS.BUG_COLLECTION_ACCESS_BLOCKED,
+        meta: {
+          route,
+          bugId,
+          action: "delete",
+          reason: result.error.includes("not found") ? "bug_not_owned_or_missing" : "validation_failed",
+        },
+      });
+
       return apiError(req, {
         status: result.error.includes("not found") ? 404 : 400,
         code: result.error.includes("not found") ? "NOT_FOUND" : "VALIDATION_ERROR",
         message: result.error,
       });
     }
+
+    await recordSecurityAuditEvent({
+      userId,
+      type: SECURITY_EVENTS.BUG_COLLECTION_DELETED,
+      meta: {
+        route,
+        bugId,
+      },
+    });
 
     return apiOk(req, { deleted: true });
   } catch (error) {
