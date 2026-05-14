@@ -1155,50 +1155,97 @@ async function copyText(text: string) {
 }
 
 
-function QAtCompanionPanel({ activeTool }: { activeTool: ToolId }) {
-  const companionCopy: Record<ToolId, { eyebrow: string; title: string; body: string; tip: string }> = {
+function QAtCompanionPanel({
+  activeTool,
+  hasInput,
+  hasOutput,
+}: {
+  activeTool: ToolId;
+  hasInput: boolean;
+  hasOutput: boolean;
+}) {
+  const workflowState = hasOutput ? "output" : hasInput ? "input" : "empty";
+
+  const companionCopy: Record<
+    ToolId,
+    {
+      eyebrow: string;
+      title: string;
+      body: Record<typeof workflowState, string>;
+      tip: string;
+      actions: string[];
+    }
+  > = {
     tests: {
       eyebrow: "Coverage check",
       title: "QAt Companion",
-      body: "I’m watching for missing paths, weak assertions, unclear setup, and coverage gaps.",
+      body: {
+        empty: "Paste a ticket, user story, or acceptance criteria and I’ll watch for missing coverage.",
+        input: "Input detected. Before generating, check for roles, edge cases, data states, and acceptance criteria.",
+        output: "Review the generated cases for weak assertions, missing negative paths, and unclear setup.",
+      },
       tip: "Strong test cases should be executable, observable, and specific enough for QA or dev handoff.",
+      actions: ["Find gaps", "Suggest edge cases", "Check automation"],
     },
     bug: {
       eyebrow: "Bug triage",
       title: "QAt Companion",
-      body: "I’m watching the follow-up gaps. Answer these to tighten the Jira handoff before re-improving.",
+      body: {
+        empty: "Paste rough bug notes and I’ll help turn them into a triage-ready defect.",
+        input: "Input detected. Make sure repro steps, expected vs actual, environment, evidence, and impact are covered.",
+        output: "Bug report generated. Check whether it is clear enough for Jira triage without a QA follow-up loop.",
+      },
       tip: "Best next step: add repro details, expected vs actual behavior, environment, evidence, and impact.",
+      actions: ["Find missing info", "Tighten repro", "Check Jira readiness"],
     },
     risk: {
       eyebrow: "Risk radar",
       title: "QAt Companion",
-      body: "I’m looking for ambiguity, regression impact, auth/data risks, integration concerns, and unclear owners.",
+      body: {
+        empty: "Paste a ticket or requirements doc and I’ll look for release risk.",
+        input: "Input detected. I’m looking for ambiguity, regression impact, auth/data risks, integrations, and unclear owners.",
+        output: "Risk review generated. Use it to decide what QA should test first and what needs team follow-up.",
+      },
       tip: "A useful risk review should tell QA what to test next, not just list possible problems.",
+      actions: ["Find blockers", "Check release risk", "Suggest follow-ups"],
     },
     improve: {
       eyebrow: "Test upgrade",
       title: "QAt Companion",
-      body: "I’m checking whether this test has clear setup, strong assertions, missing data, and automation potential.",
+      body: {
+        empty: "Paste a weak test case or checklist and I’ll help strengthen it.",
+        input: "Input detected. I’m checking setup, assertions, missing data, expected results, and automation potential.",
+        output: "Improved test generated. Check that it is still truthful, executable, and not over-scoped.",
+      },
       tip: "Weak tests usually fail because the expected result is vague or the setup is not reproducible.",
+      actions: ["Strengthen assertions", "Find missing setup", "Check automation"],
     },
     feature: {
       eyebrow: "Feature shaping",
       title: "QAt Companion",
-      body: "I’m watching for missing acceptance criteria, edge cases, user roles, state changes, and release risks.",
+      body: {
+        empty: "Describe the feature idea and I’ll help shape it into QA-ready product work.",
+        input: "Input detected. I’m watching for missing acceptance criteria, edge cases, user roles, states, and release risks.",
+        output: "Feature brief generated. Review it for unanswered product decisions before turning it into QA work.",
+      },
       tip: "The clearer the feature rules are here, the stronger every downstream QA artifact becomes.",
+      actions: ["Find open questions", "Draft acceptance criteria", "Flag QA risks"],
     },
   };
 
   const copy = companionCopy[activeTool];
 
   return (
-    <aside className={`qat-companion-panel qat-companion-panel-${activeTool}`} aria-label="QAt Companion">
+    <aside
+      className={`qat-companion-panel qat-companion-panel-${activeTool} qat-companion-state-${workflowState}`}
+      aria-label="QAt Companion"
+    >
       <div className="qat-companion-window">
         <div className="qat-companion-topline">
           <span>{copy.eyebrow}</span>
-          <button className="qat-companion-toggle" type="button" aria-label="QAt Companion toggle placeholder">
-            Soon
-          </button>
+          <span className="qat-companion-state-pill">
+            {workflowState === "output" ? "Reviewing output" : workflowState === "input" ? "Input detected" : "Waiting"}
+          </span>
         </div>
 
         <div className="qat-companion-body">
@@ -1208,8 +1255,16 @@ function QAtCompanionPanel({ activeTool }: { activeTool: ToolId }) {
 
           <div className="qat-companion-copy">
             <h3>{copy.title}</h3>
-            <p>{copy.body}</p>
+            <p>{copy.body[workflowState]}</p>
           </div>
+        </div>
+
+        <div className="qat-companion-actions" aria-label="Suggested QAt actions">
+          {copy.actions.map((action) => (
+            <button key={action} type="button">
+              {action}
+            </button>
+          ))}
         </div>
 
         <div className="qat-companion-tip">
@@ -2091,44 +2146,56 @@ function BugReportCards({
 
   return (
     <div className="report-wrap bug-report-wrap">
-      <div className="report-header">
+      <div className="report-header bug-report-header">
         <div className="bug-report-heading-copy">
-          <p className="report-kicker">Bug Writer Report</p>
           <h2>Jira-ready Bug Report</h2>
           <p className="bug-report-subtitle">
             Review the generated defect, tighten any missing context, then save it, track it, or send it straight into Jira.
           </p>
         </div>
-        <div className="bug-action-grid-3x2">
-          <button className="copy-all-button" type="button" onClick={handleCopy}>
-            {copied ? "Copied" : "Copy Bug Report"}
-          </button>
-          <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
-            {exported ? "Exported" : "Export MD"}
-          </button>
-          <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
-            {isEditingMarkdown ? "Close Editor" : "Edit Report"}
-          </button>
-          <SaveReportControl
-            saveReportStatus={saveReportStatus}
-            saveReportMessage={saveReportMessage}
-            savedReportId={savedReportId}
-            onSaveReport={() => onSaveReport(evidenceAwareBugMarkdown)}
-          />
-          <SaveBugToCollectionButton
-            activeProject={activeProject}
-            markdown={evidenceAwareBugMarkdown}
-            structuredData={{ bugReport: editableBugReport }}
-            sourceInput={sourceInput}
-          />
-          <JiraCreateIssueButton
-            reportType="bug"
-            markdown={evidenceAwareBugMarkdown}
-            sourceInput={sourceInput}
-            structuredData={editableBugReport}
-            evidenceFiles={bugEvidence.files}
-            logText={bugEvidence.logText}
-          />
+        <div className="bug-handoff-panel bug-handoff-panel-structured">
+          <div className="bug-utility-actions">
+            <button className="copy-all-button" type="button" onClick={handleCopy}>
+              {copied ? "Copied" : "Copy Bug Report"}
+            </button>
+            <button className="copy-all-button secondary-action-button" type="button" onClick={handleExportMarkdown}>
+              {exported ? "Exported" : "Export Markdown"}
+            </button>
+            <button className="copy-all-button edit-report-button" type="button" onClick={handleToggleEditMarkdown}>
+              {isEditingMarkdown ? "Close Editor" : "Edit Report"}
+            </button>
+          </div>
+
+          <div className="bug-delivery-panel bug-delivery-panel-compact">
+            <div className="bug-delivery-action-cell bug-save-report-slot">
+              <SaveReportControl
+                saveReportStatus={saveReportStatus}
+                saveReportMessage={saveReportMessage}
+                savedReportId={savedReportId}
+                onSaveReport={() => onSaveReport(evidenceAwareBugMarkdown)}
+              />
+            </div>
+
+            <div className="bug-delivery-action-cell">
+              <SaveBugToCollectionButton
+                activeProject={activeProject}
+                markdown={evidenceAwareBugMarkdown}
+                structuredData={{ bugReport: editableBugReport }}
+                sourceInput={sourceInput}
+              />
+            </div>
+
+            <div className="bug-delivery-action-cell">
+              <JiraCreateIssueButton
+                reportType="bug"
+                markdown={evidenceAwareBugMarkdown}
+                sourceInput={sourceInput}
+                structuredData={editableBugReport}
+                evidenceFiles={bugEvidence.files}
+                logText={bugEvidence.logText}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2139,11 +2206,9 @@ function BugReportCards({
       ) : null}
 
       <section className="bug-readiness-card">
-        <p className="report-kicker">Bug Report Readiness</p>
-        <h3>Ready for triage</h3>
+        <h3>Ready for Jira triage</h3>
         <p>
-          This bug report has enough structure to create a Jira issue. Add screenshots, logs, device details,
-          build/version, and repro rate when available.
+          This report is structured for developer review with a clear summary, environment, repro steps, expected and actual results, impact, and triage notes. Add screenshots, logs, device details, build/version, and repro rate when available to make the defect even stronger.
         </p>
       </section>
 
@@ -4350,7 +4415,7 @@ export default function Home() {
           });
         }}
       />
-          <QAtCompanionPanel activeTool={activeTool} />
+          <QAtCompanionPanel activeTool={activeTool} hasInput={Boolean(input.trim())} hasOutput={Boolean(output.trim())} />
 </main>
   );
 }
