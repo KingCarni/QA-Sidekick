@@ -4,6 +4,7 @@ import {
   type ProjectContextInput,
   type ProjectContextPayload,
 } from "@/lib/project-context-injection";
+import { recordSecurityAuditEvent, SECURITY_EVENTS } from "@/lib/security-audit";
 
 type ProjectContextRequestShape = {
   projectId?: unknown;
@@ -42,9 +43,10 @@ function getRequestedSourceIds(input: ProjectContextRequestShape): string[] {
 export async function buildAuthorizedProjectContextPayload(
   userId: string,
   input: ProjectContextRequestShape,
-  options: { maxCharacters?: number } = {}
+  options: { maxCharacters?: number; route?: string } = {}
 ): Promise<ProjectContextPayload> {
   const requestedProjectId = getRequestedProjectId(input);
+  const requestedSourceIds = getRequestedSourceIds(input);
 
   if (!userId || !requestedProjectId) {
     return buildProjectContextPayload({ maxCharacters: options.maxCharacters });
@@ -78,15 +80,41 @@ export async function buildAuthorizedProjectContextPayload(
   });
 
   if (!project) {
+    await recordSecurityAuditEvent({
+      userId,
+      type: SECURITY_EVENTS.AI_PROJECT_CONTEXT_BLOCKED,
+      meta: {
+        route: options.route ?? "unknown",
+        requestedProjectId,
+        requestedSourceCount: requestedSourceIds.length,
+        reason: "project_not_owned_or_missing",
+      },
+    });
+
     return buildProjectContextPayload({ maxCharacters: options.maxCharacters });
   }
 
-  const requestedSourceIds = getRequestedSourceIds(input);
   const requestedSourceSet = new Set(requestedSourceIds);
   const authorizedSources =
     requestedSourceIds.length > 0
       ? project.sources.filter((source) => requestedSourceSet.has(source.id))
       : project.sources;
+  const blockedSourceIds = requestedSourceIds.filter(
+    (sourceId) => !authorizedSources.some((source) => source.id === sourceId)
+  );
+
+  if (blockedSourceIds.length > 0) {
+    await recordSecurityAuditEvent({
+      userId,
+      type: SECURITY_EVENTS.AI_PROJECT_CONTEXT_BLOCKED,
+      meta: {
+        route: options.route ?? "unknown",
+        requestedProjectId,
+        blockedSourceCount: blockedSourceIds.length,
+        reason: "source_not_authorized_or_missing",
+      },
+    });
+  }
 
   const payloadInput: ProjectContextInput = {
     projectId: project.id,
@@ -106,7 +134,21 @@ export async function buildAuthorizedProjectContextPayload(
     maxCharacters: options.maxCharacters,
   };
 
-  return buildProjectContextPayload(payloadInput);
+  const payload = buildProjectContextPayload(payloadInput);
+
+  await recordSecurityAuditEvent({
+    userId,
+    type: SECURITY_EVENTS.AI_PROJECT_CONTEXT_USED,
+    meta: {
+      route: options.route ?? "unknown",
+      projectId: project.id,
+      projectContextUsed: payload.projectContextUsed,
+      sourceCount: authorizedSources.length,
+      requestedSourceCount: requestedSourceIds.length,
+    },
+  });
+
+  return payload;
 }
 
 export function serializeAuthorizedProjectContext(context: ProjectContextPayload) {
