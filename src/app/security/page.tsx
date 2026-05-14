@@ -29,11 +29,41 @@ const storedData = [
   "Basic account and credit ledger records needed to run the app",
 ];
 
+const doItems = [
+  "Validate access on the server before using saved project context.",
+  "Mask saved Jira and TestRail token fields in the UI.",
+  "Run cross-user abuse regression tests for core project-memory paths.",
+  "Keep generated QA output reviewable before it is saved, copied, exported, or synced.",
+];
+
+const dontItems = [
+  "Do not show saved integration tokens back in plaintext.",
+  "Do not trust browser-supplied project context as the source of truth.",
+  "Do not intentionally expose one user’s project memory to another user.",
+  "Do not recommend pasting passwords, API keys, or customer PII into source notes.",
+];
+
 const userControls = [
-  "Delete Project Brain / Source Vault entries that are no longer useful.",
-  "Delete saved QA reports and Bug Collection items.",
-  "Remove Jira and TestRail integration configuration.",
-  "Keep generated outputs as drafts until you explicitly copy, export, save, or sync them.",
+  {
+    title: "Manage Project Brain",
+    body: "Review or remove Project Brain / Source Vault entries that are no longer useful.",
+    href: "/brain",
+  },
+  {
+    title: "Review saved reports",
+    body: "Open and delete saved QA reports when they are no longer needed.",
+    href: "/reports",
+  },
+  {
+    title: "Manage integrations",
+    body: "Remove Jira or TestRail configuration and replace saved API keys when needed.",
+    href: "/jira/settings",
+  },
+  {
+    title: "Account settings",
+    body: "Check account state, credits, and access details tied to your signed-in user.",
+    href: "/account",
+  },
 ];
 
 const betaGuidance = [
@@ -78,6 +108,16 @@ export default function SecurityPage() {
         </div>
       </section>
 
+      <section className={styles.summaryPanel} aria-labelledby="security-summary-title">
+        <p className={styles.eyebrow}>Plain-English summary</p>
+        <h2 id="security-summary-title">Your project memory is private to your signed-in account.</h2>
+        <p>
+          QAtalyst validates access on the server before using saved context, reports, bug items,
+          or integration settings. During beta, avoid pasting secrets, production credentials, or
+          sensitive customer PII into tickets or source notes.
+        </p>
+      </section>
+
       <section className={styles.section} aria-labelledby="security-stores-title">
         <div className={styles.sectionHeader}>
           <p className={styles.eyebrow}>What QAtalyst stores</p>
@@ -116,25 +156,60 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      <section className={styles.splitSection} aria-labelledby="security-controls-title">
+      <section className={styles.splitSection} aria-labelledby="security-do-dont-title">
         <div className={styles.panel}>
+          <p className={styles.eyebrow}>What we do</p>
+          <h2 id="security-do-dont-title">Practical protections, not vague promises.</h2>
+          <ul className={styles.cleanList}>
+            {doItems.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+        <div className={styles.panel}>
+          <p className={styles.eyebrow}>What we do not do</p>
+          <h2>Clear boundaries for beta use.</h2>
+          <ul className={styles.warningList}>
+            {dontItems.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className={styles.section} aria-labelledby="security-controls-title">
+        <div className={styles.sectionHeader}>
           <p className={styles.eyebrow}>User controls</p>
           <h2 id="security-controls-title">You can remove project memory and integration settings.</h2>
-          <ul className={styles.cleanList}>
-            {userControls.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
+          <p>
+            These controls are intentionally close to the areas where the data is created and used.
+            Use them to clean up beta test data, remove old context, or disconnect external tools.
+          </p>
         </div>
-        <div className={styles.panel}>
+        <div className={styles.controlGrid}>
+          {userControls.map((item) => (
+            <Link className={styles.controlCard} href={item.href} key={item.title}>
+              <span>{item.title}</span>
+              <p>{item.body}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.section} aria-labelledby="security-beta-title">
+        <div className={styles.sectionHeader}>
           <p className={styles.eyebrow}>Beta safety guidance</p>
-          <h2>Be deliberate with secrets and customer data.</h2>
-          <ul className={styles.warningList}>
-            {betaGuidance.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
+          <h2 id="security-beta-title">Be deliberate with secrets and customer data.</h2>
+          <p>
+            QAtalyst is built for project QA context, not for storing live credentials or unnecessary
+            sensitive customer data. Use sanitized examples when testing confidential workflows.
+          </p>
         </div>
+        <ul className={styles.betaGrid}>
+          {betaGuidance.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
       </section>
 
       <section className={styles.section} aria-labelledby="security-checks-title">
