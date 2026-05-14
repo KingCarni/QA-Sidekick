@@ -123,6 +123,8 @@ const guardrails = [
   "Expose missing information instead of pretending every ticket is complete.",
   "Treat automation as starter skeletons and setup direction, not guaranteed finished tests.",
   "Keep AI output structured, inspectable, and grounded in the source material you provide.",
+  "Project memory is authorized server-side before it is used in AI workflows.",
+  "Jira and TestRail tokens are encrypted, masked, and never shown back in plaintext.",
 ];
 
 export default function LandingPage() {
@@ -145,6 +147,9 @@ export default function LandingPage() {
             </Link>
             <Link className="qatalyst-button qatalyst-button-secondary" href="/buy-credits">
               Buy Credits
+            </Link>
+            <Link className="qatalyst-button qatalyst-button-secondary" href="/security">
+              Security & Privacy
             </Link>
           </div>
         </div>
@@ -310,6 +315,9 @@ export default function LandingPage() {
           <Link className="qatalyst-button qatalyst-button-primary" href="/app">
             Launch QAtalyst
             <span aria-hidden="true">→</span>
+          </Link>
+          <Link className="qatalyst-button qatalyst-button-secondary" href="/security">
+            Security & Privacy
           </Link>
           <Link className="qatalyst-button qatalyst-button-ghost" href="https://git-a-job.com/donate">
             Donate
