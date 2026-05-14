@@ -34243,260 +34243,178 @@ body:has(.qatalyst-brain-shell)::after {
   }
 }
 
-/* QAS-174: Bug Writer report header and actions stable repair */
-.qatalyst-app-shell-v9 .bug-report-wrap > .report-header {
-  display: grid !important;
-  grid-template-columns: minmax(260px, 1fr) minmax(430px, 500px) !important;
-  align-items: center !important;
-  gap: 34px !important;
-  margin-bottom: 32px !important;
-  padding: 40px !important;
+
+/* QAS-174 Phase 3: QAt Companion polish, collapse, and guided actions */
+.qatalyst-app-shell-v9 .qat-companion-panel {
+  position: fixed !important;
+  top: 150px !important;
+  right: 18px !important;
+  z-index: 20 !important;
+  width: 248px !important;
+  max-width: calc(100vw - 32px) !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-window {
+  overflow: hidden;
   border: 1px solid rgba(248, 113, 113, 0.22) !important;
-  border-radius: 26px !important;
+  border-radius: 18px !important;
   background:
-    radial-gradient(circle at top right, rgba(220, 38, 38, 0.13), transparent 40%),
-    linear-gradient(135deg, rgba(15, 16, 28, 0.96), rgba(20, 8, 13, 0.94)) !important;
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.18), transparent 42%),
+    linear-gradient(180deg, rgba(24, 12, 13, 0.94), rgba(7, 7, 8, 0.96)) !important;
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
 }
 
-.qatalyst-app-shell-v9 .bug-report-heading-copy h2 {
-  max-width: 360px !important;
-  margin: 0 !important;
-  font-size: clamp(2.1rem, 3vw, 3.15rem) !important;
-  line-height: 0.98 !important;
-  letter-spacing: -0.065em !important;
-}
-
-.qatalyst-app-shell-v9 .bug-report-subtitle {
-  max-width: 370px !important;
-  margin: 24px 0 0 !important;
-  color: var(--muted-2) !important;
-  font-size: 1rem !important;
-  line-height: 1.55 !important;
-}
-
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 {
-  display: grid !important;
-  grid-template-columns: repeat(3, 148px) !important;
-  gap: 14px !important;
-  justify-content: end !important;
-  align-items: stretch !important;
-  width: 100% !important;
-  max-width: 500px !important;
-  margin-left: auto !important;
-}
-
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 > *,
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-report-row,
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-bug-collection-button-only {
-  width: 148px !important;
-  min-width: 148px !important;
-  max-width: 148px !important;
-  min-height: 50px !important;
-  margin: 0 !important;
-}
-
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 button,
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 .copy-all-button,
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 .secondary-action-button,
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 .edit-report-button,
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-report-button,
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-bug-collection-button,
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 .jira-create-issue-button {
-  width: 148px !important;
-  min-width: 148px !important;
-  max-width: 148px !important;
-  height: 50px !important;
-  min-height: 50px !important;
-  padding: 0 10px !important;
-  border-radius: 14px !important;
-  box-sizing: border-box !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  white-space: normal !important;
-  line-height: 1.08 !important;
-  font-size: 0.78rem !important;
-  font-weight: 900 !important;
-}
-
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-report-status-card,
-.qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-bug-collection-message {
-  grid-column: 1 / -1 !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  height: auto !important;
-  min-height: 0 !important;
-  margin: 0 !important;
-}
-
-@media (max-width: 980px) {
-  .qatalyst-app-shell-v9 .bug-report-wrap > .report-header {
-    grid-template-columns: 1fr !important;
-    padding: 28px !important;
-  }
-
-  .qatalyst-app-shell-v9 .bug-action-grid-3x2 {
-    grid-template-columns: 1fr !important;
-    max-width: none !important;
-    justify-content: stretch !important;
-  }
-
-  .qatalyst-app-shell-v9 .bug-action-grid-3x2 > *,
-  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-report-row,
-  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-bug-collection-button-only,
-  .qatalyst-app-shell-v9 .bug-action-grid-3x2 button,
-  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .copy-all-button,
-  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .secondary-action-button,
-  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .edit-report-button,
-  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-report-button,
-  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .save-bug-collection-button,
-  .qatalyst-app-shell-v9 .bug-action-grid-3x2 .jira-create-issue-button {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;
-  }
-}
-
-/* QAS-174: QAt Companion gutter-only positioning
-   Only moves the companion back into the right gutter. */
-@media (min-width: 1280px) {
-  .qatalyst-app-shell-v9 {
-    position: relative;
-    max-width: min(100vw - 48px, 1500px);
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .qatalyst-app-shell-v9 .qat-companion-panel {
-    position: fixed !important;
-    top: 180px !important;
-    right: max(24px, calc((100vw - 1500px) / 2 + 24px)) !important;
-    left: auto !important;
-    width: 270px !important;
-    max-width: 270px !important;
-    z-index: 8 !important;
-    pointer-events: auto;
-  }
-
-  .qatalyst-app-shell-v9 .qat-companion-window {
-    width: 100% !important;
-  }
-}
-
-@media (min-width: 1280px) and (max-width: 1520px) {
-  .qatalyst-app-shell-v9 .qat-companion-panel {
-    right: 18px !important;
-    width: 245px !important;
-    max-width: 245px !important;
-  }
-}
-
-@media (max-width: 1279px) {
-  .qatalyst-app-shell-v9 .qat-companion-panel {
-    position: static !important;
-    width: 100% !important;
-    max-width: none !important;
-    margin-top: 18px !important;
-  }
-}
-
-/* QAS-174: QAt Companion right gutter placement only - rebuilt from uploaded file */
-@media (min-width: 1280px) {
-  .qatalyst-app-shell-v9 {
-    overflow: visible !important;
-  }
-
-  .qatalyst-app-shell-v9 .app-workspace,
-  .qatalyst-app-shell-v9 .workspace,
-  .qatalyst-app-shell-v9 .output-panel,
-  .qatalyst-app-shell-v9 .report-wrap,
-  .qatalyst-app-shell-v9 .bug-report-wrap {
-    overflow: visible !important;
-  }
-
-  .qatalyst-app-shell-v9 .qat-companion-panel {
-    position: fixed !important;
-    top: 176px !important;
-    right: max(32px, calc((100vw - 1180px) / 2 - 390px)) !important;
-    left: auto !important;
-    width: 320px !important;
-    max-width: 320px !important;
-    transform: none !important;
-    z-index: 20 !important;
-    pointer-events: auto !important;
-  }
-
-  .qatalyst-app-shell-v9 .qat-companion-window {
-    width: 100% !important;
-  }
-}
-
-@media (min-width: 1680px) {
-  .qatalyst-app-shell-v9 .qat-companion-panel {
-    right: max(48px, calc((100vw - 1180px) / 2 - 430px)) !important;
-  }
-}
-
-@media (max-width: 1279px) {
-  .qatalyst-app-shell-v9 .qat-companion-panel {
-    position: relative !important;
-    top: auto !important;
-    right: auto !important;
-    left: auto !important;
-    width: 100% !important;
-    max-width: none !important;
-    margin-top: 20px !important;
-    transform: none !important;
-  }
-}
-
-
-/* QAS-174 Phase 2: context-aware QAt Companion */
-.qatalyst-app-shell-v9 .qat-companion-state-pill {
-  display: inline-flex;
+.qatalyst-app-shell-v9 .qat-companion-topline {
+  display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 14px 10px;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-topline > span {
+  color: #fca5a5;
+  font-size: 0.66rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-toggle {
   min-height: 24px;
   padding: 0 9px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 999px;
-  border: 1px solid rgba(248, 113, 113, 0.26);
-  background: rgba(127, 29, 29, 0.22);
-  color: #fee2e2;
-  font-size: 0.68rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+  font-size: 0.66rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-body {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 11px;
+  align-items: center;
+  padding: 0 14px 12px;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-mascot-frame {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(248, 113, 113, 0.18);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.26);
+}
+
+.qatalyst-app-shell-v9 .qat-companion-mascot-frame img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-copy h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 0.92rem;
+  line-height: 1.15;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-copy p {
+  margin: 0;
+  color: rgba(248, 250, 252, 0.76);
+  font-size: 0.72rem;
+  line-height: 1.42;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-state-pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 7px;
+  border: 1px solid rgba(34, 197, 94, 0.24);
+  border-radius: 999px;
+  background: rgba(20, 83, 45, 0.2);
+  color: #dcfce7;
+  font-size: 0.58rem;
   font-weight: 950;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
+.qatalyst-app-shell-v9 .qat-companion-state-empty .qat-companion-state-pill {
+  border-color: rgba(248, 113, 113, 0.26);
+  background: rgba(127, 29, 29, 0.2);
+  color: #fee2e2;
+}
+
 .qatalyst-app-shell-v9 .qat-companion-state-input .qat-companion-state-pill {
-  border-color: rgba(245, 158, 11, 0.36);
-  background: rgba(120, 53, 15, 0.24);
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(120, 53, 15, 0.22);
   color: #fde68a;
 }
 
-.qatalyst-app-shell-v9 .qat-companion-state-output .qat-companion-state-pill {
-  border-color: rgba(34, 197, 94, 0.34);
-  background: rgba(20, 83, 45, 0.26);
-  color: #dcfce7;
+.qatalyst-app-shell-v9 .qat-companion-signals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  padding: 0 14px 12px;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-signals span {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(226, 232, 240, 0.58);
+  font-size: 0.62rem;
+  font-weight: 950;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-signals span.active {
+  border-color: rgba(34, 197, 94, 0.22);
+  background: rgba(20, 83, 45, 0.18);
+  color: #bbf7d0;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-signals span.warning.active {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(120, 53, 15, 0.2);
+  color: #fde68a;
 }
 
 .qatalyst-app-shell-v9 .qat-companion-actions {
   display: grid;
-  gap: 8px;
-  margin-top: 14px;
+  gap: 7px;
+  padding: 0 14px 12px;
 }
 
 .qatalyst-app-shell-v9 .qat-companion-actions button {
   width: 100%;
-  min-height: 34px;
+  min-height: 31px;
   padding: 0 10px;
-  border-radius: 11px;
-  border: 1px solid rgba(255, 255, 255, 0.105);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.055);
   color: #f8fafc;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 900;
   text-align: left;
 }
@@ -34506,22 +34424,106 @@ body:has(.qatalyst-brain-shell)::after {
   background: rgba(127, 29, 29, 0.2);
 }
 
-/* QAS-174: manual QAt Companion position control */
-.qatalyst-app-shell-v9 .qat-companion-panel,
-.qatalyst-app-shell-v9 .qat-companion-card,
-.qatalyst-app-shell-v9 .qat-triage-panel,
-.qatalyst-app-shell-v9 .qat-panel {
-  position: fixed !important;
-  top: 160px !important;
-  right: 8px !important;
-  z-index: 20 !important;
+.qatalyst-app-shell-v9 .qat-companion-tip {
+  display: grid;
+  gap: 5px;
+  margin: 0 14px 14px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.035);
 }
 
-@media (max-width: 1380px) {
-  .qatalyst-app-shell-v9 .qat-companion-panel,
-  .qatalyst-app-shell-v9 .qat-companion-card,
-  .qatalyst-app-shell-v9 .qat-triage-panel,
-  .qatalyst-app-shell-v9 .qat-panel {
+.qatalyst-app-shell-v9 .qat-companion-tip strong {
+  color: #fca5a5;
+  font-size: 0.66rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-tip span {
+  color: rgba(248, 250, 252, 0.72);
+  font-size: 0.7rem;
+  line-height: 1.42;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-panel-collapsed {
+  width: auto !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 7px 11px;
+  border: 1px solid rgba(248, 113, 113, 0.24);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.2), transparent 44%),
+    rgba(10, 10, 10, 0.9);
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 950;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.34);
+}
+
+.qatalyst-app-shell-v9 .qat-companion-tab img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+@media (max-width: 1480px) {
+  .qatalyst-app-shell-v9 .qat-companion-panel {
+    top: auto !important;
+    right: 18px !important;
+    bottom: 18px !important;
+  }
+
+  .qatalyst-app-shell-v9 .qat-companion-panel:not(.qat-companion-panel-collapsed) {
     display: none !important;
   }
+}
+/* QAS-174 Phase 3: collapsed companion restore target */
+.qatalyst-app-shell-v9 .qat-companion-panel-collapsed {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  pointer-events: auto !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-collapsed-button {
+  display: grid !important;
+  place-items: center !important;
+  gap: 6px !important;
+  width: 74px !important;
+  min-height: 82px !important;
+  padding: 9px 8px !important;
+  border: 1px solid rgba(248, 113, 113, 0.28) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at top, rgba(220, 38, 38, 0.22), transparent 62%),
+    rgba(12, 12, 14, 0.94) !important;
+  color: #f8fafc !important;
+  font-size: 0.72rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-collapsed-button:hover {
+  border-color: rgba(248, 113, 113, 0.46) !important;
+  transform: translateY(-1px);
+}
+
+.qatalyst-app-shell-v9 .qat-companion-collapsed-button img {
+  width: 38px !important;
+  height: 38px !important;
+  object-fit: contain !important;
 }

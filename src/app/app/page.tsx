@@ -1159,12 +1159,52 @@ function QAtCompanionPanel({
   activeTool,
   hasInput,
   hasOutput,
+  hasProjectContext,
+  hasFollowUps,
 }: {
   activeTool: ToolId;
   hasInput: boolean;
   hasOutput: boolean;
+  hasProjectContext: boolean;
+  hasFollowUps: boolean;
 }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const workflowState = hasOutput ? "output" : hasInput ? "input" : "empty";
+
+  useEffect(() => {
+    const storedValue = window.localStorage.getItem("qatalyst-qat-companion-collapsed");
+    setIsCollapsed(storedValue === "true");
+  }, []);
+
+  function toggleCollapsed() {
+    setIsCollapsed((current) => {
+      const nextValue = !current;
+      window.localStorage.setItem("qatalyst-qat-companion-collapsed", String(nextValue));
+      return nextValue;
+    });
+  }
+
+  function handleAction(action: string) {
+    const lowerAction = action.toLowerCase();
+
+    if (lowerAction.includes("risk")) {
+      window.dispatchEvent(new CustomEvent("qat-companion-risk-request"));
+      window.setTimeout(() => document.querySelector('[data-testid="qa-input"]')?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+      return;
+    }
+
+    if (lowerAction.includes("jira") || lowerAction.includes("readiness")) {
+      document.querySelector(".bug-readiness-card, .qa-output-cockpit, [data-testid='qa-output']")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    if (lowerAction.includes("repro") || lowerAction.includes("setup") || lowerAction.includes("missing") || lowerAction.includes("gap") || lowerAction.includes("question")) {
+      document.querySelector(".source-textarea-shell textarea, textarea")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    document.querySelector('[data-testid="qa-output"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 
   const companionCopy: Record<
     ToolId,
@@ -1181,10 +1221,10 @@ function QAtCompanionPanel({
       title: "QAt Companion",
       body: {
         empty: "Paste a ticket, user story, or acceptance criteria and I’ll watch for missing coverage.",
-        input: "Input detected. Before generating, check for roles, edge cases, data states, and acceptance criteria.",
+        input: "Input detected. Check roles, edge cases, data states, and acceptance criteria before generating.",
         output: "Review the generated cases for weak assertions, missing negative paths, and unclear setup.",
       },
-      tip: "Strong test cases should be executable, observable, and specific enough for QA or dev handoff.",
+      tip: "Strong test cases are executable, observable, and specific enough for QA or dev handoff.",
       actions: ["Find gaps", "Suggest edge cases", "Check automation"],
     },
     bug: {
@@ -1193,7 +1233,7 @@ function QAtCompanionPanel({
       body: {
         empty: "Paste rough bug notes and I’ll help turn them into a triage-ready defect.",
         input: "Input detected. Make sure repro steps, expected vs actual, environment, evidence, and impact are covered.",
-        output: "Bug report generated. Check whether it is clear enough for Jira triage without a QA follow-up loop.",
+        output: "Bug report generated. Check whether it is clear enough for Jira triage without another QA loop.",
       },
       tip: "Best next step: add repro details, expected vs actual behavior, environment, evidence, and impact.",
       actions: ["Find missing info", "Tighten repro", "Check Jira readiness"],
@@ -1203,10 +1243,10 @@ function QAtCompanionPanel({
       title: "QAt Companion",
       body: {
         empty: "Paste a ticket or requirements doc and I’ll look for release risk.",
-        input: "Input detected. I’m looking for ambiguity, regression impact, auth/data risks, integrations, and unclear owners.",
+        input: "Input detected. I’m checking ambiguity, regression impact, auth/data risks, integrations, and unclear owners.",
         output: "Risk review generated. Use it to decide what QA should test first and what needs team follow-up.",
       },
-      tip: "A useful risk review should tell QA what to test next, not just list possible problems.",
+      tip: "A useful risk review tells QA what to test next, not just what might go wrong.",
       actions: ["Find blockers", "Check release risk", "Suggest follow-ups"],
     },
     improve: {
@@ -1234,6 +1274,27 @@ function QAtCompanionPanel({
   };
 
   const copy = companionCopy[activeTool];
+  const stateLabel = workflowState === "output" ? "Reviewing" : workflowState === "input" ? "Input" : "Waiting";
+
+  if (isCollapsed) {
+  return (
+    <aside
+      className={`qat-companion-panel qat-companion-panel-${activeTool} qat-companion-panel-collapsed`}
+      aria-label="QAt Companion collapsed"
+    >
+      <button
+        className="qat-companion-collapsed-button"
+        type="button"
+        onClick={() => setIsCollapsed(false)}
+        aria-label="Expand QAt Companion"
+        title="Expand QAt Companion"
+      >
+        <img src="/qat/qat-peek.png" alt="" aria-hidden="true" />
+        <span>QAt</span>
+      </button>
+    </aside>
+  );
+}
 
   return (
     <aside
@@ -1243,9 +1304,9 @@ function QAtCompanionPanel({
       <div className="qat-companion-window">
         <div className="qat-companion-topline">
           <span>{copy.eyebrow}</span>
-          <span className="qat-companion-state-pill">
-            {workflowState === "output" ? "Reviewing output" : workflowState === "input" ? "Input detected" : "Waiting"}
-          </span>
+          <button className="qat-companion-toggle" type="button" onClick={toggleCollapsed} aria-label="Collapse QAt Companion">
+            Min
+          </button>
         </div>
 
         <div className="qat-companion-body">
@@ -1254,14 +1315,22 @@ function QAtCompanionPanel({
           </div>
 
           <div className="qat-companion-copy">
-            <h3>{copy.title}</h3>
+            <div className="qat-companion-title-row">
+              <h3>{copy.title}</h3>
+              <span className="qat-companion-state-pill">{stateLabel}</span>
+            </div>
             <p>{copy.body[workflowState]}</p>
           </div>
         </div>
 
+        <div className="qat-companion-signals" aria-label="QAt workflow signals">
+          <span className={hasProjectContext ? "active" : ""}>Project context</span>
+          <span className={hasFollowUps ? "active warning" : ""}>Follow-ups</span>
+        </div>
+
         <div className="qat-companion-actions" aria-label="Suggested QAt actions">
           {copy.actions.map((action) => (
-            <button key={action} type="button">
+            <button key={action} type="button" onClick={() => handleAction(action)}>
               {action}
             </button>
           ))}
@@ -2146,15 +2215,13 @@ function BugReportCards({
 
   return (
     <div className="report-wrap bug-report-wrap">
-      <div className="report-header bug-report-header">
-        <div className="bug-report-heading-copy">
-          <h2>Jira-ready Bug Report</h2>
-          <p className="bug-report-subtitle">
-            Review the generated defect, tighten any missing context, then save it, track it, or send it straight into Jira.
-          </p>
+      <div className="report-header">
+        <div>
+          <p className="report-kicker">Bug Writer Report</p>
+          <h2>Structured Bug Report</h2>
         </div>
-        <div className="bug-handoff-panel bug-handoff-panel-structured">
-          <div className="bug-utility-actions">
+        <div className="report-action-stack">
+          <div className="report-actions compact-report-actions bug-report-actions report-action-row">
             <button className="copy-all-button" type="button" onClick={handleCopy}>
               {copied ? "Copied" : "Copy Bug Report"}
             </button>
@@ -2165,36 +2232,27 @@ function BugReportCards({
               {isEditingMarkdown ? "Close Editor" : "Edit Report"}
             </button>
           </div>
-
-          <div className="bug-delivery-panel bug-delivery-panel-compact">
-            <div className="bug-delivery-action-cell bug-save-report-slot">
-              <SaveReportControl
-                saveReportStatus={saveReportStatus}
-                saveReportMessage={saveReportMessage}
-                savedReportId={savedReportId}
-                onSaveReport={() => onSaveReport(evidenceAwareBugMarkdown)}
-              />
-            </div>
-
-            <div className="bug-delivery-action-cell">
-              <SaveBugToCollectionButton
-                activeProject={activeProject}
-                markdown={evidenceAwareBugMarkdown}
-                structuredData={{ bugReport: editableBugReport }}
-                sourceInput={sourceInput}
-              />
-            </div>
-
-            <div className="bug-delivery-action-cell">
-              <JiraCreateIssueButton
-                reportType="bug"
-                markdown={evidenceAwareBugMarkdown}
-                sourceInput={sourceInput}
-                structuredData={editableBugReport}
-                evidenceFiles={bugEvidence.files}
-                logText={bugEvidence.logText}
-              />
-            </div>
+          <div className="bug-secondary-action-row">
+            <SaveReportControl
+              saveReportStatus={saveReportStatus}
+              saveReportMessage={saveReportMessage}
+              savedReportId={savedReportId}
+              onSaveReport={() => onSaveReport(evidenceAwareBugMarkdown)}
+            />
+            <SaveBugToCollectionButton
+              activeProject={activeProject}
+              markdown={evidenceAwareBugMarkdown}
+              structuredData={{ bugReport: editableBugReport }}
+              sourceInput={sourceInput}
+            />
+            <JiraCreateIssueButton
+              reportType="bug"
+              markdown={evidenceAwareBugMarkdown}
+              sourceInput={sourceInput}
+              structuredData={editableBugReport}
+              evidenceFiles={bugEvidence.files}
+              logText={bugEvidence.logText}
+            />
           </div>
         </div>
       </div>
@@ -2206,9 +2264,11 @@ function BugReportCards({
       ) : null}
 
       <section className="bug-readiness-card">
-        <h3>Ready for Jira triage</h3>
+        <p className="report-kicker">Bug Report Readiness</p>
+        <h3>Ready for triage</h3>
         <p>
-          This report is structured for developer review with a clear summary, environment, repro steps, expected and actual results, impact, and triage notes. Add screenshots, logs, device details, build/version, and repro rate when available to make the defect even stronger.
+          This bug report has enough structure to create a Jira issue. Add screenshots, logs, device details,
+          build/version, and repro rate when available.
         </p>
       </section>
 
@@ -4415,7 +4475,13 @@ export default function Home() {
           });
         }}
       />
-          <QAtCompanionPanel activeTool={activeTool} hasInput={Boolean(input.trim())} hasOutput={Boolean(output.trim())} />
+          <QAtCompanionPanel
+            activeTool={activeTool}
+            hasInput={Boolean(input.trim())}
+            hasOutput={Boolean(output.trim())}
+            hasProjectContext={projectContextPayload.projectContextUsed}
+            hasFollowUps={Boolean(bugFollowUpQuestions.length || riskFollowUpQuestions.length || testFollowUpQuestions.length)}
+          />
 </main>
   );
 }
