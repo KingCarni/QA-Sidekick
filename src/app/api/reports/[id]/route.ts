@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { apiError, apiOk, getErrorMessage, readJsonBody } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { recordSecurityAuditEvent, SECURITY_EVENTS } from "@/lib/security-audit";
 import { durationSince, nowMs, serverLog } from "@/lib/server-log";
 import { makeReportTitle, normalizeReportType, serializeReport, toPrismaJson } from "@/lib/reports";
 
@@ -47,6 +48,17 @@ export async function GET(req: Request, context: RouteContext) {
     const report = await getReportForUser(id, userId);
 
     if (!report) {
+      await recordSecurityAuditEvent({
+        userId,
+        type: SECURITY_EVENTS.REPORT_ACCESS_BLOCKED,
+        meta: {
+          route,
+          reportId: id,
+          action: "view",
+          reason: "report_not_owned_or_missing",
+        },
+      });
+
       return apiError(req, {
         status: 404,
         code: "NOT_FOUND",
@@ -99,6 +111,17 @@ export async function PATCH(req: Request, context: RouteContext) {
     const existing = await getReportForUser(id, userId);
 
     if (!existing) {
+      await recordSecurityAuditEvent({
+        userId,
+        type: SECURITY_EVENTS.REPORT_ACCESS_BLOCKED,
+        meta: {
+          route,
+          reportId: id,
+          action: "update",
+          reason: "report_not_owned_or_missing",
+        },
+      });
+
       return apiError(req, {
         status: 404,
         code: "NOT_FOUND",
@@ -195,6 +218,17 @@ export async function DELETE(req: Request, context: RouteContext) {
     const existing = await getReportForUser(id, userId);
 
     if (!existing) {
+      await recordSecurityAuditEvent({
+        userId,
+        type: SECURITY_EVENTS.REPORT_ACCESS_BLOCKED,
+        meta: {
+          route,
+          reportId: id,
+          action: "delete",
+          reason: "report_not_owned_or_missing",
+        },
+      });
+
       return apiError(req, {
         status: 404,
         code: "NOT_FOUND",
@@ -204,6 +238,17 @@ export async function DELETE(req: Request, context: RouteContext) {
 
     await prisma.qAReport.delete({
       where: { id: existing.id },
+    });
+
+    await recordSecurityAuditEvent({
+      userId,
+      type: SECURITY_EVENTS.REPORT_DELETED,
+      meta: {
+        route,
+        reportId: existing.id,
+        type: existing.type,
+        projectId: existing.projectId,
+      },
     });
 
     serverLog.info("Saved report deleted.", {
