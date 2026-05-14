@@ -40,6 +40,26 @@ Supported profiles:
 - `admin-user`
 - `limited-access-user`
 
+## Security / Cross-user Abuse Regression
+
+`tests/e2e/security-cross-user-abuse.spec.ts` verifies that a limited-access user cannot read, update, or inject another user's project-bound data.
+
+Required setup:
+
+1. Create or seed a `standard-user` account with a project, project source, saved report, and bug collection item.
+2. Create or seed a separate `limited-access-user` account.
+3. Add these env vars with IDs owned by the standard user:
+
+```bash
+QATALYST_E2E_STANDARD_PROJECT_ID="..."
+QATALYST_E2E_STANDARD_SOURCE_ID="..."
+QATALYST_E2E_STANDARD_REPORT_ID="..."
+QATALYST_E2E_STANDARD_BUG_ID="..."
+QATALYST_E2E_SECRET_CANARY="QATALYST_PRIVATE_SOURCE_CANARY"
+```
+
+The tests intentionally call API routes by raw IDs as the limited-access user. Expected result is `401`, `403`, `404`, or safe validation failure depending on the route. Responses must not include the secret canary.
+
 ## Selector TODOs
 
 Generated skeletons often include TODO selectors. Replace them with stable `data-testid` selectors or robust role/label locators before treating the test as final.
