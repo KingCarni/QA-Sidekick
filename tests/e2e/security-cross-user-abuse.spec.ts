@@ -26,7 +26,39 @@ async function expectBlocked(response: APIResponse, allowed: BlockedStatus[] = [
   expect(text).not.toContain(SECRET_CANARY);
 }
 
+async function expectNoPlaintextSecrets(response: APIResponse) {
+  const text = await response.text().catch(() => "");
+  const normalized = text.toLowerCase();
+
+  expect(text).not.toContain(SECRET_CANARY);
+  expect(normalized).not.toContain("encryptedapitoken");
+  expect(normalized).not.toContain("encryptedapikey");
+  expect(normalized).not.toContain("jiraapitoken");
+  expect(normalized).not.toContain("apikey\":");
+  expect(normalized).not.toContain("apitoken\":");
+}
+
 test.describe("Security: cross-user project isolation", () => {
+  test("unauthenticated user cannot access private security-sensitive routes", async ({ request }) => {
+    const projectId = requireEnv("QATALYST_E2E_STANDARD_PROJECT_ID", STANDARD_OWNED_PROJECT_ID);
+    const reportId = requireEnv("QATALYST_E2E_STANDARD_REPORT_ID", STANDARD_OWNED_REPORT_ID);
+    const bugId = requireEnv("QATALYST_E2E_STANDARD_BUG_ID", STANDARD_OWNED_BUG_ID);
+
+    const responses = await Promise.all([
+      request.get(`/api/projects/${projectId}/context`),
+      request.get(`/api/projects/${projectId}/sources`),
+      request.get(`/api/reports/${reportId}`),
+      request.patch(`/api/bug-collection/${bugId}`, { data: { status: "triaged" } }),
+      request.get("/api/jira/config"),
+      request.get("/api/testrail/config"),
+    ]);
+
+    for (const response of responses) {
+      expect(response.status()).toBe(401);
+      await expectNoPlaintextSecrets(response);
+    }
+  });
+
   test("limited-access user cannot read another user's project source context", async ({ page }) => {
     const projectId = requireEnv("QATALYST_E2E_STANDARD_PROJECT_ID", STANDARD_OWNED_PROJECT_ID);
 
@@ -68,6 +100,29 @@ test.describe("Security: cross-user project isolation", () => {
     await expectBlocked(response);
   });
 
+  test("limited-access user cannot update another user's saved report by raw id", async ({ page }) => {
+    const reportId = requireEnv("QATALYST_E2E_STANDARD_REPORT_ID", STANDARD_OWNED_REPORT_ID);
+
+    await loginAs(page, "limited-access-user");
+
+    const response = await page.request.patch(`/api/reports/${reportId}`, {
+      data: {
+        title: "Cross-user update attempt",
+      },
+    });
+
+    await expectBlocked(response);
+  });
+
+  test("limited-access user cannot delete another user's saved report by raw id", async ({ page }) => {
+    const reportId = requireEnv("QATALYST_E2E_STANDARD_REPORT_ID", STANDARD_OWNED_REPORT_ID);
+
+    await loginAs(page, "limited-access-user");
+
+    const response = await page.request.delete(`/api/reports/${reportId}`);
+    await expectBlocked(response);
+  });
+
   test("limited-access user cannot update another user's bug collection item by raw id", async ({ page }) => {
     const bugId = requireEnv("QATALYST_E2E_STANDARD_BUG_ID", STANDARD_OWNED_BUG_ID);
 
@@ -79,6 +134,15 @@ test.describe("Security: cross-user project isolation", () => {
       },
     });
 
+    await expectBlocked(response);
+  });
+
+  test("limited-access user cannot delete another user's bug collection item by raw id", async ({ page }) => {
+    const bugId = requireEnv("QATALYST_E2E_STANDARD_BUG_ID", STANDARD_OWNED_BUG_ID);
+
+    await loginAs(page, "limited-access-user");
+
+    const response = await page.request.delete(`/api/bug-collection/${bugId}`);
     await expectBlocked(response);
   });
 
@@ -133,6 +197,18 @@ test.describe("Security: cross-user project isolation", () => {
     });
 
     await expectBlocked(response, [400, 401, 403, 404]);
+  });
+
+  test("Jira and TestRail config endpoints do not return plaintext token fields", async ({ page }) => {
+    await loginAs(page, "limited-access-user");
+
+    const jiraResponse = await page.request.get("/api/jira/config");
+    const testRailResponse = await page.request.get("/api/testrail/config");
+
+    expect([200, 400, 404]).toContain(jiraResponse.status());
+    expect([200, 400, 404]).toContain(testRailResponse.status());
+    await expectNoPlaintextSecrets(jiraResponse);
+    await expectNoPlaintextSecrets(testRailResponse);
   });
 
   test("malicious source text cannot force prompt or unrelated memory disclosure", async ({ page }) => {
