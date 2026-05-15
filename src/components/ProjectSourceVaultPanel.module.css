@@ -58,11 +58,11 @@
 
 .filterPanel {
   display: grid;
-  grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(150px, 0.8fr)) auto;
-  gap: 12px;
+  grid-template-columns: minmax(160px, 1fr) minmax(105px, 0.62fr) minmax(105px, 0.62fr) minmax(120px, 0.68fr) 58px;
+  gap: 8px;
   align-items: end;
   margin: 18px 0;
-  padding: 16px;
+  padding: 14px;
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 20px;
   background: rgba(15, 23, 42, 0.58);
@@ -70,24 +70,35 @@
 
 .filterPanel label {
   display: grid;
-  gap: 7px;
+  gap: 6px;
+  min-width: 0;
   color: #fca5a5;
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 950;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .filterPanel input,
 .filterPanel select {
-  min-height: 42px;
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
   border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 13px;
+  border-radius: 12px;
   background: rgba(2, 6, 23, 0.76);
   color: #ffffff;
-  font-size: 0.88rem;
+  font-size: 0.78rem;
   outline: none;
-  padding: 0 12px;
+  padding: 0 9px;
+}
+
+.filterPanel input::placeholder {
+  color: rgba(226, 232, 240, 0.48);
+}
+
+.filterPanel select {
+  padding-right: 6px;
 }
 
 .filterPanel input:focus,
@@ -97,14 +108,15 @@
 }
 
 .filterPanel button {
-  min-height: 42px;
-  padding: 0 14px;
+  min-height: 38px;
+  padding: 0 9px;
   border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 13px;
+  border-radius: 12px;
   background: rgba(15, 23, 42, 0.88);
   color: #ffffff;
-  font-size: 0.8rem;
+  font-size: 0.68rem;
   font-weight: 950;
+  line-height: 1.05;
 }
 
 .listHeaderRow {
