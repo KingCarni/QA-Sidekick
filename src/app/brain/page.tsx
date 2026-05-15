@@ -220,14 +220,20 @@ const BRAIN_STATUS_CARDS: BrainStatusCard[] = [
   },
 ];
 
+const overviewCardStyle = {
+  display: "flex",
+  flexDirection: "column" as const,
+  minHeight: "248px",
+};
+
 const overviewCardFooterStyle = {
   display: "flex",
   flexWrap: "wrap" as const,
   alignItems: "center",
   justifyContent: "space-between",
   gap: "10px",
-  marginTop: "18px",
-  paddingTop: "14px",
+  marginTop: "auto",
+  paddingTop: "18px",
   borderTop: "1px solid rgba(255, 255, 255, 0.08)",
 };
 
@@ -660,7 +666,7 @@ export default function BrainPage() {
           {activeTab === "overview" ? (
             <div className="brain-overview-grid">
               {BRAIN_STATUS_CARDS.map((card) => (
-                <article className="brain-status-card" key={card.label}>
+                <article className="brain-status-card" style={overviewCardStyle} key={card.label}>
                   <span>{card.label}</span>
                   <strong>{card.title}</strong>
                   <p>{card.text}</p>
