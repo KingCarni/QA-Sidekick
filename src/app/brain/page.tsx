@@ -8,6 +8,7 @@ import CreditsPill from "@/components/CreditsPill";
 import ProjectRulesPanel from "@/components/ProjectRulesPanel";
 import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSettingsPanel";
 import ProjectSourceVaultPanel from "@/components/ProjectSourceVaultPanel";
+import ProjectTerminologyPanel from "@/components/ProjectTerminologyPanel";
 import QAtGuideCard from "@/components/QAtGuideCard";
 
 type BrainTabId =
@@ -150,15 +151,11 @@ const BRAIN_STATUS_CARDS = [
   { label: "Bug Collection", value: "Live", text: "Saved defects now live in Brain." },
   { label: "Saved Reports", value: "Foundation", text: "Report history shell now lives in Brain." },
   { label: "QA Rules", value: "Live", text: "Team standards and release expectations now influence Brain context." },
+  { label: "Terminology", value: "Live", text: "Project vocabulary and aliases now influence Brain context." },
   { label: "Integrations", value: "Available", text: "Jira and TestRail setup lives here." },
 ];
 
-const SECTION_EMPTY_STATES: Record<Exclude<BrainTabId, "overview" | "projects" | "sources" | "bugs" | "reports" | "rules" | "integrations">, string[]> = {
-  terminology: [
-    "Define acronyms, user roles, domain terms, and product vocabulary.",
-    "Keep domain language consistent across generated artifacts.",
-    "This helps QAtalyst ask better follow-up questions.",
-  ],
+const SECTION_EMPTY_STATES: Record<Exclude<BrainTabId, "overview" | "projects" | "sources" | "bugs" | "reports" | "rules" | "terminology" | "integrations">, string[]> = {
   risks: [
     "Track fragile areas, historical bug patterns, and regression hotspots.",
     "Use this for systems that need extra test focus before release.",
@@ -521,8 +518,8 @@ export default function BrainPage() {
         className="qat-ftue-card brain-qat-guide"
         eyebrow="QAt setup guide"
         title="Start with your project memory."
-        body="Brain now owns reusable project context. Create/select a project, add source notes or docs, capture team QA rules, keep saved defects in Bug Collection, and review generated artifacts in Saved Reports."
-        primaryAction={{ label: "Open Source Vault", onClick: () => selectBrainTab("sources") }}
+        body="Brain now owns reusable project context. Create/select a project, add source notes or docs, capture team QA rules, define terminology, keep saved defects in Bug Collection, and review generated artifacts in Saved Reports."
+        primaryAction={{ label: "Open Terminology", onClick: () => selectBrainTab("terminology") }}
         secondaryAction={{ label: "QA Rules", onClick: () => selectBrainTab("rules") }}
       />
 
@@ -575,10 +572,10 @@ export default function BrainPage() {
 
               <article className="brain-next-step-card">
                 <p>Recommended next step</p>
-                <h3>Move reusable context, team rules, saved defects, and reports into Brain.</h3>
-                <span>Create/select a project, then manage Source Vault, QA Rules, Bug Collection, and Saved Reports from one setup hub.</span>
-                <button type="button" onClick={() => selectBrainTab(activeProject ? "rules" : "projects")}>
-                  {activeProject ? "Open QA Rules" : "Set up project"}
+                <h3>Move reusable context, team rules, terminology, saved defects, and reports into Brain.</h3>
+                <span>Create/select a project, then manage Source Vault, QA Rules, Terminology, Bug Collection, and Saved Reports from one setup hub.</span>
+                <button type="button" onClick={() => selectBrainTab(activeProject ? "terminology" : "projects")}>
+                  {activeProject ? "Open Terminology" : "Set up project"}
                 </button>
               </article>
             </div>
@@ -617,7 +614,13 @@ export default function BrainPage() {
             </section>
           ) : null}
 
-          {activeTab !== "overview" && activeTab !== "projects" && activeTab !== "sources" && activeTab !== "bugs" && activeTab !== "reports" && activeTab !== "rules" && activeTab !== "integrations" ? (
+          {activeTab === "terminology" ? (
+            <section className="brain-live-section">
+              <ProjectTerminologyPanel activeProject={activeProject} />
+            </section>
+          ) : null}
+
+          {activeTab !== "overview" && activeTab !== "projects" && activeTab !== "sources" && activeTab !== "bugs" && activeTab !== "reports" && activeTab !== "rules" && activeTab !== "terminology" && activeTab !== "integrations" ? (
             <div className="brain-empty-state">
               <p className="brain-empty-kicker">V1 foundation</p>
               <h3>{active.label} is ready for the next build pass.</h3>
