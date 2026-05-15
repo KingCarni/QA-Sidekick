@@ -31,7 +31,7 @@ type ProjectSourceVaultPanelProps = {
 
 type SourceInfluenceState = "included" | "over-budget" | "disabled";
 
-const SOURCE_CONTEXT_CHARACTER_BUDGET = 12000;
+const SOURCE_CONTEXT_CHARACTER_BUDGET = 30000;
 
 const SOURCE_TYPE_OPTIONS = [
   ["product-overview", "Product Overview"],
@@ -444,7 +444,7 @@ export default function ProjectSourceVaultPanel({ activeProject }: ProjectSource
           Search sources
           <input
             onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Search title, tags, source type, or body..."
+            placeholder="Search sources..."
             value={searchTerm}
           />
         </label>
@@ -480,7 +480,7 @@ export default function ProjectSourceVaultPanel({ activeProject }: ProjectSource
           </select>
         </label>
 
-        <button type="button" onClick={clearFilters}>Clear filters</button>
+        <button type="button" onClick={clearFilters}>Clear</button>
       </div>
 
       <div className="source-vault-grid">
