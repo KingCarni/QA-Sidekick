@@ -367,7 +367,7 @@ export default function ProjectTerminologyPanel({ activeProject }: ProjectTermin
           <p className="report-kicker">{selectedTermId ? "Edit Term" : "New Term"}</p>
 
           <label>Term
-            <input value={term} onChange={(event) => setTerm(event.target.value)} maxLength={120} placeholder="Example: Companion" />
+            <input value={term} onChange={(event) => setTerm(event.target.value)} maxLength={120} placeholder="Example: Message of the day" />
           </label>
 
           <label>Category
@@ -377,7 +377,7 @@ export default function ProjectTerminologyPanel({ activeProject }: ProjectTermin
           </label>
 
           <label>Aliases / acronyms
-            <input value={aliases} onChange={(event) => setAliases(event.target.value)} placeholder="Example: QAt, AI pet, helper" />
+            <input value={aliases} onChange={(event) => setAliases(event.target.value)} placeholder="Example: MOTD, daily message, announcement" />
           </label>
 
           <label>Preferred usage
@@ -386,7 +386,7 @@ export default function ProjectTerminologyPanel({ activeProject }: ProjectTermin
               value={preferredUsage}
               onChange={(event) => setPreferredUsage(event.target.value)}
               maxLength={800}
-              placeholder="Example: Use Companion when referring to the in-app QAt assistant. Avoid calling it chatbot."
+              placeholder="Example: Use Message of the day for user-facing text. Use MOTD only in internal QA notes or technical references."
             />
           </label>
 
