@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
 
 const TEST_CASE_TYPES = ["smoke", "functional", "regression", "edge-case", "accessibility", "security", "performance", "integration", "other"] as const;
@@ -75,6 +75,45 @@ const EMPTY_FORM: FormState = {
   notes: "",
 };
 
+const shellCardStyle = {
+  border: "1px solid rgba(255, 255, 255, 0.1)",
+  borderRadius: 26,
+  background:
+    "radial-gradient(circle at top left, rgba(239, 68, 68, 0.12), transparent 34%), linear-gradient(145deg, rgba(8, 11, 19, 0.98), rgba(0, 0, 0, 0.96))",
+  padding: 28,
+};
+
+const toolbarStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(220px, 1.2fr) repeat(3, minmax(140px, 0.75fr))",
+  gap: 14,
+  alignItems: "end",
+  border: "1px solid rgba(96, 165, 250, 0.16)",
+  borderRadius: 20,
+  background: "rgba(15, 23, 42, 0.52)",
+  padding: 16,
+  margin: "20px 0",
+};
+
+const editorGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(240px, 0.86fr) minmax(420px, 1.45fr)",
+  gap: 18,
+  alignItems: "start",
+};
+
+const formRowThreeStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(220px, 1fr) minmax(130px, 0.45fr) minmax(130px, 0.45fr)",
+  gap: 12,
+};
+
+const formRowThreeSmallStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(130px, 0.42fr) minmax(130px, 0.42fr) minmax(220px, 1fr)",
+  gap: 12,
+};
+
 function formatDate(value: string) {
   if (!value) return "";
   try {
@@ -147,12 +186,12 @@ function buildPayload(form: FormState) {
   };
 }
 
-function FieldBlock({ label, children }: { label: string; children: React.ReactNode }) {
+function FieldBlock({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="saved-report-source-details">
-      <summary>{label}</summary>
+    <label style={{ display: "grid", gap: 8, marginTop: 14 }}>
+      <span className="report-kicker" style={{ margin: 0 }}>{label}</span>
       {children}
-    </div>
+    </label>
   );
 }
 
@@ -293,7 +332,7 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
   }
 
   return (
-    <section className="saved-reports-panel">
+    <section style={shellCardStyle}>
       <div className="saved-reports-header">
         <div>
           <p className="report-kicker">Test Case Library</p>
@@ -310,7 +349,7 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
         <div><strong>{stats.synced}</strong><span>Synced</span></div>
       </div>
 
-      <div className="saved-reports-toolbar">
+      <div style={toolbarStyle}>
         <label>
           Search
           <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search title, tags, Jira key..." />
@@ -341,7 +380,7 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
       {message ? <p className="saved-reports-message">{message}</p> : null}
       {error ? <p className="saved-reports-error">{error}</p> : null}
 
-      <div className="saved-reports-grid">
+      <div style={editorGridStyle}>
         <aside className="saved-reports-list-card">
           <p className="report-kicker">Saved Test Cases <span>{filteredTestCases.length} shown</span></p>
           {filteredTestCases.length === 0 ? <p className="saved-reports-muted">No test cases match this filter yet.</p> : null}
@@ -369,16 +408,16 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
             </div>
           </div>
 
-          <div className="saved-reports-toolbar" style={{ gridTemplateColumns: "1fr 0.6fr 0.6fr" }}>
-            <label>Title<input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Example: User can reset password" /></label>
+          <div style={formRowThreeStyle}>
+            <label>Title<input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Example: User can complete checkout" /></label>
             <label>Type<select value={form.testType} onChange={(event) => setForm({ ...form, testType: event.target.value })}>{TEST_CASE_TYPES.map((type) => <option key={type} value={type}>{titleCase(type)}</option>)}</select></label>
             <label>Priority<select value={form.priority} onChange={(event) => setForm({ ...form, priority: event.target.value })}>{TEST_CASE_PRIORITIES.map((priority) => <option key={priority} value={priority}>{titleCase(priority)}</option>)}</select></label>
           </div>
 
-          <div className="saved-reports-toolbar" style={{ gridTemplateColumns: "0.7fr 0.7fr 1fr" }}>
+          <div style={{ ...formRowThreeSmallStyle, marginTop: 12 }}>
             <label>Status<select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>{TEST_CASE_STATUSES.map((status) => <option key={status} value={status}>{titleCase(status)}</option>)}</select></label>
             <label>Jira key<input value={form.sourceJiraKey} onChange={(event) => setForm({ ...form, sourceJiraKey: event.target.value })} placeholder="QAS-123" /></label>
-            <label>Tags<input value={form.tagsText} onChange={(event) => setForm({ ...form, tagsText: event.target.value })} placeholder="login, smoke, regression" /></label>
+            <label>Tags<input value={form.tagsText} onChange={(event) => setForm({ ...form, tagsText: event.target.value })} placeholder="checkout, smoke, regression" /></label>
           </div>
 
           <FieldBlock label="Preconditions">
@@ -401,7 +440,7 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
             <textarea value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} placeholder="Review notes, coverage notes, or handoff details..." rows={3} />
           </FieldBlock>
 
-          <div className="saved-reports-header" style={{ marginTop: 12 }}>
+          <div className="saved-reports-header" style={{ marginTop: 16 }}>
             <button type="button" onClick={() => setForm(EMPTY_FORM)}>New</button>
             {form.id ? <button type="button" onClick={() => deleteTestCase(form.id)} disabled={isLoading}>Delete</button> : null}
             <button type="button" onClick={saveTestCase} disabled={isLoading}>{isLoading ? "Saving..." : "Save Test Case"}</button>
