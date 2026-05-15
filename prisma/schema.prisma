@@ -23,6 +23,7 @@ model User {
   events        Event[]
   projects      QAProject[]
   reports       QAReport[]
+  testCases     QATestCase[]
   bugCollectionItems BugCollectionItem[]
   jiraConfigs   JiraConfig[]
   testRailConfigs TestRailConfig[]
@@ -120,6 +121,7 @@ model QAProject {
   terms   QAProjectTerm[]
   risks   QAProjectRisk[]
   features QAProjectFeature[]
+  testCases QATestCase[]
   bugCollectionItems BugCollectionItem[]
 
   @@unique([userId, name])
@@ -228,6 +230,50 @@ model QAProjectFeature {
   @@index([area])
 }
 
+model QATestCase {
+  id                  String   @id @default(cuid())
+  userId              String
+  projectId           String
+  title               String
+  testType            String   @default("functional")
+  priority            String   @default("medium")
+  status              String   @default("draft")
+  sourceType          String   @default("manual")
+  sourceReportId      String?
+  sourceJiraKey       String?
+  preconditions       String?
+  steps               String[] @default([])
+  expectedResult      String?
+  automationReadiness String?
+  qualityScore        Int?
+  tags                String[] @default([])
+  notes               String?
+  structuredData      Json?
+  testRailCaseId      Int?
+  testRailProjectId   Int?
+  testRailSuiteId     Int?
+  testRailSectionId   Int?
+  syncStatus          String   @default("not_synced")
+  lastSyncedAt        DateTime?
+  lastSyncError       String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project      QAProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceReport QAReport? @relation(fields: [sourceReportId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([projectId, updatedAt])
+  @@index([projectId, status])
+  @@index([projectId, testType])
+  @@index([projectId, priority])
+  @@index([projectId, syncStatus])
+  @@index([sourceReportId])
+  @@index([sourceJiraKey])
+  @@index([testRailCaseId])
+}
+
 model BugCollectionItem {
   id             String   @id @default(cuid())
   userId         String
@@ -299,6 +345,7 @@ model QAReport {
   user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   project QAProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
   testRailSyncMaps TestRailCaseSyncMap[]
+  testCases QATestCase[]
 
   @@index([userId, createdAt])
   @@index([projectId, createdAt])
