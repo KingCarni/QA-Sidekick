@@ -2,12 +2,40 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
-import {
-  TEST_CASE_PRIORITIES,
-  TEST_CASE_STATUSES,
-  TEST_CASE_TYPES,
-  type SafeProjectTestCase,
-} from "@/lib/project-test-cases";
+
+const TEST_CASE_TYPES = ["smoke", "functional", "regression", "edge-case", "accessibility", "security", "performance", "integration", "other"] as const;
+const TEST_CASE_PRIORITIES = ["low", "medium", "high", "critical"] as const;
+const TEST_CASE_STATUSES = ["draft", "ready", "needs-review", "deprecated"] as const;
+
+type SafeProjectTestCase = {
+  id: string;
+  userId: string;
+  projectId: string;
+  title: string;
+  testType: string;
+  priority: string;
+  status: string;
+  sourceType: string;
+  sourceReportId: string | null;
+  sourceJiraKey: string;
+  preconditions: string;
+  steps: string[];
+  expectedResult: string;
+  automationReadiness: string;
+  qualityScore: number | null;
+  tags: string[];
+  notes: string;
+  structuredData: unknown | null;
+  testRailCaseId: number | null;
+  testRailProjectId: number | null;
+  testRailSuiteId: number | null;
+  testRailSectionId: number | null;
+  syncStatus: string;
+  lastSyncedAt: string | null;
+  lastSyncError: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
 type TestCaseResponse = {
   ok?: boolean;
@@ -117,6 +145,15 @@ function buildPayload(form: FormState) {
     notes: form.notes,
     syncStatus: "not_synced",
   };
+}
+
+function FieldBlock({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="saved-report-source-details">
+      <summary>{label}</summary>
+      {children}
+    </div>
+  );
 }
 
 export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeProject: SafeQAProject | null }) {
@@ -344,25 +381,25 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
             <label>Tags<input value={form.tagsText} onChange={(event) => setForm({ ...form, tagsText: event.target.value })} placeholder="login, smoke, regression" /></label>
           </div>
 
-          <label className="saved-report-source-details" open={false as never}>
-            <summary>Preconditions</summary>
+          <FieldBlock label="Preconditions">
             <textarea value={form.preconditions} onChange={(event) => setForm({ ...form, preconditions: event.target.value })} placeholder="State, account, data, permissions, or setup needed before test starts..." rows={3} />
-          </label>
+          </FieldBlock>
 
-          <label className="saved-report-source-details" open={false as never}>
-            <summary>Steps</summary>
+          <FieldBlock label="Steps">
             <textarea value={form.stepsText} onChange={(event) => setForm({ ...form, stepsText: event.target.value })} placeholder="One step per line..." rows={7} />
-          </label>
+          </FieldBlock>
 
-          <label className="saved-report-source-details" open={false as never}>
-            <summary>Expected result</summary>
+          <FieldBlock label="Expected result">
             <textarea value={form.expectedResult} onChange={(event) => setForm({ ...form, expectedResult: event.target.value })} placeholder="What should be true if the test passes?" rows={4} />
-          </label>
+          </FieldBlock>
 
-          <label className="saved-report-source-details" open={false as never}>
-            <summary>Automation readiness / notes</summary>
-            <textarea value={`${form.automationReadiness}${form.notes ? `\n\nNotes:\n${form.notes}` : ""}`} onChange={(event) => setForm({ ...form, automationReadiness: event.target.value })} placeholder="Automation notes, selectors, data strategy, known blockers..." rows={4} />
-          </label>
+          <FieldBlock label="Automation readiness">
+            <textarea value={form.automationReadiness} onChange={(event) => setForm({ ...form, automationReadiness: event.target.value })} placeholder="Automation notes, selectors, data strategy, known blockers..." rows={3} />
+          </FieldBlock>
+
+          <FieldBlock label="Notes">
+            <textarea value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} placeholder="Review notes, coverage notes, or handoff details..." rows={3} />
+          </FieldBlock>
 
           <div className="saved-reports-header" style={{ marginTop: 12 }}>
             <button type="button" onClick={() => setForm(EMPTY_FORM)}>New</button>
