@@ -10,6 +10,7 @@ import ProjectRulesPanel from "@/components/ProjectRulesPanel";
 import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSettingsPanel";
 import ProjectSourceVaultPanel from "@/components/ProjectSourceVaultPanel";
 import ProjectTerminologyPanel from "@/components/ProjectTerminologyPanel";
+import ProjectTestCaseLibraryPanel from "@/components/ProjectTestCaseLibraryPanel";
 import QAtGuideCard from "@/components/QAtGuideCard";
 
 type BrainTabId =
@@ -18,6 +19,7 @@ type BrainTabId =
   | "sources"
   | "bugs"
   | "reports"
+  | "testcases"
   | "rules"
   | "terminology"
   | "risks"
@@ -107,6 +109,14 @@ const BRAIN_TABS: BrainTab[] = [
       "Saved Reports keeps generated test plans, risk reviews, improved test cases, and other outputs available from the same project workspace.",
   },
   {
+    id: "testcases",
+    label: "Test Case Library",
+    eyebrow: "Coverage assets",
+    title: "Store reusable test cases as first-class QA assets.",
+    body:
+      "Test Case Library keeps coverage separate from Source Vault and Saved Reports, with status, priority, type, TestRail metadata, and future sync readiness.",
+  },
+  {
     id: "rules",
     label: "QA Rules",
     eyebrow: "Team standards",
@@ -168,6 +178,13 @@ const BRAIN_STATUS_CARDS: BrainStatusCard[] = [
     text: "Store specs, product notes, requirements, release docs, and imported text so future generations do not start from a blank prompt.",
     value: "Reusable memory",
     tab: "sources",
+  },
+  {
+    label: "Test Case Library",
+    title: "Turn generated coverage into reusable QA assets.",
+    text: "Save manual or generated test cases with priority, status, type, steps, expected results, and future TestRail sync metadata.",
+    value: "Coverage library",
+    tab: "testcases",
   },
   {
     label: "QA Rules",
@@ -604,7 +621,7 @@ export default function BrainPage() {
           <p className="brain-eyebrow">Project Brain · Reusable context · Workflow intelligence</p>
           <h1>Project Brain gives QAtalyst product memory.</h1>
           <p>
-            Configure the context, sources, rules, terms, risks, bug collections, saved reports, features, and integrations that keep generated QA work grounded in your actual product.
+            Configure the context, sources, rules, terms, risks, bug collections, saved reports, features, test cases, and integrations that keep generated QA work grounded in your actual product.
           </p>
 
           <div className="brain-hero-actions">
@@ -621,9 +638,9 @@ export default function BrainPage() {
         className="qat-ftue-card brain-qat-guide"
         eyebrow="QAt setup guide"
         title="Build the memory once, then reuse it everywhere."
-        body="Project Brain is not a setup checklist. It is the source of truth QAtalyst uses to keep test cases, bug reports, risk reviews, feature briefs, and future companion guidance aligned to your product. Start with source docs and team rules, then add terminology and hotspots as you learn where the product is fragile."
-        primaryAction={{ label: "Open Source Vault", onClick: () => selectBrainTab("sources") }}
-        secondaryAction={{ label: "QA Rules", onClick: () => selectBrainTab("rules") }}
+        body="Project Brain is not a setup checklist. It is the source of truth QAtalyst uses to keep test cases, bug reports, risk reviews, feature briefs, and future companion guidance aligned to your product. Start with source docs and team rules, then add terminology, hotspots, and reusable test cases as your project matures."
+        primaryAction={{ label: "Open Test Library", onClick: () => selectBrainTab("testcases") }}
+        secondaryAction={{ label: "Source Vault", onClick: () => selectBrainTab("sources") }}
       />
 
       <section className="brain-workspace">
@@ -681,10 +698,10 @@ export default function BrainPage() {
 
               <article className="brain-next-step-card">
                 <p>Recommended next step</p>
-                <h3>Give QAtalyst the context it needs before you generate.</h3>
-                <span>For a new project, add the product overview/specs first, then QA rules, terminology, and the top fragile areas. That gives every workflow useful memory without turning Brain into a heavy wiki.</span>
-                <button type="button" onClick={() => selectBrainTab(activeProject ? "sources" : "projects")}>
-                  {activeProject ? "Open Source Vault" : "Set up project"}
+                <h3>Turn generated coverage into a reusable test library.</h3>
+                <span>For a new project, add the product overview/specs first, then capture team rules and reusable test cases. Test Case Library keeps coverage assets separate from product memory and report history.</span>
+                <button type="button" onClick={() => selectBrainTab(activeProject ? "testcases" : "projects")}>
+                  {activeProject ? "Open Test Case Library" : "Set up project"}
                 </button>
               </article>
             </div>
@@ -714,6 +731,12 @@ export default function BrainPage() {
           {activeTab === "reports" ? (
             <section className="brain-live-section">
               <SavedReportsPanel activeProject={activeProject} />
+            </section>
+          ) : null}
+
+          {activeTab === "testcases" ? (
+            <section className="brain-live-section">
+              <ProjectTestCaseLibraryPanel activeProject={activeProject} />
             </section>
           ) : null}
 
