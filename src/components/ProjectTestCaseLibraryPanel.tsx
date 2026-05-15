@@ -65,7 +65,7 @@ const EMPTY_FORM: FormState = {
   title: "",
   testType: "functional",
   priority: "medium",
-  status: "draft",
+  status: "ready",
   sourceJiraKey: "",
   preconditions: "",
   stepsText: "",
@@ -82,7 +82,7 @@ const shellCardStyle: CSSProperties = {
   borderRadius: 26,
   background:
     "radial-gradient(circle at top left, rgba(239, 68, 68, 0.12), transparent 34%), linear-gradient(145deg, rgba(8, 11, 19, 0.98), rgba(0, 0, 0, 0.96))",
-  padding: 28,
+  padding: "40px 28px 28px",
 };
 
 const toolbarStyle: CSSProperties = {
@@ -103,6 +103,15 @@ const editorGridStyle: CSSProperties = {
   gap: 18,
   alignItems: "start",
   maxWidth: "100%",
+};
+
+const visibleTenListStyle: CSSProperties = {
+  display: "grid",
+  gap: 10,
+  maxHeight: 940,
+  overflowY: "auto",
+  overflowX: "hidden",
+  paddingRight: 6,
 };
 
 const formSingleRowStyle: CSSProperties = {
@@ -396,6 +405,17 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
         .qatalyst-testcase-library textarea {
           max-width: 100%;
         }
+        .qatalyst-testcase-library .saved-reports-header h2 {
+          margin-top: 8px;
+          line-height: 1.02;
+        }
+        .qatalyst-testcase-library .saved-reports-list::-webkit-scrollbar {
+          width: 9px;
+        }
+        .qatalyst-testcase-library .saved-reports-list::-webkit-scrollbar-thumb {
+          background: rgba(148, 163, 184, 0.5);
+          border-radius: 999px;
+        }
         @media (max-width: 1100px) {
           .qatalyst-testcase-library-toolbar,
           .qatalyst-testcase-library-editor,
@@ -451,8 +471,13 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
       <div className="qatalyst-testcase-library-editor" style={editorGridStyle}>
         <aside className="saved-reports-list-card" style={{ minWidth: 0 }}>
           <p className="report-kicker">Saved Test Cases <span>{filteredTestCases.length} shown</span></p>
+          {filteredTestCases.length > 10 ? (
+            <p className="saved-reports-muted" style={{ marginTop: -6 }}>
+              Showing 10 at a time. Scroll this list to view all matching cases.
+            </p>
+          ) : null}
           {filteredTestCases.length === 0 ? <p className="saved-reports-muted">No test cases match this filter yet.</p> : null}
-          <div className="saved-reports-list">
+          <div className="saved-reports-list" style={visibleTenListStyle}>
             {filteredTestCases.map((testCase) => (
               <button
                 className={form.id === testCase.id ? "saved-report-list-item saved-report-list-item-active" : "saved-report-list-item"}
