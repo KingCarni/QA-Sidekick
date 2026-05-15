@@ -1,0 +1,414 @@
+.rulesPanel,
+.emptyPanel {
+  display: grid;
+  gap: 18px;
+}
+
+.emptyPanel {
+  padding: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.emptyPanel h2,
+.header h2 {
+  margin: 0;
+  color: #ffffff;
+}
+
+.emptyPanel p,
+.header p,
+.influenceCard span,
+.muted,
+.ruleItem span,
+.ruleItem small,
+.editorMeta,
+.editorInfluenceText {
+  color: rgba(226, 232, 240, 0.74);
+  line-height: 1.5;
+}
+
+.header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.header h2 {
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  letter-spacing: -0.055em;
+}
+
+.header p {
+  margin: 8px 0 0;
+}
+
+.header button,
+.filterPanel button,
+.editorActions button {
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ef4444, #991b1b);
+  color: #ffffff;
+  font-weight: 950;
+}
+
+.header button {
+  min-height: 50px;
+  padding: 0 20px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.statsGrid div {
+  padding: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.statsGrid strong {
+  display: block;
+  color: #ffffff;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.statsGrid span {
+  display: block;
+  margin-top: 8px;
+  color: rgba(226, 232, 240, 0.74);
+}
+
+.influenceCard {
+  padding: 18px;
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 36%),
+    rgba(4, 12, 10, 0.72);
+}
+
+.influenceCard p {
+  margin: 0;
+  color: #bbf7d0;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.influenceCard strong {
+  display: block;
+  margin-top: 6px;
+  color: #ffffff;
+  font-size: 1.1rem;
+}
+
+.influenceCard span {
+  display: block;
+  margin-top: 6px;
+}
+
+.filterPanel {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(115px, 0.7fr) minmax(115px, 0.7fr) minmax(110px, 0.62fr) 58px;
+  gap: 8px;
+  align-items: end;
+  padding: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.filterPanel label,
+.editorCard label,
+.workflowPicker span {
+  display: grid;
+  gap: 7px;
+  color: #fca5a5;
+  font-size: 0.66rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.filterPanel input,
+.filterPanel select,
+.editorCard input,
+.editorCard select,
+.editorCard textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.76);
+  color: #ffffff;
+  outline: none;
+}
+
+.filterPanel input,
+.filterPanel select {
+  min-height: 38px;
+  padding: 0 9px;
+  font-size: 0.78rem;
+}
+
+.filterPanel button {
+  min-height: 38px;
+  padding: 0 9px;
+  font-size: 0.68rem;
+  line-height: 1.05;
+}
+
+.rulesGrid {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.92fr) minmax(320px, 1.18fr);
+  gap: 18px;
+}
+
+.listCard,
+.editorCard {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 22px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.listHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.listHeaderRow p {
+  margin: 0;
+}
+
+.listHeaderRow span {
+  color: rgba(226, 232, 240, 0.68);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.ruleList {
+  display: grid;
+  gap: 12px;
+}
+
+.ruleItem {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.ruleItemActive {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.16);
+}
+
+.ruleItem button:first-child {
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.ruleItem strong {
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.ruleItem span,
+.ruleItem small {
+  display: block;
+}
+
+.enabledToggle,
+.enabledToggleOn {
+  min-height: 34px;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.enabledToggle {
+  border: 1px solid rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.18);
+  color: #fecaca;
+}
+
+.enabledToggleOn {
+  border: 1px solid rgba(34, 197, 94, 0.34);
+  background: rgba(22, 101, 52, 0.24);
+  color: #bbf7d0;
+}
+
+.severityPill {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 2px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.low {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(51, 65, 85, 0.3);
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.medium {
+  border: 1px solid rgba(245, 158, 11, 0.34);
+  background: rgba(120, 53, 15, 0.24);
+  color: #fde68a;
+}
+
+.high {
+  border: 1px solid rgba(248, 113, 113, 0.34);
+  background: rgba(127, 29, 29, 0.24);
+  color: #fecaca;
+}
+
+.critical {
+  border: 1px solid rgba(239, 68, 68, 0.48);
+  background: rgba(153, 27, 27, 0.32);
+  color: #ffffff;
+}
+
+.editorCard {
+  display: grid;
+  gap: 16px;
+}
+
+.editorCard input,
+.editorCard select {
+  min-height: 52px;
+  padding: 0 14px;
+}
+
+.editorCard textarea {
+  min-height: 240px;
+  resize: vertical;
+  padding: 14px;
+  line-height: 1.55;
+}
+
+.enabledCheckbox {
+  display: flex !important;
+  grid-template-columns: auto 1fr;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px !important;
+  color: #ffffff !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.enabledCheckbox input {
+  width: auto;
+  min-height: auto;
+}
+
+.workflowPicker {
+  display: grid;
+  gap: 10px;
+}
+
+.workflowPicker div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.workflowPicker button {
+  min-height: 34px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.7);
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 0.78rem;
+  font-weight: 900;
+  padding: 0 11px;
+}
+
+.workflowPicker .workflowSelected {
+  border-color: rgba(34, 197, 94, 0.34);
+  background: rgba(22, 101, 52, 0.24);
+  color: #bbf7d0;
+}
+
+.editorMeta {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.78rem;
+}
+
+.editorActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.editorActions button {
+  min-height: 52px;
+  padding: 0 18px;
+}
+
+.editorActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+.dangerButton {
+  background: rgba(127, 29, 29, 0.38) !important;
+}
+
+.message,
+.error {
+  margin: 0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  line-height: 1.45;
+}
+
+.message {
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  background: rgba(22, 101, 52, 0.16);
+  color: #bbf7d0;
+}
+
+.error {
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  background: rgba(127, 29, 29, 0.2);
+  color: #fecaca;
+}
+
+@media (max-width: 1100px) {
+  .filterPanel,
+  .rulesGrid,
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
