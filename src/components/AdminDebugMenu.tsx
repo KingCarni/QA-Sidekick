@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FTUE_KEYS,
   completeFtueStep,
@@ -17,6 +17,13 @@ type AdminDebugMenuProps = {
   activeProjectName?: string | null;
 };
 
+function isEditableTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+
+  const tagName = target.tagName.toLowerCase();
+  return tagName === "input" || tagName === "textarea" || tagName === "select" || target.isContentEditable;
+}
+
 export default function AdminDebugMenu({
   userEmail,
   activeTool,
@@ -25,8 +32,29 @@ export default function AdminDebugMenu({
 }: AdminDebugMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const isAdmin = userEmail?.trim().toLowerCase() === ADMIN_EMAIL;
 
-  if (userEmail !== ADMIN_EMAIL) return null;
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.defaultPrevented) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (isEditableTarget(event.target)) return;
+      if (event.key !== "`" && event.key !== "~") return;
+
+      event.preventDefault();
+      setIsOpen((current) => !current);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAdmin]);
+
+  if (!isAdmin || !isOpen) return null;
 
   function flash(nextMessage: string) {
     setMessage(nextMessage);
@@ -66,38 +94,23 @@ export default function AdminDebugMenu({
         bottom: 20,
         zIndex: 9999,
       }}
+      aria-label="Admin debug menu"
     >
-      <button
-        type="button"
-        onClick={() => setIsOpen((current) => !current)}
+      <div
         style={{
-          borderRadius: 12,
-          padding: "10px 14px",
-          background: "#111827",
-          color: "white",
+          width: 300,
+          borderRadius: 16,
+          background: "#0f172a",
           border: "1px solid rgba(255,255,255,0.12)",
-          cursor: "pointer",
+          padding: 16,
+          color: "white",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
         }}
       >
-        Debug
-      </button>
-
-      {isOpen ? (
-        <div
-          style={{
-            width: 300,
-            marginTop: 12,
-            borderRadius: 16,
-            background: "#0f172a",
-            border: "1px solid rgba(255,255,255,0.12)",
-            padding: 16,
-            color: "white",
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-            boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
           <div>
             <div style={{ fontSize: 12, opacity: 0.7 }}>
               Admin Debug Menu
@@ -108,62 +121,68 @@ export default function AdminDebugMenu({
             </div>
           </div>
 
+          <button type="button" onClick={() => setIsOpen(false)} aria-label="Close admin debug menu">
+            Close
+          </button>
+        </div>
+
+        <div
+          style={{
+            fontSize: 12,
+            opacity: 0.8,
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+          }}
+        >
+          <span>Tool: {activeTool || "unknown"}</span>
+
+          <span>
+            Project: {activeProjectName || activeProjectId || "none"}
+          </span>
+
+          <span>Shortcut: backtick / tilde</span>
+        </div>
+
+        <button type="button" onClick={resetFtue}>
+          Reset FTUE
+        </button>
+
+        <button type="button" onClick={completeFtue}>
+          Complete FTUE
+        </button>
+
+        <button type="button" onClick={clearActiveProject}>
+          Clear Active Project
+        </button>
+
+        <button type="button" onClick={() => openPath("/brain")}>
+          Open Brain
+        </button>
+
+        <button
+          type="button"
+          onClick={() => openPath("/brain?tab=integrations")}
+        >
+          Brain Integrations
+        </button>
+
+        <button type="button" onClick={() => openPath("/account")}>
+          Account
+        </button>
+
+        {message ? (
           <div
             style={{
               fontSize: 12,
-              opacity: 0.8,
-              display: "flex",
-              flexDirection: "column",
-              gap: 4,
+              opacity: 0.85,
+              marginTop: 4,
             }}
           >
-            <span>Tool: {activeTool || "unknown"}</span>
-
-            <span>
-              Project: {activeProjectName || activeProjectId || "none"}
-            </span>
+            {message}
           </div>
-
-          <button type="button" onClick={resetFtue}>
-            Reset FTUE
-          </button>
-
-          <button type="button" onClick={completeFtue}>
-            Complete FTUE
-          </button>
-
-          <button type="button" onClick={clearActiveProject}>
-            Clear Active Project
-          </button>
-
-          <button type="button" onClick={() => openPath("/brain")}>
-            Open Brain
-          </button>
-
-          <button
-            type="button"
-            onClick={() => openPath("/brain?tab=integrations")}
-          >
-            Brain Integrations
-          </button>
-
-          <button type="button" onClick={() => openPath("/account")}>
-            Account
-          </button>
-
-          {message ? (
-            <div
-              style={{
-                fontSize: 12,
-                opacity: 0.85,
-                marginTop: 4,
-              }}
-            >
-              {message}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </aside>
   );
 }
