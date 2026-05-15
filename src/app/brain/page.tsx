@@ -5,6 +5,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import BugCollectionPanel from "@/components/BugCollectionPanel";
 import CreditsPill from "@/components/CreditsPill";
+import ProjectRisksPanel from "@/components/ProjectRisksPanel";
 import ProjectRulesPanel from "@/components/ProjectRulesPanel";
 import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSettingsPanel";
 import ProjectSourceVaultPanel from "@/components/ProjectSourceVaultPanel";
@@ -152,21 +153,10 @@ const BRAIN_STATUS_CARDS = [
   { label: "Saved Reports", value: "Foundation", text: "Report history shell now lives in Brain." },
   { label: "QA Rules", value: "Live", text: "Team standards and release expectations now influence Brain context." },
   { label: "Terminology", value: "Live", text: "Project vocabulary and aliases now influence Brain context." },
+  { label: "Risks / Hotspots", value: "Live", text: "Known fragile areas now influence Brain context." },
+  { label: "Feature Registry", value: "Live", text: "Feature lifecycle context now influences Brain context." },
   { label: "Integrations", value: "Available", text: "Jira and TestRail setup lives here." },
 ];
-
-const SECTION_EMPTY_STATES: Record<Exclude<BrainTabId, "overview" | "projects" | "sources" | "bugs" | "reports" | "rules" | "terminology" | "integrations">, string[]> = {
-  risks: [
-    "Track fragile areas, historical bug patterns, and regression hotspots.",
-    "Use this for systems that need extra test focus before release.",
-    "Future risk reviews should pull from this memory.",
-  ],
-  features: [
-    "Track shipped, planned, and in-progress product areas.",
-    "Use this as a lightweight feature map, not a heavy wiki.",
-    "Future Feature Builder work can feed this registry.",
-  ],
-};
 
 function formatReportDate(value: string) {
   if (!value) return "";
@@ -518,9 +508,9 @@ export default function BrainPage() {
         className="qat-ftue-card brain-qat-guide"
         eyebrow="QAt setup guide"
         title="Start with your project memory."
-        body="Brain now owns reusable project context. Create/select a project, add source notes or docs, capture team QA rules, define terminology, keep saved defects in Bug Collection, and review generated artifacts in Saved Reports."
-        primaryAction={{ label: "Open Terminology", onClick: () => selectBrainTab("terminology") }}
-        secondaryAction={{ label: "QA Rules", onClick: () => selectBrainTab("rules") }}
+        body="Brain now owns reusable project context. Create/select a project, add source notes or docs, capture team QA rules, define terminology, track risks, map features, keep saved defects in Bug Collection, and review generated artifacts in Saved Reports."
+        primaryAction={{ label: "Open Risks", onClick: () => selectBrainTab("risks") }}
+        secondaryAction={{ label: "Feature Registry", onClick: () => selectBrainTab("features") }}
       />
 
       <section className="brain-workspace">
@@ -572,10 +562,10 @@ export default function BrainPage() {
 
               <article className="brain-next-step-card">
                 <p>Recommended next step</p>
-                <h3>Move reusable context, team rules, terminology, saved defects, and reports into Brain.</h3>
-                <span>Create/select a project, then manage Source Vault, QA Rules, Terminology, Bug Collection, and Saved Reports from one setup hub.</span>
-                <button type="button" onClick={() => selectBrainTab(activeProject ? "terminology" : "projects")}>
-                  {activeProject ? "Open Terminology" : "Set up project"}
+                <h3>Move reusable context, team rules, terminology, risks, features, saved defects, and reports into Brain.</h3>
+                <span>Create/select a project, then manage Source Vault, QA Rules, Terminology, Risks, Feature Registry, Bug Collection, and Saved Reports from one setup hub.</span>
+                <button type="button" onClick={() => selectBrainTab(activeProject ? "risks" : "projects")}>
+                  {activeProject ? "Open Risks" : "Set up project"}
                 </button>
               </article>
             </div>
@@ -620,16 +610,16 @@ export default function BrainPage() {
             </section>
           ) : null}
 
-          {activeTab !== "overview" && activeTab !== "projects" && activeTab !== "sources" && activeTab !== "bugs" && activeTab !== "reports" && activeTab !== "rules" && activeTab !== "terminology" && activeTab !== "integrations" ? (
-            <div className="brain-empty-state">
-              <p className="brain-empty-kicker">V1 foundation</p>
-              <h3>{active.label} is ready for the next build pass.</h3>
-              <ul>
-                {SECTION_EMPTY_STATES[activeTab].map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
+          {activeTab === "risks" ? (
+            <section className="brain-live-section">
+              <ProjectRisksPanel activeProject={activeProject} mode="risks" />
+            </section>
+          ) : null}
+
+          {activeTab === "features" ? (
+            <section className="brain-live-section">
+              <ProjectRisksPanel activeProject={activeProject} mode="features" />
+            </section>
           ) : null}
 
           {activeTab === "integrations" ? (
