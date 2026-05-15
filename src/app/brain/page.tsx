@@ -5,6 +5,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import BugCollectionPanel from "@/components/BugCollectionPanel";
 import CreditsPill from "@/components/CreditsPill";
+import ProjectRulesPanel from "@/components/ProjectRulesPanel";
 import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSettingsPanel";
 import ProjectSourceVaultPanel from "@/components/ProjectSourceVaultPanel";
 import QAtGuideCard from "@/components/QAtGuideCard";
@@ -148,16 +149,11 @@ const BRAIN_STATUS_CARDS = [
   { label: "Source Vault", value: "Live", text: "Reusable context and saved project sources." },
   { label: "Bug Collection", value: "Live", text: "Saved defects now live in Brain." },
   { label: "Saved Reports", value: "Foundation", text: "Report history shell now lives in Brain." },
-  { label: "QA Rules", value: "Planned", text: "Team standards and release expectations." },
+  { label: "QA Rules", value: "Live", text: "Team standards and release expectations now influence Brain context." },
   { label: "Integrations", value: "Available", text: "Jira and TestRail setup lives here." },
 ];
 
-const SECTION_EMPTY_STATES: Record<Exclude<BrainTabId, "overview" | "projects" | "sources" | "bugs" | "reports" | "integrations">, string[]> = {
-  rules: [
-    "Add severity/priority rules, release gates, and coverage expectations.",
-    "Capture how your team wants QA output structured.",
-    "Use this to reduce generic AI output.",
-  ],
+const SECTION_EMPTY_STATES: Record<Exclude<BrainTabId, "overview" | "projects" | "sources" | "bugs" | "reports" | "rules" | "integrations">, string[]> = {
   terminology: [
     "Define acronyms, user roles, domain terms, and product vocabulary.",
     "Keep domain language consistent across generated artifacts.",
@@ -525,9 +521,9 @@ export default function BrainPage() {
         className="qat-ftue-card brain-qat-guide"
         eyebrow="QAt setup guide"
         title="Start with your project memory."
-        body="Brain now owns reusable project context. Create/select a project, add source notes or docs, keep saved defects in Bug Collection, and review generated artifacts in Saved Reports."
+        body="Brain now owns reusable project context. Create/select a project, add source notes or docs, capture team QA rules, keep saved defects in Bug Collection, and review generated artifacts in Saved Reports."
         primaryAction={{ label: "Open Source Vault", onClick: () => selectBrainTab("sources") }}
-        secondaryAction={{ label: "Saved Reports", onClick: () => selectBrainTab("reports") }}
+        secondaryAction={{ label: "QA Rules", onClick: () => selectBrainTab("rules") }}
       />
 
       <section className="brain-workspace">
@@ -557,6 +553,16 @@ export default function BrainPage() {
             </div>
           ) : null}
 
+          {isLoadingActiveProject ? (
+            <div className="brain-active-project-strip">
+              <div>
+                <p className="brain-mini-eyebrow">Project Brain</p>
+                <strong>Loading active project…</strong>
+                <span>QAtalyst is finding your most recent project workspace.</span>
+              </div>
+            </div>
+          ) : null}
+
           {activeTab === "overview" ? (
             <div className="brain-overview-grid">
               {BRAIN_STATUS_CARDS.map((card) => (
@@ -569,10 +575,10 @@ export default function BrainPage() {
 
               <article className="brain-next-step-card">
                 <p>Recommended next step</p>
-                <h3>Move reusable context, saved defects, and reports into Brain.</h3>
-                <span>Create/select a project, then manage Source Vault, Bug Collection, and Saved Reports from one setup hub.</span>
-                <button type="button" onClick={() => selectBrainTab(activeProject ? "reports" : "projects")}>
-                  {activeProject ? "Open Saved Reports" : "Set up project"}
+                <h3>Move reusable context, team rules, saved defects, and reports into Brain.</h3>
+                <span>Create/select a project, then manage Source Vault, QA Rules, Bug Collection, and Saved Reports from one setup hub.</span>
+                <button type="button" onClick={() => selectBrainTab(activeProject ? "rules" : "projects")}>
+                  {activeProject ? "Open QA Rules" : "Set up project"}
                 </button>
               </article>
             </div>
@@ -605,7 +611,13 @@ export default function BrainPage() {
             </section>
           ) : null}
 
-          {activeTab !== "overview" && activeTab !== "projects" && activeTab !== "sources" && activeTab !== "bugs" && activeTab !== "reports" && activeTab !== "integrations" ? (
+          {activeTab === "rules" ? (
+            <section className="brain-live-section">
+              <ProjectRulesPanel activeProject={activeProject} />
+            </section>
+          ) : null}
+
+          {activeTab !== "overview" && activeTab !== "projects" && activeTab !== "sources" && activeTab !== "bugs" && activeTab !== "reports" && activeTab !== "rules" && activeTab !== "integrations" ? (
             <div className="brain-empty-state">
               <p className="brain-empty-kicker">V1 foundation</p>
               <h3>{active.label} is ready for the next build pass.</h3>
