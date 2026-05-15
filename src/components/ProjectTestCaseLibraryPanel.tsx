@@ -2,6 +2,12 @@
 
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
+import {
+  buildAutomationExportBundle,
+  downloadAutomationBundleAsMarkdown,
+  downloadAutomationFilesIndividually,
+  type AutomationExportTestCase,
+} from "@/lib/automation-export";
 
 const TEST_CASE_TYPES = ["smoke", "functional", "regression", "edge-case", "accessibility", "security", "performance", "integration", "other"] as const;
 const TEST_CASE_PRIORITIES = ["low", "medium", "high", "critical"] as const;
@@ -148,6 +154,25 @@ const activePageButtonStyle: CSSProperties = {
   color: "#fff",
 };
 
+const exportCardStyle: CSSProperties = {
+  border: "1px solid rgba(34, 197, 94, 0.24)",
+  borderRadius: 20,
+  background: "linear-gradient(135deg, rgba(6, 78, 59, 0.28), rgba(15, 23, 42, 0.62))",
+  padding: 16,
+  margin: "18px 0 20px",
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1fr) auto",
+  gap: 14,
+  alignItems: "center",
+};
+
+const exportActionsStyle: CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  justifyContent: "flex-end",
+  gap: 10,
+};
+
 const formSingleRowStyle: CSSProperties = {
   display: "grid",
   gridTemplateColumns: "minmax(0, 1fr)",
@@ -254,6 +279,17 @@ function formFromTestCase(testCase: SafeProjectTestCase): FormState {
   };
 }
 
+function testCaseToAutomationExport(testCase: SafeProjectTestCase): AutomationExportTestCase {
+  return {
+    title: testCase.title,
+    type: testCase.testType,
+    priority: testCase.priority,
+    preconditions: testCase.preconditions,
+    steps: testCase.steps,
+    expectedResult: testCase.expectedResult,
+  };
+}
+
 function buildPayload(form: FormState) {
   return {
     id: form.id || undefined,
@@ -302,6 +338,7 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [exportMessage, setExportMessage] = useState("");
 
   const filteredTestCases = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -319,6 +356,11 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
       return matchesQuery && matchesType && matchesStatus && matchesPriority;
     });
   }, [priorityFilter, search, statusFilter, testCases, typeFilter]);
+
+  const exportableTestCases = useMemo(
+    () => filteredTestCases.filter((testCase) => testCase.status !== "deprecated").map(testCaseToAutomationExport),
+    [filteredTestCases]
+  );
 
   const pageCount = useMemo(() => Math.max(1, Math.ceil(filteredTestCases.length / TEST_CASE_PAGE_SIZE)), [filteredTestCases.length]);
   const currentPageStartIndex = (currentPage - 1) * TEST_CASE_PAGE_SIZE;
@@ -339,6 +381,7 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
 
   useEffect(() => {
     setCurrentPage(1);
+    setExportMessage("");
   }, [activeProject?.id, priorityFilter, search, statusFilter, typeFilter]);
 
   useEffect(() => {
@@ -352,6 +395,7 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
     setForm(EMPTY_FORM);
     setMessage("");
     setError("");
+    setExportMessage("");
 
     if (activeProject?.id) {
       void loadTestCases(activeProject.id);
@@ -437,6 +481,40 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
     }
   }
 
+  function buildLibraryAutomationBundle() {
+    if (!activeProject) throw new Error("Select a project before exporting automation skeletons.");
+    if (exportableTestCases.length === 0) throw new Error("No matching non-deprecated test cases are available to export.");
+
+    return buildAutomationExportBundle(exportableTestCases, {
+      bundleName: `${activeProject.name} Test Case Library Automation`,
+      includePartial: true,
+      includeManualReview: true,
+      exportMode: "user-project",
+    });
+  }
+
+  function exportSkeletonMarkdown() {
+    setExportMessage("");
+    try {
+      const bundle = buildLibraryAutomationBundle();
+      downloadAutomationBundleAsMarkdown(`${activeProject?.name ?? "Project"} Test Case Library Automation`, bundle);
+      setExportMessage(`Exported ${bundle.summary.skeletons} skeleton file${bundle.summary.skeletons === 1 ? "" : "s"} plus ${bundle.summary.manualReviewCases} manual-review case${bundle.summary.manualReviewCases === 1 ? "" : "s"}.`);
+    } catch (exportError) {
+      setExportMessage(exportError instanceof Error ? exportError.message : "Could not export automation skeletons.");
+    }
+  }
+
+  function exportSkeletonFiles() {
+    setExportMessage("");
+    try {
+      const bundle = buildLibraryAutomationBundle();
+      downloadAutomationFilesIndividually(bundle);
+      setExportMessage(`Downloaded ${bundle.files.length} automation export file${bundle.files.length === 1 ? "" : "s"}.`);
+    } catch (exportError) {
+      setExportMessage(exportError instanceof Error ? exportError.message : "Could not export automation skeletons.");
+    }
+  }
+
   if (!activeProject) {
     return (
       <section className="saved-reports-panel saved-reports-empty">
@@ -467,7 +545,8 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
           .qatalyst-testcase-library-toolbar,
           .qatalyst-testcase-library-editor,
           .qatalyst-testcase-form-two,
-          .qatalyst-testcase-form-three {
+          .qatalyst-testcase-form-three,
+          .qatalyst-testcase-export-card {
             grid-template-columns: 1fr !important;
           }
         }
@@ -512,6 +591,25 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
         </FieldLabel>
       </div>
 
+      <section className="qatalyst-testcase-export-card" style={exportCardStyle}>
+        <div>
+          <p className="report-kicker" style={{ marginBottom: 8 }}>Automation Skeleton Export</p>
+          <strong>Export skeletons from the current library filter</strong>
+          <p className="saved-reports-muted" style={{ margin: "6px 0 0" }}>
+            Uses {exportableTestCases.length} matching non-deprecated test case{exportableTestCases.length === 1 ? "" : "s"}. Search and filters are applied before export.
+          </p>
+        </div>
+        <div style={exportActionsStyle}>
+          <button type="button" onClick={exportSkeletonMarkdown} disabled={exportableTestCases.length === 0}>
+            Export Skeletons Markdown
+          </button>
+          <button type="button" onClick={exportSkeletonFiles} disabled={exportableTestCases.length === 0}>
+            Download Files
+          </button>
+        </div>
+      </section>
+
+      {exportMessage ? <p className="saved-reports-message">{exportMessage}</p> : null}
       {message ? <p className="saved-reports-message">{message}</p> : null}
       {error ? <p className="saved-reports-error">{error}</p> : null}
 
