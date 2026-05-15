@@ -429,12 +429,6 @@ export default function HeaderProjectSourceControls({
 
         {isMounted && isSourcesOpen ? createPortal(sourcesMenu, document.body) : null}
       </div>
-
-      <BrainInfluenceSummary
-        context={activeContext}
-        selectedSourceCount={selectedCount}
-        compact
-      />
     </div>
   );
 }
