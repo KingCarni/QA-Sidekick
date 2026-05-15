@@ -4,6 +4,7 @@ import {
   type ProjectContextInput,
   type ProjectContextPayload,
 } from "@/lib/project-context-injection";
+import { buildProjectRulesBlock, workflowMatchesRule, type SafeProjectRule } from "@/lib/project-rules";
 import { recordSecurityAuditEvent, SECURITY_EVENTS } from "@/lib/security-audit";
 
 type ProjectContextRequestShape = {
@@ -13,6 +14,12 @@ type ProjectContextRequestShape = {
   projectContextMeta?: {
     selectedSourceIds?: unknown;
   } | null;
+};
+
+export type AuthorizedProjectContextPayload = ProjectContextPayload & {
+  selectedProjectRuleIds: string[];
+  projectRuleCount: number;
+  projectRulesSummary: string;
 };
 
 function cleanId(value: unknown): string {
@@ -40,16 +47,48 @@ function getRequestedSourceIds(input: ProjectContextRequestShape): string[] {
   return cleanIdList(input.projectContextMeta?.selectedSourceIds);
 }
 
+function toSafeRule(rule: {
+  id: string;
+  projectId: string;
+  title: string;
+  category: string;
+  severity: string;
+  appliesTo: string[];
+  body: string;
+  isEnabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}): SafeProjectRule {
+  return {
+    id: rule.id,
+    projectId: rule.projectId,
+    title: rule.title,
+    category: rule.category,
+    severity: rule.severity,
+    appliesTo: rule.appliesTo,
+    body: rule.body,
+    isEnabled: rule.isEnabled,
+    createdAt: rule.createdAt.toISOString(),
+    updatedAt: rule.updatedAt.toISOString(),
+  };
+}
+
 export async function buildAuthorizedProjectContextPayload(
   userId: string,
   input: ProjectContextRequestShape,
-  options: { maxCharacters?: number; route?: string } = {}
-): Promise<ProjectContextPayload> {
+  options: { maxCharacters?: number; route?: string; workflow?: string } = {}
+): Promise<AuthorizedProjectContextPayload> {
   const requestedProjectId = getRequestedProjectId(input);
   const requestedSourceIds = getRequestedSourceIds(input);
+  const emptyPayload = buildProjectContextPayload({ maxCharacters: options.maxCharacters });
 
   if (!userId || !requestedProjectId) {
-    return buildProjectContextPayload({ maxCharacters: options.maxCharacters });
+    return {
+      ...emptyPayload,
+      selectedProjectRuleIds: [],
+      projectRuleCount: 0,
+      projectRulesSummary: "No project rules used.",
+    };
   }
 
   const project = await prisma.qAProject.findFirst({
@@ -76,6 +115,24 @@ export async function buildAuthorizedProjectContextPayload(
           isEnabled: true,
         },
       },
+      rules: {
+        where: {
+          isEnabled: true,
+        },
+        orderBy: [{ severity: "desc" }, { updatedAt: "desc" }, { createdAt: "desc" }],
+        select: {
+          id: true,
+          projectId: true,
+          title: true,
+          category: true,
+          severity: true,
+          appliesTo: true,
+          body: true,
+          isEnabled: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
     },
   });
 
@@ -91,7 +148,12 @@ export async function buildAuthorizedProjectContextPayload(
       },
     });
 
-    return buildProjectContextPayload({ maxCharacters: options.maxCharacters });
+    return {
+      ...emptyPayload,
+      selectedProjectRuleIds: [],
+      projectRuleCount: 0,
+      projectRulesSummary: "No project rules used.",
+    };
   }
 
   const requestedSourceSet = new Set(requestedSourceIds);
@@ -116,6 +178,11 @@ export async function buildAuthorizedProjectContextPayload(
     });
   }
 
+  const safeRules = project.rules.map(toSafeRule);
+  const workflow = options.workflow ?? "all";
+  const applicableRules = safeRules.filter((rule) => workflowMatchesRule(rule, workflow));
+  const rulesBlock = buildProjectRulesBlock(applicableRules, workflow);
+
   const payloadInput: ProjectContextInput = {
     projectId: project.id,
     projectName: project.name,
@@ -135,6 +202,11 @@ export async function buildAuthorizedProjectContextPayload(
   };
 
   const payload = buildProjectContextPayload(payloadInput);
+  const projectContextBlock = [payload.projectContextBlock, rulesBlock].filter(Boolean).join("\n\n");
+  const projectContextUsed = payload.projectContextUsed || Boolean(rulesBlock);
+  const projectRulesSummary = applicableRules.length
+    ? `${applicableRules.length} active rule${applicableRules.length === 1 ? "" : "s"} used`
+    : "No project rules used.";
 
   await recordSecurityAuditEvent({
     userId,
@@ -142,21 +214,34 @@ export async function buildAuthorizedProjectContextPayload(
     meta: {
       route: options.route ?? "unknown",
       projectId: project.id,
-      projectContextUsed: payload.projectContextUsed,
+      projectContextUsed,
       sourceCount: authorizedSources.length,
       requestedSourceCount: requestedSourceIds.length,
+      ruleCount: applicableRules.length,
+      workflow,
     },
   });
 
-  return payload;
+  return {
+    ...payload,
+    projectContextUsed,
+    projectContextBlock,
+    projectContextSummary: [payload.projectContextSummary, projectRulesSummary].filter(Boolean).join(" · "),
+    selectedProjectRuleIds: applicableRules.map((rule) => rule.id),
+    projectRuleCount: applicableRules.length,
+    projectRulesSummary,
+  };
 }
 
-export function serializeAuthorizedProjectContext(context: ProjectContextPayload) {
+export function serializeAuthorizedProjectContext(context: AuthorizedProjectContextPayload) {
   return {
     projectContextUsed: context.projectContextUsed,
     selectedProjectId: context.selectedProjectId,
     selectedProjectName: context.selectedProjectName,
     selectedProjectSourceIds: context.selectedProjectSourceIds,
+    selectedProjectRuleIds: context.selectedProjectRuleIds,
+    projectRuleCount: context.projectRuleCount,
+    projectRulesSummary: context.projectRulesSummary,
     projectContextSummary: context.projectContextSummary,
   };
 }
