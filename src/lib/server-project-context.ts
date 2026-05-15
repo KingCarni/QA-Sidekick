@@ -5,6 +5,7 @@ import {
   type ProjectContextPayload,
 } from "@/lib/project-context-injection";
 import { buildProjectRulesBlock, workflowMatchesRule, type SafeProjectRule } from "@/lib/project-rules";
+import { buildProjectTerminologyBlock, type SafeProjectTerm } from "@/lib/project-terms";
 import { recordSecurityAuditEvent, SECURITY_EVENTS } from "@/lib/security-audit";
 
 type ProjectContextRequestShape = {
@@ -20,6 +21,9 @@ export type AuthorizedProjectContextPayload = ProjectContextPayload & {
   selectedProjectRuleIds: string[];
   projectRuleCount: number;
   projectRulesSummary: string;
+  selectedProjectTermIds: string[];
+  projectTermCount: number;
+  projectTerminologySummary: string;
 };
 
 function cleanId(value: unknown): string {
@@ -73,6 +77,44 @@ function toSafeRule(rule: {
   };
 }
 
+function toSafeTerm(term: {
+  id: string;
+  projectId: string;
+  term: string;
+  definition: string;
+  aliases: string[];
+  preferredUsage: string | null;
+  category: string;
+  isEnabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}): SafeProjectTerm {
+  return {
+    id: term.id,
+    projectId: term.projectId,
+    term: term.term,
+    definition: term.definition,
+    aliases: term.aliases,
+    preferredUsage: term.preferredUsage,
+    category: term.category,
+    isEnabled: term.isEnabled,
+    createdAt: term.createdAt.toISOString(),
+    updatedAt: term.updatedAt.toISOString(),
+  };
+}
+
+function buildEmptyAuthorizedPayload(payload: ProjectContextPayload): AuthorizedProjectContextPayload {
+  return {
+    ...payload,
+    selectedProjectRuleIds: [],
+    projectRuleCount: 0,
+    projectRulesSummary: "No project rules used.",
+    selectedProjectTermIds: [],
+    projectTermCount: 0,
+    projectTerminologySummary: "No project terminology used.",
+  };
+}
+
 export async function buildAuthorizedProjectContextPayload(
   userId: string,
   input: ProjectContextRequestShape,
@@ -83,12 +125,7 @@ export async function buildAuthorizedProjectContextPayload(
   const emptyPayload = buildProjectContextPayload({ maxCharacters: options.maxCharacters });
 
   if (!userId || !requestedProjectId) {
-    return {
-      ...emptyPayload,
-      selectedProjectRuleIds: [],
-      projectRuleCount: 0,
-      projectRulesSummary: "No project rules used.",
-    };
+    return buildEmptyAuthorizedPayload(emptyPayload);
   }
 
   const project = await prisma.qAProject.findFirst({
@@ -133,6 +170,24 @@ export async function buildAuthorizedProjectContextPayload(
           updatedAt: true,
         },
       },
+      terms: {
+        where: {
+          isEnabled: true,
+        },
+        orderBy: [{ category: "asc" }, { term: "asc" }, { updatedAt: "desc" }],
+        select: {
+          id: true,
+          projectId: true,
+          term: true,
+          definition: true,
+          aliases: true,
+          preferredUsage: true,
+          category: true,
+          isEnabled: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
     },
   });
 
@@ -148,12 +203,7 @@ export async function buildAuthorizedProjectContextPayload(
       },
     });
 
-    return {
-      ...emptyPayload,
-      selectedProjectRuleIds: [],
-      projectRuleCount: 0,
-      projectRulesSummary: "No project rules used.",
-    };
+    return buildEmptyAuthorizedPayload(emptyPayload);
   }
 
   const requestedSourceSet = new Set(requestedSourceIds);
@@ -182,6 +232,8 @@ export async function buildAuthorizedProjectContextPayload(
   const workflow = options.workflow ?? "all";
   const applicableRules = safeRules.filter((rule) => workflowMatchesRule(rule, workflow));
   const rulesBlock = buildProjectRulesBlock(applicableRules, workflow);
+  const safeTerms = project.terms.map(toSafeTerm);
+  const terminologyBlock = buildProjectTerminologyBlock(safeTerms);
 
   const payloadInput: ProjectContextInput = {
     projectId: project.id,
@@ -202,11 +254,14 @@ export async function buildAuthorizedProjectContextPayload(
   };
 
   const payload = buildProjectContextPayload(payloadInput);
-  const projectContextBlock = [payload.projectContextBlock, rulesBlock].filter(Boolean).join("\n\n");
-  const projectContextUsed = payload.projectContextUsed || Boolean(rulesBlock);
+  const projectContextBlock = [payload.projectContextBlock, rulesBlock, terminologyBlock].filter(Boolean).join("\n\n");
+  const projectContextUsed = payload.projectContextUsed || Boolean(rulesBlock) || Boolean(terminologyBlock);
   const projectRulesSummary = applicableRules.length
     ? `${applicableRules.length} active rule${applicableRules.length === 1 ? "" : "s"} used`
     : "No project rules used.";
+  const projectTerminologySummary = safeTerms.length
+    ? `${safeTerms.length} active term${safeTerms.length === 1 ? "" : "s"} used`
+    : "No project terminology used.";
 
   await recordSecurityAuditEvent({
     userId,
@@ -218,6 +273,7 @@ export async function buildAuthorizedProjectContextPayload(
       sourceCount: authorizedSources.length,
       requestedSourceCount: requestedSourceIds.length,
       ruleCount: applicableRules.length,
+      termCount: safeTerms.length,
       workflow,
     },
   });
@@ -226,10 +282,13 @@ export async function buildAuthorizedProjectContextPayload(
     ...payload,
     projectContextUsed,
     projectContextBlock,
-    projectContextSummary: [payload.projectContextSummary, projectRulesSummary].filter(Boolean).join(" · "),
+    projectContextSummary: [payload.projectContextSummary, projectRulesSummary, projectTerminologySummary].filter(Boolean).join(" · "),
     selectedProjectRuleIds: applicableRules.map((rule) => rule.id),
     projectRuleCount: applicableRules.length,
     projectRulesSummary,
+    selectedProjectTermIds: safeTerms.map((term) => term.id),
+    projectTermCount: safeTerms.length,
+    projectTerminologySummary,
   };
 }
 
@@ -242,6 +301,9 @@ export function serializeAuthorizedProjectContext(context: AuthorizedProjectCont
     selectedProjectRuleIds: context.selectedProjectRuleIds,
     projectRuleCount: context.projectRuleCount,
     projectRulesSummary: context.projectRulesSummary,
+    selectedProjectTermIds: context.selectedProjectTermIds,
+    projectTermCount: context.projectTermCount,
+    projectTerminologySummary: context.projectTerminologySummary,
     projectContextSummary: context.projectContextSummary,
   };
 }
