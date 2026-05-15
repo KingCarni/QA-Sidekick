@@ -9,6 +9,14 @@ export type ActiveProjectContext = {
   sources: SafeProjectSource[];
   enabledSourceCount: number;
   totalSourceCount: number;
+  enabledRuleCount?: number;
+  totalRuleCount?: number;
+  enabledTermCount?: number;
+  totalTermCount?: number;
+  enabledRiskCount?: number;
+  totalRiskCount?: number;
+  enabledFeatureCount?: number;
+  totalFeatureCount?: number;
   contextBlock: string;
   contextPreview: string;
 };
@@ -50,7 +58,7 @@ export default function ProjectContextIndicator({
       <section className="project-context-indicator project-context-indicator-empty">
         <p className="report-kicker">Project Context</p>
         <strong>No active project context</strong>
-        <span>Select a project in Settings to make QA output project-aware.</span>
+        <span>Select a project in Project Brain to make QA output project-aware.</span>
       </section>
     );
   }
@@ -63,7 +71,11 @@ export default function ProjectContextIndicator({
           <strong>{context.project.name}</strong>
           <span>
             Using {context.enabledSourceCount} enabled source{context.enabledSourceCount === 1 ? "" : "s"}.
-            {context.totalSourceCount !== context.enabledSourceCount ? ` ${context.totalSourceCount - context.enabledSourceCount} disabled.` : ""}
+            {context.enabledRuleCount ? ` ${context.enabledRuleCount} rules.` : ""}
+            {context.enabledTermCount ? ` ${context.enabledTermCount} terms.` : ""}
+            {context.enabledRiskCount ? ` ${context.enabledRiskCount} risks.` : ""}
+            {context.enabledFeatureCount ? ` ${context.enabledFeatureCount} features.` : ""}
+            {context.totalSourceCount !== context.enabledSourceCount ? ` ${context.totalSourceCount - context.enabledSourceCount} disabled sources.` : ""}
           </span>
         </div>
 
