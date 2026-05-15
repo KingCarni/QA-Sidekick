@@ -21,21 +21,39 @@ export type QAtGuideCardProps = {
   children?: ReactNode;
 };
 
+type BrainSetupStepId = "brain" | "project" | "sources" | "jira" | "testrail" | "toolbelt";
+
 type BrainSetupStep = {
-  id: string;
+  id: BrainSetupStepId;
   label: string;
+  shortLabel: string;
   title: string;
   body: string;
   tab?: string;
   cta: string;
 };
 
+type BrainSetupStatus = {
+  isLoading: boolean;
+  activeProjectId: string;
+  activeProjectName: string;
+  hasProject: boolean;
+  sourceCount: number;
+  enabledSourceCount: number;
+  hasSources: boolean;
+  jiraConfigured: boolean;
+  testRailConfigured: boolean;
+  error: string;
+};
+
 const BRAIN_SETUP_STORAGE_KEY = "qatalyst.brain-ftue-step";
+const ACTIVE_PROJECT_STORAGE_KEY = "qatalyst.activeProjectId";
 
 const BRAIN_SETUP_STEPS: BrainSetupStep[] = [
   {
     id: "brain",
     label: "1 / 6",
+    shortLabel: "Brain",
     title: "Start in Project Brain.",
     body:
       "Project Brain is the setup home for reusable QA memory. I’ll walk you through the minimum pieces QAtalyst needs before sending you back to the toolbelt.",
@@ -45,6 +63,7 @@ const BRAIN_SETUP_STEPS: BrainSetupStep[] = [
   {
     id: "project",
     label: "2 / 6",
+    shortLabel: "Project",
     title: "Set up your project workspace.",
     body:
       "Create or select the product/client workspace this QA memory belongs to. Projects keep sources, reports, bugs, rules, and integrations scoped to the right account.",
@@ -54,6 +73,7 @@ const BRAIN_SETUP_STEPS: BrainSetupStep[] = [
   {
     id: "sources",
     label: "3 / 6",
+    shortLabel: "Sources",
     title: "Add reusable source context.",
     body:
       "Source Vault is where product notes, specs, acceptance rules, release docs, and imported text live. This is what keeps generated QA work from starting cold.",
@@ -63,6 +83,7 @@ const BRAIN_SETUP_STEPS: BrainSetupStep[] = [
   {
     id: "jira",
     label: "4 / 6",
+    shortLabel: "Jira",
     title: "Connect Jira when you’re ready.",
     body:
       "Jira setup lets QAtalyst fetch tickets and prepare handoff-ready QA work. Add the site URL, email, token, project key, and issue type defaults.",
@@ -72,6 +93,7 @@ const BRAIN_SETUP_STEPS: BrainSetupStep[] = [
   {
     id: "testrail",
     label: "5 / 6",
+    shortLabel: "TestRail",
     title: "Set up TestRail for coverage handoff.",
     body:
       "TestRail setup keeps generated test cases closer to your test management workflow. Configure it after Jira so saved coverage can move toward sync-ready output.",
@@ -81,6 +103,7 @@ const BRAIN_SETUP_STEPS: BrainSetupStep[] = [
   {
     id: "toolbelt",
     label: "6 / 6",
+    shortLabel: "Toolbelt",
     title: "Return to the toolbelt and generate QA work.",
     body:
       "Once Brain has a project, source context, and integrations, go back to the toolbelt. QAtalyst will use the selected project memory while you generate test cases, bugs, risk reviews, and feature briefs.",
@@ -88,8 +111,39 @@ const BRAIN_SETUP_STEPS: BrainSetupStep[] = [
   },
 ];
 
+const INITIAL_BRAIN_SETUP_STATUS: BrainSetupStatus = {
+  isLoading: true,
+  activeProjectId: "",
+  activeProjectName: "",
+  hasProject: false,
+  sourceCount: 0,
+  enabledSourceCount: 0,
+  hasSources: false,
+  jiraConfigured: false,
+  testRailConfigured: false,
+  error: "",
+};
+
 function clampStepIndex(value: number) {
   return Math.min(Math.max(value, 0), BRAIN_SETUP_STEPS.length - 1);
+}
+
+function isStepComplete(stepId: BrainSetupStepId, status: BrainSetupStatus) {
+  if (stepId === "brain") return true;
+  if (stepId === "project") return status.hasProject;
+  if (stepId === "sources") return status.hasSources;
+  if (stepId === "jira") return status.jiraConfigured;
+  if (stepId === "testrail") return status.testRailConfigured;
+  if (stepId === "toolbelt") {
+    return status.hasProject && status.hasSources && status.jiraConfigured && status.testRailConfigured;
+  }
+
+  return false;
+}
+
+function getFirstIncompleteStepIndex(status: BrainSetupStatus) {
+  const setupStepIndex = BRAIN_SETUP_STEPS.findIndex((step) => !isStepComplete(step.id, status));
+  return setupStepIndex >= 0 ? setupStepIndex : BRAIN_SETUP_STEPS.length - 1;
 }
 
 function getInitialBrainSetupStep() {
@@ -111,14 +165,107 @@ function setBrainTab(tab: string) {
   window.dispatchEvent(new PopStateEvent("popstate"));
 }
 
+function readBooleanPath(payload: unknown, path: string[]) {
+  let current: unknown = payload;
+
+  for (const segment of path) {
+    if (!current || typeof current !== "object" || !(segment in current)) return false;
+    current = (current as Record<string, unknown>)[segment];
+  }
+
+  return Boolean(current);
+}
+
+async function getJson(url: string) {
+  const response = await fetch(url, { method: "GET", cache: "no-store" });
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok || payload?.ok === false) {
+    throw new Error(payload?.error || `Could not load ${url}.`);
+  }
+
+  return payload;
+}
+
+async function loadBrainSetupStatus(): Promise<BrainSetupStatus> {
+  const projectsPayload = await getJson("/api/projects");
+  const projects = Array.isArray(projectsPayload?.projects) ? projectsPayload.projects : [];
+  const savedProjectId = typeof window !== "undefined" ? window.localStorage.getItem(ACTIVE_PROJECT_STORAGE_KEY) : null;
+  const activeProject =
+    projects.find((project: Record<string, unknown>) => project.id === savedProjectId) ?? projects[0] ?? null;
+  const activeProjectId = typeof activeProject?.id === "string" ? activeProject.id : "";
+  const activeProjectName = typeof activeProject?.name === "string" ? activeProject.name : "";
+
+  let sourceCount = 0;
+  let enabledSourceCount = 0;
+
+  if (activeProjectId) {
+    const sourcePayload = await getJson(`/api/projects/${encodeURIComponent(activeProjectId)}/sources`);
+    const sources = Array.isArray(sourcePayload?.sources) ? sourcePayload.sources : [];
+    sourceCount = sources.length;
+    enabledSourceCount = sources.filter((source: Record<string, unknown>) => Boolean(source.isEnabled)).length;
+  }
+
+  const [jiraResult, testRailResult] = await Promise.allSettled([
+    getJson("/api/jira/config"),
+    getJson("/api/testrail/config"),
+  ]);
+
+  const jiraPayload = jiraResult.status === "fulfilled" ? jiraResult.value : null;
+  const testRailPayload = testRailResult.status === "fulfilled" ? testRailResult.value : null;
+  const jiraConfigured = readBooleanPath(jiraPayload, ["jira", "configured"]);
+  const testRailConfigured = readBooleanPath(testRailPayload, ["testrail", "configured"]);
+
+  return {
+    isLoading: false,
+    activeProjectId,
+    activeProjectName,
+    hasProject: Boolean(activeProjectId),
+    sourceCount,
+    enabledSourceCount,
+    hasSources: enabledSourceCount > 0,
+    jiraConfigured,
+    testRailConfigured,
+    error: "",
+  };
+}
+
 function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: string }) {
   const [stepIndex, setStepIndex] = useState(0);
+  const [status, setStatus] = useState<BrainSetupStatus>(INITIAL_BRAIN_SETUP_STATUS);
   const step = BRAIN_SETUP_STEPS[stepIndex] ?? BRAIN_SETUP_STEPS[0];
   const isFirstStep = stepIndex === 0;
   const isFinalStep = stepIndex === BRAIN_SETUP_STEPS.length - 1;
+  const currentStepComplete = isStepComplete(step.id, status);
+
+  async function refreshStatus(options?: { syncToNextMissing?: boolean }) {
+    setStatus((current) => ({ ...current, isLoading: true, error: "" }));
+
+    try {
+      const nextStatus = await loadBrainSetupStatus();
+      setStatus(nextStatus);
+
+      if (options?.syncToNextMissing) {
+        const nextIndex = getFirstIncompleteStepIndex(nextStatus);
+        setStepIndex(nextIndex);
+
+        const nextStep = BRAIN_SETUP_STEPS[nextIndex];
+        if (nextStep?.tab) {
+          setBrainTab(nextStep.tab);
+        }
+      }
+    } catch (error) {
+      setStatus((current) => ({
+        ...current,
+        isLoading: false,
+        error: error instanceof Error ? error.message : "Could not check Brain setup status.",
+      }));
+    }
+  }
 
   useEffect(() => {
     setStepIndex(getInitialBrainSetupStep());
+    void refreshStatus({ syncToNextMissing: true });
   }, []);
 
   useEffect(() => {
@@ -126,9 +273,14 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
     window.localStorage.setItem(BRAIN_SETUP_STORAGE_KEY, String(stepIndex));
   }, [stepIndex]);
 
+  const completedSetupCount = useMemo(
+    () => BRAIN_SETUP_STEPS.filter((item) => isStepComplete(item.id, status)).length,
+    [status]
+  );
+
   const progressPercent = useMemo(
-    () => Math.round(((stepIndex + 1) / BRAIN_SETUP_STEPS.length) * 100),
-    [stepIndex]
+    () => Math.round((completedSetupCount / BRAIN_SETUP_STEPS.length) * 100),
+    [completedSetupCount]
   );
 
   function goToStep(nextIndex: number) {
@@ -152,13 +304,20 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
       setBrainTab(step.tab);
     }
 
-    goToStep(stepIndex + 1);
+    if (currentStepComplete) {
+      goToStep(getFirstIncompleteStepIndex(status));
+      return;
+    }
+
+    goToStep(stepIndex);
   }
 
   function skipToToolbelt() {
     window.localStorage.setItem(BRAIN_SETUP_STORAGE_KEY, String(BRAIN_SETUP_STEPS.length - 1));
     window.location.href = "/app";
   }
+
+  const primaryLabel = currentStepComplete && !isFinalStep ? "Go to next missing step" : step.cta;
 
   return (
     <div className="qat-guide-shell brain-qat-guide brain-qat-guide-flow">
@@ -184,15 +343,9 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
           <p>{step.body}</p>
 
           <div className="qat-guide-extra">
-            <div
-              style={{
-                display: "grid",
-                gap: 10,
-                marginTop: 6,
-              }}
-            >
+            <div style={{ display: "grid", gap: 10, marginTop: 6 }}>
               <div
-                aria-label={`Brain setup progress ${progressPercent}%`}
+                aria-label={`Brain setup completion ${progressPercent}%`}
                 style={{
                   height: 8,
                   overflow: "hidden",
@@ -211,33 +364,54 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
                 />
               </div>
 
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: 6 }}>
+                {BRAIN_SETUP_STEPS.map((item, index) => {
+                  const complete = isStepComplete(item.id, status);
+                  const active = index === stepIndex;
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => goToStep(index)}
+                      title={`${item.shortLabel}: ${complete ? "Complete" : "Missing"}`}
+                      style={{
+                        minHeight: 34,
+                        borderRadius: 999,
+                        border: active
+                          ? "1px solid rgba(248, 113, 113, 0.78)"
+                          : complete
+                            ? "1px solid rgba(34, 197, 94, 0.42)"
+                            : "1px solid rgba(96, 165, 250, 0.2)",
+                        background: active
+                          ? "rgba(127, 29, 29, 0.56)"
+                          : complete
+                            ? "rgba(22, 101, 52, 0.3)"
+                            : "rgba(15, 23, 42, 0.72)",
+                        color: complete || active ? "#ffffff" : "#94a3b8",
+                        fontSize: "0.72rem",
+                        fontWeight: 900,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {complete ? "✓" : index + 1}
+                    </button>
+                  );
+                })}
+              </div>
+
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
-                  gap: 6,
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 8,
+                  fontSize: "0.78rem",
                 }}
               >
-                {BRAIN_SETUP_STEPS.map((item, index) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => goToStep(index)}
-                    title={item.title}
-                    style={{
-                      minHeight: 34,
-                      borderRadius: 999,
-                      border: index === stepIndex ? "1px solid rgba(248, 113, 113, 0.78)" : "1px solid rgba(96, 165, 250, 0.2)",
-                      background: index === stepIndex ? "rgba(127, 29, 29, 0.56)" : "rgba(15, 23, 42, 0.72)",
-                      color: index <= stepIndex ? "#ffffff" : "#94a3b8",
-                      fontSize: "0.72rem",
-                      fontWeight: 900,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
+                <span>{status.hasProject ? `Project: ${status.activeProjectName || "Selected"}` : "Project: Missing"}</span>
+                <span>{status.hasSources ? `Sources: ${status.enabledSourceCount} enabled` : "Sources: Missing"}</span>
+                <span>{status.jiraConfigured ? "Jira: Configured" : "Jira: Missing"}</span>
+                <span>{status.testRailConfigured ? "TestRail: Configured" : "TestRail: Missing"}</span>
               </div>
 
               <div
@@ -252,14 +426,22 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
                 }}
               >
                 <span>{step.label}</span>
-                <span>{step.tab ? `Target: Brain / ${step.tab}` : "Target: Toolbelt"}</span>
+                <span>{currentStepComplete ? "Complete" : step.tab ? `Target: Brain / ${step.tab}` : "Target: Toolbelt"}</span>
               </div>
+
+              {status.error ? (
+                <div style={{ color: "#fecaca", fontSize: "0.82rem" }}>{status.error}</div>
+              ) : null}
             </div>
           </div>
 
           <div className="qat-guide-actions">
             <button className="qat-guide-primary" type="button" onClick={handlePrimaryAction}>
-              {step.cta}
+              {status.isLoading ? "Checking setup..." : primaryLabel}
+            </button>
+
+            <button className="qat-guide-secondary" type="button" onClick={() => refreshStatus({ syncToNextMissing: true })}>
+              Recheck setup
             </button>
 
             {!isFirstStep ? (
@@ -295,11 +477,7 @@ export default function QAtGuideCard({
     return <BrainSetupGuide imageSrc={imageSrc} videoSrc={videoSrc} />;
   }
 
-  const shellClassName = [
-    "qat-guide-shell",
-    compact ? "qat-guide-shell-compact" : "",
-    className,
-  ]
+  const shellClassName = ["qat-guide-shell", compact ? "qat-guide-shell-compact" : "", className]
     .filter(Boolean)
     .join(" ");
 
@@ -307,14 +485,7 @@ export default function QAtGuideCard({
     <div className={shellClassName}>
       <div className="qat-guide-peek-layer" aria-hidden="true">
         {videoSrc ? (
-          <video
-            className="qat-guide-media"
-            src={videoSrc}
-            autoPlay
-            loop
-            muted
-            playsInline
-          />
+          <video className="qat-guide-media" src={videoSrc} autoPlay loop muted playsInline />
         ) : (
           <img className="qat-guide-media" src={imageSrc} alt="" />
         )}
@@ -331,21 +502,13 @@ export default function QAtGuideCard({
           {primaryAction || secondaryAction || onDismiss ? (
             <div className="qat-guide-actions">
               {primaryAction ? (
-                <button
-                  className="qat-guide-primary"
-                  type="button"
-                  onClick={primaryAction.onClick}
-                >
+                <button className="qat-guide-primary" type="button" onClick={primaryAction.onClick}>
                   {primaryAction.label}
                 </button>
               ) : null}
 
               {secondaryAction ? (
-                <button
-                  className="qat-guide-secondary"
-                  type="button"
-                  onClick={secondaryAction.onClick}
-                >
+                <button className="qat-guide-secondary" type="button" onClick={secondaryAction.onClick}>
                   {secondaryAction.label}
                 </button>
               ) : null}
