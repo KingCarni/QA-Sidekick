@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
+import BrainInfluenceSummary from "@/components/BrainInfluenceSummary";
 import type { ActiveProjectContext } from "@/components/ProjectContextIndicator";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
 import {
@@ -308,6 +309,12 @@ export default function HeaderProjectSourceControls({
         </span>
       </div>
 
+      <BrainInfluenceSummary
+        context={activeContext}
+        selectedSourceCount={selectedCount}
+        compact
+      />
+
       <div style={actionRowStyle}>
         <button style={greenActionStyle} type="button" onClick={selectSuggested}>
           Use Suggested
@@ -422,6 +429,12 @@ export default function HeaderProjectSourceControls({
 
         {isMounted && isSourcesOpen ? createPortal(sourcesMenu, document.body) : null}
       </div>
+
+      <BrainInfluenceSummary
+        context={activeContext}
+        selectedSourceCount={selectedCount}
+        compact
+      />
     </div>
   );
 }
