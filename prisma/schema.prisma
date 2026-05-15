@@ -117,6 +117,7 @@ model QAProject {
   reports QAReport[]
   sources QAProjectSource[]
   rules   QAProjectRule[]
+  terms   QAProjectTerm[]
   bugCollectionItems BugCollectionItem[]
 
   @@unique([userId, name])
@@ -159,6 +160,25 @@ model QAProjectRule {
   @@index([projectId, updatedAt])
   @@index([category])
   @@index([severity])
+}
+
+model QAProjectTerm {
+  id             String   @id @default(cuid())
+  projectId      String
+  term           String
+  definition     String
+  aliases        String[] @default([])
+  preferredUsage String?
+  category       String   @default("product")
+  isEnabled      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project QAProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, isEnabled])
+  @@index([projectId, updatedAt])
+  @@index([category])
 }
 
 model BugCollectionItem {
