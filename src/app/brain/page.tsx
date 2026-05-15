@@ -32,6 +32,14 @@ type BrainTab = {
   body: string;
 };
 
+type BrainStatusCard = {
+  label: string;
+  title: string;
+  text: string;
+  value: string;
+  tab: BrainTabId;
+};
+
 type ProjectsApiResponse = {
   ok?: boolean;
   error?: string;
@@ -64,7 +72,7 @@ const BRAIN_TABS: BrainTab[] = [
     eyebrow: "Brain overview",
     title: "Give QAtalyst a reusable memory of your product.",
     body:
-      "Project Brain is where project context, reusable sources, saved reports, team QA rules, terminology, risks, bug collections, features, and integrations live.",
+      "Project Brain turns one-off AI generation into a reusable QA workspace. Add the context QAtalyst should remember, then every workflow can produce more grounded, project-aware output.",
   },
   {
     id: "projects",
@@ -146,16 +154,70 @@ function normalizeBrainTab(value: string | null): BrainTabId {
   return value && BRAIN_TAB_IDS.has(value as BrainTabId) ? (value as BrainTabId) : "overview";
 }
 
-const BRAIN_STATUS_CARDS = [
-  { label: "Projects", value: "Live", text: "Project containers now live in Brain." },
-  { label: "Source Vault", value: "Live", text: "Reusable context and saved project sources." },
-  { label: "Bug Collection", value: "Live", text: "Saved defects now live in Brain." },
-  { label: "Saved Reports", value: "Foundation", text: "Report history shell now lives in Brain." },
-  { label: "QA Rules", value: "Live", text: "Team standards and release expectations now influence Brain context." },
-  { label: "Terminology", value: "Live", text: "Project vocabulary and aliases now influence Brain context." },
-  { label: "Risks / Hotspots", value: "Live", text: "Known fragile areas now influence Brain context." },
-  { label: "Feature Registry", value: "Live", text: "Feature lifecycle context now influences Brain context." },
-  { label: "Integrations", value: "Available", text: "Jira and TestRail setup lives here." },
+const BRAIN_STATUS_CARDS: BrainStatusCard[] = [
+  {
+    label: "Projects",
+    title: "Separate each product or client workspace.",
+    text: "Keeps sources, rules, terminology, risks, bugs, reports, and integrations scoped to the right signed-in account and project.",
+    value: "Foundation",
+    tab: "projects",
+  },
+  {
+    label: "Source Vault",
+    title: "Ground QA output in reusable product context.",
+    text: "Store specs, product notes, requirements, release docs, and imported text so future generations do not start from a blank prompt.",
+    value: "Reusable memory",
+    tab: "sources",
+  },
+  {
+    label: "QA Rules",
+    title: "Teach QAtalyst your team's standards.",
+    text: "Capture release gates, coverage expectations, severity rules, automation preferences, and review habits that should shape generated QA work.",
+    value: "Team standards",
+    tab: "rules",
+  },
+  {
+    label: "Terminology",
+    title: "Prevent product language drift.",
+    text: "Define acronyms, aliases, user roles, product terms, and preferred wording so generated artifacts use the same language as your team.",
+    value: "Product language",
+    tab: "terminology",
+  },
+  {
+    label: "Risks / Hotspots",
+    title: "Remember fragile areas before QA starts.",
+    text: "Track regression hotspots, risky systems, historical bug patterns, and release blockers so Risk Review and Test Cases call out the right edge cases.",
+    value: "Risk memory",
+    tab: "risks",
+  },
+  {
+    label: "Feature Registry",
+    title: "Map what exists, what changed, and what depends on it.",
+    text: "Track planned, in-progress, implemented, or deprecated product areas so QAtalyst can reason about impact and regression scope.",
+    value: "Product map",
+    tab: "features",
+  },
+  {
+    label: "Bug Collection",
+    title: "Keep defect drafts out of source memory.",
+    text: "Save Bug Writer outputs for triage, follow-up, and Jira handoff without accidentally treating every generated bug as product truth.",
+    value: "Defect workspace",
+    tab: "bugs",
+  },
+  {
+    label: "Saved Reports",
+    title: "Review generated QA artifacts later.",
+    text: "Keep saved test plans, risk reviews, improved cases, and other outputs tied to the project for audit, handoff, and follow-up work.",
+    value: "Artifact history",
+    tab: "reports",
+  },
+  {
+    label: "Integrations",
+    title: "Connect Brain to the tools your team already uses.",
+    text: "Configure Jira and TestRail once so QAtalyst can fetch tickets, prepare handoff-ready work, and support future sync flows.",
+    value: "Workflow bridge",
+    tab: "integrations",
+  },
 ];
 
 function formatReportDate(value: string) {
@@ -507,10 +569,10 @@ export default function BrainPage() {
       <QAtGuideCard
         className="qat-ftue-card brain-qat-guide"
         eyebrow="QAt setup guide"
-        title="Start with your project memory."
-        body="Brain now owns reusable project context. Create/select a project, add source notes or docs, capture team QA rules, define terminology, track risks, map features, keep saved defects in Bug Collection, and review generated artifacts in Saved Reports."
-        primaryAction={{ label: "Open Risks", onClick: () => selectBrainTab("risks") }}
-        secondaryAction={{ label: "Feature Registry", onClick: () => selectBrainTab("features") }}
+        title="Build the memory once, then reuse it everywhere."
+        body="Project Brain is not a setup checklist. It is the source of truth QAtalyst uses to keep test cases, bug reports, risk reviews, feature briefs, and future companion guidance aligned to your product. Start with source docs and team rules, then add terminology and hotspots as you learn where the product is fragile."
+        primaryAction={{ label: "Open Source Vault", onClick: () => selectBrainTab("sources") }}
+        secondaryAction={{ label: "QA Rules", onClick: () => selectBrainTab("rules") }}
       />
 
       <section className="brain-workspace">
@@ -555,17 +617,21 @@ export default function BrainPage() {
               {BRAIN_STATUS_CARDS.map((card) => (
                 <article className="brain-status-card" key={card.label}>
                   <span>{card.label}</span>
-                  <strong>{card.value}</strong>
+                  <strong>{card.title}</strong>
                   <p>{card.text}</p>
+                  <small>{card.value}</small>
+                  <button type="button" onClick={() => selectBrainTab(card.tab)}>
+                    Open {card.label}
+                  </button>
                 </article>
               ))}
 
               <article className="brain-next-step-card">
                 <p>Recommended next step</p>
-                <h3>Move reusable context, team rules, terminology, risks, features, saved defects, and reports into Brain.</h3>
-                <span>Create/select a project, then manage Source Vault, QA Rules, Terminology, Risks, Feature Registry, Bug Collection, and Saved Reports from one setup hub.</span>
-                <button type="button" onClick={() => selectBrainTab(activeProject ? "risks" : "projects")}>
-                  {activeProject ? "Open Risks" : "Set up project"}
+                <h3>Give QAtalyst the context it needs before you generate.</h3>
+                <span>For a new project, add the product overview/specs first, then QA rules, terminology, and the top fragile areas. That gives every workflow useful memory without turning Brain into a heavy wiki.</span>
+                <button type="button" onClick={() => selectBrainTab(activeProject ? "sources" : "projects")}>
+                  {activeProject ? "Open Source Vault" : "Set up project"}
                 </button>
               </article>
             </div>
