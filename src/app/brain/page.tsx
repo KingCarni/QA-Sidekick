@@ -220,6 +220,51 @@ const BRAIN_STATUS_CARDS: BrainStatusCard[] = [
   },
 ];
 
+const overviewCardFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap" as const,
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "10px",
+  marginTop: "18px",
+  paddingTop: "14px",
+  borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+};
+
+const overviewCardPillStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  minHeight: "28px",
+  maxWidth: "100%",
+  padding: "6px 10px",
+  border: "1px solid rgba(34, 197, 94, 0.24)",
+  borderRadius: "999px",
+  background: "rgba(22, 101, 52, 0.16)",
+  color: "#bbf7d0",
+  fontSize: "0.68rem",
+  fontWeight: 950,
+  letterSpacing: "0.08em",
+  textTransform: "uppercase" as const,
+  lineHeight: 1,
+  whiteSpace: "nowrap" as const,
+};
+
+const overviewCardButtonStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  minHeight: "34px",
+  padding: "8px 12px",
+  border: "1px solid rgba(96, 165, 250, 0.26)",
+  borderRadius: "999px",
+  background: "linear-gradient(135deg, rgba(30, 64, 175, 0.54), rgba(15, 23, 42, 0.9))",
+  color: "#dbeafe",
+  fontSize: "0.76rem",
+  fontWeight: 950,
+  boxShadow: "0 10px 24px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+  whiteSpace: "nowrap" as const,
+};
+
 function formatReportDate(value: string) {
   if (!value) return "";
   try {
@@ -619,10 +664,12 @@ export default function BrainPage() {
                   <span>{card.label}</span>
                   <strong>{card.title}</strong>
                   <p>{card.text}</p>
-                  <small>{card.value}</small>
-                  <button type="button" onClick={() => selectBrainTab(card.tab)}>
-                    Open {card.label}
-                  </button>
+                  <div style={overviewCardFooterStyle}>
+                    <small style={overviewCardPillStyle}>{card.value}</small>
+                    <button style={overviewCardButtonStyle} type="button" onClick={() => selectBrainTab(card.tab)}>
+                      Open {card.label}
+                    </button>
+                  </div>
                 </article>
               ))}
 
