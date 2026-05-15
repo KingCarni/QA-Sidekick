@@ -33,7 +33,10 @@ export async function POST(req: Request) {
       return jsonError(parsed.error.issues[0]?.message ?? "Invalid request.");
     }
 
-    const authorizedProjectContext = await buildAuthorizedProjectContextPayload(userId, parsed.data);
+    const authorizedProjectContext = await buildAuthorizedProjectContextPayload(userId, parsed.data, {
+      route: "/api/generate-tests",
+      workflow: "test-cases",
+    });
     const authorizedProjectContextMeta = serializeAuthorizedProjectContext(authorizedProjectContext);
     const requestedCount = normalizeRequestedTestCaseCount((body as { requestedCount?: unknown }).requestedCount, 10);
     const costSummary = getTestCaseCostSummary(requestedCount);
@@ -54,6 +57,7 @@ export async function POST(req: Request) {
       `Project context used: ${authorizedProjectContext.projectContextUsed ? "yes" : "no"}`,
       `Project: ${authorizedProjectContext.selectedProjectName || "none"}`,
       `Project context summary: ${authorizedProjectContext.projectContextSummary || "No project context used."}`,
+      `Project rules used: ${authorizedProjectContext.projectRulesSummary}`,
       parsed.data.automationCredentialPromptBlock || "",
       buildAutomationCredentialPromptRules(),
       `Automation credentials used: ${parsed.data.automationCredentialsUsed ? "yes" : "no"}`,
