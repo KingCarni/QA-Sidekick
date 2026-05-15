@@ -6,6 +6,7 @@ import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
 const TEST_CASE_TYPES = ["smoke", "functional", "regression", "edge-case", "accessibility", "security", "performance", "integration", "other"] as const;
 const TEST_CASE_PRIORITIES = ["low", "medium", "high", "critical"] as const;
 const TEST_CASE_STATUSES = ["draft", "ready", "needs-review", "deprecated"] as const;
+const TEST_CASE_PAGE_SIZE = 10;
 
 type SafeProjectTestCase = {
   id: string;
@@ -105,13 +106,44 @@ const editorGridStyle: CSSProperties = {
   maxWidth: "100%",
 };
 
-const visibleTenListStyle: CSSProperties = {
+const pagedListStyle: CSSProperties = {
   display: "grid",
   gap: 10,
-  maxHeight: 940,
-  overflowY: "auto",
-  overflowX: "hidden",
-  paddingRight: 6,
+};
+
+const paginationStyle: CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 10,
+  marginTop: 14,
+  paddingTop: 12,
+  borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+};
+
+const paginationButtonsStyle: CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 8,
+};
+
+const pageButtonStyle: CSSProperties = {
+  minHeight: 32,
+  padding: "7px 10px",
+  borderRadius: 999,
+  border: "1px solid rgba(96, 165, 250, 0.26)",
+  background: "rgba(15, 23, 42, 0.72)",
+  color: "#dbeafe",
+  fontSize: "0.75rem",
+  fontWeight: 900,
+};
+
+const activePageButtonStyle: CSSProperties = {
+  ...pageButtonStyle,
+  borderColor: "rgba(248, 113, 113, 0.58)",
+  background: "linear-gradient(135deg, rgba(239, 68, 68, 0.86), rgba(127, 29, 29, 0.82))",
+  color: "#fff",
 };
 
 const formSingleRowStyle: CSSProperties = {
@@ -264,6 +296,7 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -285,6 +318,14 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
     });
   }, [priorityFilter, search, statusFilter, testCases, typeFilter]);
 
+  const pageCount = useMemo(() => Math.max(1, Math.ceil(filteredTestCases.length / TEST_CASE_PAGE_SIZE)), [filteredTestCases.length]);
+  const currentPageStartIndex = (currentPage - 1) * TEST_CASE_PAGE_SIZE;
+  const currentPageEndIndex = Math.min(currentPageStartIndex + TEST_CASE_PAGE_SIZE, filteredTestCases.length);
+  const pagedTestCases = useMemo(
+    () => filteredTestCases.slice(currentPageStartIndex, currentPageEndIndex),
+    [currentPageEndIndex, currentPageStartIndex, filteredTestCases]
+  );
+
   const stats = useMemo(() => {
     return {
       total: testCases.length,
@@ -293,6 +334,16 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
       synced: testCases.filter((testCase) => testCase.syncStatus === "synced").length,
     };
   }, [testCases]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeProject?.id, priorityFilter, search, statusFilter, typeFilter]);
+
+  useEffect(() => {
+    if (currentPage > pageCount) {
+      setCurrentPage(pageCount);
+    }
+  }, [currentPage, pageCount]);
 
   useEffect(() => {
     setTestCases([]);
@@ -351,6 +402,7 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
         if (exists) return current.map((item) => item.id === payload.testCase?.id ? payload.testCase! : item);
         return [payload.testCase!, ...current];
       });
+      setCurrentPage(1);
       setForm(formFromTestCase(payload.testCase));
       setMessage("Test case saved.");
     } catch (saveError) {
@@ -409,13 +461,6 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
           margin-top: 8px;
           line-height: 1.02;
         }
-        .qatalyst-testcase-library .saved-reports-list::-webkit-scrollbar {
-          width: 9px;
-        }
-        .qatalyst-testcase-library .saved-reports-list::-webkit-scrollbar-thumb {
-          background: rgba(148, 163, 184, 0.5);
-          border-radius: 999px;
-        }
         @media (max-width: 1100px) {
           .qatalyst-testcase-library-toolbar,
           .qatalyst-testcase-library-editor,
@@ -471,14 +516,14 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
       <div className="qatalyst-testcase-library-editor" style={editorGridStyle}>
         <aside className="saved-reports-list-card" style={{ minWidth: 0 }}>
           <p className="report-kicker">Saved Test Cases <span>{filteredTestCases.length} shown</span></p>
-          {filteredTestCases.length > 10 ? (
+          {filteredTestCases.length > TEST_CASE_PAGE_SIZE ? (
             <p className="saved-reports-muted" style={{ marginTop: -6 }}>
-              Showing 10 at a time. Scroll this list to view all matching cases.
+              Showing {currentPageStartIndex + 1}-{currentPageEndIndex} of {filteredTestCases.length}. Search still checks every saved test case.
             </p>
           ) : null}
           {filteredTestCases.length === 0 ? <p className="saved-reports-muted">No test cases match this filter yet.</p> : null}
-          <div className="saved-reports-list" style={visibleTenListStyle}>
-            {filteredTestCases.map((testCase) => (
+          <div className="saved-reports-list" style={pagedListStyle}>
+            {pagedTestCases.map((testCase) => (
               <button
                 className={form.id === testCase.id ? "saved-report-list-item saved-report-list-item-active" : "saved-report-list-item"}
                 key={testCase.id}
@@ -491,6 +536,43 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
               </button>
             ))}
           </div>
+
+          {filteredTestCases.length > TEST_CASE_PAGE_SIZE ? (
+            <div style={paginationStyle}>
+              <span className="saved-reports-muted" style={{ margin: 0 }}>
+                Page {currentPage} of {pageCount}
+              </span>
+              <div style={paginationButtonsStyle}>
+                <button
+                  type="button"
+                  style={pageButtonStyle}
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                >
+                  Prev
+                </button>
+                {Array.from({ length: pageCount }, (_, index) => index + 1).map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    style={page === currentPage ? activePageButtonStyle : pageButtonStyle}
+                    onClick={() => setCurrentPage(page)}
+                    aria-current={page === currentPage ? "page" : undefined}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  style={pageButtonStyle}
+                  disabled={currentPage >= pageCount}
+                  onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          ) : null}
         </aside>
 
         <article className="saved-report-detail-card" style={{ minWidth: 0, overflow: "hidden" }}>
