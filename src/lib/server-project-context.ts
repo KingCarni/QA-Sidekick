@@ -98,7 +98,12 @@ function toSafeRisk(risk: {
   createdAt: Date;
   updatedAt: Date;
 }): SafeProjectRisk {
-  return { ...risk, createdAt: risk.createdAt.toISOString(), updatedAt: risk.updatedAt.toISOString() };
+  return {
+    ...risk,
+    testingGuidance: risk.testingGuidance ?? "",
+    createdAt: risk.createdAt.toISOString(),
+    updatedAt: risk.updatedAt.toISOString(),
+  };
 }
 
 function toSafeFeature(feature: {
