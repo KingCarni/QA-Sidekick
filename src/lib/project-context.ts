@@ -7,9 +7,36 @@ export type ProjectContextPayload = {
   sources: SafeProjectSource[];
   enabledSourceCount: number;
   totalSourceCount: number;
+  enabledRuleCount: number;
+  totalRuleCount: number;
+  enabledTermCount: number;
+  totalTermCount: number;
+  enabledRiskCount: number;
+  totalRiskCount: number;
+  enabledFeatureCount: number;
+  totalFeatureCount: number;
   contextBlock: string;
   contextPreview: string;
 };
+
+function emptyPayload(): ProjectContextPayload {
+  return {
+    project: null,
+    sources: [],
+    enabledSourceCount: 0,
+    totalSourceCount: 0,
+    enabledRuleCount: 0,
+    totalRuleCount: 0,
+    enabledTermCount: 0,
+    totalTermCount: 0,
+    enabledRiskCount: 0,
+    totalRiskCount: 0,
+    enabledFeatureCount: 0,
+    totalFeatureCount: 0,
+    contextBlock: "",
+    contextPreview: "",
+  };
+}
 
 function toSafeProject(project: {
   id: string;
@@ -59,14 +86,7 @@ export async function getProjectContextPayload(
   maxCharacters = 14000
 ): Promise<ProjectContextPayload> {
   if (!userId || !projectId) {
-    return {
-      project: null,
-      sources: [],
-      enabledSourceCount: 0,
-      totalSourceCount: 0,
-      contextBlock: "",
-      contextPreview: "",
-    };
+    return emptyPayload();
   }
 
   const project = await prisma.qAProject.findFirst({
@@ -78,18 +98,23 @@ export async function getProjectContextPayload(
       sources: {
         orderBy: [{ isEnabled: "desc" }, { updatedAt: "desc" }],
       },
+      rules: {
+        select: { id: true, isEnabled: true },
+      },
+      terms: {
+        select: { id: true, isEnabled: true },
+      },
+      risks: {
+        select: { id: true, isEnabled: true },
+      },
+      features: {
+        select: { id: true, isEnabled: true },
+      },
     },
   });
 
   if (!project) {
-    return {
-      project: null,
-      sources: [],
-      enabledSourceCount: 0,
-      totalSourceCount: 0,
-      contextBlock: "",
-      contextPreview: "",
-    };
+    return emptyPayload();
   }
 
   const safeProject = toSafeProject(project);
@@ -97,6 +122,10 @@ export async function getProjectContextPayload(
   const enabledSources = safeSources.filter((source) => source.isEnabled);
   const projectSummary = buildProjectContextSummary(safeProject);
   const sourceContext = buildProjectSourceContextBlock(enabledSources, maxCharacters);
+  const enabledRuleCount = project.rules.filter((item) => item.isEnabled).length;
+  const enabledTermCount = project.terms.filter((item) => item.isEnabled).length;
+  const enabledRiskCount = project.risks.filter((item) => item.isEnabled).length;
+  const enabledFeatureCount = project.features.filter((item) => item.isEnabled).length;
 
   const contextBlock = [
     "PROJECT CONTEXT MEMORY",
@@ -104,6 +133,13 @@ export async function getProjectContextPayload(
     projectSummary,
     sourceContext ? "\nENABLED PROJECT SOURCES\n" : "",
     sourceContext,
+    "",
+    "PROJECT BRAIN INVENTORY",
+    `- Enabled sources: ${enabledSources.length}/${safeSources.length}`,
+    `- Enabled QA rules: ${enabledRuleCount}/${project.rules.length}`,
+    `- Enabled terminology entries: ${enabledTermCount}/${project.terms.length}`,
+    `- Enabled risks/hotspots: ${enabledRiskCount}/${project.risks.length}`,
+    `- Enabled feature registry entries: ${enabledFeatureCount}/${project.features.length}`,
     "",
     "PROJECT CONTEXT RULES",
     "- Use this project context to understand terminology, platform rules, known risks, and QA standards.",
@@ -121,6 +157,14 @@ export async function getProjectContextPayload(
     sources: safeSources,
     enabledSourceCount: enabledSources.length,
     totalSourceCount: safeSources.length,
+    enabledRuleCount,
+    totalRuleCount: project.rules.length,
+    enabledTermCount,
+    totalTermCount: project.terms.length,
+    enabledRiskCount,
+    totalRiskCount: project.risks.length,
+    enabledFeatureCount,
+    totalFeatureCount: project.features.length,
     contextBlock,
     contextPreview: contextBlock.slice(0, 2500),
   };
