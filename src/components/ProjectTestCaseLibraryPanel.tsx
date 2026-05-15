@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import type { SafeQAProject } from "@/components/ProjectSettingsPanel";
 
 const TEST_CASE_TYPES = ["smoke", "functional", "regression", "edge-case", "accessibility", "security", "performance", "integration", "other"] as const;
@@ -75,7 +75,9 @@ const EMPTY_FORM: FormState = {
   notes: "",
 };
 
-const shellCardStyle = {
+const shellCardStyle: CSSProperties = {
+  maxWidth: "100%",
+  overflow: "hidden",
   border: "1px solid rgba(255, 255, 255, 0.1)",
   borderRadius: 26,
   background:
@@ -83,9 +85,9 @@ const shellCardStyle = {
   padding: 28,
 };
 
-const toolbarStyle = {
+const toolbarStyle: CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "minmax(220px, 1.2fr) repeat(3, minmax(140px, 0.75fr))",
+  gridTemplateColumns: "minmax(180px, 1.15fr) repeat(3, minmax(120px, 0.75fr))",
   gap: 14,
   alignItems: "end",
   border: "1px solid rgba(96, 165, 250, 0.16)",
@@ -95,23 +97,65 @@ const toolbarStyle = {
   margin: "20px 0",
 };
 
-const editorGridStyle = {
+const editorGridStyle: CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "minmax(240px, 0.86fr) minmax(420px, 1.45fr)",
+  gridTemplateColumns: "minmax(220px, 0.72fr) minmax(0, 1.28fr)",
   gap: 18,
   alignItems: "start",
+  maxWidth: "100%",
 };
 
-const formRowThreeStyle = {
+const formSingleRowStyle: CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "minmax(220px, 1fr) minmax(130px, 0.45fr) minmax(130px, 0.45fr)",
+  gridTemplateColumns: "minmax(0, 1fr)",
   gap: 12,
 };
 
-const formRowThreeSmallStyle = {
+const formTwoColumnStyle: CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "minmax(130px, 0.42fr) minmax(130px, 0.42fr) minmax(220px, 1fr)",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
   gap: 12,
+  marginTop: 12,
+};
+
+const formThreeColumnStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+  gap: 12,
+  marginTop: 12,
+};
+
+const fieldLabelStyle: CSSProperties = {
+  display: "grid",
+  gap: 7,
+  minWidth: 0,
+  color: "#fca5a5",
+  fontSize: "0.74rem",
+  fontWeight: 900,
+  letterSpacing: "0.16em",
+  textTransform: "uppercase",
+};
+
+const fieldControlStyle: CSSProperties = {
+  width: "100%",
+  minWidth: 0,
+  color: "#f8fafc",
+  background: "rgba(3, 7, 18, 0.88)",
+  border: "1px solid rgba(96, 165, 250, 0.22)",
+  borderRadius: 12,
+  outline: "none",
+  padding: "11px 12px",
+  fontSize: "0.92rem",
+  fontWeight: 650,
+  letterSpacing: 0,
+  textTransform: "none",
+  boxShadow: "inset 0 12px 30px rgba(0, 0, 0, 0.28)",
+};
+
+const textareaStyle: CSSProperties = {
+  ...fieldControlStyle,
+  resize: "vertical",
+  lineHeight: 1.5,
 };
 
 function formatDate(value: string) {
@@ -186,10 +230,19 @@ function buildPayload(form: FormState) {
   };
 }
 
+function FieldLabel({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label style={fieldLabelStyle}>
+      <span>{label}</span>
+      {children}
+    </label>
+  );
+}
+
 function FieldBlock({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label style={{ display: "grid", gap: 8, marginTop: 14 }}>
-      <span className="report-kicker" style={{ margin: 0 }}>{label}</span>
+    <label style={{ ...fieldLabelStyle, marginTop: 14 }}>
+      <span>{label}</span>
       {children}
     </label>
   );
@@ -332,7 +385,26 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
   }
 
   return (
-    <section style={shellCardStyle}>
+    <section className="qatalyst-testcase-library" style={shellCardStyle}>
+      <style>{`
+        .qatalyst-testcase-library option {
+          color: #111827;
+          background: #ffffff;
+        }
+        .qatalyst-testcase-library input,
+        .qatalyst-testcase-library select,
+        .qatalyst-testcase-library textarea {
+          max-width: 100%;
+        }
+        @media (max-width: 1100px) {
+          .qatalyst-testcase-library-toolbar,
+          .qatalyst-testcase-library-editor,
+          .qatalyst-testcase-form-two,
+          .qatalyst-testcase-form-three {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
       <div className="saved-reports-header">
         <div>
           <p className="report-kicker">Test Case Library</p>
@@ -349,39 +421,35 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
         <div><strong>{stats.synced}</strong><span>Synced</span></div>
       </div>
 
-      <div style={toolbarStyle}>
-        <label>
-          Search
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search title, tags, Jira key..." />
-        </label>
-        <label>
-          Type
-          <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
+      <div className="qatalyst-testcase-library-toolbar" style={toolbarStyle}>
+        <FieldLabel label="Search">
+          <input style={fieldControlStyle} value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search title, tags, Jira key..." />
+        </FieldLabel>
+        <FieldLabel label="Type">
+          <select style={fieldControlStyle} value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
             <option value="all">All types</option>
             {TEST_CASE_TYPES.map((type) => <option key={type} value={type}>{titleCase(type)}</option>)}
           </select>
-        </label>
-        <label>
-          Status
-          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+        </FieldLabel>
+        <FieldLabel label="Status">
+          <select style={fieldControlStyle} value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
             <option value="all">All statuses</option>
             {TEST_CASE_STATUSES.map((status) => <option key={status} value={status}>{titleCase(status)}</option>)}
           </select>
-        </label>
-        <label>
-          Priority
-          <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)}>
+        </FieldLabel>
+        <FieldLabel label="Priority">
+          <select style={fieldControlStyle} value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)}>
             <option value="all">All priorities</option>
             {TEST_CASE_PRIORITIES.map((priority) => <option key={priority} value={priority}>{titleCase(priority)}</option>)}
           </select>
-        </label>
+        </FieldLabel>
       </div>
 
       {message ? <p className="saved-reports-message">{message}</p> : null}
       {error ? <p className="saved-reports-error">{error}</p> : null}
 
-      <div style={editorGridStyle}>
-        <aside className="saved-reports-list-card">
+      <div className="qatalyst-testcase-library-editor" style={editorGridStyle}>
+        <aside className="saved-reports-list-card" style={{ minWidth: 0 }}>
           <p className="report-kicker">Saved Test Cases <span>{filteredTestCases.length} shown</span></p>
           {filteredTestCases.length === 0 ? <p className="saved-reports-muted">No test cases match this filter yet.</p> : null}
           <div className="saved-reports-list">
@@ -400,7 +468,7 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
           </div>
         </aside>
 
-        <article className="saved-report-detail-card">
+        <article className="saved-report-detail-card" style={{ minWidth: 0, overflow: "hidden" }}>
           <div className="saved-report-detail-top">
             <div>
               <p className="report-kicker">{form.id ? "Edit Test Case" : "New Test Case"}</p>
@@ -408,36 +476,51 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
             </div>
           </div>
 
-          <div style={formRowThreeStyle}>
-            <label>Title<input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Example: User can complete checkout" /></label>
-            <label>Type<select value={form.testType} onChange={(event) => setForm({ ...form, testType: event.target.value })}>{TEST_CASE_TYPES.map((type) => <option key={type} value={type}>{titleCase(type)}</option>)}</select></label>
-            <label>Priority<select value={form.priority} onChange={(event) => setForm({ ...form, priority: event.target.value })}>{TEST_CASE_PRIORITIES.map((priority) => <option key={priority} value={priority}>{titleCase(priority)}</option>)}</select></label>
+          <div style={formSingleRowStyle}>
+            <FieldLabel label="Title">
+              <input style={fieldControlStyle} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="Example: User can complete checkout" />
+            </FieldLabel>
           </div>
 
-          <div style={{ ...formRowThreeSmallStyle, marginTop: 12 }}>
-            <label>Status<select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>{TEST_CASE_STATUSES.map((status) => <option key={status} value={status}>{titleCase(status)}</option>)}</select></label>
-            <label>Jira key<input value={form.sourceJiraKey} onChange={(event) => setForm({ ...form, sourceJiraKey: event.target.value })} placeholder="QAS-123" /></label>
-            <label>Tags<input value={form.tagsText} onChange={(event) => setForm({ ...form, tagsText: event.target.value })} placeholder="checkout, smoke, regression" /></label>
+          <div className="qatalyst-testcase-form-three" style={formThreeColumnStyle}>
+            <FieldLabel label="Type">
+              <select style={fieldControlStyle} value={form.testType} onChange={(event) => setForm({ ...form, testType: event.target.value })}>{TEST_CASE_TYPES.map((type) => <option key={type} value={type}>{titleCase(type)}</option>)}</select>
+            </FieldLabel>
+            <FieldLabel label="Priority">
+              <select style={fieldControlStyle} value={form.priority} onChange={(event) => setForm({ ...form, priority: event.target.value })}>{TEST_CASE_PRIORITIES.map((priority) => <option key={priority} value={priority}>{titleCase(priority)}</option>)}</select>
+            </FieldLabel>
+            <FieldLabel label="Status">
+              <select style={fieldControlStyle} value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>{TEST_CASE_STATUSES.map((status) => <option key={status} value={status}>{titleCase(status)}</option>)}</select>
+            </FieldLabel>
+          </div>
+
+          <div className="qatalyst-testcase-form-two" style={formTwoColumnStyle}>
+            <FieldLabel label="Jira key">
+              <input style={fieldControlStyle} value={form.sourceJiraKey} onChange={(event) => setForm({ ...form, sourceJiraKey: event.target.value })} placeholder="QAS-123" />
+            </FieldLabel>
+            <FieldLabel label="Tags">
+              <input style={fieldControlStyle} value={form.tagsText} onChange={(event) => setForm({ ...form, tagsText: event.target.value })} placeholder="checkout, smoke, regression" />
+            </FieldLabel>
           </div>
 
           <FieldBlock label="Preconditions">
-            <textarea value={form.preconditions} onChange={(event) => setForm({ ...form, preconditions: event.target.value })} placeholder="State, account, data, permissions, or setup needed before test starts..." rows={3} />
+            <textarea style={textareaStyle} value={form.preconditions} onChange={(event) => setForm({ ...form, preconditions: event.target.value })} placeholder="State, account, data, permissions, or setup needed before test starts..." rows={3} />
           </FieldBlock>
 
           <FieldBlock label="Steps">
-            <textarea value={form.stepsText} onChange={(event) => setForm({ ...form, stepsText: event.target.value })} placeholder="One step per line..." rows={7} />
+            <textarea style={textareaStyle} value={form.stepsText} onChange={(event) => setForm({ ...form, stepsText: event.target.value })} placeholder="One step per line..." rows={7} />
           </FieldBlock>
 
           <FieldBlock label="Expected result">
-            <textarea value={form.expectedResult} onChange={(event) => setForm({ ...form, expectedResult: event.target.value })} placeholder="What should be true if the test passes?" rows={4} />
+            <textarea style={textareaStyle} value={form.expectedResult} onChange={(event) => setForm({ ...form, expectedResult: event.target.value })} placeholder="What should be true if the test passes?" rows={4} />
           </FieldBlock>
 
           <FieldBlock label="Automation readiness">
-            <textarea value={form.automationReadiness} onChange={(event) => setForm({ ...form, automationReadiness: event.target.value })} placeholder="Automation notes, selectors, data strategy, known blockers..." rows={3} />
+            <textarea style={textareaStyle} value={form.automationReadiness} onChange={(event) => setForm({ ...form, automationReadiness: event.target.value })} placeholder="Automation notes, selectors, data strategy, known blockers..." rows={3} />
           </FieldBlock>
 
           <FieldBlock label="Notes">
-            <textarea value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} placeholder="Review notes, coverage notes, or handoff details..." rows={3} />
+            <textarea style={textareaStyle} value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} placeholder="Review notes, coverage notes, or handoff details..." rows={3} />
           </FieldBlock>
 
           <div className="saved-reports-header" style={{ marginTop: 16 }}>
