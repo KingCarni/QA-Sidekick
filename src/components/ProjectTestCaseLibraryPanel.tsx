@@ -166,11 +166,55 @@ const exportCardStyle: CSSProperties = {
   alignItems: "center",
 };
 
+const selectedExportCardStyle: CSSProperties = {
+  border: "1px solid rgba(96, 165, 250, 0.18)",
+  borderRadius: 18,
+  background: "linear-gradient(135deg, rgba(15, 23, 42, 0.86), rgba(3, 7, 18, 0.92))",
+  padding: 14,
+  marginTop: 16,
+};
+
 const exportActionsStyle: CSSProperties = {
   display: "flex",
   flexWrap: "wrap",
   justifyContent: "flex-end",
   gap: 10,
+};
+
+const exportPillStyle: CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  width: "fit-content",
+  border: "1px solid rgba(248, 113, 113, 0.34)",
+  borderRadius: 999,
+  background: "rgba(127, 29, 29, 0.34)",
+  padding: "7px 11px",
+  marginBottom: 8,
+};
+
+const exportButtonBaseStyle: CSSProperties = {
+  minHeight: 40,
+  borderRadius: 999,
+  borderWidth: 1,
+  borderStyle: "solid",
+  padding: "10px 14px",
+  fontSize: "0.86rem",
+  fontWeight: 900,
+  cursor: "pointer",
+};
+
+const exportPrimaryButtonStyle: CSSProperties = {
+  ...exportButtonBaseStyle,
+  borderColor: "rgba(34, 197, 94, 0.42)",
+  background: "linear-gradient(135deg, rgba(22, 163, 74, 0.92), rgba(21, 128, 61, 0.86))",
+  color: "#fff",
+};
+
+const exportSecondaryButtonStyle: CSSProperties = {
+  ...exportButtonBaseStyle,
+  borderColor: "rgba(96, 165, 250, 0.34)",
+  background: "linear-gradient(135deg, rgba(30, 64, 175, 0.82), rgba(15, 23, 42, 0.88))",
+  color: "#dbeafe",
 };
 
 const formSingleRowStyle: CSSProperties = {
@@ -287,6 +331,17 @@ function testCaseToAutomationExport(testCase: SafeProjectTestCase): AutomationEx
     preconditions: testCase.preconditions,
     steps: testCase.steps,
     expectedResult: testCase.expectedResult,
+  };
+}
+
+function formToAutomationExport(form: FormState): AutomationExportTestCase {
+  return {
+    title: form.title,
+    type: form.testType,
+    priority: form.priority,
+    preconditions: form.preconditions,
+    steps: splitLines(form.stepsText),
+    expectedResult: form.expectedResult,
   };
 }
 
@@ -481,37 +536,65 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
     }
   }
 
-  function buildLibraryAutomationBundle() {
+  function buildAutomationBundleForCases(cases: AutomationExportTestCase[], label: string) {
     if (!activeProject) throw new Error("Select a project before exporting automation skeletons.");
-    if (exportableTestCases.length === 0) throw new Error("No matching non-deprecated test cases are available to export.");
+    if (cases.length === 0) throw new Error("No matching non-deprecated test cases are available to export.");
 
-    return buildAutomationExportBundle(exportableTestCases, {
-      bundleName: `${activeProject.name} Test Case Library Automation`,
+    return buildAutomationExportBundle(cases, {
+      bundleName: `${activeProject.name} ${label}`,
       includePartial: true,
       includeManualReview: true,
       exportMode: "user-project",
     });
   }
 
-  function exportSkeletonMarkdown() {
+  function exportAllSkeletons() {
     setExportMessage("");
     try {
-      const bundle = buildLibraryAutomationBundle();
+      const bundle = buildAutomationBundleForCases(exportableTestCases, "Test Case Library Automation");
       downloadAutomationBundleAsMarkdown(`${activeProject?.name ?? "Project"} Test Case Library Automation`, bundle);
-      setExportMessage(`Exported ${bundle.summary.skeletons} skeleton file${bundle.summary.skeletons === 1 ? "" : "s"} plus ${bundle.summary.manualReviewCases} manual-review case${bundle.summary.manualReviewCases === 1 ? "" : "s"}.`);
+      setExportMessage(`Exported all ${exportableTestCases.length} matching test case${exportableTestCases.length === 1 ? "" : "s"}: ${bundle.summary.skeletons} skeleton file${bundle.summary.skeletons === 1 ? "" : "s"} plus ${bundle.summary.manualReviewCases} manual-review case${bundle.summary.manualReviewCases === 1 ? "" : "s"}.`);
     } catch (exportError) {
       setExportMessage(exportError instanceof Error ? exportError.message : "Could not export automation skeletons.");
     }
   }
 
-  function exportSkeletonFiles() {
+  function downloadAllSkeletonFiles() {
     setExportMessage("");
     try {
-      const bundle = buildLibraryAutomationBundle();
+      const bundle = buildAutomationBundleForCases(exportableTestCases, "Test Case Library Automation");
       downloadAutomationFilesIndividually(bundle);
-      setExportMessage(`Downloaded ${bundle.files.length} automation export file${bundle.files.length === 1 ? "" : "s"}.`);
+      setExportMessage(`Downloaded ${bundle.files.length} files for all ${exportableTestCases.length} matching test case${exportableTestCases.length === 1 ? "" : "s"}.`);
     } catch (exportError) {
       setExportMessage(exportError instanceof Error ? exportError.message : "Could not export automation skeletons.");
+    }
+  }
+
+  function exportSelectedSkeleton() {
+    setExportMessage("");
+    try {
+      if (!form.id) throw new Error("Select a saved test case before exporting a single skeleton.");
+      if (form.status === "deprecated") throw new Error("Deprecated test cases are excluded from skeleton export.");
+      const selectedCase = formToAutomationExport(form);
+      const bundle = buildAutomationBundleForCases([selectedCase], `${form.title || "Selected Test Case"} Automation`);
+      downloadAutomationBundleAsMarkdown(`${activeProject?.name ?? "Project"} ${form.title || "Selected Test Case"} Automation`, bundle);
+      setExportMessage(`Exported selected test case: ${bundle.summary.skeletons} skeleton file${bundle.summary.skeletons === 1 ? "" : "s"} plus ${bundle.summary.manualReviewCases} manual-review case${bundle.summary.manualReviewCases === 1 ? "" : "s"}.`);
+    } catch (exportError) {
+      setExportMessage(exportError instanceof Error ? exportError.message : "Could not export selected skeleton.");
+    }
+  }
+
+  function downloadSelectedSkeletonFiles() {
+    setExportMessage("");
+    try {
+      if (!form.id) throw new Error("Select a saved test case before downloading a single skeleton.");
+      if (form.status === "deprecated") throw new Error("Deprecated test cases are excluded from skeleton export.");
+      const selectedCase = formToAutomationExport(form);
+      const bundle = buildAutomationBundleForCases([selectedCase], `${form.title || "Selected Test Case"} Automation`);
+      downloadAutomationFilesIndividually(bundle);
+      setExportMessage(`Downloaded ${bundle.files.length} file${bundle.files.length === 1 ? "" : "s"} for the selected test case.`);
+    } catch (exportError) {
+      setExportMessage(exportError instanceof Error ? exportError.message : "Could not export selected skeleton.");
     }
   }
 
@@ -593,18 +676,18 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
 
       <section className="qatalyst-testcase-export-card" style={exportCardStyle}>
         <div>
-          <p className="report-kicker" style={{ marginBottom: 8 }}>Automation Skeleton Export</p>
-          <strong>Export skeletons from the current library filter</strong>
+          <p className="report-kicker" style={exportPillStyle}>Automation Skeleton Export</p>
+          <strong>Export all skeletons from the current library filter</strong>
           <p className="saved-reports-muted" style={{ margin: "6px 0 0" }}>
-            Uses {exportableTestCases.length} matching non-deprecated test case{exportableTestCases.length === 1 ? "" : "s"}. Search and filters are applied before export.
+            Uses all {exportableTestCases.length} matching non-deprecated test case{exportableTestCases.length === 1 ? "" : "s"}. Search and filters are applied before export.
           </p>
         </div>
         <div style={exportActionsStyle}>
-          <button type="button" onClick={exportSkeletonMarkdown} disabled={exportableTestCases.length === 0}>
-            Export Skeletons Markdown
+          <button type="button" style={exportPrimaryButtonStyle} onClick={exportAllSkeletons} disabled={exportableTestCases.length === 0}>
+            Export All Skeletons
           </button>
-          <button type="button" onClick={exportSkeletonFiles} disabled={exportableTestCases.length === 0}>
-            Download Files
+          <button type="button" style={exportSecondaryButtonStyle} onClick={downloadAllSkeletonFiles} disabled={exportableTestCases.length === 0}>
+            Download All Files
           </button>
         </div>
       </section>
@@ -735,6 +818,24 @@ export default function ProjectTestCaseLibraryPanel({ activeProject }: { activeP
             {form.id ? <button type="button" onClick={() => deleteTestCase(form.id)} disabled={isLoading}>Delete</button> : null}
             <button type="button" onClick={saveTestCase} disabled={isLoading}>{isLoading ? "Saving..." : "Save Test Case"}</button>
           </div>
+
+          {form.id ? (
+            <section className="qatalyst-selected-testcase-export" style={selectedExportCardStyle}>
+              <p className="report-kicker" style={exportPillStyle}>Selected Skeleton Export</p>
+              <strong>Export only this test case</strong>
+              <p className="saved-reports-muted" style={{ margin: "6px 0 12px" }}>
+                Use this when you want one automation starter instead of downloading the full filtered library.
+              </p>
+              <div style={{ ...exportActionsStyle, justifyContent: "flex-start" }}>
+                <button type="button" style={exportPrimaryButtonStyle} onClick={exportSelectedSkeleton} disabled={!form.id || form.status === "deprecated"}>
+                  Export Selected Skeleton
+                </button>
+                <button type="button" style={exportSecondaryButtonStyle} onClick={downloadSelectedSkeletonFiles} disabled={!form.id || form.status === "deprecated"}>
+                  Download Selected Files
+                </button>
+              </div>
+            </section>
+          ) : null}
         </article>
       </div>
     </section>
