@@ -4,6 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { authOptions } from "@/lib/auth";
 import { isInsufficientCreditsError, runPaidAction } from "@/lib/paid-action";
+import { prisma } from "@/lib/prisma";
+import {
+  appendProjectContextToInput,
+  buildProjectContextPromptRules,
+} from "@/lib/project-context-injection";
+import {
+  buildAuthorizedProjectContextPayload,
+  serializeAuthorizedProjectContext,
+} from "@/lib/server-project-context";
 
 type FeatureBrief = {
   title: string;
@@ -50,11 +59,48 @@ function asList(value: unknown): string[] {
   return value.map((item) => String(item ?? "").trim()).filter(Boolean).slice(0, 14);
 }
 
+function asObject(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+async function buildFeatureBuilderContextInput(
+  userId: string,
+  body: Record<string, unknown>,
+  projectName: string
+): Promise<Record<string, unknown>> {
+  if (asString(body.projectId) || asString(body.selectedProjectId)) {
+    return body;
+  }
+
+  if (!projectName) {
+    return body;
+  }
+
+  const project = await prisma.qAProject.findFirst({
+    where: {
+      userId,
+      name: projectName,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!project) {
+    return body;
+  }
+
+  return {
+    ...body,
+    selectedProjectId: project.id,
+    projectId: project.id,
+  };
+}
+
 function normalizeBrief(value: unknown): FeatureBrief {
-  const record =
-    typeof value === "object" && value !== null && !Array.isArray(value)
-      ? (value as Record<string, unknown>)
-      : {};
+  const record = asObject(value);
 
   return {
     title: asString(record.title) || "Feature Brief",
@@ -125,17 +171,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Please sign in to use Feature Builder." }, { status: 401 });
     }
 
-    const body = await req.json().catch(() => null);
+    const body = asObject(await req.json().catch(() => null));
 
-    const mode = asString(body?.mode) === "refine" ? "refine" : "generate";
-    const draft = asString(body?.draft);
-    const extraContext = asString(body?.extraContext);
-    const projectName = asString(body?.projectName);
-    const projectType = asString(body?.projectType);
-    const refinementAction = asString(body?.refinementAction);
-    const refinementLabel = asString(body?.refinementLabel);
-    const currentBrief = body?.currentBrief ?? null;
-    const currentMarkdown = asString(body?.currentMarkdown);
+    const mode = asString(body.mode) === "refine" ? "refine" : "generate";
+    const draft = asString(body.draft);
+    const extraContext = asString(body.extraContext);
+    const projectName = asString(body.projectName);
+    const projectType = asString(body.projectType);
+    const refinementAction = asString(body.refinementAction);
+    const refinementLabel = asString(body.refinementLabel);
+    const currentBrief = body.currentBrief ?? null;
+    const currentMarkdown = asString(body.currentMarkdown);
 
     if (draft.length < 12 && mode === "generate") {
       return NextResponse.json(
@@ -158,6 +204,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const contextInput = await buildFeatureBuilderContextInput(userId, body, projectName);
+    const authorizedProjectContext = await buildAuthorizedProjectContextPayload(userId, contextInput, {
+      route: "/api/feature-builder",
+      workflow: "feature-builder",
+    });
+    const authorizedProjectContextMeta = serializeAuthorizedProjectContext(authorizedProjectContext);
+
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
@@ -171,6 +224,11 @@ export async function POST(req: NextRequest) {
       "Turn rough feature ideas into practical product/QA feature briefs.",
       "Do not invent committed facts. Mark uncertainty as open questions.",
       "Keep scope realistic for a first product pass.",
+      buildProjectContextPromptRules(),
+      `Project context used: ${authorizedProjectContext.projectContextUsed ? "yes" : "no"}`,
+      `Project: ${authorizedProjectContext.selectedProjectName || projectName || "none"}`,
+      `Project context summary: ${authorizedProjectContext.projectContextSummary || "No project context used."}`,
+      `Project rules used: ${authorizedProjectContext.projectRulesSummary}`,
       mode === "refine"
         ? "You are refining an existing brief. Preserve useful existing content, improve the requested focus area, and return a full updated brief."
         : "You are generating a first structured feature brief from rough input.",
@@ -196,7 +254,7 @@ export async function POST(req: NextRequest) {
       "}",
     ].join("\n");
 
-    const userPrompt =
+    const baseUserPrompt =
       mode === "refine"
         ? [
             `Project name: ${projectName || "Not specified"}`,
@@ -230,11 +288,19 @@ export async function POST(req: NextRequest) {
             extraContext || "None provided.",
           ].join("\n");
 
+    const userPrompt = appendProjectContextToInput(baseUserPrompt, authorizedProjectContext.projectContextBlock);
+
     const paidResult = await runPaidAction({
       userId,
       action: mode === "refine" ? "feature_builder_refine" : "feature_builder_generate",
       requestId: req.headers.get("x-request-id") || randomUUID(),
-      meta: { route: "/api/feature-builder", mode, refinementAction },
+      meta: {
+        route: "/api/feature-builder",
+        mode,
+        refinementAction,
+        projectContextUsed: authorizedProjectContext.projectContextUsed,
+        projectRuleCount: authorizedProjectContext.projectRuleCount,
+      },
       work: async () => {
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
@@ -267,6 +333,7 @@ export async function POST(req: NextRequest) {
       refinementAction,
       brief: paidResult.brief,
       markdown: paidResult.markdown,
+      context: authorizedProjectContextMeta,
       credits: {
         action: paidResult.creditSpend.action,
         cost: paidResult.creditSpend.cost,
