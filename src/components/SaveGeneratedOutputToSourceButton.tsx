@@ -84,26 +84,6 @@ function priorityFrom(value: unknown) {
   return ["low", "medium", "high", "critical"].includes(text) ? text : "medium";
 }
 
-function formatTestCaseSource(testCase: TestCaseLike, index: number): string {
-  const title = asText(testCase.title) || `Test Case ${index + 1}`;
-  const steps = stepsFrom(testCase.steps);
-  return [
-    `# ${title}`,
-    "",
-    `Type: ${asText(testCase.testType) || asText(testCase.type) || "Functional"}`,
-    `Priority: ${asText(testCase.priority) || "Medium"}`,
-    "",
-    "## Preconditions",
-    asText(testCase.preconditions) || "Not specified.",
-    "",
-    "## Steps",
-    ...(steps.length ? steps.map((step, stepIndex) => `${stepIndex + 1}. ${step}`) : ["1. Not specified."]),
-    "",
-    "## Expected Result",
-    asText(testCase.expectedResult) || asText(testCase.expected) || "Not specified.",
-  ].join("\n");
-}
-
 function defaultSourceType(reportType: ToolId) {
   if (reportType === "tests") return "test-cases";
   if (reportType === "risk") return "risk-review";
@@ -207,6 +187,16 @@ export default function SaveGeneratedOutputToSourceButton({ activeProject, repor
 
   return (
     <section className="save-generated-source-control" data-testid="save-generated-source-control">
+      <style>{`
+        .save-report-row {
+          display: none !important;
+        }
+        .save-generated-source-control option {
+          color: #111827;
+          background: #ffffff;
+        }
+      `}</style>
+
       <div>
         <p className="report-kicker">{reportType === "tests" ? "Test Case Library" : "Project Source Vault"}</p>
         <strong>{reportType === "tests" ? "Save generated coverage as reusable test cases" : "Save generated output as reusable source memory"}</strong>
