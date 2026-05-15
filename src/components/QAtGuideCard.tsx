@@ -46,6 +46,14 @@ type BrainSetupStatus = {
   error: string;
 };
 
+type BrainRecommendation = {
+  id: string;
+  label: string;
+  body: string;
+  tab?: string;
+  priority: "required" | "recommended" | "ready";
+};
+
 const BRAIN_SETUP_STORAGE_KEY = "qatalyst.brain-ftue-step";
 const ACTIVE_PROJECT_STORAGE_KEY = "qatalyst.activeProjectId";
 
@@ -144,6 +152,79 @@ function isStepComplete(stepId: BrainSetupStepId, status: BrainSetupStatus) {
 function getFirstIncompleteStepIndex(status: BrainSetupStatus) {
   const setupStepIndex = BRAIN_SETUP_STEPS.findIndex((step) => !isStepComplete(step.id, status));
   return setupStepIndex >= 0 ? setupStepIndex : BRAIN_SETUP_STEPS.length - 1;
+}
+
+function getBrainRecommendations(status: BrainSetupStatus): BrainRecommendation[] {
+  const recommendations: BrainRecommendation[] = [];
+
+  if (!status.hasProject) {
+    recommendations.push({
+      id: "project-required",
+      label: "Create/select a project first",
+      body: "Brain needs a project workspace before sources, rules, reports, and integrations can be scoped safely.",
+      tab: "projects",
+      priority: "required",
+    });
+
+    return recommendations;
+  }
+
+  if (!status.hasSources) {
+    recommendations.push({
+      id: "sources-required",
+      label: "Add at least one enabled source",
+      body: "Source Vault gives QAtalyst reusable product context, so generated QA work does not start from a blank prompt.",
+      tab: "sources",
+      priority: "required",
+    });
+  } else if (status.enabledSourceCount < 2) {
+    recommendations.push({
+      id: "sources-recommended",
+      label: "Add one more source for stronger context",
+      body: "One source is enough to start, but a product overview plus requirements/spec notes will produce more grounded output.",
+      tab: "sources",
+      priority: "recommended",
+    });
+  }
+
+  if (!status.jiraConfigured) {
+    recommendations.push({
+      id: "jira-recommended",
+      label: "Connect Jira for ticket-driven workflows",
+      body: "Jira lets QAtalyst fetch real ticket context and prepare work that is easier to hand back to your team.",
+      tab: "integrations",
+      priority: "recommended",
+    });
+  }
+
+  if (status.jiraConfigured && !status.testRailConfigured) {
+    recommendations.push({
+      id: "testrail-recommended",
+      label: "Connect TestRail after Jira",
+      body: "TestRail setup gives generated coverage a clearer path toward test management and future sync workflows.",
+      tab: "integrations",
+      priority: "recommended",
+    });
+  } else if (!status.testRailConfigured) {
+    recommendations.push({
+      id: "testrail-later",
+      label: "Plan TestRail setup before release handoff",
+      body: "You can generate QA work without TestRail, but configure it before you expect reusable cases to move into a test case manager.",
+      tab: "integrations",
+      priority: "recommended",
+    });
+  }
+
+  if (status.hasProject && status.hasSources && status.jiraConfigured && status.testRailConfigured) {
+    recommendations.push({
+      id: "ready-toolbelt",
+      label: "Brain setup is ready for a first run",
+      body: "Project, source context, Jira, and TestRail are configured. Head back to the toolbelt and generate a small test case run to verify the flow.",
+      priority: "ready",
+    });
+  }
+
+  return recommendations.slice(0, 3);
 }
 
 function getInitialBrainSetupStep() {
@@ -283,6 +364,8 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
     [completedSetupCount]
   );
 
+  const recommendations = useMemo(() => getBrainRecommendations(status), [status]);
+
   function goToStep(nextIndex: number) {
     const safeIndex = clampStepIndex(nextIndex);
     const nextStep = BRAIN_SETUP_STEPS[safeIndex];
@@ -315,6 +398,17 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
   function skipToToolbelt() {
     window.localStorage.setItem(BRAIN_SETUP_STORAGE_KEY, String(BRAIN_SETUP_STEPS.length - 1));
     window.location.href = "/app";
+  }
+
+  function openRecommendation(recommendation: BrainRecommendation) {
+    if (!recommendation.tab) {
+      window.location.href = "/app";
+      return;
+    }
+
+    const index = BRAIN_SETUP_STEPS.findIndex((item) => item.tab === recommendation.tab);
+    setStepIndex(index >= 0 ? index : stepIndex);
+    setBrainTab(recommendation.tab);
   }
 
   const primaryLabel = currentStepComplete && !isFinalStep ? "Go to next missing step" : step.cta;
@@ -413,6 +507,55 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
                 <span>{status.jiraConfigured ? "Jira: Configured" : "Jira: Missing"}</span>
                 <span>{status.testRailConfigured ? "TestRail: Configured" : "TestRail: Missing"}</span>
               </div>
+
+              {recommendations.length > 0 ? (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 8,
+                    marginTop: 2,
+                    paddingTop: 10,
+                    borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                  }}
+                >
+                  <strong style={{ color: "#fca5a5", fontSize: "0.72rem", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                    QAt recommendations
+                  </strong>
+                  {recommendations.map((recommendation) => (
+                    <button
+                      key={recommendation.id}
+                      type="button"
+                      onClick={() => openRecommendation(recommendation)}
+                      style={{
+                        textAlign: "left",
+                        borderRadius: 12,
+                        border:
+                          recommendation.priority === "required"
+                            ? "1px solid rgba(248, 113, 113, 0.34)"
+                            : recommendation.priority === "ready"
+                              ? "1px solid rgba(34, 197, 94, 0.32)"
+                              : "1px solid rgba(96, 165, 250, 0.22)",
+                        background:
+                          recommendation.priority === "required"
+                            ? "rgba(127, 29, 29, 0.28)"
+                            : recommendation.priority === "ready"
+                              ? "rgba(6, 78, 59, 0.26)"
+                              : "rgba(15, 23, 42, 0.58)",
+                        color: "#e5e7eb",
+                        padding: "10px 12px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <span style={{ display: "block", color: "#ffffff", fontWeight: 900, marginBottom: 4 }}>
+                        {recommendation.label}
+                      </span>
+                      <span style={{ display: "block", fontSize: "0.78rem", lineHeight: 1.45 }}>
+                        {recommendation.body}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
 
               <div
                 style={{
