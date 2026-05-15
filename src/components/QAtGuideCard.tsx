@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 
 type QAtGuideAction = {
   label: string;
@@ -229,7 +229,7 @@ function getBrainRecommendations(status: BrainSetupStatus, setupComplete: boolea
     });
   }
 
-  return recommendations.slice(0, 3);
+  return recommendations.slice(0, 2);
 }
 
 function getInitialBrainSetupStep() {
@@ -260,6 +260,22 @@ function readBooleanPath(payload: unknown, path: string[]) {
   }
 
   return Boolean(current);
+}
+
+function useBrainGutterLayout() {
+  const [isGutterLayout, setIsGutterLayout] = useState(false);
+
+  useEffect(() => {
+    function syncLayout() {
+      setIsGutterLayout(window.innerWidth >= 1420);
+    }
+
+    syncLayout();
+    window.addEventListener("resize", syncLayout);
+    return () => window.removeEventListener("resize", syncLayout);
+  }, []);
+
+  return isGutterLayout;
 }
 
 async function getJson(url: string) {
@@ -316,7 +332,19 @@ async function loadBrainSetupStatus(): Promise<BrainSetupStatus> {
   };
 }
 
+const smallPillStyle: CSSProperties = {
+  padding: "7px 9px",
+  borderRadius: 999,
+  background: "rgba(22,101,52,0.3)",
+  border: "1px solid rgba(34,197,94,0.28)",
+  color: "#f8fafc",
+  fontSize: "0.74rem",
+  fontWeight: 900,
+  lineHeight: 1,
+};
+
 function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: string }) {
+  const isGutterLayout = useBrainGutterLayout();
   const [stepIndex, setStepIndex] = useState(0);
   const [status, setStatus] = useState<BrainSetupStatus>(INITIAL_BRAIN_SETUP_STATUS);
   const [setupCompleteDismissed, setSetupCompleteDismissed] = useState(false);
@@ -432,65 +460,107 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
     void refreshStatus({ syncToNextMissing: true });
   }
 
-  const primaryLabel = setupComplete ? "Go to Toolbelt" : currentStepComplete && !isFinalStep ? "Go to next missing step" : step.cta;
+  const primaryLabel = setupComplete ? "Go to Toolbelt" : currentStepComplete && !isFinalStep ? "Next missing step" : step.cta;
 
-  const companionShellStyle = {
-    position: "relative" as const,
+  const companionShellStyle: CSSProperties = {
+    position: isGutterLayout ? "fixed" : "relative",
+    top: isGutterLayout ? 132 : undefined,
+    right: isGutterLayout ? "max(18px, calc((100vw - 1760px) / 2 + 18px))" : undefined,
+    zIndex: 30,
     display: "grid",
-    gridTemplateColumns: "minmax(180px, 260px) minmax(0, 1fr)",
-    gap: 22,
+    gridTemplateColumns: "1fr",
+    gap: 14,
     alignItems: "stretch",
-    width: "min(980px, 100%)",
-    margin: "0 auto 24px",
-    padding: 20,
+    width: isGutterLayout ? 324 : "min(980px, 100%)",
+    maxHeight: isGutterLayout ? "calc(100vh - 154px)" : undefined,
+    margin: isGutterLayout ? 0 : "0 auto 24px",
+    padding: 16,
     borderRadius: 24,
     border: "1px solid rgba(248, 113, 113, 0.22)",
     background:
-      "radial-gradient(circle at 16% 24%, rgba(220, 38, 38, 0.24), transparent 32%), radial-gradient(circle at 86% 12%, rgba(34, 197, 94, 0.08), transparent 30%), linear-gradient(135deg, rgba(18, 18, 22, 0.96), rgba(8, 8, 10, 0.98))",
-    boxShadow: "0 26px 80px rgba(0,0,0,0.38)",
-    overflow: "hidden",
+      "radial-gradient(circle at 50% 18%, rgba(220, 38, 38, 0.22), transparent 32%), radial-gradient(circle at 85% 70%, rgba(34, 197, 94, 0.08), transparent 34%), linear-gradient(180deg, rgba(18, 18, 22, 0.97), rgba(8, 8, 10, 0.98))",
+    boxShadow: "0 26px 80px rgba(0,0,0,0.42)",
+    overflowY: isGutterLayout ? "auto" : "visible",
+    overflowX: "hidden",
   };
 
-  const mascotStageStyle = {
-    position: "relative" as const,
-    minHeight: 250,
+  const mascotStageStyle: CSSProperties = {
+    position: "relative",
+    minHeight: setupComplete && setupCompleteDismissed ? 210 : 240,
     borderRadius: 20,
     border: "1px solid rgba(255,255,255,0.08)",
     background:
-      "radial-gradient(circle at 50% 44%, rgba(248,113,113,0.22), transparent 45%), linear-gradient(180deg, rgba(15,23,42,0.62), rgba(0,0,0,0.36))",
+      "radial-gradient(circle at 50% 44%, rgba(248,113,113,0.24), transparent 45%), linear-gradient(180deg, rgba(15,23,42,0.62), rgba(0,0,0,0.36))",
     display: "grid",
     placeItems: "center",
     overflow: "hidden",
   };
 
+  const mascotStyle: CSSProperties = {
+    width: "min(220px, 88%)",
+    height: "auto",
+    filter: "drop-shadow(0 24px 44px rgba(0,0,0,0.48))",
+  };
+
+  const titleStyle: CSSProperties = {
+    margin: 0,
+    fontSize: "clamp(1.35rem, 2.4vw, 1.8rem)",
+    lineHeight: 1.08,
+    letterSpacing: "-0.052em",
+  };
+
+  const copyStyle: CSSProperties = {
+    margin: "9px 0 0",
+    color: "#cbd5e1",
+    fontSize: "0.9rem",
+    lineHeight: 1.55,
+  };
+
   if (setupComplete && setupCompleteDismissed) {
     return (
-      <div style={companionShellStyle} className="brain-qat-companion brain-qat-companion-ready">
+      <aside style={companionShellStyle} className="brain-qat-companion brain-qat-companion-ready" aria-label="QAt Companion">
         <div style={mascotStageStyle} aria-hidden="true">
           {videoSrc ? (
-            <video className="qat-guide-media" src={videoSrc} autoPlay loop muted playsInline style={{ width: "min(210px, 88%)", height: "auto" }} />
+            <video className="qat-guide-media" src={videoSrc} autoPlay loop muted playsInline style={mascotStyle} />
           ) : (
-            <img src={imageSrc} alt="" style={{ width: "min(210px, 88%)", height: "auto", filter: "drop-shadow(0 24px 44px rgba(0,0,0,0.46))" }} />
+            <img src={imageSrc} alt="" style={mascotStyle} />
           )}
         </div>
 
-        <section aria-label="QAt Companion" style={{ display: "grid", gap: 14, alignContent: "center", minWidth: 0 }}>
+        <section style={{ display: "grid", gap: 13, minWidth: 0 }}>
           <p className="qat-guide-eyebrow" style={{ margin: 0 }}>QAt Companion</p>
-          <h3 style={{ margin: 0, fontSize: "clamp(1.65rem, 3vw, 2.35rem)", lineHeight: 1.05, letterSpacing: "-0.055em" }}>
-            Brain setup complete.
-          </h3>
-          <p style={{ margin: 0, color: "#cbd5e1", lineHeight: 1.6 }}>
-            Your workspace has a project, enabled source context, Jira, and TestRail. I’ll stay here as a Brain companion instead of showing the setup wizard.
+          <h3 style={titleStyle}>Brain setup complete.</h3>
+          <p style={copyStyle}>
+            Your workspace is ready. I’ll stay in the Brain gutter as a companion instead of showing the setup wizard.
           </p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 8 }}>
-            <span style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(22,101,52,0.3)", border: "1px solid rgba(34,197,94,0.28)", fontWeight: 900 }}>Project</span>
-            <span style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(22,101,52,0.3)", border: "1px solid rgba(34,197,94,0.28)", fontWeight: 900 }}>{status.enabledSourceCount} sources</span>
-            <span style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(22,101,52,0.3)", border: "1px solid rgba(34,197,94,0.28)", fontWeight: 900 }}>Jira</span>
-            <span style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(22,101,52,0.3)", border: "1px solid rgba(34,197,94,0.28)", fontWeight: 900 }}>TestRail</span>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
+            <span style={smallPillStyle}>Project</span>
+            <span style={smallPillStyle}>{status.enabledSourceCount} sources</span>
+            <span style={smallPillStyle}>Jira</span>
+            <span style={smallPillStyle}>TestRail</span>
           </div>
 
-          <div className="qat-guide-actions">
+          {recommendations[0] ? (
+            <button
+              type="button"
+              onClick={() => openRecommendation(recommendations[0])}
+              style={{
+                textAlign: "left",
+                borderRadius: 14,
+                border: "1px solid rgba(34, 197, 94, 0.32)",
+                background: "rgba(6, 78, 59, 0.26)",
+                color: "#e5e7eb",
+                padding: "11px 12px",
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ display: "block", color: "#ffffff", fontWeight: 900, marginBottom: 5 }}>{recommendations[0].label}</span>
+              <span style={{ display: "block", fontSize: "0.78rem", lineHeight: 1.45 }}>{recommendations[0].body}</span>
+            </button>
+          ) : null}
+
+          <div className="qat-guide-actions" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8 }}>
             <button className="qat-guide-primary" type="button" onClick={() => (window.location.href = "/app")}>
               Open Toolbelt
             </button>
@@ -502,32 +572,32 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
             </button>
           </div>
         </section>
-      </div>
+      </aside>
     );
   }
 
   return (
-    <div style={companionShellStyle} className="brain-qat-companion brain-qat-companion-setup">
+    <aside style={companionShellStyle} className="brain-qat-companion brain-qat-companion-setup" aria-label="QAt Brain setup companion">
       <div style={mascotStageStyle} aria-hidden="true">
         {videoSrc ? (
-          <video className="qat-guide-media" src={videoSrc} autoPlay loop muted playsInline style={{ width: "min(220px, 90%)", height: "auto" }} />
+          <video className="qat-guide-media" src={videoSrc} autoPlay loop muted playsInline style={mascotStyle} />
         ) : (
-          <img src={imageSrc} alt="" style={{ width: "min(220px, 90%)", height: "auto", filter: "drop-shadow(0 24px 44px rgba(0,0,0,0.48))" }} />
+          <img src={imageSrc} alt="" style={mascotStyle} />
         )}
       </div>
 
-      <section aria-label="QAt Brain setup companion" style={{ display: "grid", gap: 12, minWidth: 0 }}>
+      <section style={{ display: "grid", gap: 12, minWidth: 0 }}>
         <div>
           <p className="qat-guide-eyebrow" style={{ margin: "0 0 8px" }}>QAt Companion</p>
-          <h3 style={{ margin: 0, fontSize: "clamp(1.55rem, 3vw, 2.25rem)", lineHeight: 1.06, letterSpacing: "-0.055em" }}>{step.title}</h3>
-          <p style={{ margin: "10px 0 0", color: "#cbd5e1", lineHeight: 1.58 }}>{step.body}</p>
+          <h3 style={titleStyle}>{step.title}</h3>
+          <p style={copyStyle}>{step.body}</p>
         </div>
 
         <div aria-label={`Brain setup completion ${progressPercent}%`} style={{ height: 9, overflow: "hidden", borderRadius: 999, background: "rgba(15, 23, 42, 0.92)", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
           <div style={{ width: `${progressPercent}%`, height: "100%", borderRadius: 999, background: "linear-gradient(90deg, #22c55e, #facc15, #ef4444)" }} />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: 6 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: 5 }}>
           {BRAIN_SETUP_STEPS.map((item, index) => {
             const complete = isStepComplete(item.id, status);
             const active = index === stepIndex;
@@ -539,12 +609,12 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
                 onClick={() => goToStep(index)}
                 title={`${item.shortLabel}: ${complete ? "Complete" : "Missing"}`}
                 style={{
-                  minHeight: 34,
+                  minHeight: 30,
                   borderRadius: 999,
                   border: active ? "1px solid rgba(248, 113, 113, 0.78)" : complete ? "1px solid rgba(34, 197, 94, 0.42)" : "1px solid rgba(96, 165, 250, 0.2)",
                   background: active ? "rgba(127, 29, 29, 0.56)" : complete ? "rgba(22, 101, 52, 0.3)" : "rgba(15, 23, 42, 0.72)",
                   color: complete || active ? "#ffffff" : "#94a3b8",
-                  fontSize: "0.72rem",
+                  fontSize: "0.7rem",
                   fontWeight: 900,
                   cursor: "pointer",
                 }}
@@ -555,7 +625,7 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
           })}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8, fontSize: "0.78rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 6, fontSize: "0.78rem", color: "#e5e7eb" }}>
           <span>{status.hasProject ? `Project: ${status.activeProjectName || "Selected"}` : "Project: Missing"}</span>
           <span>{status.hasSources ? `Sources: ${status.enabledSourceCount} enabled` : "Sources: Missing"}</span>
           <span>{status.jiraConfigured ? "Jira: Configured" : "Jira: Missing"}</span>
@@ -583,7 +653,7 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
                 }}
               >
                 <span style={{ display: "block", color: "#ffffff", fontWeight: 900, marginBottom: 4 }}>{recommendation.label}</span>
-                <span style={{ display: "block", fontSize: "0.78rem", lineHeight: 1.45 }}>{recommendation.body}</span>
+                <span style={{ display: "block", fontSize: "0.76rem", lineHeight: 1.42 }}>{recommendation.body}</span>
               </button>
             ))}
           </div>
@@ -591,12 +661,12 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", justifyContent: "space-between", color: "#cbd5e1", fontSize: "0.82rem" }}>
           <span>{step.label}</span>
-          <span>{currentStepComplete ? "Complete" : step.tab ? `Target: Brain / ${step.tab}` : "Target: Toolbelt"}</span>
+          <span>{currentStepComplete ? "Complete" : step.tab ? `Brain / ${step.tab}` : "Toolbelt"}</span>
         </div>
 
         {status.error ? <div style={{ color: "#fecaca", fontSize: "0.82rem" }}>{status.error}</div> : null}
 
-        <div className="qat-guide-actions">
+        <div className="qat-guide-actions" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8 }}>
           <button className="qat-guide-primary" type="button" onClick={handlePrimaryAction}>
             {status.isLoading ? "Checking setup..." : primaryLabel}
           </button>
@@ -616,7 +686,7 @@ function BrainSetupGuide({ imageSrc, videoSrc }: { imageSrc: string; videoSrc?: 
           </button>
         </div>
       </section>
-    </div>
+    </aside>
   );
 }
 
