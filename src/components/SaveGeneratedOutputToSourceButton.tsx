@@ -136,7 +136,7 @@ export default function SaveGeneratedOutputToSourceButton({ activeProject, repor
         title: cleanTitle(asText(testCase.title), `Test Case ${index + 1}`),
         testType: testTypeFrom(testCase.testType ?? testCase.type),
         priority: priorityFrom(testCase.priority),
-        status: "draft",
+        status: "ready",
         sourceType: "generated-tests",
         preconditions: asText(testCase.preconditions),
         steps: stepsFrom(testCase.steps),
@@ -174,7 +174,7 @@ export default function SaveGeneratedOutputToSourceButton({ activeProject, repor
       }
       setState("saved");
       if (savedCases.length && savedSources.length) setMessage(`Saved ${savedCases.length} test case${savedCases.length === 1 ? "" : "s"} and ${savedSources.length} source bundle.`);
-      else if (savedCases.length) setMessage(`Saved ${savedCases.length} test case${savedCases.length === 1 ? "" : "s"} to Test Case Library.`);
+      else if (savedCases.length) setMessage(`Saved ${savedCases.length} ready test case${savedCases.length === 1 ? "" : "s"} to Test Case Library.`);
       else setMessage(`Saved ${savedSources.length} source${savedSources.length === 1 ? "" : "s"} to Project Source Vault.`);
       onSaved?.();
     } catch (error) {
