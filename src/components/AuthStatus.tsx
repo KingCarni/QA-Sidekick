@@ -4,6 +4,7 @@ import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { createPortal } from "react-dom";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import AdminDebugMenu from "@/components/AdminDebugMenu";
 import CreditsPill from "@/components/CreditsPill";
 
 type MenuPosition = {
@@ -315,36 +316,40 @@ export default function AuthStatus() {
   const displayName = session.user.email ?? session.user.name ?? "QA user";
 
   return (
-    <aside className="qa-auth-widget" aria-label="Account status">
-      <div className="qa-auth-card qa-auth-card-signed-in" style={accountCardStyle}>
-        <FloatingSignedInIdentity label="Signed in" value={displayName} />
+    <>
+      <aside className="qa-auth-widget" aria-label="Account status">
+        <div className="qa-auth-card qa-auth-card-signed-in" style={accountCardStyle}>
+          <FloatingSignedInIdentity label="Signed in" value={displayName} />
 
-        <div className="qa-auth-action-row account-action-row" style={actionRowStyle}>
-          <div style={creditsCellStyle}>
-            <div style={menuButtonWrapStyle}>
-              <AccountMenuButton isSignedIn />
+          <div className="qa-auth-action-row account-action-row" style={actionRowStyle}>
+            <div style={creditsCellStyle}>
+              <div style={menuButtonWrapStyle}>
+                <AccountMenuButton isSignedIn />
+              </div>
+              <CreditsPill />
             </div>
-            <CreditsPill />
-          </div>
 
-          <div style={actionCellStyle}>
-            <Link className="qa-auth-secondary-button" href="/account" style={actionButtonStyle}>
-              Account
-            </Link>
-          </div>
+            <div style={actionCellStyle}>
+              <Link className="qa-auth-secondary-button" href="/account" style={actionButtonStyle}>
+                Account
+              </Link>
+            </div>
 
-          <div style={actionCellStyle}>
-            <button
-              className="qa-auth-ghost-button"
-              style={actionButtonStyle}
-              type="button"
-              onClick={() => signOut()}
-            >
-              Sign out
-            </button>
+            <div style={actionCellStyle}>
+              <button
+                className="qa-auth-ghost-button"
+                style={actionButtonStyle}
+                type="button"
+                onClick={() => signOut()}
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+
+      <AdminDebugMenu userEmail={session.user.email} />
+    </>
   );
 }
