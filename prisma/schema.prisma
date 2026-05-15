@@ -118,6 +118,8 @@ model QAProject {
   sources QAProjectSource[]
   rules   QAProjectRule[]
   terms   QAProjectTerm[]
+  risks   QAProjectRisk[]
+  features QAProjectFeature[]
   bugCollectionItems BugCollectionItem[]
 
   @@unique([userId, name])
@@ -179,6 +181,51 @@ model QAProjectTerm {
   @@index([projectId, isEnabled])
   @@index([projectId, updatedAt])
   @@index([category])
+}
+
+model QAProjectRisk {
+  id             String   @id @default(cuid())
+  projectId      String
+  title          String
+  area           String   @default("general")
+  riskType       String   @default("regression")
+  severity       String   @default("medium")
+  likelihood     String   @default("medium")
+  description    String
+  testingGuidance String?
+  relatedTags    String[] @default([])
+  isEnabled      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project QAProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, isEnabled])
+  @@index([projectId, updatedAt])
+  @@index([riskType])
+  @@index([severity])
+  @@index([area])
+}
+
+model QAProjectFeature {
+  id             String   @id @default(cuid())
+  projectId      String
+  name           String
+  area           String   @default("general")
+  lifecycleState String   @default("planned")
+  description    String
+  dependencies   String[] @default([])
+  relatedTags    String[] @default([])
+  isEnabled      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project QAProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, isEnabled])
+  @@index([projectId, updatedAt])
+  @@index([lifecycleState])
+  @@index([area])
 }
 
 model BugCollectionItem {
