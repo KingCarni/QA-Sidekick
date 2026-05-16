@@ -1,0 +1,36 @@
+/* Final QAt mascot asset override.
+   Some legacy companion call sites still pass the old peek image directly.
+   This keeps the shared rail visually correct until all call sites are migrated. */
+
+.qat-companion-rail-mascot-stage,
+.qat-companion-mascot-frame {
+  position: relative !important;
+}
+
+.qat-companion-rail-mascot-stage > img,
+.qat-companion-mascot-frame > img,
+.qat-companion-rail-mascot-stage > video,
+.qat-companion-mascot-frame > video {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.qat-companion-rail-mascot-stage::before,
+.qat-companion-mascot-frame::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 12px !important;
+  display: block !important;
+  background-image: url("/QAt/FullQat.png") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  filter: drop-shadow(0 24px 44px rgba(0, 0, 0, 0.48)) !important;
+  pointer-events: none !important;
+}
+
+.qat-companion-rail-collapsed-button img,
+.qat-companion-collapsed-button img {
+  content: url("/QAt/FullQat.png") !important;
+  object-fit: contain !important;
+}
