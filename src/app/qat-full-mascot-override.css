@@ -21,7 +21,7 @@
   position: absolute !important;
   inset: 0 !important;
   display: block !important;
-  background-image: url("/QAt/FullQat.png") !important;
+  background-image: url("/qat/FullQat.png") !important;
   background-repeat: no-repeat !important;
   background-position: center 58% !important;
   background-size: 125% auto !important;
@@ -39,6 +39,6 @@
 
 .qat-companion-rail-collapsed-button img,
 .qat-companion-collapsed-button img {
-  content: url("/QAt/FullQat.png") !important;
+  content: url("/qat/FullQat.png") !important;
   object-fit: contain !important;
 }
