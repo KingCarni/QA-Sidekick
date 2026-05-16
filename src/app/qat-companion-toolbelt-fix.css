@@ -5,6 +5,7 @@
   display: flex !important;
   flex-direction: column !important;
   gap: 13px !important;
+  padding-top: 12px !important;
 }
 
 .qat-companion-panel .qat-companion-body {
