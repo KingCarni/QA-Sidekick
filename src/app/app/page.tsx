@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -1155,6 +1155,7 @@ async function copyText(text: string) {
 }
 
 
+
 function QAtCompanionPanel({
   activeTool,
   hasInput,
@@ -1169,132 +1170,104 @@ function QAtCompanionPanel({
   hasFollowUps: boolean;
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [hasAskedQAt, setHasAskedQAt] = useState(false);
   const workflowState = hasOutput ? "output" : hasInput ? "input" : "empty";
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const storedValue = window.localStorage.getItem("qatalyst-qat-companion-collapsed");
     setIsCollapsed(storedValue === "true");
   }, []);
 
+  useEffect(() => {
+    setHasAskedQAt(false);
+  }, [activeTool, workflowState, hasProjectContext, hasFollowUps]);
+
   function toggleCollapsed() {
     setIsCollapsed((current) => {
       const nextValue = !current;
-      window.localStorage.setItem("qatalyst-qat-companion-collapsed", String(nextValue));
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("qatalyst-qat-companion-collapsed", String(nextValue));
+      }
       return nextValue;
     });
   }
 
-  function handleAction(action: string) {
-    const lowerAction = action.toLowerCase();
-
-    if (lowerAction.includes("risk")) {
-      window.dispatchEvent(new CustomEvent("qat-companion-risk-request"));
-      window.setTimeout(() => document.querySelector('[data-testid="qa-input"]')?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-      return;
-    }
-
-    if (lowerAction.includes("jira") || lowerAction.includes("readiness")) {
-      document.querySelector(".bug-readiness-card, .qa-output-cockpit, [data-testid='qa-output']")?.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
-
-    if (lowerAction.includes("repro") || lowerAction.includes("setup") || lowerAction.includes("missing") || lowerAction.includes("gap") || lowerAction.includes("question")) {
-      document.querySelector(".source-textarea-shell textarea, textarea")?.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
-
-    document.querySelector('[data-testid="qa-output"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
-
-  const companionCopy: Record<
-    ToolId,
-    {
-      eyebrow: string;
-      title: string;
-      body: Record<typeof workflowState, string>;
-      tip: string;
-      actions: string[];
-    }
-  > = {
+  const companionCopy: Record<ToolId, { title: string; body: Record<typeof workflowState, string> }> = {
     tests: {
-      eyebrow: "Coverage check",
       title: "QAt Companion",
       body: {
-        empty: "Paste a ticket, user story, or acceptance criteria and I’ll watch for missing coverage.",
-        input: "Input detected. Check roles, edge cases, data states, and acceptance criteria before generating.",
-        output: "Review the generated cases for weak assertions, missing negative paths, and unclear setup.",
+        empty: "Paste a ticket, user story, or acceptance criteria. I’ll stay out of the way until you ask me to inspect it.",
+        input: "Input detected. Ask me when you want a second QA pass before generating.",
+        output: "Output generated. Ask me to review what changed and what still needs attention.",
       },
-      tip: "Strong test cases are executable, observable, and specific enough for QA or dev handoff.",
-      actions: ["Find gaps", "Suggest edge cases", "Check automation"],
     },
     bug: {
-      eyebrow: "Bug triage",
       title: "QAt Companion",
       body: {
-        empty: "Paste rough bug notes and I’ll help turn them into a triage-ready defect.",
-        input: "Input detected. Make sure repro steps, expected vs actual, environment, evidence, and impact are covered.",
-        output: "Bug report generated. Check whether it is clear enough for Jira triage without another QA loop.",
+        empty: "Paste rough bug notes. I’ll stay quiet until you ask me to inspect them.",
+        input: "Input detected. Ask me when you want a bug triage sanity check.",
+        output: "Bug report generated. Ask me to review it for triage readiness.",
       },
-      tip: "Best next step: add repro details, expected vs actual behavior, environment, evidence, and impact.",
-      actions: ["Find missing info", "Tighten repro", "Check Jira readiness"],
     },
     risk: {
-      eyebrow: "Risk radar",
       title: "QAt Companion",
       body: {
-        empty: "Paste a ticket or requirements doc and I’ll look for release risk.",
-        input: "Input detected. I’m checking ambiguity, regression impact, auth/data risks, integrations, and unclear owners.",
-        output: "Risk review generated. Use it to decide what QA should test first and what needs team follow-up.",
+        empty: "Paste a ticket or requirements doc. I’ll wait until you ask me to inspect release risk.",
+        input: "Input detected. Ask me when you want a risk-focused QA pass.",
+        output: "Risk review generated. Ask me to call out the most important next move.",
       },
-      tip: "A useful risk review tells QA what to test next, not just what might go wrong.",
-      actions: ["Find blockers", "Check release risk", "Suggest follow-ups"],
     },
     improve: {
-      eyebrow: "Test upgrade",
       title: "QAt Companion",
       body: {
-        empty: "Paste a weak test case or checklist and I’ll help strengthen it.",
-        input: "Input detected. I’m checking setup, assertions, missing data, expected results, and automation potential.",
-        output: "Improved test generated. Check that it is still truthful, executable, and not over-scoped.",
+        empty: "Paste a weak test case or checklist. I’ll wait until you ask me to inspect it.",
+        input: "Input detected. Ask me when you want a coverage and clarity pass.",
+        output: "Improved test generated. Ask me to review it for execution readiness.",
       },
-      tip: "Weak tests usually fail because the expected result is vague or the setup is not reproducible.",
-      actions: ["Strengthen assertions", "Find missing setup", "Check automation"],
     },
     feature: {
-      eyebrow: "Feature shaping",
       title: "QAt Companion",
       body: {
-        empty: "Describe the feature idea and I’ll help shape it into QA-ready product work.",
-        input: "Input detected. I’m watching for missing acceptance criteria, edge cases, user roles, states, and release risks.",
-        output: "Feature brief generated. Review it for unanswered product decisions before turning it into QA work.",
+        empty: "Describe the feature idea. I’ll wait until you ask me to inspect scope and QA risk.",
+        input: "Input detected. Ask me when you want a QA/product shaping pass.",
+        output: "Feature brief generated. Ask me to review the open questions and QA handoff risk.",
       },
-      tip: "The clearer the feature rules are here, the stronger every downstream QA artifact becomes.",
-      actions: ["Find open questions", "Draft acceptance criteria", "Flag QA risks"],
     },
   };
 
   const copy = companionCopy[activeTool];
   const stateLabel = workflowState === "output" ? "Reviewing" : workflowState === "input" ? "Input" : "Waiting";
+  const noticedText = !hasInput
+    ? "Paste or fetch a ticket first. Once there is source work here, I can help check for gaps, edge cases, missing context, and automation readiness."
+    : !hasOutput
+      ? "Source input is ready. Run the selected workflow, then I can inspect the generated output for gaps, follow-ups, and next steps."
+      : hasFollowUps
+        ? "There are follow-up questions open. Answer those before treating this output as handoff-ready."
+        : hasProjectContext
+          ? "This output used project context. Review it for accuracy, then save or export the artifact if it looks ready."
+          : "This output was generated without project context. Consider adding Source Vault context before relying on it for release work.";
 
   if (isCollapsed) {
-  return (
-    <aside
-      className={`qat-companion-panel qat-companion-panel-${activeTool} qat-companion-panel-collapsed`}
-      aria-label="QAt Companion collapsed"
-    >
-      <button
-        className="qat-companion-collapsed-button"
-        type="button"
-        onClick={() => setIsCollapsed(false)}
-        aria-label="Expand QAt Companion"
-        title="Expand QAt Companion"
+    return (
+      <aside
+        className={`qat-companion-panel qat-companion-panel-${activeTool} qat-companion-panel-collapsed`}
+        aria-label="QAt Companion collapsed"
       >
-        <img src="/qat/qat-peek.png" alt="" aria-hidden="true" />
-        <span>QAt</span>
-      </button>
-    </aside>
-  );
-}
+        <button
+          className="qat-companion-collapsed-button"
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label="Expand QAt Companion"
+          title="Expand QAt Companion"
+        >
+          <img src="/QAt/FullQat.png" alt="" aria-hidden="true" />
+          <span>QAt</span>
+        </button>
+      </aside>
+    );
+  }
 
   return (
     <aside
@@ -1302,44 +1275,47 @@ function QAtCompanionPanel({
       aria-label="QAt Companion"
     >
       <div className="qat-companion-window">
-        <div className="qat-companion-topline">
-          <span>{copy.eyebrow}</span>
-          <button className="qat-companion-toggle" type="button" onClick={toggleCollapsed} aria-label="Collapse QAt Companion">
-            Min
-          </button>
+        <button className="qat-companion-toggle qat-companion-toggle-floating" type="button" onClick={toggleCollapsed} aria-label="Collapse QAt Companion">
+          Min
+        </button>
+
+        <div className="qat-companion-mascot-frame">
+          <img src="/QAt/FullQat.png" alt="" aria-hidden="true" />
         </div>
 
-        <div className="qat-companion-body">
-          <div className="qat-companion-mascot-frame">
-            <img src="/qat/qat-peek.png" alt="" aria-hidden="true" />
+        <div className="qat-companion-copy">
+          <div className="qat-companion-title-row">
+            <h3>{copy.title}</h3>
+            <span className="qat-companion-state-pill">{stateLabel}</span>
           </div>
+          <p>{copy.body[workflowState]}</p>
+        </div>
 
-          <div className="qat-companion-copy">
-            <div className="qat-companion-title-row">
-              <h3>{copy.title}</h3>
-              <span className="qat-companion-state-pill">{stateLabel}</span>
-            </div>
-            <p>{copy.body[workflowState]}</p>
-          </div>
+        <div className="qat-companion-topline">
+          <span>Coverage check</span>
         </div>
 
         <div className="qat-companion-signals" aria-label="QAt workflow signals">
-          <span className={hasProjectContext ? "active" : ""}>Project context</span>
-          <span className={hasFollowUps ? "active warning" : ""}>Follow-ups</span>
+          <span className={hasProjectContext ? "active" : ""}>{hasProjectContext ? "Project context used" : "No project context"}</span>
+          <span className={hasInput ? "active" : ""}>{hasInput ? "Input ready" : "No input"}</span>
+          <span className={hasOutput ? "active" : ""}>{hasOutput ? "Output generated" : "No output"}</span>
+          <span className={hasFollowUps ? "active warning" : ""}>{hasFollowUps ? "Follow-ups open" : "No follow-ups"}</span>
         </div>
 
-        <div className="qat-companion-actions" aria-label="Suggested QAt actions">
-          {copy.actions.map((action) => (
-            <button key={action} type="button" onClick={() => handleAction(action)}>
-              {action}
-            </button>
-          ))}
-        </div>
+        <button
+          className="qat-companion-ask-button"
+          type="button"
+          onClick={() => setHasAskedQAt(true)}
+        >
+          Ask QAt
+        </button>
 
-        <div className="qat-companion-tip">
-          <strong>QAt tip</strong>
-          <span>{copy.tip}</span>
-        </div>
+        {hasAskedQAt ? (
+          <div className="qat-companion-tip qat-companion-noticed">
+            <strong>QAt noticed</strong>
+            <span>{noticedText}</span>
+          </div>
+        ) : null}
       </div>
     </aside>
   );
