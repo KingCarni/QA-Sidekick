@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./qat-companion-rail.css";
 import "./qat-companion-toolbelt-fix.css";
+import "./qat-full-mascot-override.css";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
