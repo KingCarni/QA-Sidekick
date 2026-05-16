@@ -215,7 +215,7 @@ function AccountMenuButton({ isSignedIn }: { isSignedIn: boolean }) {
       }}
     >
       <Link href="/brain" role="menuitem" onClick={closeMenu} style={menuLinkStyle}>
-        Project Brain
+        Project Brain / Setup
       </Link>
       <Link href="/buy-credits" role="menuitem" onClick={closeMenu} style={menuLinkStyle}>
         Buy Credits
