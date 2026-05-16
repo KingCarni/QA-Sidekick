@@ -1,0 +1,70 @@
+/* Toolbelt QAt companion final rail ordering.
+   This override intentionally loads after the shared rail CSS. */
+
+.qat-companion-panel .qat-companion-window {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 13px !important;
+}
+
+.qat-companion-panel .qat-companion-body {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 13px !important;
+}
+
+.qat-companion-panel .qat-companion-mascot-frame {
+  order: 0 !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  min-height: 198px !important;
+  border-radius: 18px !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.qat-companion-panel .qat-companion-mascot-frame img {
+  width: min(210px, 88%) !important;
+  height: auto !important;
+  max-height: 180px !important;
+  object-fit: contain !important;
+}
+
+.qat-companion-panel .qat-companion-copy {
+  order: 1 !important;
+}
+
+.qat-companion-panel .qat-companion-topline {
+  order: 2 !important;
+}
+
+.qat-companion-panel .qat-companion-signals {
+  order: 3 !important;
+}
+
+.qat-companion-panel .qat-companion-actions {
+  order: 4 !important;
+}
+
+.qat-companion-panel .qat-companion-tip {
+  order: 5 !important;
+}
+
+.qat-companion-panel .qat-companion-copy h3 {
+  font-size: 1.48rem !important;
+  line-height: 1.08 !important;
+}
+
+.qat-companion-panel .qat-companion-title-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 8px !important;
+  align-items: start !important;
+}
+
+.qat-companion-panel-collapsed .qat-companion-collapsed-button img {
+  width: 58px !important;
+  height: 68px !important;
+  object-fit: contain !important;
+}
