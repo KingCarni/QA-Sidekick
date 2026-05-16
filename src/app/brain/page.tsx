@@ -11,7 +11,7 @@ import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSe
 import ProjectSourceVaultPanel from "@/components/ProjectSourceVaultPanel";
 import ProjectTerminologyPanel from "@/components/ProjectTerminologyPanel";
 import ProjectTestCaseLibraryPanel from "@/components/ProjectTestCaseLibraryPanel";
-import QAtGuideCard from "@/components/QAtGuideCard";
+import QAtCompanionRail from "@/components/QAtCompanionRail";
 
 type BrainTabId =
   | "overview"
@@ -302,6 +302,86 @@ function formatReportDate(value: string) {
   }
 }
 
+function getBrainQAtTip(activeTab: BrainTabId, hasProject: boolean) {
+  if (!hasProject) {
+    return {
+      label: "Create/select a project first",
+      body: "Start in Projects. A project gives QAtalyst a safe container for sources, rules, reports, bugs, and integrations.",
+    };
+  }
+
+  if (activeTab === "projects") {
+    return {
+      label: "Next: add source context",
+      body: "Your project foundation is ready. Open Source Vault next and add specs, product notes, acceptance rules, or release context.",
+    };
+  }
+
+  if (activeTab === "sources") {
+    return {
+      label: "Source Vault is the memory layer",
+      body: "Review enabled sources, then add QA rules, terminology, and risks as your project matures. This is the context QAtalyst will reuse before each QA run.",
+    };
+  }
+
+  if (activeTab === "integrations") {
+    return {
+      label: "Connect handoff tools when ready",
+      body: "Jira helps pull tickets and create structured QA work. TestRail keeps generated coverage closer to your test management flow.",
+    };
+  }
+
+  return {
+    label: "Keep building useful memory",
+    body: "Add rules, terminology, risks, and reusable coverage over time. The more grounded the Brain is, the better QAtalyst gets.",
+  };
+}
+
+function getBrainQAtDefaultGuidance(activeTab: BrainTabId, hasProject: boolean) {
+  if (!hasProject) {
+    return {
+      title: "Let’s set up your QA memory.",
+      body: "Create or select a project first, then add reusable source context, QA rules, terminology, and integrations.",
+      recommendationTitle: "Create/select a project first",
+      recommendationBody: "Project Brain needs a workspace before sources, rules, reports, bugs, and integrations can be scoped safely.",
+    };
+  }
+
+  if (activeTab === "sources") {
+    return {
+      title: "Brain setup complete.",
+      body: "Your workspace is ready. I’ll stay in the Brain right rail as your companion instead of showing the setup wizard.",
+      recommendationTitle: "Review Source Vault context",
+      recommendationBody: "You already have reusable sources. Keep them enabled only when they should influence future QA output.",
+    };
+  }
+
+  if (activeTab === "projects") {
+    return {
+      title: "Brain setup complete.",
+      body: "Your workspace is ready. I’ll stay in the Brain right rail as your companion instead of showing the setup wizard.",
+      recommendationTitle: "Project foundation is ready",
+      recommendationBody: "Confirm the product type and description are accurate, then move to Source Vault when you want to refine memory.",
+    };
+  }
+
+  if (activeTab === "integrations") {
+    return {
+      title: "Brain setup complete.",
+      body: "Your workspace is ready. I’ll stay in the Brain right rail as your companion instead of showing the setup wizard.",
+      recommendationTitle: "Check workflow integrations",
+      recommendationBody: "Jira and TestRail are part of the Brain setup path. Keep them configured when you want handoff-ready QA output.",
+    };
+  }
+
+  return {
+    title: "Brain setup complete.",
+    body: "Your workspace is ready. I’ll stay in the Brain right rail as your companion instead of showing the setup wizard.",
+    recommendationTitle: "Brain setup is complete",
+    recommendationBody: "Project, source context, Jira, and TestRail are configured. Head to the toolbelt and run a small test case generation.",
+  };
+}
+
 function labelForReportType(type: string) {
   return type
     .split(/[-_]/)
@@ -518,11 +598,16 @@ export default function BrainPage() {
   const [activeProject, setActiveProject] = useState<SafeQAProject | null>(null);
   const [isLoadingActiveProject, setIsLoadingActiveProject] = useState(false);
   const [activeProjectError, setActiveProjectError] = useState("");
+  const [hasAskedBrainQAt, setHasAskedBrainQAt] = useState(false);
 
   const active = useMemo(
     () => BRAIN_TABS.find((tab) => tab.id === activeTab) ?? BRAIN_TABS[0],
     [activeTab]
   );
+  const brainQAtTip = getBrainQAtTip(activeTab, Boolean(activeProject));
+  const brainQAtGuidance = getBrainQAtDefaultGuidance(activeTab, Boolean(activeProject));
+  const brainQAtProgress = activeProject ? 100 : 15;
+  const isBrainSetupComplete = Boolean(activeProject);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -533,6 +618,7 @@ export default function BrainPage() {
 
   function selectBrainTab(tabId: BrainTabId) {
     setActiveTab(tabId);
+    setHasAskedBrainQAt(false);
 
     if (typeof window === "undefined") return;
 
@@ -633,15 +719,6 @@ export default function BrainPage() {
 
         <BrainHeroAccount />
       </section>
-
-      <QAtGuideCard
-        className="qat-ftue-card brain-qat-guide"
-        eyebrow="QAt setup guide"
-        title="Build the memory once, then reuse it everywhere."
-        body="Project Brain is not a setup checklist. It is the source of truth QAtalyst uses to keep test cases, bug reports, risk reviews, feature briefs, and future companion guidance aligned to your product. Start with source docs and team rules, then add terminology, hotspots, and reusable test cases as your project matures."
-        primaryAction={{ label: "Open Test Library", onClick: () => selectBrainTab("testcases") }}
-        secondaryAction={{ label: "Source Vault", onClick: () => selectBrainTab("sources") }}
-      />
 
       <section className="brain-workspace">
         <nav className="brain-tab-rail" aria-label="Project Brain sections">
@@ -798,6 +875,114 @@ export default function BrainPage() {
           ) : null}
         </section>
       </section>
+
+      <QAtCompanionRail
+        storageKey="qatalyst-brain-qAt-companion-collapsed"
+        className="brain-qAt-companion-rail"
+        eyebrow="QAt Companion"
+        title={brainQAtGuidance.title}
+        body={brainQAtGuidance.body}
+        stateLabel={isBrainSetupComplete ? "Ready" : "Setup"}
+        imageSrc="/qat/FullQat.png"
+        progressPercent={brainQAtProgress}
+        steps={[
+          {
+            label: "Project",
+            complete: Boolean(activeProject),
+            active: !activeProject || activeTab === "projects",
+            title: activeProject ? "Project selected" : "Create/select a project",
+            onClick: () => selectBrainTab("projects"),
+          },
+          {
+            label: "Sources",
+            complete: isBrainSetupComplete,
+            active: activeTab === "sources",
+            title: "Review Source Vault",
+            onClick: () => selectBrainTab("sources"),
+          },
+          {
+            label: "Rules",
+            complete: isBrainSetupComplete,
+            active: activeTab === "rules",
+            title: "Review QA Rules",
+            onClick: () => selectBrainTab("rules"),
+          },
+          {
+            label: "Terms",
+            complete: isBrainSetupComplete,
+            active: activeTab === "terminology",
+            title: "Review Terminology",
+            onClick: () => selectBrainTab("terminology"),
+          },
+          {
+            label: "Jira",
+            complete: isBrainSetupComplete,
+            active: activeTab === "integrations",
+            title: "Configure Jira integration",
+            onClick: () => selectBrainTab("integrations"),
+          },
+          {
+            label: "TestRail",
+            complete: isBrainSetupComplete,
+            active: activeTab === "integrations",
+            title: "Configure TestRail integration",
+            onClick: () => selectBrainTab("integrations"),
+          },
+        ]}
+        signals={[
+          {
+            label: "Project",
+            value: activeProject ? activeProject.name : "Missing",
+            state: activeProject ? "ready" : "warning",
+          },
+          {
+            label: "Sources",
+            value: isBrainSetupComplete ? "Review ready" : "Missing",
+            state: isBrainSetupComplete ? "ready" : "warning",
+          },
+          {
+            label: "Jira",
+            value: isBrainSetupComplete ? "Configured" : "Missing",
+            state: isBrainSetupComplete ? "ready" : "warning",
+          },
+          {
+            label: "TestRail",
+            value: isBrainSetupComplete ? "Configured" : "Missing",
+            state: isBrainSetupComplete ? "ready" : "warning",
+          },
+        ]}
+        actions={[
+          {
+            label: "Ask QAt",
+            variant: "secondary",
+            onClick: () => setHasAskedBrainQAt(true),
+          },
+          {
+            label: "Open Toolbelt",
+            variant: "primary",
+            onClick: () => {
+              window.location.href = "/app";
+            },
+          },
+          {
+            label: "Recheck",
+            variant: "secondary",
+            onClick: () => setHasAskedBrainQAt(false),
+          },
+        ]}
+        tip={
+          hasAskedBrainQAt
+            ? {
+                title: brainQAtTip.label,
+                body: brainQAtTip.body,
+              }
+            : {
+                title: brainQAtGuidance.recommendationTitle,
+                body: brainQAtGuidance.recommendationBody,
+              }
+        }
+      />
+
     </main>
   );
 }
