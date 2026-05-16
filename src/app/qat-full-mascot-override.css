@@ -19,12 +19,12 @@
 .qat-companion-mascot-frame::before {
   content: "" !important;
   position: absolute !important;
-  inset: 12px !important;
+  inset: 0 !important;
   display: block !important;
   background-image: url("/QAt/FullQat.png") !important;
   background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: contain !important;
+  background-position: center 58% !important;
+  background-size: 125% auto !important;
   filter: drop-shadow(0 24px 44px rgba(0, 0, 0, 0.48)) !important;
   pointer-events: none !important;
 }
