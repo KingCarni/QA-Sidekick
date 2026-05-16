@@ -42,6 +42,7 @@ export type QAtCompanionRailProps = {
   steps?: QAtCompanionStep[];
   signals?: QAtCompanionSignal[];
   recommendations?: QAtCompanionRecommendation[];
+  recommendationLabel?: string;
   actions?: QAtCompanionAction[];
   tip?: { title: string; body: string };
   footer?: ReactNode;
@@ -65,6 +66,7 @@ export default function QAtCompanionRail({
   steps = [],
   signals = [],
   recommendations = [],
+  recommendationLabel = "Recommended next move",
   actions = [],
   tip,
   footer,
@@ -121,7 +123,7 @@ export default function QAtCompanionRail({
 
       {signals.length ? <div className="qat-companion-rail-signals" aria-label="QAt signals">{signals.map((signal) => <span key={signal.label} className={signal.state ? `is-${signal.state}` : undefined}><strong>{signal.label}</strong>{signal.value ? <em>{signal.value}</em> : null}</span>)}</div> : null}
 
-      {recommendations.length ? <div className="qat-companion-rail-recommendations"><strong className="qat-companion-rail-section-label">Recommended next move</strong>{recommendations.map((recommendation) => <button key={recommendation.label} type="button" className={recommendation.kind ? `is-${recommendation.kind}` : undefined} onClick={recommendation.onClick}><span>{recommendation.label}</span><small>{recommendation.body}</small></button>)}</div> : null}
+      {recommendations.length ? <div className="qat-companion-rail-recommendations"><strong className="qat-companion-rail-section-label">{recommendationLabel}</strong>{recommendations.map((recommendation) => <button key={recommendation.label} type="button" className={recommendation.kind ? `is-${recommendation.kind}` : undefined} onClick={recommendation.onClick}><span>{recommendation.label}</span><small>{recommendation.body}</small></button>)}</div> : null}
 
       {actions.length ? <div className="qat-companion-rail-actions" aria-label="QAt actions">{actions.map((action) => <button key={action.label} type="button" className={action.variant === "primary" ? "is-primary" : undefined} disabled={action.disabled} onClick={action.onClick}>{action.label}</button>)}</div> : null}
 
