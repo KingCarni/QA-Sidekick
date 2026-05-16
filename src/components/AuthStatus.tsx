@@ -137,7 +137,7 @@ function AccountMenuButton({ isSignedIn }: { isSignedIn: boolean }) {
     const rect = button.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const estimatedMenuHeight = isSignedIn ? 258 : 308;
+    const estimatedMenuHeight = isSignedIn ? 300 : 350;
     const preferredTop = rect.bottom + MENU_GAP;
     const wouldOverflowBottom = preferredTop + estimatedMenuHeight > viewportHeight - 16;
 
@@ -214,6 +214,9 @@ function AccountMenuButton({ isSignedIn }: { isSignedIn: boolean }) {
         left: `${position.left}px`,
       }}
     >
+      <Link href="/brain" role="menuitem" onClick={closeMenu} style={menuLinkStyle}>
+        Project Brain
+      </Link>
       <Link href="/buy-credits" role="menuitem" onClick={closeMenu} style={menuLinkStyle}>
         Buy Credits
       </Link>
