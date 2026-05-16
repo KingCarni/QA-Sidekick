@@ -1262,7 +1262,7 @@ function QAtCompanionPanel({
           aria-label="Expand QAt Companion"
           title="Expand QAt Companion"
         >
-          <img src="/QAt/FullQat.png" alt="" aria-hidden="true" />
+          <img src="/qat/FullQat.png" alt="" aria-hidden="true" />
           <span>QAt</span>
         </button>
       </aside>
@@ -1280,7 +1280,7 @@ function QAtCompanionPanel({
         </button>
 
         <div className="qat-companion-mascot-frame">
-          <img src="/QAt/FullQat.png" alt="" aria-hidden="true" />
+          <img src="/qat/FullQat.png" alt="" aria-hidden="true" />
         </div>
 
         <div className="qat-companion-copy">
