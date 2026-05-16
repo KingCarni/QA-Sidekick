@@ -60,7 +60,7 @@ export default function QAtCompanionRail({
   title,
   body,
   stateLabel,
-  imageSrc = "/qat/qat-peek.png",
+  imageSrc = "/QAt/FullQat.png",
   videoSrc,
   progressPercent,
   steps = [],
