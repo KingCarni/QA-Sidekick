@@ -27,6 +27,14 @@
   background-size: 125% auto !important;
   filter: drop-shadow(0 24px 44px rgba(0, 0, 0, 0.48)) !important;
   pointer-events: none !important;
+  z-index: 0 !important;
+}
+
+.qat-companion-rail-minimize,
+.qat-companion-toggle {
+  position: relative !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
 }
 
 .qat-companion-rail-collapsed-button img,
