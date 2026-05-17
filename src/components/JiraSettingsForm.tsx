@@ -143,7 +143,7 @@ export default function JiraSettingsForm({ initialConfig, onReadinessChange }: J
       configSaved: configured,
       connectionTested: connectionState === "connected",
       issueTypesLoaded: issueTypeState === "loaded",
-      handoffReady: diagnosticsReady,
+      handoffReady: configured && connectionState === "connected" && issueTypeState === "loaded" && diagnosticsReady,
     });
   }, [configured, connectionState, issueTypeState, diagnosticsReady, onReadinessChange]);
 

@@ -98,12 +98,23 @@ function getIntegrationQAtGuidance(
 
   if (jiraReadiness.handoffReady) {
     return {
-      title: "Jira handoff is ready.",
-      body: "Your Jira config is saved, issue types are loaded, and the connection diagnostics confirm project visibility and issue creation.",
-      recommendationTitle: "Use Jira from the Toolbelt",
-      recommendationBody: "You can now fetch tickets and prepare Jira-ready QA work with more confidence.",
+      title: "Jira setup is ready.",
+      body: "Your Jira config is saved, the connection test passed, issue types are loaded, and handoff readiness is confirmed.",
+      recommendationTitle: "Jira setup is complete",
+      recommendationBody: "The integration setup checks are complete. Head back to the Toolbelt when you are ready to use Jira in a QA workflow.",
       tipTitle: "QAt says: keep permissions healthy",
       tipBody: "If Jira handoff breaks later, re-run the connection test first. Permissions or tokens are usually the first thing to check.",
+    };
+  }
+
+  if (jiraReadiness.issueTypesLoaded) {
+    return {
+      title: "Jira issue types are loaded.",
+      body: "Your Jira config, connection test, and issue types are ready. Confirm handoff readiness before using Jira workflows.",
+      recommendationTitle: "Confirm handoff readiness",
+      recommendationBody: "Handoff readiness needs a saved config, successful connection test, loaded issue types, project visibility, and issue creation permission.",
+      tipTitle: "QAt says: verify final readiness",
+      tipBody: "This final setup check confirms QAtalyst can prepare Jira-ready work without guessing the project or issue type setup.",
     };
   }
 
@@ -382,12 +393,14 @@ export default function SettingsWorkspace({
           {
             label: "Jira",
             value: jiraReadiness.handoffReady
-              ? "Handoff ready"
-              : jiraReadiness.connectionTested
-                ? "Tested"
-                : jiraReadiness.configSaved
-                  ? "Saved"
-                  : "Missing",
+              ? "Setup ready"
+              : jiraReadiness.issueTypesLoaded
+                ? "Types loaded"
+                : jiraReadiness.connectionTested
+                  ? "Tested"
+                  : jiraReadiness.configSaved
+                    ? "Saved"
+                    : "Missing",
             state: jiraReadiness.handoffReady || jiraReadiness.connectionTested ? "ready" : jiraReadiness.configSaved ? "warning" : "warning",
           },
           {
