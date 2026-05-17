@@ -16,6 +16,17 @@ type SafeTestRailConfig = {
   fieldMapping: Record<string, unknown>;
 };
 
+export type TestRailIntegrationReadiness = {
+  configSaved: boolean;
+  connectionTested: boolean;
+  projectTargetReady: boolean;
+  exportReady: boolean;
+};
+
+type TestRailSettingsFormProps = {
+  onReadinessChange?: (readiness: TestRailIntegrationReadiness) => void;
+};
+
 type TestRailConfigResponse = {
   ok?: boolean;
   error?: string;
@@ -69,7 +80,7 @@ function getResultMessageClass(state: SaveState) {
   return "testrail-settings-message";
 }
 
-export default function TestRailSettingsForm() {
+export default function TestRailSettingsForm({ onReadinessChange }: TestRailSettingsFormProps) {
   const [baseUrl, setBaseUrl] = useState("");
   const [username, setUsername] = useState("");
   const [apiKey, setApiKey] = useState("");
@@ -83,6 +94,19 @@ export default function TestRailSettingsForm() {
   const [state, setState] = useState<SaveState>("loading");
   const [message, setMessage] = useState("");
   const [configured, setConfigured] = useState(false);
+  const [connectionTested, setConnectionTested] = useState(false);
+
+  const projectTargetReady = configured && Boolean(projectId.trim()) && Boolean(defaultSectionId.trim());
+  const exportReady = configured && connectionTested && projectTargetReady;
+
+  useEffect(() => {
+    onReadinessChange?.({
+      configSaved: configured,
+      connectionTested,
+      projectTargetReady,
+      exportReady,
+    });
+  }, [configured, connectionTested, projectTargetReady, exportReady, onReadinessChange]);
 
   const statusLabel = useMemo(() => {
     if (state === "loading") return "Checking";
@@ -93,6 +117,7 @@ export default function TestRailSettingsForm() {
   async function loadConfig() {
     setState("loading");
     setMessage("");
+    setConnectionTested(false);
 
     try {
       const response = await fetch("/api/testrail/config", { method: "GET" });
@@ -167,6 +192,7 @@ export default function TestRailSettingsForm() {
       setConfigured(Boolean(payload?.testrail?.configured));
       setApiKey("");
       setApiKeyMasked(config?.apiKeyMasked ?? "••••••••");
+      setConnectionTested(false);
       setState("saved");
       setMessage("TestRail config saved. API key is stored encrypted and never returned to the client.");
     } catch (error) {
@@ -187,11 +213,13 @@ export default function TestRailSettingsForm() {
         throw new Error(payload?.error || "Could not connect to TestRail.");
       }
 
+      setConnectionTested(true);
       setState("saved");
       setMessage(
         `${payload?.message || "TestRail connection succeeded."} Project: ${payload?.project?.name || projectId}. Priorities: ${payload?.priorityCount ?? 0}. Case types: ${payload?.caseTypeCount ?? 0}.`
       );
     } catch (error) {
+      setConnectionTested(false);
       setState("error");
       setMessage(error instanceof Error ? error.message : "Could not connect to TestRail.");
     }
@@ -223,6 +251,7 @@ export default function TestRailSettingsForm() {
       setRunId("");
       setFieldMappingJson(JSON.stringify(DEFAULT_FIELD_MAPPING, null, 2));
       setConfigured(false);
+      setConnectionTested(false);
       setState("saved");
       setMessage("TestRail config removed.");
     } catch (error) {

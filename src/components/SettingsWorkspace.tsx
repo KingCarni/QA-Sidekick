@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import AutomationExportSettingsForm from "@/components/AutomationExportSettingsForm";
 import E2EAutomationReadinessPanel from "@/components/E2EAutomationReadinessPanel";
-import JiraSettingsForm from "@/components/JiraSettingsForm";
+import JiraSettingsForm, { type JiraIntegrationReadiness } from "@/components/JiraSettingsForm";
 import ProjectAutomationCredentialsForm from "@/components/ProjectAutomationCredentialsForm";
 import QAtCompanionRail from "@/components/QAtCompanionRail";
-import TestRailSettingsForm from "@/components/TestRailSettingsForm";
+import TestRailSettingsForm, { type TestRailIntegrationReadiness } from "@/components/TestRailSettingsForm";
 import type { AutomationCredentialProfile } from "@/lib/automation-credentials";
 import {
   normalizeAutomationProjectConfig,
@@ -22,15 +22,66 @@ type SettingsWorkspaceProps = {
 
 type SettingsArea = "jira" | "testrail" | "admin";
 
-function getIntegrationQAtGuidance(activeArea: SettingsArea, jiraConfigured: boolean) {
+const EMPTY_JIRA_READINESS: JiraIntegrationReadiness = {
+  configSaved: false,
+  connectionTested: false,
+  issueTypesLoaded: false,
+  handoffReady: false,
+};
+
+const EMPTY_TESTRAIL_READINESS: TestRailIntegrationReadiness = {
+  configSaved: false,
+  connectionTested: false,
+  projectTargetReady: false,
+  exportReady: false,
+};
+
+function getIntegrationQAtGuidance(
+  activeArea: SettingsArea,
+  jiraReadiness: JiraIntegrationReadiness,
+  testRailReadiness: TestRailIntegrationReadiness
+) {
   if (activeArea === "testrail") {
+    if (testRailReadiness.exportReady) {
+      return {
+        title: "TestRail export is ready.",
+        body: "Your TestRail config is saved, the connection has been tested, and the project target is ready for preview-first export.",
+        recommendationTitle: "Use TestRail from the Toolbelt",
+        recommendationBody: "You can now generate coverage, review it, preview the sync, and approve the TestRail export flow.",
+        tipTitle: "QAt says: keep preview-first sync",
+        tipBody: "Do not silently write cases. Generate, review, preview sync, approve, then create or update TestRail cases.",
+      };
+    }
+
+    if (testRailReadiness.connectionTested) {
+      return {
+        title: "TestRail connection works.",
+        body: "The connection test passed. Confirm the project, suite, and default section before treating TestRail export as ready.",
+        recommendationTitle: "Confirm project/suite targeting",
+        recommendationBody: "Make sure the project ID and default section point to the right TestRail destination for generated cases.",
+        tipTitle: "QAt says: verify the target",
+        tipBody: "A working connection is not enough if the project or section points to the wrong place.",
+      };
+    }
+
+    if (testRailReadiness.configSaved) {
+      return {
+        title: "TestRail config is saved.",
+        body: "Your TestRail settings are saved. Run the connection test next, then confirm the project/suite target.",
+        recommendationTitle: "Run the TestRail connection test",
+        recommendationBody: "Testing the connection confirms QAtalyst can reach TestRail before export-ready workflows rely on it.",
+        tipTitle: "QAt says: test before export",
+        tipBody: "A saved config can still have stale keys or wrong project targets. Test it before trusting generated export output.",
+      };
+    }
+
     return {
       title: "TestRail setup guidance.",
       body: "Use this page to save TestRail connection details and confirm the project/suite QAtalyst should use for export-ready coverage.",
-      recommendationTitle: "Check TestRail readiness",
-      recommendationBody: "Save the TestRail config, run the connection test, then confirm the target project/suite before exporting generated cases.",
-      tipTitle: "QAt says: validate before exporting",
-      tipBody: "The current companion only shows setup guidance. A follow-up pass should wire the checks to real saved TestRail state and connection results.",
+      recommendationTitle: "Save TestRail config first",
+      recommendationBody: "Add the base URL, username, API key, project ID, and default section. Then save and test the connection.",
+      tipTitle: "QAt says: start with required fields",
+      tipBody: "Base URL, username, API key, project ID, and default section are the minimum useful TestRail setup.",
     };
   }
 
@@ -45,23 +96,47 @@ function getIntegrationQAtGuidance(activeArea: SettingsArea, jiraConfigured: boo
     };
   }
 
-  return jiraConfigured
-    ? {
-        title: "Jira setup guidance.",
-        body: "Your Jira config is saved. Review the connection test, issue types, and diagnostics before relying on Jira handoff workflows.",
-        recommendationTitle: "Review Jira readiness",
-        recommendationBody: "A saved config is only half the job. Confirm project visibility and issue creation readiness so QAtalyst can prepare reliable Jira work.",
-        tipTitle: "QAt says: verify permissions",
-        tipBody: "The Jira account should be able to browse the project and create issues. If either permission is missing, generated handoff work may look ready but fail later.",
-      }
-    : {
-        title: "Jira setup guidance.",
-        body: "Add your Jira site, account email, project key, and issue type defaults so QAtalyst can prepare ticket-aware QA work.",
-        recommendationTitle: "Save the Jira config, then test it",
-        recommendationBody: "Start with the site URL and project key. After saving, run the connection test and refresh issue types.",
-        tipTitle: "QAt says: project key matters",
-        tipBody: "Use the exact Jira project key your team works in. That keeps fetched tickets and future created issues scoped to the right workspace.",
-      };
+  if (jiraReadiness.handoffReady) {
+    return {
+      title: "Jira handoff is ready.",
+      body: "Your Jira config is saved, issue types are loaded, and the connection diagnostics confirm project visibility and issue creation.",
+      recommendationTitle: "Use Jira from the Toolbelt",
+      recommendationBody: "You can now fetch tickets and prepare Jira-ready QA work with more confidence.",
+      tipTitle: "QAt says: keep permissions healthy",
+      tipBody: "If Jira handoff breaks later, re-run the connection test first. Permissions or tokens are usually the first thing to check.",
+    };
+  }
+
+  if (jiraReadiness.connectionTested) {
+    return {
+      title: "Jira connection works.",
+      body: "The connection test passed. Refresh issue types if needed, then confirm handoff readiness before relying on Jira output.",
+      recommendationTitle: "Refresh issue types",
+      recommendationBody: "Issue types help QAtalyst pick the right Jira work type for bugs, tasks, stories, and future handoff flows.",
+      tipTitle: "QAt says: load the real issue types",
+      tipBody: "Using Jira's actual issue types prevents QAtalyst from preparing handoff work that does not match your project setup.",
+    };
+  }
+
+  if (jiraReadiness.configSaved) {
+    return {
+      title: "Jira config is saved.",
+      body: "Your Jira settings are saved. Run the connection test and refresh issue types before relying on Jira handoff workflows.",
+      recommendationTitle: "Run the Jira connection test",
+      recommendationBody: "A saved config is only half the job. Confirm project visibility and issue creation readiness.",
+      tipTitle: "QAt says: verify permissions",
+      tipBody: "The Jira account should be able to browse the project and create issues. If either permission is missing, handoff can fail later.",
+    };
+  }
+
+  return {
+    title: "Jira setup guidance.",
+    body: "Add your Jira site, account email, project key, and issue type defaults so QAtalyst can prepare ticket-aware QA work.",
+    recommendationTitle: "Save the Jira config, then test it",
+    recommendationBody: "Start with the site URL and project key. After saving, run the connection test and refresh issue types.",
+    tipTitle: "QAt says: project key matters",
+    tipBody: "Use the exact Jira project key your team works in. That keeps fetched tickets and future created issues scoped to the right workspace.",
+  };
 }
 
 export default function SettingsWorkspace({
@@ -71,17 +146,27 @@ export default function SettingsWorkspace({
 }: SettingsWorkspaceProps) {
   const [activeArea, setActiveArea] = useState<SettingsArea>("jira");
   const [hasAskedSettingsQAt, setHasAskedSettingsQAt] = useState(false);
+  const [jiraReadiness, setJiraReadiness] = useState<JiraIntegrationReadiness>(() => ({
+    ...EMPTY_JIRA_READINESS,
+    configSaved: Boolean(initialJiraConfig),
+  }));
+  const [testRailReadiness, setTestRailReadiness] = useState<TestRailIntegrationReadiness>(EMPTY_TESTRAIL_READINESS);
   const [automationCredentialProfiles, setAutomationCredentialProfiles] = useState<AutomationCredentialProfile[]>([]);
   const [automationProjectConfig, setAutomationProjectConfig] = useState<AutomationProjectConfig>(() =>
     normalizeAutomationProjectConfig(null)
   );
 
-  const jiraConfigured = Boolean(initialJiraConfig);
+  const jiraConfigured = jiraReadiness.configSaved;
   const integrationGuidance = useMemo(
-    () => getIntegrationQAtGuidance(activeArea, jiraConfigured),
-    [activeArea, jiraConfigured]
+    () => getIntegrationQAtGuidance(activeArea, jiraReadiness, testRailReadiness),
+    [activeArea, jiraReadiness, testRailReadiness]
   );
-  const progressPercent = activeArea === "jira" ? (jiraConfigured ? 50 : 15) : activeArea === "testrail" ? 25 : 10;
+  const progressPercent =
+    activeArea === "jira"
+      ? [jiraReadiness.configSaved, jiraReadiness.connectionTested, jiraReadiness.issueTypesLoaded, jiraReadiness.handoffReady].filter(Boolean).length * 25
+      : activeArea === "testrail"
+        ? [testRailReadiness.configSaved, testRailReadiness.connectionTested, testRailReadiness.projectTargetReady, testRailReadiness.exportReady].filter(Boolean).length * 25
+        : 10;
 
   const tabClass = (area: SettingsArea) =>
     activeArea === area ? "settings-area-tab settings-area-tab-active" : "settings-area-tab";
@@ -177,13 +262,13 @@ export default function SettingsWorkspace({
 
         {activeArea === "jira" ? (
           <section className="settings-wide-section integrations-settings-section" id="jira-integration">
-            <JiraSettingsForm initialConfig={initialJiraConfig} />
+            <JiraSettingsForm initialConfig={initialJiraConfig} onReadinessChange={setJiraReadiness} />
           </section>
         ) : null}
 
         {activeArea === "testrail" ? (
           <section className="settings-wide-section integrations-settings-section" id="testrail-integration">
-            <TestRailSettingsForm />
+            <TestRailSettingsForm onReadinessChange={setTestRailReadiness} />
           </section>
         ) : null}
 
@@ -230,60 +315,60 @@ export default function SettingsWorkspace({
             ? [
                 {
                   label: "Config saved",
-                  complete: false,
-                  active: true,
-                  title: "Save TestRail connection settings",
+                  complete: testRailReadiness.configSaved,
+                  active: !testRailReadiness.configSaved,
+                  title: testRailReadiness.configSaved ? "TestRail config is saved" : "Save TestRail connection settings",
                   onClick: () => selectSettingsArea("testrail"),
                 },
                 {
                   label: "Connection test",
-                  complete: false,
-                  active: false,
-                  title: "Run TestRail connection test",
+                  complete: testRailReadiness.connectionTested,
+                  active: testRailReadiness.configSaved && !testRailReadiness.connectionTested,
+                  title: testRailReadiness.connectionTested ? "TestRail connection tested" : "Run TestRail connection test",
                   onClick: () => selectSettingsArea("testrail"),
                 },
                 {
                   label: "Project/suite",
-                  complete: false,
-                  active: false,
-                  title: "Confirm TestRail project and suite",
+                  complete: testRailReadiness.projectTargetReady,
+                  active: testRailReadiness.connectionTested && !testRailReadiness.projectTargetReady,
+                  title: testRailReadiness.projectTargetReady ? "Project target ready" : "Confirm TestRail project and suite",
                   onClick: () => selectSettingsArea("testrail"),
                 },
                 {
                   label: "Export ready",
-                  complete: false,
-                  active: false,
-                  title: "Confirm export readiness",
+                  complete: testRailReadiness.exportReady,
+                  active: testRailReadiness.projectTargetReady && !testRailReadiness.exportReady,
+                  title: testRailReadiness.exportReady ? "Export readiness confirmed" : "Confirm export readiness",
                   onClick: () => selectSettingsArea("testrail"),
                 },
               ]
             : [
                 {
                   label: "Config saved",
-                  complete: jiraConfigured,
-                  active: !jiraConfigured,
-                  title: jiraConfigured ? "Jira config is saved" : "Save Jira config",
+                  complete: jiraReadiness.configSaved,
+                  active: !jiraReadiness.configSaved,
+                  title: jiraReadiness.configSaved ? "Jira config is saved" : "Save Jira config",
                   onClick: () => selectSettingsArea("jira"),
                 },
                 {
                   label: "Connection test",
-                  complete: false,
-                  active: jiraConfigured,
-                  title: "Run Jira connection test",
+                  complete: jiraReadiness.connectionTested,
+                  active: jiraReadiness.configSaved && !jiraReadiness.connectionTested,
+                  title: jiraReadiness.connectionTested ? "Jira connection tested" : "Run Jira connection test",
                   onClick: () => selectSettingsArea("jira"),
                 },
                 {
                   label: "Issue types",
-                  complete: jiraConfigured,
-                  active: false,
-                  title: "Refresh Jira issue types",
+                  complete: jiraReadiness.issueTypesLoaded,
+                  active: jiraReadiness.connectionTested && !jiraReadiness.issueTypesLoaded,
+                  title: jiraReadiness.issueTypesLoaded ? "Issue types loaded" : "Refresh Jira issue types",
                   onClick: () => selectSettingsArea("jira"),
                 },
                 {
                   label: "Handoff ready",
-                  complete: false,
-                  active: false,
-                  title: "Confirm Jira handoff readiness",
+                  complete: jiraReadiness.handoffReady,
+                  active: jiraReadiness.issueTypesLoaded && !jiraReadiness.handoffReady,
+                  title: jiraReadiness.handoffReady ? "Jira handoff ready" : "Confirm Jira handoff readiness",
                   onClick: () => selectSettingsArea("jira"),
                 },
               ]
@@ -296,13 +381,25 @@ export default function SettingsWorkspace({
           },
           {
             label: "Jira",
-            value: jiraConfigured ? "Saved" : "Missing",
-            state: jiraConfigured ? "ready" : "warning",
+            value: jiraReadiness.handoffReady
+              ? "Handoff ready"
+              : jiraReadiness.connectionTested
+                ? "Tested"
+                : jiraReadiness.configSaved
+                  ? "Saved"
+                  : "Missing",
+            state: jiraReadiness.handoffReady || jiraReadiness.connectionTested ? "ready" : jiraReadiness.configSaved ? "warning" : "warning",
           },
           {
             label: "TestRail",
-            value: "Manual check",
-            state: activeArea === "testrail" ? "warning" : "neutral",
+            value: testRailReadiness.exportReady
+              ? "Export ready"
+              : testRailReadiness.connectionTested
+                ? "Tested"
+                : testRailReadiness.configSaved
+                  ? "Saved"
+                  : "Missing",
+            state: testRailReadiness.exportReady || testRailReadiness.connectionTested ? "ready" : activeArea === "testrail" ? "warning" : "neutral",
           },
         ]}
         actions={[

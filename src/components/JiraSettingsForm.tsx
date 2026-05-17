@@ -5,8 +5,16 @@ import JiraCredentialFields from "@/components/JiraCredentialFields";
 import { normalizeJiraErrorMessage } from "@/lib/jira-error-normalizer";
 import type { SafeJiraConfig } from "@/lib/jira-config";
 
+export type JiraIntegrationReadiness = {
+  configSaved: boolean;
+  connectionTested: boolean;
+  issueTypesLoaded: boolean;
+  handoffReady: boolean;
+};
+
 type JiraSettingsFormProps = {
   initialConfig: SafeJiraConfig | null;
+  onReadinessChange?: (readiness: JiraIntegrationReadiness) => void;
 };
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -88,7 +96,7 @@ function formatUpdatedAt(value?: string) {
   return date.toLocaleString();
 }
 
-export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProps) {
+export default function JiraSettingsForm({ initialConfig, onReadinessChange }: JiraSettingsFormProps) {
   const [siteUrl, setSiteUrl] = useState(initialConfig?.siteUrl ?? "");
   const [jiraEmail, setJiraEmail] = useState(initialConfig?.jiraEmail ?? "");
   const [jiraApiToken, setJiraApiToken] = useState("");
@@ -129,6 +137,15 @@ export default function JiraSettingsForm({ initialConfig }: JiraSettingsFormProp
     connectionDetails.canCreateIssues === true;
   const diagnosticsStatusLabel = diagnosticsReady ? "Ready" : hasSavedJiraApiToken ? "Needs test" : "Missing API key";
   const diagnosticsStatusClass = diagnosticsReady ? "ready" : hasSavedJiraApiToken ? "warning" : "error";
+
+  useEffect(() => {
+    onReadinessChange?.({
+      configSaved: configured,
+      connectionTested: connectionState === "connected",
+      issueTypesLoaded: issueTypeState === "loaded",
+      handoffReady: diagnosticsReady,
+    });
+  }, [configured, connectionState, issueTypeState, diagnosticsReady, onReadinessChange]);
 
   function applyJiraStatus(jira?: JiraConfigStatusPayload | null) {
     const config = jira?.config;
