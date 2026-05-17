@@ -64,8 +64,16 @@ export class TestRailClient {
     return payload as T;
   }
 
+  getProjects() {
+    return this.request<unknown[]>("get_projects");
+  }
+
   getProject(projectId: number) {
     return this.request<Record<string, unknown>>(`get_project/${projectId}`);
+  }
+
+  getSuites(projectId: number) {
+    return this.request<unknown[]>(`get_suites/${projectId}`);
   }
 
   getSuite(suiteId: number) {

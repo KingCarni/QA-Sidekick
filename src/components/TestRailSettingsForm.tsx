@@ -16,6 +16,13 @@ type SafeTestRailConfig = {
   fieldMapping: Record<string, unknown>;
 };
 
+type TestRailOption = {
+  id: number;
+  name: string;
+  parentId?: number | null;
+  suiteId?: number | null;
+};
+
 export type TestRailIntegrationReadiness = {
   configSaved: boolean;
   connectionTested: boolean;
@@ -34,6 +41,21 @@ type TestRailConfigResponse = {
     configured: boolean;
     missingFields: string[];
     config: SafeTestRailConfig | null;
+  };
+};
+
+type TestRailOptionsResponse = {
+  ok?: boolean;
+  error?: string;
+  testrail?: {
+    selected?: {
+      projectId?: number | null;
+      suiteId?: number | null;
+      defaultSectionId?: number | null;
+    };
+    projects?: TestRailOption[];
+    suites?: TestRailOption[];
+    sections?: TestRailOption[];
   };
 };
 
@@ -80,6 +102,10 @@ function getResultMessageClass(state: SaveState) {
   return "testrail-settings-message";
 }
 
+function optionLabel(option: TestRailOption) {
+  return `${option.name} (${option.id})`;
+}
+
 export default function TestRailSettingsForm({ onReadinessChange }: TestRailSettingsFormProps) {
   const [baseUrl, setBaseUrl] = useState("");
   const [username, setUsername] = useState("");
@@ -95,6 +121,11 @@ export default function TestRailSettingsForm({ onReadinessChange }: TestRailSett
   const [message, setMessage] = useState("");
   const [configured, setConfigured] = useState(false);
   const [connectionTested, setConnectionTested] = useState(false);
+
+  const [targetState, setTargetState] = useState<"idle" | "loading" | "loaded" | "error">("idle");
+  const [projects, setProjects] = useState<TestRailOption[]>([]);
+  const [suites, setSuites] = useState<TestRailOption[]>([]);
+  const [sections, setSections] = useState<TestRailOption[]>([]);
 
   const projectTargetReady = configured && Boolean(projectId.trim()) && Boolean(defaultSectionId.trim());
   const exportReady = configured && connectionTested && projectTargetReady;
@@ -225,6 +256,67 @@ export default function TestRailSettingsForm({ onReadinessChange }: TestRailSett
     }
   }
 
+  async function loadTargetOptions(nextProjectId = projectId, nextSuiteId = suiteId) {
+    setTargetState("loading");
+    setMessage("");
+
+    try {
+      const params = new URLSearchParams();
+
+      if (nextProjectId.trim()) params.set("projectId", nextProjectId.trim());
+      if (nextSuiteId.trim()) params.set("suiteId", nextSuiteId.trim());
+
+      const query = params.toString();
+      const response = await fetch(`/api/testrail/options${query ? `?${query}` : ""}`, { method: "GET" });
+      const payload = (await response.json().catch(() => null)) as TestRailOptionsResponse | null;
+
+      if (!response.ok || payload?.ok === false) {
+        throw new Error(payload?.error || "Could not load TestRail targets.");
+      }
+
+      const nextProjects = payload?.testrail?.projects ?? [];
+      const nextSuites = payload?.testrail?.suites ?? [];
+      const nextSections = payload?.testrail?.sections ?? [];
+
+      setProjects(nextProjects);
+      setSuites(nextSuites);
+      setSections(nextSections);
+      setTargetState("loaded");
+      setMessage(
+        `Loaded TestRail targets: ${nextProjects.length} project option(s), ${nextSuites.length} suite option(s), ${nextSections.length} section option(s). Select the target, then save the config.`
+      );
+    } catch (error) {
+      setTargetState("error");
+      setMessage(error instanceof Error ? error.message : "Could not load TestRail targets.");
+    }
+  }
+
+  async function handleProjectPickerChange(value: string) {
+    setProjectId(value);
+    setSuiteId("");
+    setDefaultSectionId("");
+    setConnectionTested(false);
+
+    if (value) {
+      await loadTargetOptions(value, "");
+    }
+  }
+
+  async function handleSuitePickerChange(value: string) {
+    setSuiteId(value);
+    setDefaultSectionId("");
+    setConnectionTested(false);
+
+    if (projectId) {
+      await loadTargetOptions(projectId, value);
+    }
+  }
+
+  function handleSectionPickerChange(value: string) {
+    setDefaultSectionId(value);
+    setConnectionTested(false);
+  }
+
   async function removeConfig() {
     const confirmed = window.confirm("Remove TestRail configuration? This will not delete anything from TestRail.");
     if (!confirmed) return;
@@ -252,6 +344,10 @@ export default function TestRailSettingsForm({ onReadinessChange }: TestRailSett
       setFieldMappingJson(JSON.stringify(DEFAULT_FIELD_MAPPING, null, 2));
       setConfigured(false);
       setConnectionTested(false);
+      setProjects([]);
+      setSuites([]);
+      setSections([]);
+      setTargetState("idle");
       setState("saved");
       setMessage("TestRail config removed.");
     } catch (error) {
@@ -296,7 +392,64 @@ export default function TestRailSettingsForm({ onReadinessChange }: TestRailSett
           <span>API Key</span>
           <input value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={apiKeyMasked || "Paste API key"} type="password" />
         </label>
+      </div>
 
+      <div className="testrail-safe-sync-note">
+        <strong>Target picker:</strong> Save your TestRail connection first, then load projects, suites, and sections from TestRail. Manual ID fields remain available as fallback.
+      </div>
+
+      <div className="testrail-settings-actions">
+        <button
+          className="testrail-load-targets-button"
+          disabled={!configured || targetState === "loading" || state === "saving" || state === "testing"}
+          onClick={() => void loadTargetOptions()}
+          type="button"
+        >
+          {targetState === "loading" ? "Loading targets..." : "Load TestRail Targets"}
+      </button>
+      </div>
+
+      {projects.length || suites.length || sections.length ? (
+        <div className="testrail-settings-grid">
+          <label>
+            <span>Project picker</span>
+            <select value={projectId} onChange={(event) => void handleProjectPickerChange(event.target.value)}>
+              <option value="">Select project...</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {optionLabel(project)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            <span>Suite picker</span>
+            <select value={suiteId} onChange={(event) => void handleSuitePickerChange(event.target.value)} disabled={!projectId || !suites.length}>
+              <option value="">{suites.length ? "Default / no suite" : "No suites loaded"}</option>
+              {suites.map((suite) => (
+                <option key={suite.id} value={suite.id}>
+                  {optionLabel(suite)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            <span>Default section picker</span>
+            <select value={defaultSectionId} onChange={(event) => handleSectionPickerChange(event.target.value)} disabled={!projectId || !sections.length}>
+              <option value="">Select section...</option>
+              {sections.map((section) => (
+                <option key={section.id} value={section.id}>
+                  {optionLabel(section)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      ) : null}
+
+      <div className="testrail-settings-grid">
         <label>
           <span>Project ID</span>
           <input value={projectId} onChange={(event) => setProjectId(event.target.value)} placeholder="1" inputMode="numeric" />
