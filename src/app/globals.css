@@ -34527,3 +34527,26 @@ body:has(.qatalyst-brain-shell)::after {
   height: 38px !important;
   object-fit: contain !important;
 }
+/* QAS-181 Toolbelt companion visibility fix */
+.qatalyst-app-shell-v9 .qat-companion-panel {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: none !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-panel .qat-companion-window {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: none !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-panel-collapsed {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}

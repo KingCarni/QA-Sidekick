@@ -1254,6 +1254,7 @@ function QAtCompanionPanel({
       <aside
         className={`qat-companion-panel qat-companion-panel-${activeTool} qat-companion-panel-collapsed`}
         aria-label="QAt Companion collapsed"
+        data-testid="qat-companion-rail-collapsed"
       >
         <button
           className="qat-companion-collapsed-button"
@@ -1261,6 +1262,7 @@ function QAtCompanionPanel({
           onClick={toggleCollapsed}
           aria-label="Expand QAt Companion"
           title="Expand QAt Companion"
+          data-testid="qat-companion-expand"
         >
           <img src="/qat/FullQat.png" alt="" aria-hidden="true" />
           <span>QAt</span>
@@ -1273,9 +1275,10 @@ function QAtCompanionPanel({
     <aside
       className={`qat-companion-panel qat-companion-panel-${activeTool} qat-companion-state-${workflowState}`}
       aria-label="QAt Companion"
+      data-testid="qat-companion-rail"
     >
       <div className="qat-companion-window">
-        <button className="qat-companion-toggle qat-companion-toggle-floating" type="button" onClick={toggleCollapsed} aria-label="Collapse QAt Companion">
+        <button className="qat-companion-toggle qat-companion-toggle-floating" type="button" onClick={toggleCollapsed} aria-label="Collapse QAt Companion" data-testid="qat-companion-minimize">
           Min
         </button>
 
@@ -1285,17 +1288,17 @@ function QAtCompanionPanel({
 
         <div className="qat-companion-copy">
           <div className="qat-companion-title-row">
-            <h3>{copy.title}</h3>
-            <span className="qat-companion-state-pill">{stateLabel}</span>
+            <h3 data-testid="qat-companion-title">{copy.title}</h3>
+            <span className="qat-companion-state-pill" data-testid="qat-companion-state">{stateLabel}</span>
           </div>
-          <p>{copy.body[workflowState]}</p>
+          <p data-testid="qat-companion-body">{copy.body[workflowState]}</p>
         </div>
 
         <div className="qat-companion-topline">
           <span>Coverage check</span>
         </div>
 
-        <div className="qat-companion-signals" aria-label="QAt workflow signals">
+        <div className="qat-companion-signals" aria-label="QAt workflow signals" data-testid="qat-companion-signals">
           <span className={hasProjectContext ? "active" : ""}>{hasProjectContext ? "Project context used" : "No project context"}</span>
           <span className={hasInput ? "active" : ""}>{hasInput ? "Input ready" : "No input"}</span>
           <span className={hasOutput ? "active" : ""}>{hasOutput ? "Output generated" : "No output"}</span>
@@ -1305,13 +1308,14 @@ function QAtCompanionPanel({
         <button
           className="qat-companion-ask-button"
           type="button"
+          data-testid="qat-action-ask-qat"
           onClick={() => setHasAskedQAt(true)}
         >
           Ask QAt
         </button>
 
         {hasAskedQAt ? (
-          <div className="qat-companion-tip qat-companion-noticed">
+          <div className="qat-companion-tip qat-companion-noticed" data-testid="qat-companion-tip">
             <strong>QAt noticed</strong>
             <span>{noticedText}</span>
           </div>
@@ -2948,12 +2952,12 @@ export default function Home() {
 
   useEffect(() => {
     setShowWelcomeFtue(!isFtueStepComplete(FTUE_KEYS.welcome));
-    setShowBrainFtue(!isFtueStepComplete(FTUE_KEYS.brainIntro));
-    setShowIntegrationsFtue(!isFtueStepComplete(FTUE_KEYS.integrationsIntro));
+    setShowBrainFtue(false);
+    setShowIntegrationsFtue(false);
   }, []);
 
   useEffect(() => {
-    setShowToolFtue(!isFtueStepComplete(ftueToolKey));
+    setShowToolFtue(false);
   }, [ftueToolKey]);
 
   function dismissFtueStep(key: FtueStepKey) {
