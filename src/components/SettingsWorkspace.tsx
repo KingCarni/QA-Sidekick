@@ -25,12 +25,12 @@ type SettingsArea = "jira" | "testrail" | "admin";
 function getIntegrationQAtGuidance(activeArea: SettingsArea, jiraConfigured: boolean) {
   if (activeArea === "testrail") {
     return {
-      title: "Let’s connect TestRail next.",
-      body: "Add your TestRail workspace details, validate the connection, then choose where QAtalyst should prepare or export generated coverage.",
-      recommendationTitle: "Start with connection settings",
-      recommendationBody: "TestRail setup works best when the base URL, user details, project, and suite are confirmed before exporting generated cases.",
+      title: "TestRail setup guidance.",
+      body: "Use this page to save TestRail connection details and confirm the project/suite QAtalyst should use for export-ready coverage.",
+      recommendationTitle: "Check TestRail readiness",
+      recommendationBody: "Save the TestRail config, run the connection test, then confirm the target project/suite before exporting generated cases.",
       tipTitle: "QAt says: validate before exporting",
-      tipBody: "Once TestRail details are saved, run a connection check before trusting export-ready output. It prevents stale project or suite targets.",
+      tipBody: "The current companion only shows setup guidance. A follow-up pass should wire the checks to real saved TestRail state and connection results.",
     };
   }
 
@@ -47,15 +47,15 @@ function getIntegrationQAtGuidance(activeArea: SettingsArea, jiraConfigured: boo
 
   return jiraConfigured
     ? {
-        title: "Jira setup is mostly ready.",
-        body: "Review the saved Jira site, project key, issue types, and connection diagnostics before relying on Jira handoff workflows.",
-        recommendationTitle: "Run or review the connection test",
+        title: "Jira setup guidance.",
+        body: "Your Jira config is saved. Review the connection test, issue types, and diagnostics before relying on Jira handoff workflows.",
+        recommendationTitle: "Review Jira readiness",
         recommendationBody: "A saved config is only half the job. Confirm project visibility and issue creation readiness so QAtalyst can prepare reliable Jira work.",
         tipTitle: "QAt says: verify permissions",
         tipBody: "The Jira account should be able to browse the project and create issues. If either permission is missing, generated handoff work may look ready but fail later.",
       }
     : {
-        title: "Let’s connect Jira first.",
+        title: "Jira setup guidance.",
         body: "Add your Jira site, account email, project key, and issue type defaults so QAtalyst can prepare ticket-aware QA work.",
         recommendationTitle: "Save the Jira config, then test it",
         recommendationBody: "Start with the site URL and project key. After saving, run the connection test and refresh issue types.",
@@ -81,7 +81,7 @@ export default function SettingsWorkspace({
     () => getIntegrationQAtGuidance(activeArea, jiraConfigured),
     [activeArea, jiraConfigured]
   );
-  const progressPercent = activeArea === "jira" ? (jiraConfigured ? 70 : 20) : activeArea === "testrail" ? 25 : 10;
+  const progressPercent = activeArea === "jira" ? (jiraConfigured ? 50 : 15) : activeArea === "testrail" ? 25 : 10;
 
   const tabClass = (area: SettingsArea) =>
     activeArea === area ? "settings-area-tab settings-area-tab-active" : "settings-area-tab";
@@ -222,101 +222,69 @@ export default function SettingsWorkspace({
         eyebrow="QAt Companion"
         title={integrationGuidance.title}
         body={integrationGuidance.body}
-        stateLabel={activeArea === "jira" ? (jiraConfigured ? "Jira ready" : "Jira setup") : activeArea === "testrail" ? "TestRail setup" : "Admin"}
+        stateLabel={activeArea === "jira" ? (jiraConfigured ? "Jira saved" : "Jira setup") : activeArea === "testrail" ? "TestRail" : "Admin"}
         imageSrc="/qat/FullQat.png"
         progressPercent={progressPercent}
         steps={
           activeArea === "testrail"
             ? [
                 {
-                  label: "Workspace",
+                  label: "Config saved",
                   complete: false,
                   active: true,
-                  title: "Add TestRail workspace URL",
+                  title: "Save TestRail connection settings",
                   onClick: () => selectSettingsArea("testrail"),
                 },
                 {
-                  label: "Connection",
+                  label: "Connection test",
                   complete: false,
                   active: false,
-                  title: "Save connection settings",
+                  title: "Run TestRail connection test",
                   onClick: () => selectSettingsArea("testrail"),
                 },
                 {
-                  label: "Validate",
+                  label: "Project/suite",
                   complete: false,
                   active: false,
-                  title: "Validate TestRail connection",
+                  title: "Confirm TestRail project and suite",
                   onClick: () => selectSettingsArea("testrail"),
                 },
                 {
-                  label: "Project",
-                  complete: false,
-                  active: false,
-                  title: "Select project and suite",
-                  onClick: () => selectSettingsArea("testrail"),
-                },
-                {
-                  label: "Export",
+                  label: "Export ready",
                   complete: false,
                   active: false,
                   title: "Confirm export readiness",
                   onClick: () => selectSettingsArea("testrail"),
                 },
-                {
-                  label: "Toolbelt",
-                  complete: false,
-                  active: false,
-                  title: "Return to Toolbelt",
-                  onClick: () => {
-                    window.location.href = "/app";
-                  },
-                },
               ]
             : [
                 {
-                  label: "Site",
+                  label: "Config saved",
                   complete: jiraConfigured,
                   active: !jiraConfigured,
-                  title: "Add Jira site and account",
+                  title: jiraConfigured ? "Jira config is saved" : "Save Jira config",
                   onClick: () => selectSettingsArea("jira"),
                 },
                 {
-                  label: "Project",
-                  complete: jiraConfigured,
+                  label: "Connection test",
+                  complete: false,
                   active: jiraConfigured,
-                  title: "Confirm Jira project key",
+                  title: "Run Jira connection test",
                   onClick: () => selectSettingsArea("jira"),
                 },
                 {
-                  label: "Types",
+                  label: "Issue types",
                   complete: jiraConfigured,
                   active: false,
-                  title: "Load issue types",
+                  title: "Refresh Jira issue types",
                   onClick: () => selectSettingsArea("jira"),
                 },
                 {
-                  label: "Validate",
+                  label: "Handoff ready",
                   complete: false,
                   active: false,
-                  title: "Test Jira connection",
+                  title: "Confirm Jira handoff readiness",
                   onClick: () => selectSettingsArea("jira"),
-                },
-                {
-                  label: "Create",
-                  complete: false,
-                  active: false,
-                  title: "Confirm issue creation readiness",
-                  onClick: () => selectSettingsArea("jira"),
-                },
-                {
-                  label: "Toolbelt",
-                  complete: false,
-                  active: false,
-                  title: "Return to Toolbelt",
-                  onClick: () => {
-                    window.location.href = "/app";
-                  },
                 },
               ]
         }
@@ -333,7 +301,7 @@ export default function SettingsWorkspace({
           },
           {
             label: "TestRail",
-            value: "Needs review",
+            value: "Manual check",
             state: activeArea === "testrail" ? "warning" : "neutral",
           },
         ]}
