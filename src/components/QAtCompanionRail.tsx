@@ -36,6 +36,12 @@ type QAtCompanionChatMessage = {
   body: string;
 };
 
+type QAtChatResult = {
+  answer: string;
+  usedSources?: Array<{ id?: string; title: string; type?: string }>;
+  missingContext?: string[];
+};
+
 export type QAtCompanionRailProps = {
   storageKey: string;
   eyebrow?: string;
@@ -59,6 +65,7 @@ export type QAtCompanionRailProps = {
   chatIntro?: string;
   chatPlaceholder?: string;
   chatResponse?: string;
+  chatProjectId?: string | null;
 };
 
 function cx(...parts: Array<string | false | null | undefined>) {
@@ -71,6 +78,25 @@ function slugify(value: string) {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function formatChatAnswer(payload: QAtChatResult): string {
+  const sourceTitles = (payload.usedSources ?? [])
+    .map((source) => source.title)
+    .filter(Boolean)
+    .slice(0, 4);
+  const missingContext = (payload.missingContext ?? []).filter(Boolean);
+  const parts = [payload.answer || "QAt could not find an answer in Project Brain context yet."];
+
+  if (sourceTitles.length) {
+    parts.push(`Used sources: ${sourceTitles.join(", ")}.`);
+  }
+
+  if (missingContext.length) {
+    parts.push(`Missing context: ${missingContext.join(", ")}.`);
+  }
+
+  return parts.join("\n\n");
 }
 
 export default function QAtCompanionRail({
@@ -96,10 +122,12 @@ export default function QAtCompanionRail({
   chatIntro = "Ask a project question. Full Project Brain answering is coming next.",
   chatPlaceholder = "Ask QAt about this project...",
   chatResponse = "I can take the question. Project Brain answering will be wired in the next pass, so I won’t invent an answer yet.",
+  chatProjectId = null,
 }: QAtCompanionRailProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<QAtCompanionChatMessage[]>([]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
   const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -114,7 +142,7 @@ export default function QAtCompanionRail({
     });
   }
 
-  function handleChatSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleChatSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const question = chatInput.trim();
@@ -125,13 +153,54 @@ export default function QAtCompanionRail({
     }
 
     const timestamp = Date.now();
+    const fallbackAnswer = chatProjectId ? chatResponse : "Select a project before asking QAt.";
 
-    setChatMessages((current) => [
-      ...current,
-      { id: `user-${timestamp}`, role: "user", body: question },
-      { id: `assistant-${timestamp}`, role: "assistant", body: chatResponse },
-    ]);
+    setChatMessages((current) => [...current, { id: `user-${timestamp}`, role: "user", body: question }]);
     setChatInput("");
+
+    if (!chatProjectId) {
+      setChatMessages((current) => [...current, { id: `assistant-${timestamp}`, role: "assistant", body: fallbackAnswer }]);
+      return;
+    }
+
+    setIsChatLoading(true);
+
+    try {
+      const response = await fetch("/api/qat/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: chatProjectId, question }),
+      });
+      const payload = (await response.json().catch(() => null)) as ({ ok?: boolean; message?: string } & Partial<QAtChatResult>) | null;
+
+      if (!response.ok || payload?.ok === false) {
+        throw new Error(payload?.message || "QAt could not answer from Project Brain context.");
+      }
+
+      setChatMessages((current) => [
+        ...current,
+        {
+          id: `assistant-${timestamp}`,
+          role: "assistant",
+          body: formatChatAnswer({
+            answer: String(payload?.answer ?? fallbackAnswer),
+            usedSources: payload?.usedSources,
+            missingContext: payload?.missingContext,
+          }),
+        },
+      ]);
+    } catch (error) {
+      setChatMessages((current) => [
+        ...current,
+        {
+          id: `assistant-${timestamp}`,
+          role: "assistant",
+          body: error instanceof Error ? error.message : "QAt could not answer from Project Brain context.",
+        },
+      ]);
+    } finally {
+      setIsChatLoading(false);
+    }
   }
 
   if (isCollapsed) {
@@ -190,6 +259,7 @@ export default function QAtCompanionRail({
             ) : (
               <p className="qat-companion-rail-chat-empty">Ask QAt a question to start the chat shell.</p>
             )}
+            {isChatLoading ? <p className="qat-companion-rail-chat-empty">QAt is checking Project Brain context...</p> : null}
           </div>
 
           <form className="qat-companion-rail-chat-form" onSubmit={handleChatSubmit}>
@@ -200,6 +270,7 @@ export default function QAtCompanionRail({
               placeholder={chatPlaceholder}
               rows={3}
               data-testid="qat-companion-rail-chat-input"
+              disabled={isChatLoading}
               onChange={(event) => setChatInput(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
@@ -208,8 +279,8 @@ export default function QAtCompanionRail({
                 }
               }}
             />
-            <button className="qat-companion-rail-chat-submit" type="submit" data-testid="qat-companion-rail-chat-submit">
-              Send
+            <button className="qat-companion-rail-chat-submit" type="submit" data-testid="qat-companion-rail-chat-submit" disabled={isChatLoading}>
+              {isChatLoading ? "Checking..." : "Send"}
             </button>
           </form>
         </section>
