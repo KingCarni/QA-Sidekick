@@ -961,6 +961,7 @@ export default function BrainPage() {
         stateLabel={isBrainSetupComplete ? "Ready" : "Setup"}
         imageSrc="/qat/FullQat.png"
         chatEnabled
+        chatProjectId={activeProject?.id ?? null}
         chatIntro="Ask QAt about this Brain setup. Full Project Brain answering comes next."
         chatPlaceholder="Ask QAt about this project, source context, rules, risks, or integrations..."
         progressPercent={brainQAtProgress}

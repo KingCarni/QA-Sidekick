@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth";
 import { apiError, apiOk, getErrorMessage, readJsonBody } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth";
-import { buildProjectSourceContextBlock, listProjectSources } from "@/lib/project-sources";
+import { buildQAtBrainContext } from "@/lib/qat-brain-context";
+import { composeQAtAnswer } from "@/lib/qat-chat-composer";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,30 +14,6 @@ type QAtChatBody = {
 
 function cleanQuestion(value: unknown): string {
   return String(value ?? "").trim().slice(0, 1200);
-}
-
-function summarizeContext(contextBlock: string, question: string): string {
-  const normalizedQuestion = question.toLowerCase();
-  const sourceBlocks = contextBlock.split("\n\n---\n\n").filter(Boolean);
-  const matchingBlocks = sourceBlocks.filter((block) => {
-    const lower = block.toLowerCase();
-    return normalizedQuestion
-      .split(/\s+/)
-      .filter((word) => word.length >= 4)
-      .some((word) => lower.includes(word));
-  });
-
-  const blocksToUse = matchingBlocks.length ? matchingBlocks : sourceBlocks.slice(0, 2);
-  const excerpt = blocksToUse
-    .map((block) => block.replace(/\s+/g, " ").trim().slice(0, 520))
-    .filter(Boolean)
-    .join("\n\n");
-
-  if (!excerpt) {
-    return "I found enabled Source Vault entries, but I could not extract enough readable text to answer from them.";
-  }
-
-  return `Based on the enabled Source Vault context I found for this project, here is the most relevant context for your question:\n\n${excerpt}\n\nThis is a first-pass grounded answer. I am only using saved Project Brain source context here, so I will avoid filling gaps that are not present in the sources yet.`;
 }
 
 export async function POST(req: Request): Promise<Response> {
@@ -72,36 +49,28 @@ export async function POST(req: Request): Promise<Response> {
       });
     }
 
-    const sources = await listProjectSources(userId, projectId);
-    const enabledSources = sources.filter((source) => source.isEnabled);
-    const contextBlock = buildProjectSourceContextBlock(enabledSources, 12000);
+    const brainContext = await buildQAtBrainContext({
+      userId,
+      projectId,
+      question,
+      maxCharacters: 14000,
+    });
 
-    if (!sources.length) {
-      return apiOk(req, {
-        answer:
-          "I do not have any Source Vault entries for this project yet. Add a product overview, requirements notes, QA strategy, or release context first, then I can answer from that saved Brain context.",
-        usedSources: [],
-        missingContext: ["Source Vault entries"],
-      });
-    }
-
-    if (!enabledSources.length || !contextBlock.trim()) {
-      return apiOk(req, {
-        answer:
-          "I found Source Vault entries for this project, but none are currently enabled for Brain context. Enable the sources you want QAt to use, then ask again.",
-        usedSources: [],
-        missingContext: ["Enabled Source Vault context"],
-      });
-    }
+    const composed = await composeQAtAnswer({
+      question,
+      contextBlock: brainContext.contextBlock,
+      usedItems: brainContext.usedItems,
+      missingContext: brainContext.missingContext,
+    });
 
     return apiOk(req, {
-      answer: summarizeContext(contextBlock, question),
-      usedSources: enabledSources.slice(0, 6).map((source) => ({
-        id: source.id,
-        title: source.title,
-        type: source.sourceType,
+      answer: composed.answer,
+      usedSources: brainContext.usedItems.slice(0, 8).map((item) => ({
+        id: item.id,
+        title: item.title,
+        type: item.kind,
       })),
-      missingContext: [],
+      missingContext: brainContext.missingContext,
     });
   } catch (error) {
     return apiError(req, {

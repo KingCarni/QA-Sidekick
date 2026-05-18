@@ -89,7 +89,7 @@ function formatChatAnswer(payload: QAtChatResult): string {
   const parts = [payload.answer || "QAt could not find an answer in Project Brain context yet."];
 
   if (sourceTitles.length) {
-    parts.push(`Used sources: ${sourceTitles.join(", ")}.`);
+    parts.push(`Used Brain context: ${sourceTitles.join(", ")}.`);
   }
 
   if (missingContext.length) {
