@@ -59,7 +59,7 @@ export async function POST(req: Request): Promise<Response> {
     if (!projectId) {
       return apiError(req, {
         status: 400,
-        code: "PROJECT_REQUIRED",
+        code: "VALIDATION_ERROR",
         message: "Select a project before asking QAt.",
       });
     }
@@ -67,7 +67,7 @@ export async function POST(req: Request): Promise<Response> {
     if (!question) {
       return apiError(req, {
         status: 400,
-        code: "QUESTION_REQUIRED",
+        code: "VALIDATION_ERROR",
         message: "Ask QAt a question first.",
       });
     }
