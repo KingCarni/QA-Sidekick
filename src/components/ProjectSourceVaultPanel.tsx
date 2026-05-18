@@ -18,6 +18,17 @@ export type SafeProjectSource = {
   updatedAt: string;
 };
 
+export type ProjectSourceVaultStats = {
+  totalSources: number;
+  enabledSources: number;
+  brainReadySources: number;
+  totalWords: number;
+  enabledWords: number;
+  estimatedContextCharacters: number;
+  contextBudgetPercent: number;
+};
+
+
 type SourceApiResponse = {
   ok?: boolean;
   error?: string;
@@ -27,6 +38,7 @@ type SourceApiResponse = {
 
 type ProjectSourceVaultPanelProps = {
   activeProject: SafeQAProject | null;
+  onStatsChange?: (stats: ProjectSourceVaultStats) => void;
 };
 
 type SourceInfluenceState = "included" | "over-budget" | "disabled";
@@ -112,7 +124,7 @@ function getInfluenceLabel(value: SourceInfluenceState): string {
   return "Disabled";
 }
 
-export default function ProjectSourceVaultPanel({ activeProject }: ProjectSourceVaultPanelProps) {
+export default function ProjectSourceVaultPanel({ activeProject, onStatsChange }: ProjectSourceVaultPanelProps) {
   const [sources, setSources] = useState<SafeProjectSource[]>([]);
   const [selectedSourceId, setSelectedSourceId] = useState("");
   const [title, setTitle] = useState("");
@@ -143,6 +155,31 @@ export default function ProjectSourceVaultPanel({ activeProject }: ProjectSource
     .filter((source) => influenceMap.get(source.id) === "included")
     .reduce((sum, source) => sum + getSourceContextBlockLength(source), 0);
   const contextBudgetPercent = Math.min(100, Math.round((estimatedContextCharacters / SOURCE_CONTEXT_CHARACTER_BUDGET) * 100));
+
+  const sourceVaultStats = useMemo<ProjectSourceVaultStats>(
+    () => ({
+      totalSources: sources.length,
+      enabledSources: enabledCount,
+      brainReadySources: brainReadyCount,
+      totalWords,
+      enabledWords,
+      estimatedContextCharacters,
+      contextBudgetPercent,
+    }),
+    [
+      sources.length,
+      enabledCount,
+      brainReadyCount,
+      totalWords,
+      enabledWords,
+      estimatedContextCharacters,
+      contextBudgetPercent,
+    ]
+  );
+
+  useEffect(() => {
+    onStatsChange?.(sourceVaultStats);
+  }, [onStatsChange, sourceVaultStats]);
 
   const availableSourceTypes = useMemo(() => {
     return Array.from(new Set(sources.map((source) => source.sourceType).filter(Boolean))).sort();

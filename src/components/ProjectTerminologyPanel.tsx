@@ -24,8 +24,16 @@ type TermApiResponse = {
   term?: SafeProjectTerm;
 };
 
+export type ProjectTerminologyStats = {
+  totalTerms: number;
+  enabledTerms: number;
+  aliasCount: number;
+  categoryCount: number;
+};
+
 type ProjectTerminologyPanelProps = {
   activeProject: SafeQAProject | null;
+  onStatsChange?: (stats: ProjectTerminologyStats) => void;
 };
 
 const CATEGORY_OPTIONS = [
@@ -60,7 +68,7 @@ function formatDate(value: string): string {
   }
 }
 
-export default function ProjectTerminologyPanel({ activeProject }: ProjectTerminologyPanelProps) {
+export default function ProjectTerminologyPanel({ activeProject, onStatsChange }: ProjectTerminologyPanelProps) {
   const [terms, setTerms] = useState<SafeProjectTerm[]>([]);
   const [selectedTermId, setSelectedTermId] = useState("");
   const [term, setTerm] = useState("");
@@ -81,6 +89,20 @@ export default function ProjectTerminologyPanel({ activeProject }: ProjectTermin
   const enabledTerms = terms.filter((item) => item.isEnabled);
   const aliasCount = terms.reduce((sum, item) => sum + item.aliases.length, 0);
   const categoryCount = new Set(terms.map((item) => item.category)).size;
+
+  const terminologyStats = useMemo<ProjectTerminologyStats>(
+    () => ({
+      totalTerms: terms.length,
+      enabledTerms: enabledTerms.length,
+      aliasCount,
+      categoryCount,
+    }),
+    [terms.length, enabledTerms.length, aliasCount, categoryCount]
+  );
+
+  useEffect(() => {
+    onStatsChange?.(terminologyStats);
+  }, [onStatsChange, terminologyStats]);
 
   const filteredTerms = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();

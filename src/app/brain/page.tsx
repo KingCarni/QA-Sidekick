@@ -6,12 +6,13 @@ import { useEffect, useMemo, useState } from "react";
 import BugCollectionPanel from "@/components/BugCollectionPanel";
 import CreditsPill from "@/components/CreditsPill";
 import ProjectRisksPanel from "@/components/ProjectRisksPanel";
-import ProjectRulesPanel from "@/components/ProjectRulesPanel";
+import ProjectRulesPanel, { type ProjectRulesStats } from "@/components/ProjectRulesPanel";
 import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSettingsPanel";
-import ProjectSourceVaultPanel from "@/components/ProjectSourceVaultPanel";
-import ProjectTerminologyPanel from "@/components/ProjectTerminologyPanel";
+import ProjectSourceVaultPanel, { type ProjectSourceVaultStats } from "@/components/ProjectSourceVaultPanel";
+import ProjectTerminologyPanel, { type ProjectTerminologyStats } from "@/components/ProjectTerminologyPanel";
 import ProjectTestCaseLibraryPanel from "@/components/ProjectTestCaseLibraryPanel";
 import QAtCompanionRail from "@/components/QAtCompanionRail";
+import { buildBrainIntelligenceSummary } from "@/lib/brain-intelligence";
 
 type BrainTabId =
   | "overview"
@@ -599,15 +600,90 @@ export default function BrainPage() {
   const [isLoadingActiveProject, setIsLoadingActiveProject] = useState(false);
   const [activeProjectError, setActiveProjectError] = useState("");
   const [hasAskedBrainQAt, setHasAskedBrainQAt] = useState(false);
+  const [sourceVaultStats, setSourceVaultStats] = useState<ProjectSourceVaultStats>({
+    totalSources: 0,
+    enabledSources: 0,
+    brainReadySources: 0,
+    totalWords: 0,
+    enabledWords: 0,
+    estimatedContextCharacters: 0,
+    contextBudgetPercent: 0,
+  });
+
+  const [rulesStats, setRulesStats] = useState<ProjectRulesStats>({
+    totalRules: 0,
+    enabledRules: 0,
+    highCriticalRules: 0,
+    ruleWeight: 0,
+  });
+  const [terminologyStats, setTerminologyStats] = useState<ProjectTerminologyStats>({
+    totalTerms: 0,
+    enabledTerms: 0,
+    aliasCount: 0,
+    categoryCount: 0,
+  });
 
   const active = useMemo(
     () => BRAIN_TABS.find((tab) => tab.id === activeTab) ?? BRAIN_TABS[0],
     [activeTab]
   );
-  const brainQAtTip = getBrainQAtTip(activeTab, Boolean(activeProject));
-  const brainQAtGuidance = getBrainQAtDefaultGuidance(activeTab, Boolean(activeProject));
-  const brainQAtProgress = activeProject ? 100 : 15;
-  const isBrainSetupComplete = Boolean(activeProject);
+  const brainIntelligence = useMemo(
+    () =>
+      buildBrainIntelligenceSummary({
+        activeTab,
+        project: activeProject,
+        sourceCount: sourceVaultStats.totalSources,
+        enabledSourceCount: sourceVaultStats.enabledSources,
+        selectedSourceCount: sourceVaultStats.brainReadySources,
+        jiraConfigured: false,
+        testRailConfigured: false,
+        rulesCount: rulesStats.enabledRules,
+        terminologyCount: terminologyStats.enabledTerms,
+        risksCount: 0,
+        featureCount: 0,
+        savedReportCount: 0,
+        bugCount: 0,
+        testCaseCount: 0,
+      }),
+    [activeTab, activeProject, sourceVaultStats, rulesStats.enabledRules, terminologyStats.enabledTerms]
+  );
+
+  const brainQAtTip = {
+    label: brainIntelligence.askTip.title,
+    body: brainIntelligence.askTip.body,
+  };
+  const brainQAtGuidance = {
+    title: brainIntelligence.title,
+    body: brainIntelligence.body,
+    recommendationTitle: brainIntelligence.recommendation.title,
+    recommendationBody: brainIntelligence.recommendation.body,
+  };
+  const brainQAtProgress = brainIntelligence.progressPercent;
+  const isBrainSetupComplete = brainIntelligence.progressPercent >= 85;
+
+  useEffect(() => {
+    setSourceVaultStats({
+      totalSources: 0,
+      enabledSources: 0,
+      brainReadySources: 0,
+      totalWords: 0,
+      enabledWords: 0,
+      estimatedContextCharacters: 0,
+      contextBudgetPercent: 0,
+    });
+    setRulesStats({
+      totalRules: 0,
+      enabledRules: 0,
+      highCriticalRules: 0,
+      ruleWeight: 0,
+    });
+    setTerminologyStats({
+      totalTerms: 0,
+      enabledTerms: 0,
+      aliasCount: 0,
+      categoryCount: 0,
+    });
+  }, [activeProject?.id]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -795,7 +871,7 @@ export default function BrainPage() {
 
           {activeTab === "sources" ? (
             <section className="brain-live-section">
-              <ProjectSourceVaultPanel activeProject={activeProject} />
+              <ProjectSourceVaultPanel activeProject={activeProject} onStatsChange={setSourceVaultStats} />
             </section>
           ) : null}
 
@@ -819,13 +895,13 @@ export default function BrainPage() {
 
           {activeTab === "rules" ? (
             <section className="brain-live-section">
-              <ProjectRulesPanel activeProject={activeProject} />
+              <ProjectRulesPanel activeProject={activeProject} onStatsChange={setRulesStats} />
             </section>
           ) : null}
 
           {activeTab === "terminology" ? (
             <section className="brain-live-section">
-              <ProjectTerminologyPanel activeProject={activeProject} />
+              <ProjectTerminologyPanel activeProject={activeProject} onStatsChange={setTerminologyStats} />
             </section>
           ) : null}
 
@@ -885,72 +961,32 @@ export default function BrainPage() {
         stateLabel={isBrainSetupComplete ? "Ready" : "Setup"}
         imageSrc="/qat/FullQat.png"
         progressPercent={brainQAtProgress}
-        steps={[
-          {
-            label: "Project",
-            complete: Boolean(activeProject),
-            active: !activeProject || activeTab === "projects",
-            title: activeProject ? "Project selected" : "Create/select a project",
-            onClick: () => selectBrainTab("projects"),
+        steps={brainIntelligence.steps.map((step) => ({
+          label: step.label,
+          complete: step.complete,
+          active:
+            (step.key === "project" && activeTab === "projects") ||
+            (step.key === "sources" && activeTab === "sources") ||
+            (step.key === "rules" && activeTab === "rules") ||
+            (step.key === "terms" && activeTab === "terminology") ||
+            (step.key === "risks" && activeTab === "risks") ||
+            ((step.key === "jira" || step.key === "testrail") && activeTab === "integrations"),
+          title: step.title,
+          onClick: () => {
+            if (step.key === "project") selectBrainTab("projects");
+            else if (step.key === "sources") selectBrainTab("sources");
+            else if (step.key === "rules") selectBrainTab("rules");
+            else if (step.key === "terms") selectBrainTab("terminology");
+            else if (step.key === "risks") selectBrainTab("risks");
+            else if (step.key === "jira" || step.key === "testrail") selectBrainTab("integrations");
+            else selectBrainTab("overview");
           },
-          {
-            label: "Sources",
-            complete: isBrainSetupComplete,
-            active: activeTab === "sources",
-            title: "Review Source Vault",
-            onClick: () => selectBrainTab("sources"),
-          },
-          {
-            label: "Rules",
-            complete: isBrainSetupComplete,
-            active: activeTab === "rules",
-            title: "Review QA Rules",
-            onClick: () => selectBrainTab("rules"),
-          },
-          {
-            label: "Terms",
-            complete: isBrainSetupComplete,
-            active: activeTab === "terminology",
-            title: "Review Terminology",
-            onClick: () => selectBrainTab("terminology"),
-          },
-          {
-            label: "Jira",
-            complete: isBrainSetupComplete,
-            active: activeTab === "integrations",
-            title: "Configure Jira integration",
-            onClick: () => selectBrainTab("integrations"),
-          },
-          {
-            label: "TestRail",
-            complete: isBrainSetupComplete,
-            active: activeTab === "integrations",
-            title: "Configure TestRail integration",
-            onClick: () => selectBrainTab("integrations"),
-          },
-        ]}
-        signals={[
-          {
-            label: "Project",
-            value: activeProject ? activeProject.name : "Missing",
-            state: activeProject ? "ready" : "warning",
-          },
-          {
-            label: "Sources",
-            value: isBrainSetupComplete ? "Review ready" : "Missing",
-            state: isBrainSetupComplete ? "ready" : "warning",
-          },
-          {
-            label: "Jira",
-            value: isBrainSetupComplete ? "Configured" : "Missing",
-            state: isBrainSetupComplete ? "ready" : "warning",
-          },
-          {
-            label: "TestRail",
-            value: isBrainSetupComplete ? "Configured" : "Missing",
-            state: isBrainSetupComplete ? "ready" : "warning",
-          },
-        ]}
+        }))}
+        signals={brainIntelligence.signals.map((signal) => ({
+          label: signal.label,
+          value: signal.value,
+          state: signal.state === "ready" ? "ready" : "warning",
+        }))}
         actions={[
           {
             label: "Ask QAt",

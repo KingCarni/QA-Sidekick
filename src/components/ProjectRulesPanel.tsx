@@ -24,8 +24,16 @@ type RuleApiResponse = {
   rule?: SafeProjectRule;
 };
 
+export type ProjectRulesStats = {
+  totalRules: number;
+  enabledRules: number;
+  highCriticalRules: number;
+  ruleWeight: number;
+};
+
 type ProjectRulesPanelProps = {
   activeProject: SafeQAProject | null;
+  onStatsChange?: (stats: ProjectRulesStats) => void;
 };
 
 const CATEGORY_OPTIONS = [
@@ -87,7 +95,7 @@ function getRuleWeight(rule: SafeProjectRule): number {
   return 1;
 }
 
-export default function ProjectRulesPanel({ activeProject }: ProjectRulesPanelProps) {
+export default function ProjectRulesPanel({ activeProject, onStatsChange }: ProjectRulesPanelProps) {
   const [rules, setRules] = useState<SafeProjectRule[]>([]);
   const [selectedRuleId, setSelectedRuleId] = useState("");
   const [title, setTitle] = useState("");
@@ -109,6 +117,20 @@ export default function ProjectRulesPanel({ activeProject }: ProjectRulesPanelPr
   const enabledRules = rules.filter((rule) => rule.isEnabled);
   const criticalRules = enabledRules.filter((rule) => rule.severity === "critical" || rule.severity === "high");
   const ruleWeight = rules.reduce((sum, rule) => sum + getRuleWeight(rule), 0);
+
+  const rulesStats = useMemo<ProjectRulesStats>(
+    () => ({
+      totalRules: rules.length,
+      enabledRules: enabledRules.length,
+      highCriticalRules: criticalRules.length,
+      ruleWeight,
+    }),
+    [rules.length, enabledRules.length, criticalRules.length, ruleWeight]
+  );
+
+  useEffect(() => {
+    onStatsChange?.(rulesStats);
+  }, [onStatsChange, rulesStats]);
 
   const filteredRules = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
