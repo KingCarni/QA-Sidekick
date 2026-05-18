@@ -35,6 +35,7 @@ import {
   buildProjectContextPayload,
   type ProjectContextPayload,
 } from "@/lib/project-context-injection";
+import { buildBrainIntelligenceSummary } from "@/lib/brain-intelligence";
 import {
   buildAutomationCredentialPayload,
   type AutomationCredentialProfile,
@@ -1162,12 +1163,22 @@ function QAtCompanionPanel({
   hasOutput,
   hasProjectContext,
   hasFollowUps,
+  brainKnownSummary,
+  brainMissingSummary,
+  brainRecommendationTitle,
+  brainRecommendationBody,
+  brainConfidenceLabel,
 }: {
   activeTool: ToolId;
   hasInput: boolean;
   hasOutput: boolean;
   hasProjectContext: boolean;
   hasFollowUps: boolean;
+  brainKnownSummary: string;
+  brainMissingSummary: string;
+  brainRecommendationTitle: string;
+  brainRecommendationBody: string;
+  brainConfidenceLabel: string;
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [hasAskedQAt, setHasAskedQAt] = useState(false);
@@ -1240,14 +1251,16 @@ function QAtCompanionPanel({
   const copy = companionCopy[activeTool];
   const stateLabel = workflowState === "output" ? "Reviewing" : workflowState === "input" ? "Input" : "Waiting";
   const noticedText = !hasInput
-    ? "Paste or fetch a ticket first. Once there is source work here, I can help check for gaps, edge cases, missing context, and automation readiness."
+    ? `${brainRecommendationTitle}: ${brainRecommendationBody}`
     : !hasOutput
-      ? "Source input is ready. Run the selected workflow, then I can inspect the generated output for gaps, follow-ups, and next steps."
+      ? hasProjectContext
+        ? `Input is ready with ${brainConfidenceLabel.toLowerCase()}. Known context: ${brainKnownSummary}`
+        : `Input is ready, but Brain grounding is limited. Missing: ${brainMissingSummary}`
       : hasFollowUps
         ? "There are follow-up questions open. Answer those before treating this output as handoff-ready."
         : hasProjectContext
-          ? "This output used project context. Review it for accuracy, then save or export the artifact if it looks ready."
-          : "This output was generated without project context. Consider adding Source Vault context before relying on it for release work.";
+          ? `This output used project context. Known context: ${brainKnownSummary}`
+          : `This output was generated without selected project context. Next best action: ${brainRecommendationBody}`;
 
   if (isCollapsed) {
     return (
@@ -3038,6 +3051,40 @@ export default function Home() {
     improveAnsweredFollowUpHistory,
     currentImproveAnsweredFollowUps
   );
+  const brainIntelligence = useMemo(
+    () =>
+      buildBrainIntelligenceSummary({
+        project: activeProject,
+        sourceCount: activeProjectContext?.totalSourceCount ?? 0,
+        enabledSourceCount: activeProjectContext?.enabledSourceCount ?? 0,
+        selectedSourceCount: selectedProjectSourceIds.length,
+        projectContextUsed: projectContextPayload.projectContextUsed,
+        projectContextSummary: projectContextPayload.projectContextSummary,
+        hasInput: Boolean(input.trim()),
+        hasOutput: Boolean(output.trim()),
+        hasFollowUps: Boolean(
+          bugFollowUpQuestions.length ||
+            riskFollowUpQuestions.length ||
+            testFollowUpQuestions.length ||
+            improveFollowUpQuestions.length
+        ),
+      }),
+    [
+      activeProject,
+      activeProjectContext?.totalSourceCount,
+      activeProjectContext?.enabledSourceCount,
+      selectedProjectSourceIds.length,
+      projectContextPayload.projectContextUsed,
+      projectContextPayload.projectContextSummary,
+      input,
+      output,
+      bugFollowUpQuestions.length,
+      riskFollowUpQuestions.length,
+      testFollowUpQuestions.length,
+      improveFollowUpQuestions.length,
+    ]
+  );
+
   const currentTestFingerprint = buildGenerationFingerprint({
     activeTool,
     sourceText: input,
@@ -4460,7 +4507,17 @@ export default function Home() {
             hasInput={Boolean(input.trim())}
             hasOutput={Boolean(output.trim())}
             hasProjectContext={projectContextPayload.projectContextUsed}
-            hasFollowUps={Boolean(bugFollowUpQuestions.length || riskFollowUpQuestions.length || testFollowUpQuestions.length)}
+            hasFollowUps={Boolean(
+              bugFollowUpQuestions.length ||
+                riskFollowUpQuestions.length ||
+                testFollowUpQuestions.length ||
+                improveFollowUpQuestions.length
+            )}
+            brainKnownSummary={brainIntelligence.knownSummary}
+            brainMissingSummary={brainIntelligence.missingSummary}
+            brainRecommendationTitle={brainIntelligence.recommendation.title}
+            brainRecommendationBody={brainIntelligence.recommendation.body}
+            brainConfidenceLabel={brainIntelligence.confidenceLabel}
           />
 </main>
   );
