@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 
 export type QAtCompanionSignal = {
   label: string;
@@ -30,6 +30,12 @@ export type QAtCompanionAction = {
   disabled?: boolean;
 };
 
+type QAtCompanionChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  body: string;
+};
+
 export type QAtCompanionRailProps = {
   storageKey: string;
   eyebrow?: string;
@@ -48,6 +54,11 @@ export type QAtCompanionRailProps = {
   footer?: ReactNode;
   className?: string;
   minimizedLabel?: string;
+  chatEnabled?: boolean;
+  chatTitle?: string;
+  chatIntro?: string;
+  chatPlaceholder?: string;
+  chatResponse?: string;
 };
 
 function cx(...parts: Array<string | false | null | undefined>) {
@@ -80,8 +91,16 @@ export default function QAtCompanionRail({
   footer,
   className = "",
   minimizedLabel = "QAt",
+  chatEnabled = false,
+  chatTitle = "QAt Box",
+  chatIntro = "Ask a project question. Full Project Brain answering is coming next.",
+  chatPlaceholder = "Ask QAt about this project...",
+  chatResponse = "I can take the question. Project Brain answering will be wired in the next pass, so I won’t invent an answer yet.",
 }: QAtCompanionRailProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<QAtCompanionChatMessage[]>([]);
+  const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     setIsCollapsed(window.localStorage.getItem(storageKey) === "true");
@@ -93,6 +112,26 @@ export default function QAtCompanionRail({
       window.localStorage.setItem(storageKey, String(next));
       return next;
     });
+  }
+
+  function handleChatSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const question = chatInput.trim();
+
+    if (!question) {
+      chatInputRef.current?.focus();
+      return;
+    }
+
+    const timestamp = Date.now();
+
+    setChatMessages((current) => [
+      ...current,
+      { id: `user-${timestamp}`, role: "user", body: question },
+      { id: `assistant-${timestamp}`, role: "assistant", body: chatResponse },
+    ]);
+    setChatInput("");
   }
 
   if (isCollapsed) {
@@ -132,6 +171,49 @@ export default function QAtCompanionRail({
       {signals.length ? <div className="qat-companion-rail-signals" aria-label="QAt signals" data-testid="qat-companion-signals">{signals.map((signal) => <span key={signal.label} className={signal.state ? `is-${signal.state}` : undefined} data-testid={`qat-signal-${slugify(signal.label)}`}><strong>{signal.label}</strong>{signal.value ? <em>{signal.value}</em> : null}</span>)}</div> : null}
 
       {recommendations.length ? <div className="qat-companion-rail-recommendations" data-testid="qat-companion-recommendations"><strong className="qat-companion-rail-section-label">{recommendationLabel}</strong>{recommendations.map((recommendation) => <button key={recommendation.label} type="button" className={recommendation.kind ? `is-${recommendation.kind}` : undefined} onClick={recommendation.onClick}><span>{recommendation.label}</span><small>{recommendation.body}</small></button>)}</div> : null}
+
+      {chatEnabled ? (
+        <section className="qat-companion-rail-chat" aria-label="QAt Box" data-testid="qat-companion-rail-chat">
+          <div className="qat-companion-rail-chat-header">
+            <strong>{chatTitle}</strong>
+            <span>{chatIntro}</span>
+          </div>
+
+          <div className="qat-companion-rail-chat-log" aria-live="polite" data-testid="qat-companion-rail-chat-log">
+            {chatMessages.length ? (
+              chatMessages.map((message) => (
+                <div key={message.id} className={cx("qat-companion-rail-chat-message", message.role === "assistant" ? "is-assistant" : "is-user")}>
+                  <small>{message.role === "assistant" ? "QAt" : "You"}</small>
+                  <p>{message.body}</p>
+                </div>
+              ))
+            ) : (
+              <p className="qat-companion-rail-chat-empty">Ask QAt a question to start the chat shell.</p>
+            )}
+          </div>
+
+          <form className="qat-companion-rail-chat-form" onSubmit={handleChatSubmit}>
+            <textarea
+              ref={chatInputRef}
+              className="qat-companion-rail-chat-input"
+              value={chatInput}
+              placeholder={chatPlaceholder}
+              rows={3}
+              data-testid="qat-companion-rail-chat-input"
+              onChange={(event) => setChatInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  event.currentTarget.form?.requestSubmit();
+                }
+              }}
+            />
+            <button className="qat-companion-rail-chat-submit" type="submit" data-testid="qat-companion-rail-chat-submit">
+              Send
+            </button>
+          </form>
+        </section>
+      ) : null}
 
       {actions.length ? <div className="qat-companion-rail-actions" aria-label="QAt actions" data-testid="qat-companion-actions">{actions.map((action) => <button key={action.label} type="button" className={action.variant === "primary" ? "is-primary" : undefined} disabled={action.disabled} data-testid={`qat-action-${slugify(action.label)}`} onClick={action.onClick}>{action.label}</button>)}</div> : null}
 

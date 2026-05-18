@@ -34527,61 +34527,352 @@ body:has(.qatalyst-brain-shell)::after {
   height: 38px !important;
   object-fit: contain !important;
 }
-/* QAS-181 Toolbelt companion visibility fix */
-.qatalyst-app-shell-v9 .qat-companion-panel {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  transform: none !important;
+/* QAS-174 Phase 4: companion intelligence signal styling */
+.qatalyst-app-shell-v9 .qat-companion-readiness {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.035);
 }
 
-.qatalyst-app-shell-v9 .qat-companion-panel .qat-companion-window {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  transform: none !important;
+.qatalyst-app-shell-v9 .qat-companion-readiness strong {
+  color: #f8fafc;
+  font-size: 0.74rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.qatalyst-app-shell-v9 .qat-companion-panel-collapsed {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
+.qatalyst-app-shell-v9 .qat-companion-readiness ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-/* QAS-182 TestRail target picker polish */
-.testrail-load-targets-button {
-  align-items: center;
+
+.qatalyst-app-shell-v9 .qat-companion-readiness li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: rgba(248,250,252,0.76);
+  font-size: 0.74rem;
+  line-height: 1.25;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-readiness li.complete {
+  color: #bbf7d0;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-readiness li.missing {
+  color: #fecaca;
+}
+
+
+/* QAS-174 Phase 5: QAt Companion UI + mascot flavor pass */
+.qatalyst-app-shell-v9 .qat-companion-window {
+  overflow: visible !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-body {
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-mascot-frame {
+  position: relative !important;
+  width: 58px !important;
+  height: 58px !important;
+  min-width: 58px !important;
+  border-radius: 18px !important;
+  overflow: visible !important;
   background:
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.16), transparent 28%),
-    linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(185, 28, 28, 0.92));
-  border: 1px solid rgba(248, 113, 113, 0.55);
-  border-radius: 16px;
-  box-shadow: 0 18px 42px rgba(239, 68, 68, 0.2);
-  color: #fff;
-  cursor: pointer;
-  display: inline-flex;
-  font-size: 0.88rem;
-  font-weight: 900;
-  justify-content: center;
-  letter-spacing: -0.01em;
-  min-height: 44px;
-  padding: 0 1.15rem;
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease,
-    border-color 160ms ease,
-    opacity 160ms ease;
+    radial-gradient(circle at 50% 20%, rgba(248, 113, 113, 0.2), transparent 58%),
+    rgba(7, 7, 7, 0.78) !important;
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.2),
+    0 14px 34px rgba(0, 0, 0, 0.34),
+    0 0 28px rgba(220, 38, 38, 0.14) !important;
 }
 
-.testrail-load-targets-button:hover:not(:disabled) {
-  border-color: rgba(254, 202, 202, 0.8);
-  box-shadow: 0 22px 52px rgba(239, 68, 68, 0.28);
+.qatalyst-app-shell-v9 .qat-companion-mascot-frame::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: 8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.7);
+}
+
+.qatalyst-app-shell-v9 .qat-companion-mascot-frame img {
+  width: 52px !important;
+  height: 52px !important;
+  object-fit: contain !important;
+  transform-origin: 50% 70%;
+  animation: qatMascotIdleFloat 4.8s ease-in-out infinite;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-title-row {
+  align-items: flex-start !important;
+  gap: 8px !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-copy h3 {
+  line-height: 1.05 !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-copy p {
+  line-height: 1.45 !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-readiness {
+  margin-top: 13px !important;
+  padding: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.085) !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
+    rgba(0, 0, 0, 0.18) !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-readiness > strong {
+  display: block !important;
+  margin: 0 0 9px !important;
+  color: #fee2e2 !important;
+  font-size: 0.68rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.14em !important;
+  line-height: 1.1 !important;
+  text-transform: uppercase !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-readiness ul {
+  display: grid !important;
+  gap: 7px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-readiness li {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #e5e7eb !important;
+  font-size: 0.74rem !important;
+  line-height: 1.2 !important;
+}
+
+.qatalyst-app-shell-v9 .qat-readiness-label {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  color: rgba(226, 232, 240, 0.74) !important;
+  font-weight: 850 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.qatalyst-app-shell-v9 .qat-readiness-value {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 64px !important;
+  min-height: 22px !important;
+  padding: 0 8px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(245, 158, 11, 0.32) !important;
+  background: rgba(120, 53, 15, 0.22) !important;
+  color: #fde68a !important;
+  font-size: 0.64rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.02em !important;
+  white-space: nowrap !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-readiness li.complete .qat-readiness-value {
+  border-color: rgba(34, 197, 94, 0.32) !important;
+  background: rgba(20, 83, 45, 0.28) !important;
+  color: #bbf7d0 !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-readiness li.optional .qat-readiness-value {
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  background: rgba(148, 163, 184, 0.08) !important;
+  color: #cbd5e1 !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-readiness li.warning .qat-readiness-value {
+  border-color: rgba(251, 146, 60, 0.38) !important;
+  background: rgba(154, 52, 18, 0.24) !important;
+  color: #fed7aa !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-actions {
+  gap: 7px !important;
+  margin-top: 11px !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-actions button {
+  min-height: 31px !important;
+  font-size: 0.7rem !important;
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-actions button:hover {
   transform: translateY(-1px);
 }
 
-.testrail-load-targets-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
+.qatalyst-app-shell-v9 .qat-companion-tip {
+  margin-top: 11px !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-state-input .qat-companion-window,
+.qatalyst-app-shell-v9 .qat-companion-state-output .qat-companion-window {
+  box-shadow:
+    0 22px 56px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(248, 113, 113, 0.12),
+    0 0 30px rgba(220, 38, 38, 0.1) !important;
+}
+
+.qatalyst-app-shell-v9 .qat-companion-panel-collapsed .qat-companion-collapsed-button img {
+  animation: qatMascotIdleFloat 4.8s ease-in-out infinite;
+}
+
+@keyframes qatMascotIdleFloat {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-4px) rotate(1deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qatalyst-app-shell-v9 .qat-companion-mascot-frame img,
+  .qatalyst-app-shell-v9 .qat-companion-panel-collapsed .qat-companion-collapsed-button img {
+    animation: none !important;
+  }
+
+  .qatalyst-app-shell-v9 .qat-companion-actions button:hover {
+    transform: none !important;
+  }
+}
+
+
+/* QAS-189 QAt Companion chat shell */
+.qat-companion-rail-chat {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top right, rgba(220, 38, 38, 0.12), transparent 42%),
+    rgba(0, 0, 0, 0.22);
+}
+
+.qat-companion-rail-chat-header {
+  display: grid;
+  gap: 5px;
+}
+
+.qat-companion-rail-chat-header strong {
+  color: #ffffff;
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.qat-companion-rail-chat-header span {
+  color: rgba(212, 212, 216, 0.82);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.qat-companion-rail-chat-log {
+  display: grid;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.qat-companion-rail-chat-empty {
+  margin: 0;
+  padding: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: rgba(212, 212, 216, 0.72);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.qat-companion-rail-chat-message {
+  display: grid;
+  gap: 4px;
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.qat-companion-rail-chat-message.is-user {
+  border-color: rgba(248, 113, 113, 0.2);
+  background: rgba(127, 29, 29, 0.2);
+}
+
+.qat-companion-rail-chat-message.is-assistant {
+  border-color: rgba(34, 197, 94, 0.16);
+  background: rgba(22, 101, 52, 0.12);
+}
+
+.qat-companion-rail-chat-message small {
+  color: #fca5a5;
+  font-size: 0.64rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.qat-companion-rail-chat-message p {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.qat-companion-rail-chat-form {
+  display: grid;
+  gap: 8px;
+}
+
+.qat-companion-rail-chat-input {
+  min-height: 78px;
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.qat-companion-rail-chat-submit {
+  min-height: 34px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 950;
+  box-shadow:
+    0 10px 22px rgba(220, 38, 38, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.13);
+}
+
+.qat-companion-rail-chat-submit:hover {
+  filter: brightness(1.08);
 }
