@@ -5,7 +5,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import BugCollectionPanel from "@/components/BugCollectionPanel";
 import CreditsPill from "@/components/CreditsPill";
-import ProjectRisksPanel from "@/components/ProjectRisksPanel";
+import ProjectRisksPanel, { type ProjectRisksStats } from "@/components/ProjectRisksPanel";
 import ProjectRulesPanel, { type ProjectRulesStats } from "@/components/ProjectRulesPanel";
 import ProjectSettingsPanel, { type SafeQAProject } from "@/components/ProjectSettingsPanel";
 import ProjectSourceVaultPanel, { type ProjectSourceVaultStats } from "@/components/ProjectSourceVaultPanel";
@@ -64,6 +64,25 @@ type ReportsApiResponse = {
   ok?: boolean;
   error?: string;
   reports?: SafeQAReport[];
+};
+
+type IntegrationConfigStatus = {
+  configured?: boolean;
+};
+
+type JiraConfigApiResponse = {
+  ok?: boolean;
+  jira?: IntegrationConfigStatus;
+};
+
+type TestRailConfigApiResponse = {
+  ok?: boolean;
+  testrail?: IntegrationConfigStatus;
+};
+
+type BrainIntegrationStats = {
+  jiraConfigured: boolean;
+  testRailConfigured: boolean;
 };
 
 const ACTIVE_PROJECT_STORAGE_KEY = "qatalyst.activeProjectId";
@@ -622,6 +641,16 @@ export default function BrainPage() {
     aliasCount: 0,
     categoryCount: 0,
   });
+  const [risksStats, setRisksStats] = useState<ProjectRisksStats>({
+    totalRisks: 0,
+    enabledRisks: 0,
+    totalFeatures: 0,
+    enabledFeatures: 0,
+  });
+  const [integrationStats, setIntegrationStats] = useState<BrainIntegrationStats>({
+    jiraConfigured: false,
+    testRailConfigured: false,
+  });
 
   const active = useMemo(
     () => BRAIN_TABS.find((tab) => tab.id === activeTab) ?? BRAIN_TABS[0],
@@ -635,17 +664,27 @@ export default function BrainPage() {
         sourceCount: sourceVaultStats.totalSources,
         enabledSourceCount: sourceVaultStats.enabledSources,
         selectedSourceCount: sourceVaultStats.brainReadySources,
-        jiraConfigured: false,
-        testRailConfigured: false,
+        jiraConfigured: integrationStats.jiraConfigured,
+        testRailConfigured: integrationStats.testRailConfigured,
         rulesCount: rulesStats.enabledRules,
         terminologyCount: terminologyStats.enabledTerms,
-        risksCount: 0,
-        featureCount: 0,
+        risksCount: risksStats.enabledRisks,
+        featureCount: risksStats.enabledFeatures,
         savedReportCount: 0,
         bugCount: 0,
         testCaseCount: 0,
       }),
-    [activeTab, activeProject, sourceVaultStats, rulesStats.enabledRules, terminologyStats.enabledTerms]
+    [
+      activeTab,
+      activeProject,
+      sourceVaultStats,
+      rulesStats.enabledRules,
+      terminologyStats.enabledTerms,
+      risksStats.enabledRisks,
+      risksStats.enabledFeatures,
+      integrationStats.jiraConfigured,
+      integrationStats.testRailConfigured,
+    ]
   );
 
   const brainQAtTip = {
@@ -683,6 +722,12 @@ export default function BrainPage() {
       aliasCount: 0,
       categoryCount: 0,
     });
+    setRisksStats({
+      totalRisks: 0,
+      enabledRisks: 0,
+      totalFeatures: 0,
+      enabledFeatures: 0,
+    });
   }, [activeProject?.id]);
 
   useEffect(() => {
@@ -691,6 +736,44 @@ export default function BrainPage() {
     const nextTab = normalizeBrainTab(new URLSearchParams(window.location.search).get("tab"));
     setActiveTab(nextTab);
   }, []);
+
+  useEffect(() => {
+    if (status !== "authenticated") {
+      setIntegrationStats({ jiraConfigured: false, testRailConfigured: false });
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadIntegrationStats() {
+      try {
+        const [jiraResponse, testRailResponse] = await Promise.all([
+          fetch("/api/jira/config"),
+          fetch("/api/testrail/config"),
+        ]);
+
+        const jiraPayload = (await jiraResponse.json().catch(() => null)) as JiraConfigApiResponse | null;
+        const testRailPayload = (await testRailResponse.json().catch(() => null)) as TestRailConfigApiResponse | null;
+
+        if (cancelled) return;
+
+        setIntegrationStats({
+          jiraConfigured: Boolean(jiraResponse.ok && jiraPayload?.jira?.configured),
+          testRailConfigured: Boolean(testRailResponse.ok && testRailPayload?.testrail?.configured),
+        });
+      } catch {
+        if (!cancelled) {
+          setIntegrationStats({ jiraConfigured: false, testRailConfigured: false });
+        }
+      }
+    }
+
+    void loadIntegrationStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [status]);
 
   function selectBrainTab(tabId: BrainTabId) {
     setActiveTab(tabId);
@@ -907,13 +990,13 @@ export default function BrainPage() {
 
           {activeTab === "risks" ? (
             <section className="brain-live-section">
-              <ProjectRisksPanel activeProject={activeProject} mode="risks" />
+              <ProjectRisksPanel activeProject={activeProject} mode="risks" onStatsChange={setRisksStats} />
             </section>
           ) : null}
 
           {activeTab === "features" ? (
             <section className="brain-live-section">
-              <ProjectRisksPanel activeProject={activeProject} mode="features" />
+              <ProjectRisksPanel activeProject={activeProject} mode="features" onStatsChange={setRisksStats} />
             </section>
           ) : null}
 
@@ -970,7 +1053,7 @@ export default function BrainPage() {
             (step.key === "rules" && activeTab === "rules") ||
             (step.key === "terms" && activeTab === "terminology") ||
             (step.key === "risks" && activeTab === "risks") ||
-            ((step.key === "jira" || step.key === "testrail") && activeTab === "integrations"),
+            (step.key === "integrations" && activeTab === "integrations"),
           title: step.title,
           onClick: () => {
             if (step.key === "project") selectBrainTab("projects");
@@ -978,7 +1061,7 @@ export default function BrainPage() {
             else if (step.key === "rules") selectBrainTab("rules");
             else if (step.key === "terms") selectBrainTab("terminology");
             else if (step.key === "risks") selectBrainTab("risks");
-            else if (step.key === "jira" || step.key === "testrail") selectBrainTab("integrations");
+            else if (step.key === "integrations") selectBrainTab("integrations");
             else selectBrainTab("overview");
           },
         }))}

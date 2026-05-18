@@ -37,7 +37,18 @@ type SafeProjectFeature = {
 type RiskApiResponse = { ok?: boolean; error?: string; risks?: SafeProjectRisk[]; risk?: SafeProjectRisk };
 type FeatureApiResponse = { ok?: boolean; error?: string; features?: SafeProjectFeature[]; feature?: SafeProjectFeature };
 
-type Props = { activeProject: SafeQAProject | null; mode?: "risks" | "features" };
+export type ProjectRisksStats = {
+  totalRisks: number;
+  enabledRisks: number;
+  totalFeatures: number;
+  enabledFeatures: number;
+};
+
+type Props = {
+  activeProject: SafeQAProject | null;
+  mode?: "risks" | "features";
+  onStatsChange?: (stats: ProjectRisksStats) => void;
+};
 
 const RISK_TYPES = ["regression", "integration", "data", "permissions", "ux", "performance", "accessibility", "security", "release", "other"];
 const LEVELS = ["low", "medium", "high", "critical"];
@@ -55,7 +66,7 @@ function formatDate(value: string) {
   }
 }
 
-export default function ProjectRisksPanel({ activeProject, mode = "risks" }: Props) {
+export default function ProjectRisksPanel({ activeProject, mode = "risks", onStatsChange }: Props) {
   const [risks, setRisks] = useState<SafeProjectRisk[]>([]);
   const [features, setFeatures] = useState<SafeProjectFeature[]>([]);
   const [selectedRiskId, setSelectedRiskId] = useState("");
@@ -87,6 +98,20 @@ export default function ProjectRisksPanel({ activeProject, mode = "risks" }: Pro
 
   const selectedRisk = useMemo(() => risks.find((item) => item.id === selectedRiskId) ?? null, [risks, selectedRiskId]);
   const selectedFeature = useMemo(() => features.find((item) => item.id === selectedFeatureId) ?? null, [features, selectedFeatureId]);
+
+  const risksStats = useMemo<ProjectRisksStats>(
+    () => ({
+      totalRisks: risks.length,
+      enabledRisks: risks.filter((risk) => risk.isEnabled).length,
+      totalFeatures: features.length,
+      enabledFeatures: features.filter((feature) => feature.isEnabled).length,
+    }),
+    [risks, features]
+  );
+
+  useEffect(() => {
+    onStatsChange?.(risksStats);
+  }, [onStatsChange, risksStats]);
 
   const visibleRisks = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();

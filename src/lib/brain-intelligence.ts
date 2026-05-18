@@ -99,6 +99,7 @@ export function buildBrainIntelligenceSummary(input: BrainIntelligenceInput): Br
   const hasRisks = positiveInteger(input.risksCount) > 0;
   const hasJira = Boolean(input.jiraConfigured);
   const hasTestRail = Boolean(input.testRailConfigured);
+  const hasIntegration = hasJira || hasTestRail;
   const hasContextUse = Boolean(input.projectContextUsed || hasSelectedSources);
 
   const setupChecks = [
@@ -109,8 +110,7 @@ export function buildBrainIntelligenceSummary(input: BrainIntelligenceInput): Br
     hasRules,
     hasTerminology,
     hasRisks,
-    hasJira,
-    hasTestRail,
+    hasIntegration,
   ];
 
   const completedCount = setupChecks.filter(Boolean).length;
@@ -167,17 +167,10 @@ export function buildBrainIntelligenceSummary(input: BrainIntelligenceInput): Br
       targetTab: "risks",
       priority: "medium",
     };
-  } else if (!hasJira) {
+  } else if (!hasIntegration) {
     recommendation = {
-      title: "Connect Jira when handoff matters",
-      body: "Jira setup lets QAtalyst fetch real tickets and prepare structured QA work closer to your team’s execution workflow.",
-      targetTab: "integrations",
-      priority: "medium",
-    };
-  } else if (!hasTestRail) {
-    recommendation = {
-      title: "Connect TestRail for coverage handoff",
-      body: "TestRail setup makes generated test coverage easier to preview, approve, and sync into your test management workflow.",
+      title: "Connect Jira or TestRail",
+      body: "Connect at least one handoff tool. Jira helps with ticket workflow, while TestRail helps with coverage sync. You do not need both for Brain setup to feel complete.",
       targetTab: "integrations",
       priority: "medium",
     };
@@ -209,8 +202,7 @@ export function buildBrainIntelligenceSummary(input: BrainIntelligenceInput): Br
     hasProject && !hasRules ? "QA rules" : "",
     hasProject && !hasTerminology ? "terminology" : "",
     hasProject && !hasRisks ? "risks/hotspots" : "",
-    hasProject && !hasJira ? "Jira" : "",
-    hasProject && !hasTestRail ? "TestRail" : "",
+    hasProject && !hasIntegration ? "Jira or TestRail" : "",
   ].filter(Boolean);
 
   const confidenceLabel =
@@ -238,8 +230,18 @@ export function buildBrainIntelligenceSummary(input: BrainIntelligenceInput): Br
     { key: "rules", label: "Rules", complete: hasRules, title: hasRules ? "QA rules present" : "Add QA rules" },
     { key: "terms", label: "Terms", complete: hasTerminology, title: hasTerminology ? "Terminology present" : "Add terminology" },
     { key: "risks", label: "Risks", complete: hasRisks, title: hasRisks ? "Risk memory present" : "Add risks/hotspots" },
-    { key: "jira", label: "Jira", complete: hasJira, title: hasJira ? "Jira configured" : "Configure Jira" },
-    { key: "testrail", label: "TestRail", complete: hasTestRail, title: hasTestRail ? "TestRail configured" : "Configure TestRail" },
+    {
+      key: "integrations",
+      label: "Integrations",
+      complete: hasIntegration,
+      title: hasJira && hasTestRail
+        ? "Jira and TestRail configured"
+        : hasJira
+          ? "Jira configured"
+          : hasTestRail
+            ? "TestRail configured"
+            : "Configure Jira or TestRail",
+    },
   ];
 
   const signals: BrainIntelligenceSignal[] = [
