@@ -49,7 +49,7 @@
 }
 
 .qat-companion-panel .qat-companion-tip {
-  order: 5 !important;
+  display: none !important;
 }
 
 .qat-companion-panel .qat-companion-copy h3 {
@@ -70,24 +70,27 @@
   object-fit: contain !important;
 }
 
-/* QAS-198: flatten the old nested Ask QAt response-window feel. */
+/* QAS-198/QAS-199: keep QAt Box clean while preventing endless rail growth. */
 .qat-companion-rail-chat {
   order: 2 !important;
   display: grid !important;
   gap: 10px !important;
-  overflow: visible !important;
+  max-height: 430px !important;
+  overflow: hidden !important;
 }
 
 .qat-companion-rail-chat-log {
   display: grid !important;
   gap: 10px !important;
-  max-height: none !important;
-  overflow: visible !important;
-  padding: 0 !important;
+  max-height: 285px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 0 6px 0 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+  scrollbar-width: thin !important;
 }
 
 .qat-companion-rail-chat-message {
