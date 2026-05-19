@@ -25,15 +25,30 @@ function normalizeWords(value: string): string[] {
     .filter((word) => word.length >= 4);
 }
 
+function isLikelyPlaceholder(item: QAtBrainContextItem): boolean {
+  const compact = `${item.title} ${item.text}`.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const words = compact.split(/\s+/).filter(Boolean);
+  const uniqueWords = new Set(words);
+
+  if (!compact) return true;
+  if (compact.length < 24) return true;
+  if (uniqueWords.size <= 3 && words.length >= 3) return true;
+  if (/^(test|testing|test rule|sample|placeholder)(\s+\1)*$/.test(compact)) return true;
+
+  return false;
+}
+
 function scoreItem(questionWords: string[], item: QAtBrainContextItem): number {
-  if (!questionWords.length) return 0;
-
   const haystack = `${item.title}\n${item.type ?? ""}\n${item.text}`.toLowerCase();
+  const baseScore = item.kind === "source" ? 7 : item.kind === "risk" ? 3 : item.kind === "rule" ? 2 : 1;
+  const matchScore = questionWords.reduce((score, word) => score + (haystack.includes(word) ? 3 : 0), 0);
+  const sourceTypeBoost =
+    item.kind === "source" && /overview|product|strategy|requirements|spec|markdown|md|context|qatalyst|brain/i.test(`${item.title} ${item.type}`)
+      ? 8
+      : 0;
+  const placeholderPenalty = isLikelyPlaceholder(item) ? 10 : 0;
 
-  return questionWords.reduce(
-    (score, word) => score + (haystack.includes(word) ? 1 : 0),
-    0
-  );
+  return baseScore + matchScore + sourceTypeBoost - placeholderPenalty;
 }
 
 function takeBoundedBlocks(
@@ -101,7 +116,7 @@ export async function buildQAtBrainContext({
 
   const sourceContextBlock = buildProjectSourceContextBlock(
     enabledSources,
-    8000
+    10000
   );
 
   const [rules, terms, risks, features] = await Promise.all([
