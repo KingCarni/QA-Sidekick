@@ -962,8 +962,8 @@ export default function BrainPage() {
         imageSrc="/qat/FullQat.png"
         chatEnabled
         chatProjectId={activeProject?.id ?? null}
-        chatIntro="Ask QAt about this Brain setup. Full Project Brain answering comes next."
-        chatPlaceholder="Ask QAt about this project, source context, rules, risks, or integrations..."
+        chatIntro=""
+        chatPlaceholder="Ask QAt about this project, workflows, bugs, risks, QA coverage, or integrations..."
         progressPercent={brainQAtProgress}
         steps={brainIntelligence.steps.map((step) => ({
           label: step.label,
@@ -985,11 +985,6 @@ export default function BrainPage() {
             else if (step.key === "jira" || step.key === "testrail") selectBrainTab("integrations");
             else selectBrainTab("overview");
           },
-        }))}
-        signals={brainIntelligence.signals.map((signal) => ({
-          label: signal.label,
-          value: signal.value,
-          state: signal.state === "ready" ? "ready" : "warning",
         }))}
         actions={[
           {

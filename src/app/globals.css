@@ -34876,3 +34876,109 @@ body:has(.qatalyst-brain-shell)::after {
 .qat-companion-rail-chat-submit:hover {
   filter: brightness(1.08);
 }
+/* QAt Companion rail visual order fix
+   Keep the mascot above QAt Box regardless of older flex/order overrides. */
+
+.qat-companion-rail {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.qat-companion-rail-minimize {
+  order: 0 !important;
+}
+
+.qat-companion-rail-mascot-stage {
+  order: 1 !important;
+}
+
+.qat-companion-rail-chat {
+  order: 2 !important;
+}
+
+.qat-companion-rail-copy {
+  order: 3 !important;
+}
+
+.qat-companion-rail-progress {
+  order: 4 !important;
+}
+
+.qat-companion-rail-steps {
+  order: 5 !important;
+}
+
+.qat-companion-rail-signals {
+  order: 6 !important;
+}
+
+.qat-companion-rail-recommendations {
+  order: 7 !important;
+}
+
+.qat-companion-rail-actions {
+  order: 8 !important;
+}
+
+.qat-companion-rail-tip {
+  order: 9 !important;
+}
+
+.qat-companion-rail-footer {
+  order: 10 !important;
+}
+/* QAS-196 Brain QAt rail final layout override
+   Brain companion order:
+   Minimize → mascot → QAt Box → setup/FTUE → actions/tip.
+*/
+
+.brain-qAt-companion-rail.qat-companion-rail,
+.brain-qAt-companion-rail {
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-areas: none !important;
+}
+
+.brain-qAt-companion-rail > .qat-companion-rail-minimize {
+  order: 0 !important;
+}
+
+.brain-qAt-companion-rail > .qat-companion-rail-mascot-stage {
+  order: 1 !important;
+}
+
+.brain-qAt-companion-rail > .qat-companion-rail-chat {
+  order: 2 !important;
+}
+
+.brain-qAt-companion-rail > .qat-companion-rail-copy {
+  order: 3 !important;
+}
+
+.brain-qAt-companion-rail > .qat-companion-rail-progress {
+  order: 4 !important;
+}
+
+.brain-qAt-companion-rail > .qat-companion-rail-steps {
+  order: 5 !important;
+}
+
+.brain-qAt-companion-rail > .qat-companion-rail-signals {
+  order: 6 !important;
+}
+
+.brain-qAt-companion-rail > .qat-companion-rail-recommendations {
+  order: 7 !important;
+}
+
+.brain-qAt-companion-rail > .qat-companion-rail-actions {
+  order: 8 !important;
+}
+
+.brain-qAt-companion-rail > .qat-companion-rail-tip {
+  order: 9 !important;
+}
+
+.brain-qAt-companion-rail > .qat-companion-rail-footer {
+  order: 10 !important;
+}

@@ -15,6 +15,7 @@ import BugEvidencePreview from "@/components/BugEvidencePreview";
 import CoverageScorePanel from "@/components/CoverageScorePanel";
 import FeatureBuilderTool from "@/components/FeatureBuilderTool";
 import QAtGuideCard from "@/components/QAtGuideCard";
+import QAtCompanionRail from "@/components/QAtCompanionRail";
 import JiraCreateIssueButton from "@/components/JiraCreateIssueButton";
 import RiskReviewPanel from "@/components/RiskReviewPanel";
 import SaveBugToCollectionButton from "@/components/SaveBugToCollectionButton";
@@ -1157,185 +1158,70 @@ async function copyText(text: string) {
 
 
 
-function QAtCompanionPanel({
-  activeTool,
-  hasInput,
-  hasOutput,
-  hasProjectContext,
-  hasFollowUps,
-  brainKnownSummary,
-  brainMissingSummary,
-  brainRecommendationTitle,
-  brainRecommendationBody,
-  brainConfidenceLabel,
-}: {
-  activeTool: ToolId;
-  hasInput: boolean;
-  hasOutput: boolean;
-  hasProjectContext: boolean;
-  hasFollowUps: boolean;
-  brainKnownSummary: string;
-  brainMissingSummary: string;
-  brainRecommendationTitle: string;
-  brainRecommendationBody: string;
-  brainConfidenceLabel: string;
-}) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [hasAskedQAt, setHasAskedQAt] = useState(false);
-  const workflowState = hasOutput ? "output" : hasInput ? "input" : "empty";
+type ToolCompanionWorkflowState = "empty" | "input" | "output";
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+type ToolCompanionConfig = {
+  title: string;
+  body: Record<ToolCompanionWorkflowState, string>;
+  tipTitle: string;
+  tipBody: string;
+};
 
-    const storedValue = window.localStorage.getItem("qatalyst-qat-companion-collapsed");
-    setIsCollapsed(storedValue === "true");
-  }, []);
-
-  useEffect(() => {
-    setHasAskedQAt(false);
-  }, [activeTool, workflowState, hasProjectContext, hasFollowUps]);
-
-  function toggleCollapsed() {
-    setIsCollapsed((current) => {
-      const nextValue = !current;
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("qatalyst-qat-companion-collapsed", String(nextValue));
-      }
-      return nextValue;
-    });
-  }
-
-  const companionCopy: Record<ToolId, { title: string; body: Record<typeof workflowState, string> }> = {
+function getToolCompanionConfig(activeTool: ToolId): ToolCompanionConfig {
+  const configs: Record<ToolId, ToolCompanionConfig> = {
     tests: {
-      title: "QAt Companion",
+      title: "Test coverage companion",
       body: {
-        empty: "Paste a ticket, user story, or acceptance criteria. I’ll stay out of the way until you ask me to inspect it.",
-        input: "Input detected. Ask me when you want a second QA pass before generating.",
-        output: "Output generated. Ask me to review what changed and what still needs attention.",
+        empty: "Paste a Jira ticket, user story, or acceptance criteria. I’ll help sanity-check coverage, gaps, risks, and missing setup.",
+        input: "Input is ready. Ask me for a QA pass before generating test cases.",
+        output: "Test cases are ready. Ask me to review coverage, weak spots, automation fit, or TestRail handoff.",
       },
+      tipTitle: "Use QAt before/after generation",
+      tipBody: "Ask for risk areas, missing acceptance criteria, edge cases, or automation candidates tied to the current project context.",
     },
     bug: {
-      title: "QAt Companion",
+      title: "Bug triage companion",
       body: {
-        empty: "Paste rough bug notes. I’ll stay quiet until you ask me to inspect them.",
-        input: "Input detected. Ask me when you want a bug triage sanity check.",
-        output: "Bug report generated. Ask me to review it for triage readiness.",
+        empty: "Paste rough bug notes, repro steps, screenshots, logs, or tester notes. I’ll help shape it into a clean defect.",
+        input: "Bug notes are ready. Ask me for triage clarity, missing fields, severity, or repro quality.",
+        output: "Bug report is ready. Ask me to review whether it is Jira-ready and developer-actionable.",
       },
+      tipTitle: "Good bugs save dev time",
+      tipBody: "Ask QAt to check title clarity, expected vs actual, repro gaps, environment details, impact, and follow-up questions.",
     },
     risk: {
-      title: "QAt Companion",
+      title: "Risk review companion",
       body: {
-        empty: "Paste a ticket or requirements doc. I’ll wait until you ask me to inspect release risk.",
-        input: "Input detected. Ask me when you want a risk-focused QA pass.",
-        output: "Risk review generated. Ask me to call out the most important next move.",
+        empty: "Paste a ticket or requirement. I’ll help spot QA risk, unclear scope, blockers, and release-sensitive gaps.",
+        input: "Input is ready. Ask me for likely failure areas before running the risk review.",
+        output: "Risk review is ready. Ask me to prioritize what matters most before handoff.",
       },
+      tipTitle: "Risk is where QA earns time",
+      tipBody: "Ask QAt to separate critical blockers from nice-to-have concerns and map them back to coverage decisions.",
     },
     improve: {
-      title: "QAt Companion",
+      title: "Test improver companion",
       body: {
-        empty: "Paste a weak test case or checklist. I’ll wait until you ask me to inspect it.",
-        input: "Input detected. Ask me when you want a coverage and clarity pass.",
-        output: "Improved test generated. Ask me to review it for execution readiness.",
+        empty: "Paste a weak test case or checklist. I’ll help tighten coverage, clarity, preconditions, and expected results.",
+        input: "Test material is ready. Ask me what looks vague or under-covered before improving it.",
+        output: "Improved test is ready. Ask me to check execution readiness and remaining blind spots.",
       },
+      tipTitle: "Make tests executable",
+      tipBody: "Ask QAt to find vague steps, missing data setup, unclear expected results, and automation opportunities.",
     },
     feature: {
-      title: "QAt Companion",
+      title: "Feature shaping companion",
       body: {
-        empty: "Describe the feature idea. I’ll wait until you ask me to inspect scope and QA risk.",
-        input: "Input detected. Ask me when you want a QA/product shaping pass.",
-        output: "Feature brief generated. Ask me to review the open questions and QA handoff risk.",
+        empty: "Describe a rough feature idea. I’ll help think through product scope, QA risk, acceptance criteria, and open questions.",
+        input: "Feature idea is ready. Ask me to challenge scope, risks, or missing user flows.",
+        output: "Feature brief is ready. Ask me to review QA handoff quality and next-step coverage.",
       },
+      tipTitle: "Shape before you build",
+      tipBody: "Ask QAt about acceptance criteria, risky assumptions, unknowns, and testability before the feature hits dev.",
     },
   };
 
-  const copy = companionCopy[activeTool];
-  const stateLabel = workflowState === "output" ? "Reviewing" : workflowState === "input" ? "Input" : "Waiting";
-  const noticedText = !hasInput
-    ? `${brainRecommendationTitle}: ${brainRecommendationBody}`
-    : !hasOutput
-      ? hasProjectContext
-        ? `Input is ready with ${brainConfidenceLabel.toLowerCase()}. Known context: ${brainKnownSummary}`
-        : `Input is ready, but Brain grounding is limited. Missing: ${brainMissingSummary}`
-      : hasFollowUps
-        ? "There are follow-up questions open. Answer those before treating this output as handoff-ready."
-        : hasProjectContext
-          ? `This output used project context. Known context: ${brainKnownSummary}`
-          : `This output was generated without selected project context. Next best action: ${brainRecommendationBody}`;
-
-  if (isCollapsed) {
-    return (
-      <aside
-        className={`qat-companion-panel qat-companion-panel-${activeTool} qat-companion-panel-collapsed`}
-        aria-label="QAt Companion collapsed"
-        data-testid="qat-companion-rail-collapsed"
-      >
-        <button
-          className="qat-companion-collapsed-button"
-          type="button"
-          onClick={toggleCollapsed}
-          aria-label="Expand QAt Companion"
-          title="Expand QAt Companion"
-          data-testid="qat-companion-expand"
-        >
-          <img src="/qat/FullQat.png" alt="" aria-hidden="true" />
-          <span>QAt</span>
-        </button>
-      </aside>
-    );
-  }
-
-  return (
-    <aside
-      className={`qat-companion-panel qat-companion-panel-${activeTool} qat-companion-state-${workflowState}`}
-      aria-label="QAt Companion"
-      data-testid="qat-companion-rail"
-    >
-      <div className="qat-companion-window">
-        <button className="qat-companion-toggle qat-companion-toggle-floating" type="button" onClick={toggleCollapsed} aria-label="Collapse QAt Companion" data-testid="qat-companion-minimize">
-          Min
-        </button>
-
-        <div className="qat-companion-mascot-frame">
-          <img src="/qat/FullQat.png" alt="" aria-hidden="true" />
-        </div>
-
-        <div className="qat-companion-copy">
-          <div className="qat-companion-title-row">
-            <h3 data-testid="qat-companion-title">{copy.title}</h3>
-            <span className="qat-companion-state-pill" data-testid="qat-companion-state">{stateLabel}</span>
-          </div>
-          <p data-testid="qat-companion-body">{copy.body[workflowState]}</p>
-        </div>
-
-        <div className="qat-companion-topline">
-          <span>Coverage check</span>
-        </div>
-
-        <div className="qat-companion-signals" aria-label="QAt workflow signals" data-testid="qat-companion-signals">
-          <span className={hasProjectContext ? "active" : ""}>{hasProjectContext ? "Project context used" : "No project context"}</span>
-          <span className={hasInput ? "active" : ""}>{hasInput ? "Input ready" : "No input"}</span>
-          <span className={hasOutput ? "active" : ""}>{hasOutput ? "Output generated" : "No output"}</span>
-          <span className={hasFollowUps ? "active warning" : ""}>{hasFollowUps ? "Follow-ups open" : "No follow-ups"}</span>
-        </div>
-
-        <button
-          className="qat-companion-ask-button"
-          type="button"
-          data-testid="qat-action-ask-qat"
-          onClick={() => setHasAskedQAt(true)}
-        >
-          Ask QAt
-        </button>
-
-        {hasAskedQAt ? (
-          <div className="qat-companion-tip qat-companion-noticed" data-testid="qat-companion-tip">
-            <strong>QAt noticed</strong>
-            <span>{noticedText}</span>
-          </div>
-        ) : null}
-      </div>
-    </aside>
-  );
+  return configs[activeTool];
 }
 
 function SaveReportControl({
@@ -3865,6 +3751,13 @@ export default function Home() {
     }
   }
 
+  const toolCompanionWorkflowState: ToolCompanionWorkflowState = output.trim()
+    ? "output"
+    : input.trim()
+      ? "input"
+      : "empty";
+  const toolCompanionConfig = getToolCompanionConfig(activeTool);
+
   async function estimateTestCaseCost(prompt: string) {
     const response = await fetch("/api/test-cases/estimate", {
       method: "POST",
@@ -4502,22 +4395,39 @@ export default function Home() {
           });
         }}
       />
-          <QAtCompanionPanel
-            activeTool={activeTool}
-            hasInput={Boolean(input.trim())}
-            hasOutput={Boolean(output.trim())}
-            hasProjectContext={projectContextPayload.projectContextUsed}
-            hasFollowUps={Boolean(
-              bugFollowUpQuestions.length ||
-                riskFollowUpQuestions.length ||
-                testFollowUpQuestions.length ||
-                improveFollowUpQuestions.length
-            )}
-            brainKnownSummary={brainIntelligence.knownSummary}
-            brainMissingSummary={brainIntelligence.missingSummary}
-            brainRecommendationTitle={brainIntelligence.recommendation.title}
-            brainRecommendationBody={brainIntelligence.recommendation.body}
-            brainConfidenceLabel={brainIntelligence.confidenceLabel}
+          <QAtCompanionRail
+            storageKey="qatalyst-toolbelt-qat-companion-collapsed"
+            className={`toolbelt-qAt-companion-rail qat-companion-panel-${activeTool}`}
+            eyebrow="QAt Companion"
+            title={toolCompanionConfig.title}
+            body={toolCompanionConfig.body[toolCompanionWorkflowState]}
+            stateLabel={output.trim() ? "Reviewing" : input.trim() ? "Input" : "Waiting"}
+            imageSrc="/qat/FullQat.png"
+            chatEnabled
+            chatProjectId={activeProject?.id ?? null}
+            chatIntro=""
+            chatPlaceholder="Ask QAt about this workflow, project context, bugs, risks, QA coverage, or integrations..."
+            actions={[
+        {
+                  label: "Ask QAt",
+                  onClick: () => {
+                    const input = document.querySelector<HTMLTextAreaElement>(".qat-companion-rail-chat textarea");
+                    input?.focus();
+                  },
+                },
+                {
+                  label: "Open Brain",
+                  onClick: () => {
+                    window.location.href = "/brain";
+                  },
+                  variant: "primary",
+                },
+                
+              ]}  
+            tip={{
+              title: toolCompanionConfig.tipTitle,
+              body: toolCompanionConfig.tipBody,
+            }}
           />
 </main>
   );
