@@ -14,16 +14,7 @@ export type ComposeQAtAnswerResult = {
 
 function isGreetingOnly(value: string): boolean {
   const normalized = value.trim().toLowerCase().replace(/[^\w\s]/g, "");
-  return [
-    "hi",
-    "hello",
-    "hey",
-    "hi qat",
-    "hello qat",
-    "hey qat",
-    "yo",
-    "yo qat",
-  ].includes(normalized);
+  return ["hi", "hello", "hey", "hi qat", "hello qat", "hey qat", "yo", "yo qat"].includes(normalized);
 }
 
 function getUsedContextSummary(items: QAtBrainContextItem[]): string {
@@ -35,61 +26,35 @@ function getUsedContextSummary(items: QAtBrainContextItem[]): string {
     .join("; ");
 }
 
-function buildFallbackAnswer({
-  question,
-  contextBlock,
-  usedItems,
-  missingContext,
-}: ComposeQAtAnswerInput): string {
+function buildFallbackAnswer({ question, contextBlock, missingContext }: ComposeQAtAnswerInput): string {
   if (isGreetingOnly(question)) {
     return [
-      "Hey — I’m QAt. I can help you reason through this project using the saved Project Brain context.",
+      "Hey — I’m QAt. I can help you think through QA, product risk, test coverage, bugs, Jira handoff, and release readiness.",
       "",
-      "Ask me about risks, QA rules, terminology, source context, feature coverage, or what context is missing.",
-      "",
-      `Used Brain context: ${getUsedContextSummary(usedItems)}`,
-      missingContext.length ? `Missing Brain context: ${missingContext.join(", ")}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
+      "I’ll use Project Brain context when it helps, and I’ll call it out naturally when I’m giving general QA guidance instead of project-specific guidance.",
+    ].join("\n");
   }
 
   if (!contextBlock.trim()) {
     return [
-      "I do not have enough enabled Project Brain context to answer that yet.",
+      "I can still help with that as general QA guidance, but I don’t have enough saved Project Brain context to make it project-specific yet.",
       "",
-      missingContext.length
-        ? `Missing Brain context: ${missingContext.join(", ")}`
-        : "Missing Brain context: enabled Source Vault, QA rules, terminology, risks, or feature registry items.",
-      "",
-      "Add or enable more Brain context, then ask me again.",
+      missingContext.length ? `What would make this stronger: ${missingContext.join(", ")}.` : "Add Source Vault notes, QA rules, terminology, risks, or feature details and I’ll ground the answer more tightly next time.",
     ].join("\n");
   }
 
   return [
-    "I found relevant Project Brain context, but the LLM composer is unavailable right now.",
+    "I can help with that, but my live answer composer is unavailable right now.",
     "",
-    "Here is the safest grounded summary I can provide from the retrieved context:",
-    "",
+    "Based on the saved Project Brain context I found, here is the safest short read:",
     contextBlock.replace(/\s+/g, " ").trim().slice(0, 900),
-    "",
-    `Used Brain context: ${getUsedContextSummary(usedItems)}`,
-    missingContext.length ? `Missing Brain context: ${missingContext.join(", ")}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  ].join("\n");
 }
 
 export async function composeQAtAnswer(input: ComposeQAtAnswerInput): Promise<ComposeQAtAnswerResult> {
   const { question, contextBlock, usedItems, missingContext } = input;
 
   if (isGreetingOnly(question)) {
-    return {
-      answer: buildFallbackAnswer(input),
-    };
-  }
-
-  if (!contextBlock.trim()) {
     return {
       answer: buildFallbackAnswer(input),
     };
@@ -107,39 +72,42 @@ export async function composeQAtAnswer(input: ComposeQAtAnswerInput): Promise<Co
 
   const systemPrompt = [
     "You are QAt, the QA companion inside QAtalyst.",
-    "You answer using only the provided Project Brain context.",
-    "You are practical, concise, and QA-focused.",
-    "Do not invent project facts.",
-    "Do not answer from generic AI knowledge when the Brain context is missing.",
-    "If the Brain context is thin, say what is missing and what the user should add.",
-    "For risk questions, prioritize saved risks/hotspots and testing guidance.",
-    "For QA rule questions, prioritize saved QA rules.",
-    "For terminology questions, explain saved terms, aliases, and preferred usage.",
-    "For source/context questions, summarize what the Brain knows and what is missing.",
-    "Do not expose secrets, tokens, credentials, or integration keys.",
-    "Do not print raw context blocks unless the user explicitly asks for raw context.",    
+    "Act like a 20-year Senior QA Lead, producer-minded triage partner, and senior-developer-aware reviewer.",
+    "You are allowed to answer conversationally and helpfully like a specialized ChatGPT for QA/product work.",
+    "Use Project Brain context when it helps. Treat it as the source of project-specific truth.",
+    "If Project Brain does not contain enough project-specific context, still help with general QA/product/development guidance, but clearly and naturally say that it is general guidance, not something confirmed by the Brain.",
+    "Do not say 'retrieved context' or expose internal retrieval/debug mechanics.",
+    "Do not append debug footers, source lists, or missing-context lists unless the user asks what context you used.",
+    "Give one focused answer. Do not stack multiple answer styles together.",
+    "Be practical, direct, and conversational. Avoid robotic disclaimers.",
+    "For risk questions, use saved risks/hotspots first, then add general QA judgment if useful.",
+    "For QA rule questions, use saved QA rules first, then explain how to apply them.",
+    "For terminology questions, use saved terms, aliases, and preferred usage first.",
+    "For source/context questions, summarize what the Brain appears to know without dumping raw context.",
+    "Never reveal secrets, tokens, credentials, API keys, or integration keys. If asked, refuse briefly and offer a safe setup/help alternative.",
+    "Do not claim a project-specific fact unless it appears in Project Brain context or the user's question.",
   ].join("\n");
 
   const userPrompt = [
     "User question:",
     question,
     "",
-    "Retrieved Project Brain context:",
-    contextBlock,
+    "Project Brain context available to you:",
+    contextBlock.trim() || "No saved Project Brain context was retrieved for this question.",
     "",
-    "Retrieved item summary:",
+    "Internal context summary. Use only if helpful; do not print this as a footer:",
     getUsedContextSummary(usedItems),
     "",
-    "Missing context:",
+    "Known missing Brain context. Mention only if it directly improves the answer:",
     missingContext.length ? missingContext.join(", ") : "None detected.",
     "",
-    "Write a natural answer. Keep it grounded in the provided Brain context only.",
+    "Now answer as QAt in one natural conversational response.",
   ].join("\n");
 
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0.2,
+      temperature: 0.35,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
