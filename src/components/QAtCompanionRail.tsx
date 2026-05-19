@@ -36,6 +36,16 @@ type QAtCompanionChatMessage = {
   body: string;
 };
 
+type QAtWorkflowContext = {
+  page: "toolbelt" | "brain" | "integrations" | "unknown";
+  activeTool?: string;
+  workflowState?: string;
+  sourceInput?: string;
+  generatedOutput?: string;
+  followUpContext?: string;
+  setupState?: string;
+};
+
 type QAtChatResult = {
   answer: string;
   usedSources?: Array<{ id?: string; title: string; type?: string }>;
@@ -84,6 +94,30 @@ function formatChatAnswer(payload: QAtChatResult): string {
   return payload.answer || "QAt could not find an answer in Project Brain context yet.";
 }
 
+function compactText(value: string | null | undefined, maxCharacters = 6000): string {
+  const clean = String(value ?? "").replace(/\s+/g, " ").trim();
+  if (clean.length <= maxCharacters) return clean;
+  return `${clean.slice(0, maxCharacters).trim()}… [truncated]`;
+}
+
+function readText(selector: string, maxCharacters = 6000): string {
+  if (typeof document === "undefined") return "";
+  const element = document.querySelector(selector);
+  return compactText(element?.textContent ?? "", maxCharacters);
+}
+
+function readTextAreaValue(selector: string, maxCharacters = 6000): string {
+  if (typeof document === "undefined") return "";
+  const element = document.querySelector<HTMLTextAreaElement>(selector);
+  return compactText(element?.value ?? "", maxCharacters);
+}
+
+function readFollowUpContext(maxCharacters = 4000): string {
+  if (typeof document === "undefined") return "";
+  const sections = Array.from(document.querySelectorAll(".follow-up-answer-box, .followup-history-card"));
+  return compactText(sections.map((section) => section.textContent ?? "").join("\n\n"), maxCharacters);
+}
+
 export default function QAtCompanionRail({
   storageKey,
   eyebrow = "QAt Companion",
@@ -127,20 +161,76 @@ export default function QAtCompanionRail({
     });
   }
 
-  async function handleChatSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function buildContextualAsk(): { question: string; displayQuestion: string; workflowContext: QAtWorkflowContext } {
+    const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+    const isBrainPage = pathname.startsWith("/brain") || className.includes("brain");
+    const isIntegrationPage = pathname.includes("settings") || pathname.includes("integrations");
+    const activeTool = className.match(/qat-companion-panel-([a-z-]+)/)?.[1];
+    const workflowState = stateLabel || (readText("[data-testid='qa-output']", 200) ? "Reviewing" : "Waiting");
 
-    const question = chatInput.trim();
+    if (isBrainPage) {
+      const setupState = [
+        `Current Brain companion title: ${title}`,
+        `Current Brain companion guidance: ${body}`,
+        progressPercent !== undefined ? `Brain setup progress: ${progressPercent}%` : "",
+        steps.length ? `Setup steps: ${steps.map((step) => `${step.label}: ${step.complete ? "complete" : "missing"}${step.active ? " (active)" : ""}`).join("; ")}` : "",
+        signals.length ? `Signals: ${signals.map((signal) => `${signal.label}: ${signal.value ?? signal.state ?? "unknown"}`).join("; ")}` : "",
+        recommendations.length ? `Recommendations: ${recommendations.map((recommendation) => `${recommendation.label} - ${recommendation.body}`).join("; ")}` : "",
+        `Visible Brain section: ${readText(".brain-panel", 5000)}`,
+      ].filter(Boolean).join("\n");
 
-    if (!question) {
+      return {
+        question: "Review my current Project Brain setup and tell me the next best step.",
+        displayQuestion: "Ask QAt: review current Brain setup",
+        workflowContext: { page: "brain", workflowState, setupState: compactText(setupState, 9000) },
+      };
+    }
+
+    const sourceInput = readTextAreaValue("[data-testid='qa-source-input']", 7000);
+    const generatedOutput = readText("[data-testid='qa-output']", 9000);
+    const followUpContext = readFollowUpContext(5000);
+    const contextSummary = readText(".qa-context-used-line", 1000);
+    const outputExists = Boolean(generatedOutput && !generatedOutput.includes("No generated artifact yet"));
+    const inputExists = Boolean(sourceInput);
+    const question = outputExists
+      ? `Review my current ${title} output and tell me the most important QA risks, gaps, and next steps.`
+      : inputExists
+        ? `Review my current ${title} input before I run it. Tell me what looks risky, missing, or worth clarifying.`
+        : `Review my current ${title} workflow state and tell me what I should do next.`;
+
+    return {
+      question,
+      displayQuestion: `Ask QAt: review current ${activeTool ?? "workflow"}`,
+      workflowContext: {
+        page: isIntegrationPage ? "integrations" : "toolbelt",
+        activeTool: activeTool ?? title,
+        workflowState,
+        sourceInput,
+        generatedOutput,
+        followUpContext,
+        setupState: compactText([
+          `Companion title: ${title}`,
+          `Companion guidance: ${body}`,
+          contextSummary ? `Project context line: ${contextSummary}` : "",
+          tip ? `Current tip: ${tip.title} - ${tip.body}` : "",
+        ].filter(Boolean).join("\n"), 3000),
+      },
+    };
+  }
+
+  async function submitChatQuestion(question: string, options?: { displayQuestion?: string; workflowContext?: QAtWorkflowContext }) {
+    const cleanedQuestion = question.trim();
+
+    if (!cleanedQuestion) {
       chatInputRef.current?.focus();
       return;
     }
 
     const timestamp = Date.now();
     const fallbackAnswer = chatProjectId ? chatResponse : "Select a project before asking QAt.";
+    const displayQuestion = options?.displayQuestion?.trim() || cleanedQuestion;
 
-    setChatMessages((current) => [...current, { id: `user-${timestamp}`, role: "user", body: question }]);
+    setChatMessages((current) => [...current, { id: `user-${timestamp}`, role: "user", body: displayQuestion }]);
     setChatInput("");
 
     if (!chatProjectId) {
@@ -154,7 +244,7 @@ export default function QAtCompanionRail({
       const response = await fetch("/api/qat/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: chatProjectId, question }),
+        body: JSON.stringify({ projectId: chatProjectId, question: cleanedQuestion, workflowContext: options?.workflowContext }),
       });
       const payload = (await response.json().catch(() => null)) as ({ ok?: boolean; message?: string } & Partial<QAtChatResult>) | null;
 
@@ -188,6 +278,20 @@ export default function QAtCompanionRail({
     }
   }
 
+  async function handleChatSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await submitChatQuestion(chatInput);
+  }
+
+  async function handleContextualAsk() {
+    if (!chatEnabled) return;
+    const contextualAsk = buildContextualAsk();
+    await submitChatQuestion(contextualAsk.question, {
+      displayQuestion: contextualAsk.displayQuestion,
+      workflowContext: contextualAsk.workflowContext,
+    });
+  }
+
   if (isCollapsed) {
     return (
       <aside className={cx("qat-companion-rail", "qat-companion-rail-collapsed", className)} aria-label="QAt Companion minimized" data-testid="qat-companion-rail-collapsed">
@@ -212,19 +316,17 @@ export default function QAtCompanionRail({
       {chatEnabled ? (
         <section className="qat-companion-rail-chat" aria-label="QAt Box" data-testid="qat-companion-rail-chat">
           <div className="qat-companion-rail-chat-header">
-          <strong>{chatTitle}</strong>
-          {chatIntro ? <span>{chatIntro}</span> : null}
-        </div>
+            <strong>{chatTitle}</strong>
+            {chatIntro ? <span>{chatIntro}</span> : null}
+          </div>
 
           <div className="qat-companion-rail-chat-log" aria-live="polite" data-testid="qat-companion-rail-chat-log">
-            {chatMessages.length ? (
-              chatMessages.map((message) => (
-                <div key={message.id} className={cx("qat-companion-rail-chat-message", message.role === "assistant" ? "is-assistant" : "is-user")}>
-                  <small>{message.role === "assistant" ? "QAt" : "You"}</small>
-                  <p>{message.body}</p>
-                </div>
-              ))
-            ) : null}
+            {chatMessages.length ? chatMessages.map((message) => (
+              <div key={message.id} className={cx("qat-companion-rail-chat-message", message.role === "assistant" ? "is-assistant" : "is-user")}>
+                <small>{message.role === "assistant" ? "QAt" : "You"}</small>
+                <p>{message.body}</p>
+              </div>
+            )) : null}
             {isChatLoading ? <p className="qat-companion-rail-chat-empty">QAt is checking Project Brain context...</p> : null}
           </div>
 
@@ -269,7 +371,10 @@ export default function QAtCompanionRail({
 
       {recommendations.length ? <div className="qat-companion-rail-recommendations" data-testid="qat-companion-recommendations"><strong className="qat-companion-rail-section-label">{recommendationLabel}</strong>{recommendations.map((recommendation) => <button key={recommendation.label} type="button" className={recommendation.kind ? `is-${recommendation.kind}` : undefined} onClick={recommendation.onClick}><span>{recommendation.label}</span><small>{recommendation.body}</small></button>)}</div> : null}
 
-      {actions.length ? <div className="qat-companion-rail-actions" aria-label="QAt actions" data-testid="qat-companion-actions">{actions.map((action) => <button key={action.label} type="button" className={action.variant === "primary" ? "is-primary" : undefined} disabled={action.disabled} data-testid={`qat-action-${slugify(action.label)}`} onClick={action.onClick}>{action.label}</button>)}</div> : null}
+      {actions.length ? <div className="qat-companion-rail-actions" aria-label="QAt actions" data-testid="qat-companion-actions">{actions.map((action) => {
+        const isAskQAt = action.label.trim().toLowerCase() === "ask qat";
+        return <button key={action.label} type="button" className={action.variant === "primary" ? "is-primary" : undefined} disabled={action.disabled || (isAskQAt && isChatLoading)} data-testid={`qat-action-${slugify(action.label)}`} onClick={isAskQAt ? handleContextualAsk : action.onClick}>{isAskQAt && isChatLoading ? "Checking..." : action.label}</button>;
+      })}</div> : null}
 
       {tip ? <div className="qat-companion-rail-tip" data-testid="qat-companion-tip"><strong>{tip.title}</strong><span>{tip.body}</span></div> : null}
       {footer ? <div className="qat-companion-rail-footer">{footer}</div> : null}
