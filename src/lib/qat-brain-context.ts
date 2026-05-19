@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { buildProjectSourceContextBlock, listProjectSources } from "@/lib/project-sources";
+import { listProjectSources } from "@/lib/project-sources";
 
 export type QAtBrainContextItem = {
   kind: "source" | "rule" | "term" | "risk" | "feature";
@@ -40,26 +40,23 @@ function isLikelyPlaceholder(item: QAtBrainContextItem): boolean {
 
 function scoreItem(questionWords: string[], item: QAtBrainContextItem): number {
   const haystack = `${item.title}\n${item.type ?? ""}\n${item.text}`.toLowerCase();
-  const baseScore = item.kind === "source" ? 7 : item.kind === "risk" ? 3 : item.kind === "rule" ? 2 : 1;
-  const matchScore = questionWords.reduce((score, word) => score + (haystack.includes(word) ? 3 : 0), 0);
+  const baseScore = item.kind === "source" ? 20 : item.kind === "risk" ? 4 : item.kind === "rule" ? 3 : 2;
+  const matchScore = questionWords.reduce((score, word) => score + (haystack.includes(word) ? 5 : 0), 0);
   const sourceTypeBoost =
-    item.kind === "source" && /overview|product|strategy|requirements|spec|markdown|md|context|qatalyst|brain/i.test(`${item.title} ${item.type}`)
-      ? 8
+    item.kind === "source" && /overview|product|strategy|requirements|spec|markdown|md|context|qatalyst|brain|standards/i.test(`${item.title} ${item.type}`)
+      ? 15
       : 0;
-  const placeholderPenalty = isLikelyPlaceholder(item) ? 10 : 0;
+  const placeholderPenalty = isLikelyPlaceholder(item) ? 50 : 0;
 
   return baseScore + matchScore + sourceTypeBoost - placeholderPenalty;
 }
 
-function takeBoundedBlocks(
-  items: QAtBrainContextItem[],
-  maxCharacters: number
-): QAtBrainContextItem[] {
+function takeBoundedBlocks(items: QAtBrainContextItem[], maxCharacters: number): QAtBrainContextItem[] {
   const selected: QAtBrainContextItem[] = [];
   let used = 0;
 
   for (const item of items) {
-    const blockLength = item.text.length + item.title.length + 80;
+    const blockLength = item.text.length + item.title.length + 120;
 
     if (selected.length && used + blockLength > maxCharacters) {
       continue;
@@ -74,29 +71,14 @@ function takeBoundedBlocks(
   return selected;
 }
 
-function sourceItemsFromContext(
-  contextBlock: string,
-  sources: Array<{ id: string; title: string; sourceType: string }>
-): QAtBrainContextItem[] {
-  const blocks = contextBlock.split("\n\n---\n\n").filter(Boolean);
-
-  return blocks.map((block, index) => {
-    const source = sources[index];
-
-    return {
-      kind: "source",
-      id: source?.id,
-      title: source?.title ?? `Source ${index + 1}`,
-      type: source?.sourceType ?? "source",
-      text: block,
-    };
-  });
+function truncateSourceText(value: string, max = 5000): string {
+  const clean = value.trim();
+  if (clean.length <= max) return clean;
+  return `${clean.slice(0, max).trim()}\n\n[Source truncated for prompt budget.]`;
 }
 
 function asStringArray(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value.map((item) => String(item)).filter(Boolean)
-    : [];
+  return Array.isArray(value) ? value.map((item) => String(item)).filter(Boolean) : [];
 }
 
 export async function buildQAtBrainContext({
@@ -111,70 +93,37 @@ export async function buildQAtBrainContext({
   maxCharacters?: number;
 }): Promise<QAtBrainContextResult> {
   const sources = await listProjectSources(userId, projectId);
-
   const enabledSources = sources.filter((source) => source.isEnabled);
 
-  const sourceContextBlock = buildProjectSourceContextBlock(
-    enabledSources,
-    10000
-  );
-
   const [rules, terms, risks, features] = await Promise.all([
-    prisma.qAProjectRule
-      .findMany({
-        where: { projectId, isEnabled: true },
-        orderBy: { updatedAt: "desc" },
-        take: 20,
-      })
-      .catch(() => []),
-
-    prisma.qAProjectTerm
-      .findMany({
-        where: { projectId, isEnabled: true },
-        orderBy: { updatedAt: "desc" },
-        take: 20,
-      })
-      .catch(() => []),
-
-    prisma.qAProjectRisk
-      .findMany({
-        where: { projectId, isEnabled: true },
-        orderBy: { updatedAt: "desc" },
-        take: 20,
-      })
-      .catch(() => []),
-
-    prisma.qAProjectFeature
-      .findMany({
-        where: { projectId, isEnabled: true },
-        orderBy: { updatedAt: "desc" },
-        take: 20,
-      })
-      .catch(() => []),
+    prisma.qAProjectRule.findMany({ where: { projectId, isEnabled: true }, orderBy: { updatedAt: "desc" }, take: 20 }).catch(() => []),
+    prisma.qAProjectTerm.findMany({ where: { projectId, isEnabled: true }, orderBy: { updatedAt: "desc" }, take: 20 }).catch(() => []),
+    prisma.qAProjectRisk.findMany({ where: { projectId, isEnabled: true }, orderBy: { updatedAt: "desc" }, take: 20 }).catch(() => []),
+    prisma.qAProjectFeature.findMany({ where: { projectId, isEnabled: true }, orderBy: { updatedAt: "desc" }, take: 20 }).catch(() => []),
   ]);
 
-  const sourceItems = sourceItemsFromContext(
-    sourceContextBlock,
-    enabledSources.map((source) => ({
-      id: source.id,
-      title: source.title,
-      sourceType: source.sourceType,
-    }))
-  );
+  const sourceItems: QAtBrainContextItem[] = enabledSources.map((source) => ({
+    kind: "source",
+    id: source.id,
+    title: source.title,
+    type: source.sourceType,
+    text: [
+      `Source title: ${source.title}`,
+      `Source type: ${source.sourceType}`,
+      source.tags.length ? `Tags: ${source.tags.join(", ")}` : "",
+      "",
+      truncateSourceText(source.body),
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  }));
 
   const ruleItems: QAtBrainContextItem[] = rules.map((rule) => ({
     kind: "rule",
     id: rule.id,
     title: rule.title,
     type: `${rule.category} · ${rule.severity}`,
-    text: [
-      `QA Rule: ${rule.title}`,
-      `Category: ${rule.category}`,
-      `Severity: ${rule.severity}`,
-      `Applies to: ${asStringArray(rule.appliesTo).join(", ")}`,
-      "",
-      rule.body,
-    ].join("\n"),
+    text: [`QA Rule: ${rule.title}`, `Category: ${rule.category}`, `Severity: ${rule.severity}`, `Applies to: ${asStringArray(rule.appliesTo).join(", ")}`, "", rule.body].join("\n"),
   }));
 
   const termItems: QAtBrainContextItem[] = terms.map((term) => ({
@@ -182,18 +131,7 @@ export async function buildQAtBrainContext({
     id: term.id,
     title: term.term,
     type: term.category,
-    text: [
-      `Terminology: ${term.term}`,
-      `Category: ${term.category}`,
-      asStringArray(term.aliases).length
-        ? `Aliases: ${asStringArray(term.aliases).join(", ")}`
-        : "",
-      term.preferredUsage
-        ? `Preferred usage: ${term.preferredUsage}`
-        : "",
-      "",
-      term.definition,
-    ]
+    text: [`Terminology: ${term.term}`, `Category: ${term.category}`, asStringArray(term.aliases).length ? `Aliases: ${asStringArray(term.aliases).join(", ")}` : "", term.preferredUsage ? `Preferred usage: ${term.preferredUsage}` : "", "", term.definition]
       .filter(Boolean)
       .join("\n"),
   }));
@@ -203,21 +141,7 @@ export async function buildQAtBrainContext({
     id: risk.id,
     title: risk.title,
     type: `${risk.riskType} · ${risk.severity}`,
-    text: [
-      `Risk / Hotspot: ${risk.title}`,
-      `Area: ${risk.area}`,
-      `Risk type: ${risk.riskType}`,
-      `Severity: ${risk.severity}`,
-      `Likelihood: ${risk.likelihood}`,
-      asStringArray(risk.relatedTags).length
-        ? `Tags: ${asStringArray(risk.relatedTags).join(", ")}`
-        : "",
-      "",
-      risk.description,
-      risk.testingGuidance
-        ? `Testing guidance: ${risk.testingGuidance}`
-        : "",
-    ]
+    text: [`Risk / Hotspot: ${risk.title}`, `Area: ${risk.area}`, `Risk type: ${risk.riskType}`, `Severity: ${risk.severity}`, `Likelihood: ${risk.likelihood}`, asStringArray(risk.relatedTags).length ? `Tags: ${asStringArray(risk.relatedTags).join(", ")}` : "", "", risk.description, risk.testingGuidance ? `Testing guidance: ${risk.testingGuidance}` : ""]
       .filter(Boolean)
       .join("\n"),
   }));
@@ -227,83 +151,31 @@ export async function buildQAtBrainContext({
     id: feature.id,
     title: feature.name,
     type: feature.lifecycleState,
-    text: [
-      `Feature: ${feature.name}`,
-      `Area: ${feature.area}`,
-      `Lifecycle: ${feature.lifecycleState}`,
-      asStringArray(feature.dependencies).length
-        ? `Dependencies: ${asStringArray(feature.dependencies).join(", ")}`
-        : "",
-      asStringArray(feature.relatedTags).length
-        ? `Tags: ${asStringArray(feature.relatedTags).join(", ")}`
-        : "",
-      "",
-      feature.description,
-    ]
+    text: [`Feature: ${feature.name}`, `Area: ${feature.area}`, `Lifecycle: ${feature.lifecycleState}`, asStringArray(feature.dependencies).length ? `Dependencies: ${asStringArray(feature.dependencies).join(", ")}` : "", asStringArray(feature.relatedTags).length ? `Tags: ${asStringArray(feature.relatedTags).join(", ")}` : "", "", feature.description]
       .filter(Boolean)
       .join("\n"),
   }));
 
-  const allItems = [
-    ...sourceItems,
-    ...ruleItems,
-    ...termItems,
-    ...riskItems,
-    ...featureItems,
-  ];
-
+  const allItems = [...sourceItems, ...ruleItems, ...termItems, ...riskItems, ...featureItems];
   const questionWords = normalizeWords(question);
-
   const ranked = allItems
-    .map((item, index) => ({
-      item,
-      index,
-      score: scoreItem(questionWords, item),
-    }))
+    .map((item, index) => ({ item, index, score: scoreItem(questionWords, item) }))
     .sort((a, b) => b.score - a.score || a.index - b.index);
 
-  const relevant = ranked.some((entry) => entry.score > 0)
-    ? ranked.filter((entry) => entry.score > 0).map((entry) => entry.item)
-    : ranked.map((entry) => entry.item);
-
+  const relevant = ranked.some((entry) => entry.score > 0) ? ranked.filter((entry) => entry.score > 0).map((entry) => entry.item) : ranked.map((entry) => entry.item);
   const usedItems = takeBoundedBlocks(relevant, maxCharacters);
-
   const missingContext: string[] = [];
 
-  if (!enabledSources.length) {
-    missingContext.push("Enabled Source Vault context");
-  }
-
-  if (!ruleItems.length) {
-    missingContext.push("Enabled QA rules");
-  }
-
-  if (!termItems.length) {
-    missingContext.push("Enabled terminology");
-  }
-
-  if (!riskItems.length) {
-    missingContext.push("Enabled risks/hotspots");
-  }
-
-  if (!featureItems.length) {
-    missingContext.push("Enabled feature registry items");
-  }
+  if (!enabledSources.length) missingContext.push("Enabled Source Vault context");
+  if (!ruleItems.length) missingContext.push("Enabled QA rules");
+  if (!termItems.length) missingContext.push("Enabled terminology");
+  if (!riskItems.length) missingContext.push("Enabled risks/hotspots");
+  if (!featureItems.length) missingContext.push("Enabled feature registry items");
 
   return {
     contextBlock: usedItems
-      .map((item) =>
-        [
-          `[${item.kind.toUpperCase()}] ${item.title}`,
-          item.type ? `Type: ${item.type}` : "",
-          "",
-          item.text,
-        ]
-          .filter(Boolean)
-          .join("\n")
-      )
+      .map((item) => [`[${item.kind.toUpperCase()}] ${item.title}`, item.type ? `Type: ${item.type}` : "", "", item.text].filter(Boolean).join("\n"))
       .join("\n\n---\n\n"),
-
     usedItems,
     missingContext,
     totalEnabledItems: allItems.length,
