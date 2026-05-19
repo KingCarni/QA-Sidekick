@@ -81,22 +81,7 @@ function slugify(value: string) {
 }
 
 function formatChatAnswer(payload: QAtChatResult): string {
-  const sourceTitles = (payload.usedSources ?? [])
-    .map((source) => source.title)
-    .filter(Boolean)
-    .slice(0, 4);
-  const missingContext = (payload.missingContext ?? []).filter(Boolean);
-  const parts = [payload.answer || "QAt could not find an answer in Project Brain context yet."];
-
-  if (sourceTitles.length) {
-    parts.push(`Used Brain context: ${sourceTitles.join(", ")}.`);
-  }
-
-  if (missingContext.length) {
-    parts.push(`Missing context: ${missingContext.join(", ")}.`);
-  }
-
-  return parts.join("\n\n");
+  return payload.answer || "QAt could not find an answer in Project Brain context yet.";
 }
 
 export default function QAtCompanionRail({
@@ -119,9 +104,9 @@ export default function QAtCompanionRail({
   minimizedLabel = "QAt",
   chatEnabled = false,
   chatTitle = "QAt Box",
-  chatIntro = "Ask a project question. Full Project Brain answering is coming next.",
+  chatIntro = "Ask QAt about this project using saved Project Brain context.",
   chatPlaceholder = "Ask QAt about this project...",
-  chatResponse = "I can take the question. Project Brain answering will be wired in the next pass, so I won’t invent an answer yet.",
+  chatResponse = "I can take the question, but I need Project Brain context before I can answer safely.",
   chatProjectId = null,
 }: QAtCompanionRailProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
