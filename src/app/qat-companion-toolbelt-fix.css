@@ -69,3 +69,36 @@
   height: 68px !important;
   object-fit: contain !important;
 }
+
+/* QAS-198: flatten the old nested Ask QAt response-window feel. */
+.qat-companion-rail-chat {
+  order: 2 !important;
+  display: grid !important;
+  gap: 10px !important;
+  overflow: visible !important;
+}
+
+.qat-companion-rail-chat-log {
+  display: grid !important;
+  gap: 10px !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.qat-companion-rail-chat-message {
+  display: grid !important;
+  gap: 5px !important;
+  padding: 10px 11px !important;
+  border-radius: 13px !important;
+  box-shadow: none !important;
+}
+
+.qat-companion-rail-chat-message p {
+  margin: 0 !important;
+  white-space: pre-wrap !important;
+}
