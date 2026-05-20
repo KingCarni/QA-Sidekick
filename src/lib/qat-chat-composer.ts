@@ -97,7 +97,7 @@ function buildFallbackAnswer({ question, contextBlock, missingContext, workflowC
       hasOutput
         ? "From the current output, check for concrete repro/setup details, observable expected results, explicit risks/gaps, Jira/TestRail readiness, and any vague assertions that need tightening."
         : hasInput
-          ? "Before generating, check whether the input includes clear requirements, environment/setup details, acceptance criteria, user roles/data states, and enough evidence to avoid generic output. Suggested clarifying questions should be framed as questions to ask next, not as existing follow-up answers."
+          ? "Before generating, check whether the input includes clear requirements, environment/setup details, acceptance criteria, user roles/data states, and enough evidence to avoid generic output. Do not treat follow-up questions as available until a report has been generated."
           : "I do not see enough current input or generated output yet. Paste or generate the artifact first, then ask me to review it.",
     ].join("\n");
   }
@@ -152,11 +152,13 @@ export async function composeQAtAnswer(input: ComposeQAtAnswerInput): Promise<Co
     "Use Project Brain context as the source of saved project truth and supporting memory.",
     "If both current-screen context and Project Brain are present, analyze the current artifact first, then use Brain context to sharpen risks, terminology, and project-specific guidance.",
     "Understand the workflow phase. Pre-generation/source-input review means the user has not generated the QAtalyst artifact yet. Post-generation/generated-output review means the generated artifact exists and can be critiqued directly.",
-    "Never imply follow-up answers/questions already exist unless follow-up context is explicitly provided. In pre-generation review, say 'candidate follow-up questions to ask' or 'clarifying questions to add', not 'your follow-up questions are listed'.",
+    "CRITICAL: In pre-generation review, do not say follow-up questions are present, missing, removed, available, or generated. They are not available until after generation. You may say 'possible clarification to capture before generation' only if it is truly useful.",
+    "CRITICAL: Do not recommend checking or adding a Jira ticket link unless the current user context explicitly asks about Jira linking or Jira handoff. If the source was fetched from Jira, the Jira source is already known and this advice is redundant.",
+    "CRITICAL: Do not grill the user for severity or priority unless the current workflow context contains visible severity/priority inputs or the user explicitly asks. If these fields are not visible, say QAtalyst could benefit from severity/priority fields instead of asking the user to fill unavailable fields.",
     "If current-screen context is empty or thin, say what is missing and give the next best setup/action. Do not pretend you reviewed an artifact that was not provided.",
     "Do not give generic QA checklists when there is current input or output. Call out concrete issues, weak spots, missing fields, unclear assertions, weak repro steps, vague acceptance criteria, bad Jira/TestRail readiness, or automation blockers found in the provided context.",
-    "For Bug/Bug triage workflows, prioritize: repro steps, actual vs expected, environment, evidence, severity/priority, scope, regression likelihood, Jira handoff clarity, and missing developer-debug detail. If reviewing pre-generation input, do not demand generated bug report sections as if they already exist; describe the gaps that will weaken the generated bug report.",
-    "For Feature workflows, prioritize: acceptance criteria, user roles, states, permissions, edge cases, dependencies, missing decisions, candidate follow-up questions, and test planning readiness.",
+    "For Bug/Bug triage workflows, prioritize: repro steps, actual vs expected, environment, evidence, scope, regression likelihood, and missing developer-debug detail. If reviewing pre-generation input, do not demand generated bug report sections as if they already exist; describe the gaps that will weaken the generated bug report.",
+    "For Feature workflows, prioritize: acceptance criteria, user roles, states, permissions, edge cases, dependencies, missing decisions, candidate clarification questions, and test planning readiness.",
     "For Test coverage workflows, prioritize: coverage balance, preconditions, steps, expected results, data/state coverage, regression areas, duplicate/vague cases, and automation readiness.",
     "For Risk Review workflows, prioritize: likely failure areas, severity/likelihood, mitigation, release blockers, rollback/monitoring, and missing signals.",
     "For Brain page workflows, review setup completeness and recommend the next best setup step. Consider project selection, Source Vault, QA rules, terminology, risks/hotspots, feature registry, Jira, and TestRail.",
@@ -176,7 +178,7 @@ export async function composeQAtAnswer(input: ComposeQAtAnswerInput): Promise<Co
     "Workflow phase:",
     workflowPhase,
     "Follow-up context present:",
-    hasFollowUps ? "Yes. You may refer to provided follow-up answers/history." : "No. Do not imply follow-up answers/questions already exist; only suggest candidate questions to ask next.",
+    hasFollowUps ? "Yes. You may refer to provided follow-up answers/history." : "No. Do not mention generated follow-up questions. In pre-generation, only mention possible clarifications if they are truly necessary.",
     "",
     hasCurrentScreenContext
       ? "Current-screen workflow context. Analyze this first and be concrete:"
@@ -193,14 +195,14 @@ export async function composeQAtAnswer(input: ComposeQAtAnswerInput): Promise<Co
     missingContext.length ? missingContext.join(", ") : "None detected.",
     "",
     hasCurrentScreenContext
-      ? "Now answer as QAt. Be specific to the current workflow/artifact and phase. Avoid generic checklist advice unless the current context is empty."
+      ? "Now answer as QAt. Be specific to the current workflow/artifact and phase. Avoid generic checklist advice unless the current context is empty. Do not mention Jira links or generated follow-up questions unless explicitly relevant."
       : "Now answer as QAt in one natural conversational response.",
   ].join("\n");
 
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0.25,
+      temperature: 0.2,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
