@@ -77,14 +77,8 @@ function getFieldLabel(element: HTMLInputElement | HTMLTextAreaElement | HTMLSel
   return compactText(dataLabel || directLabel || ariaLabel || nearbyLabel || parentLabel || placeholder || element.name || element.id || "Field", 120);
 }
 function readControlValue(control: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): string {
-  if (control instanceof HTMLSelectElement) {
-    return control.value || control.options[control.selectedIndex]?.text || "";
-  }
-
-  if (control instanceof HTMLInputElement && (control.type === "checkbox" || control.type === "radio")) {
-    return control.checked ? "checked" : "unchecked";
-  }
-
+  if (control instanceof HTMLSelectElement) return control.value || control.options[control.selectedIndex]?.text || "";
+  if (control instanceof HTMLInputElement && (control.type === "checkbox" || control.type === "radio")) return control.checked ? "checked" : "unchecked";
   return control.value;
 }
 function readVisibleFormValues(maxCharacters = 7000): string {
@@ -97,8 +91,7 @@ function readVisibleFormValues(maxCharacters = 7000): string {
     if (control.closest(".qat-companion-rail")) continue;
     if (control instanceof HTMLInputElement && (control.type === "hidden" || control.type === "password")) continue;
     if (control.disabled) continue;
-    const rects = control.getClientRects();
-    if (!rects.length) continue;
+    if (!control.getClientRects().length) continue;
     const cleanValue = compactText(readControlValue(control), 800);
     if (!cleanValue) continue;
     const label = getFieldLabel(control);
@@ -135,8 +128,8 @@ function readBugFollowUpAnswerContext(maxCharacters = 6000): string {
     .map((card) => {
       const question = card.getAttribute("data-question") || card.querySelector("strong")?.textContent || "";
       const answer = card.querySelector<HTMLTextAreaElement>("textarea")?.value || "";
-      const resolution = card.querySelector<HTMLSelectElement>("select")?.value || "Commit";
-      if (!answer.trim() && resolution === "Commit") return "";
+      const resolution = card.dataset.resolution || "Open";
+      if (!answer.trim() && resolution !== "No more questions") return "";
       return [`Q: ${question.trim()}`, answer.trim() ? `A: ${answer.trim()}` : "A: Not answered yet", `Resolution: ${resolution}`].join("\n");
     })
     .filter(Boolean);
@@ -151,19 +144,12 @@ function getBugReportFollowUpQuestions(): string[] {
     const heading = section.querySelector("h3")?.textContent?.trim().toLowerCase();
     return heading === "follow-up questions";
   });
-
   if (!followUpCard) return [];
 
-  const listItems = Array.from(followUpCard.querySelectorAll("li"))
-    .map((item) => compactText(item.textContent ?? "", 500))
-    .filter(Boolean);
-
+  const listItems = Array.from(followUpCard.querySelectorAll("li")).map((item) => compactText(item.textContent ?? "", 500)).filter(Boolean);
   if (listItems.length) return listItems;
 
-  const text = compactText(followUpCard.textContent ?? "", 3000)
-    .replace(/^Follow-up Questions\s*/i, "")
-    .trim();
-
+  const text = compactText(followUpCard.textContent ?? "", 3000).replace(/^Follow-up Questions\s*/i, "").trim();
   if (!text || /^not specified\.?$/i.test(text) || /^no follow-up questions/i.test(text)) return [];
 
   return text
@@ -173,25 +159,60 @@ function getBugReportFollowUpQuestions(): string[] {
     .filter((item) => !/^not specified\.?$/i.test(item))
     .slice(0, 8);
 }
-function getQuestionSignature(questions: string[]): string {
-  return questions.map((question) => question.trim()).join("||");
-}
+function getQuestionSignature(questions: string[]): string { return questions.map((question) => question.trim()).join("||"); }
 function ensureFollowUpBoxPlacement(reportHeader: HTMLElement, box: HTMLElement) {
-  const savedNotice = reportHeader.nextElementSibling instanceof HTMLElement && reportHeader.nextElementSibling.classList.contains("saved-edit-notice")
-    ? reportHeader.nextElementSibling
-    : null;
+  const savedNotice = reportHeader.nextElementSibling instanceof HTMLElement && reportHeader.nextElementSibling.classList.contains("saved-edit-notice") ? reportHeader.nextElementSibling : null;
   const anchor = savedNotice ?? reportHeader;
+  if (anchor.nextElementSibling !== box) anchor.insertAdjacentElement("afterend", box);
+}
+function setNativeTextareaValue(textarea: HTMLTextAreaElement, value: string) {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
+  setter?.call(textarea, value);
+  textarea.dispatchEvent(new Event("input", { bubbles: true }));
+  textarea.dispatchEvent(new Event("change", { bubbles: true }));
+}
+function syncNativeBugFollowUp(question: string, answer: string, resolution: "Resolved" | "No more questions") {
+  const nativeCards = Array.from(document.querySelectorAll<HTMLElement>(".bug-followup-section .follow-up-question-card"));
+  const nativeCard = nativeCards.find((card) => compactText(card.querySelector("strong")?.textContent ?? "", 1000) === compactText(question, 1000));
+  if (!nativeCard) return;
 
-  if (anchor.nextElementSibling !== box) {
-    anchor.insertAdjacentElement("afterend", box);
-  }
+  const textarea = nativeCard.querySelector<HTMLTextAreaElement>("textarea");
+  if (textarea) setNativeTextareaValue(textarea, answer);
+
+  const targetButton = Array.from(nativeCard.querySelectorAll<HTMLButtonElement>("button")).find((button) => button.textContent?.trim() === resolution);
+  targetButton?.click();
+}
+function markFollowUpCommitted(card: HTMLElement, status: "Committed" | "No more questions") {
+  card.dataset.resolution = status;
+  card.classList.add(status === "Committed" ? "is-committed" : "is-closed");
+  card.querySelectorAll<HTMLButtonElement>(".qat-bug-followup-action").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.action === status);
+  });
+}
+function commitBugFollowUpAnswer(card: HTMLElement) {
+  const question = card.getAttribute("data-question") || card.querySelector("strong")?.textContent || "";
+  const answer = card.querySelector<HTMLTextAreaElement>("textarea")?.value.trim() || "";
+  if (!question.trim() || !answer) return;
+  syncNativeBugFollowUp(question, answer, "Resolved");
+  markFollowUpCommitted(card, "Committed");
+}
+function closeBugFollowUps(card: HTMLElement) {
+  const question = card.getAttribute("data-question") || card.querySelector("strong")?.textContent || "";
+  const answer = card.querySelector<HTMLTextAreaElement>("textarea")?.value.trim() || "";
+  if (question.trim()) syncNativeBugFollowUp(question, answer, "No more questions");
+  markFollowUpCommitted(card, "No more questions");
+}
+function hideNativeBugFollowUpSection() {
+  if (typeof document === "undefined") return;
+  document.querySelectorAll<HTMLElement>(".bug-followup-section").forEach((section) => {
+    section.setAttribute("aria-hidden", "true");
+    section.style.display = "none";
+  });
 }
 function injectBugSupplementalContextFields() {
   if (typeof document === "undefined") return;
   if (document.querySelector(".qat-bug-supplemental-context")) return;
-  const bugPanel = Array.from(document.querySelectorAll<HTMLElement>(".follow-up-answer-box")).find((section) =>
-    /refine bug context/i.test(section.textContent ?? "")
-  );
+  const bugPanel = Array.from(document.querySelectorAll<HTMLElement>(".follow-up-answer-box")).find((section) => /refine bug context/i.test(section.textContent ?? ""));
   if (!bugPanel) return;
   const evidencePanel = bugPanel.querySelector(".bug-evidence-panel, [data-testid='bug-evidence-panel']");
   const section = document.createElement("div");
@@ -200,39 +221,15 @@ function injectBugSupplementalContextFields() {
     <h4>Triage details</h4>
     <p class="bug-refine-help-text">Optional fields QAt and Bug Writer can use before generation.</p>
     <div class="bug-context-grid">
-      <label>Severity
-        <select data-qat-bug-extra="true" data-qat-label="Severity">
-          <option value="">Not selected</option>
-          <option value="Critical">Critical</option>
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
-        </select>
-      </label>
-      <label>Priority
-        <select data-qat-bug-extra="true" data-qat-label="Priority">
-          <option value="">Not selected</option>
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
-        </select>
-      </label>
-      <label>Expected result
-        <textarea data-qat-bug-extra="true" data-qat-label="Expected result" placeholder="What should happen instead?"></textarea>
-      </label>
-      <label>Actual result
-        <textarea data-qat-bug-extra="true" data-qat-label="Actual result" placeholder="What actually happens?"></textarea>
-      </label>
-      <label>Impact
-        <textarea data-qat-bug-extra="true" data-qat-label="Impact" placeholder="Who is affected and how bad is it?"></textarea>
-      </label>
+      <label>Severity<select data-qat-bug-extra="true" data-qat-label="Severity"><option value="">Not selected</option><option value="Critical">Critical</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></label>
+      <label>Priority<select data-qat-bug-extra="true" data-qat-label="Priority"><option value="">Not selected</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></label>
+      <label>Expected result<textarea data-qat-bug-extra="true" data-qat-label="Expected result" placeholder="What should happen instead?"></textarea></label>
+      <label>Actual result<textarea data-qat-bug-extra="true" data-qat-label="Actual result" placeholder="What actually happens?"></textarea></label>
+      <label>Impact<textarea data-qat-bug-extra="true" data-qat-label="Impact" placeholder="Who is affected and how bad is it?"></textarea></label>
     </div>
   `;
-  if (evidencePanel) {
-    bugPanel.insertBefore(section, evidencePanel);
-  } else {
-    bugPanel.appendChild(section);
-  }
+  if (evidencePanel) bugPanel.insertBefore(section, evidencePanel);
+  else bugPanel.appendChild(section);
 }
 function injectBugFollowUpAnswerBoxUnderReportHeader() {
   if (typeof document === "undefined") return;
@@ -249,23 +246,18 @@ function injectBugFollowUpAnswerBoxUnderReportHeader() {
     existing?.remove();
     return;
   }
-
   if (existing?.dataset.questionSignature === questionSignature) {
     ensureFollowUpBoxPlacement(reportHeader, existing);
     return;
   }
-
-  if (existing && existing.contains(document.activeElement)) {
-    return;
-  }
+  if (existing && existing.contains(document.activeElement)) return;
 
   const savedValues = new Map<string, { answer: string; resolution: string }>();
   existing?.querySelectorAll<HTMLElement>(".qat-bug-followup-answer-card").forEach((card) => {
     const question = card.getAttribute("data-question") || "";
-    const rawResolution = card.querySelector<HTMLSelectElement>("select")?.value || "Commit";
     savedValues.set(question, {
       answer: card.querySelector<HTMLTextAreaElement>("textarea")?.value || "",
-      resolution: rawResolution === "No more questions" ? "No more questions" : "Commit",
+      resolution: card.dataset.resolution || "Open",
     });
   });
 
@@ -274,30 +266,23 @@ function injectBugFollowUpAnswerBoxUnderReportHeader() {
   box.dataset.questionSignature = questionSignature;
   box.setAttribute("data-testid", "qat-bug-followup-answer-box");
   box.innerHTML = `
-    <div class="qat-bug-followup-answer-header">
-      <div>
-        <p class="report-kicker">Generated follow-ups</p>
-        <h3>Answer follow-up questions</h3>
-      </div>
-      <span>${questions.length} active</span>
-    </div>
-    <p class="field-text">Answer these, then run Re-improve Bug Report to fold the details back into the report.</p>
+    <div class="qat-bug-followup-answer-header"><div><p class="report-kicker">Generated follow-ups</p><h3>Answer follow-up questions</h3></div><span>${questions.length} active</span></div>
+    <p class="field-text">Answer these, then commit them into the report. Committing follow-up answers does not spend credits.</p>
     <div class="qat-bug-followup-answer-list">
       ${questions.map((question, index) => {
-        const saved = savedValues.get(question) ?? { answer: "", resolution: "Commit" };
+        const saved = savedValues.get(question) ?? { answer: "", resolution: "Open" };
         const escapedQuestion = question.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
         const escapedAnswer = saved.answer.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const statusClass = saved.resolution === "Committed" ? " is-committed" : saved.resolution === "No more questions" ? " is-closed" : "";
         return `
-          <article class="qat-bug-followup-answer-card" data-question="${escapedQuestion}">
+          <article class="qat-bug-followup-answer-card${statusClass}" data-question="${escapedQuestion}" data-resolution="${saved.resolution}">
             <span>Question ${index + 1}</span>
             <strong>${escapedQuestion}</strong>
-            <textarea placeholder="Answer this follow-up before re-improving...">${escapedAnswer}</textarea>
-            <label>Resolution
-              <select>
-                <option value="Commit"${saved.resolution === "Commit" ? " selected" : ""}>Commit</option>
-                <option value="No more questions"${saved.resolution === "No more questions" ? " selected" : ""}>No more questions</option>
-              </select>
-            </label>
+            <textarea placeholder="Answer this follow-up...">${escapedAnswer}</textarea>
+            <div class="qat-bug-followup-actions" aria-label="Follow-up actions">
+              <button class="qat-bug-followup-action qat-bug-followup-commit${saved.resolution === "Committed" ? " is-active" : ""}" data-action="Committed" type="button">Commit to report</button>
+              <button class="qat-bug-followup-action qat-bug-followup-close${saved.resolution === "No more questions" ? " is-active" : ""}" data-action="No more questions" type="button">No more questions</button>
+            </div>
           </article>
         `;
       }).join("")}
@@ -322,25 +307,28 @@ function patchBugWriterFetchOnce() {
           const body = JSON.parse(init.body) as { input?: unknown };
           const currentInput = String(body.input ?? "");
           const extraBlocks = [
-            supplementalContext && !currentInput.includes("SUPPLEMENTAL BUG TRIAGE FIELDS")
-              ? ["SUPPLEMENTAL BUG TRIAGE FIELDS - treat these as already answered if provided:", supplementalContext].join("\n")
-              : "",
-            followUpAnswerContext && !currentInput.includes("ANSWERED BUG FOLLOW-UP QUESTIONS FROM REPORT")
-              ? ["ANSWERED BUG FOLLOW-UP QUESTIONS FROM REPORT - use these to rebuild the report and do not repeat resolved questions:", followUpAnswerContext].join("\n")
-              : "",
+            supplementalContext && !currentInput.includes("SUPPLEMENTAL BUG TRIAGE FIELDS") ? ["SUPPLEMENTAL BUG TRIAGE FIELDS - treat these as already answered if provided:", supplementalContext].join("\n") : "",
+            followUpAnswerContext && !currentInput.includes("ANSWERED BUG FOLLOW-UP QUESTIONS FROM REPORT") ? ["ANSWERED BUG FOLLOW-UP QUESTIONS FROM REPORT - use these to rebuild the report and do not repeat resolved questions:", followUpAnswerContext].join("\n") : "",
           ].filter(Boolean);
-
           if (extraBlocks.length) {
             body.input = [currentInput, "", ...extraBlocks].join("\n\n");
             init = { ...init, body: JSON.stringify(body) };
           }
-        } catch {
-          // Keep original request if the body is not JSON.
-        }
+        } catch {}
       }
     }
     return win.__qatalystOriginalFetch ? win.__qatalystOriginalFetch(input, init) : fetch(input, init);
   };
+}
+function handleBugFollowUpClick(event: MouseEvent) {
+  const target = event.target instanceof HTMLElement ? event.target : null;
+  const button = target?.closest<HTMLButtonElement>(".qat-bug-followup-action");
+  if (!button) return;
+  const card = button.closest<HTMLElement>(".qat-bug-followup-answer-card");
+  if (!card) return;
+  event.preventDefault();
+  if (button.dataset.action === "No more questions") closeBugFollowUps(card);
+  else commitBugFollowUpAnswer(card);
 }
 
 export default function QAtCompanionRail({
@@ -378,13 +366,19 @@ export default function QAtCompanionRail({
   useEffect(() => {
     if (!className.includes("qat-companion-panel-bug")) return;
     injectBugSupplementalContextFields();
+    hideNativeBugFollowUpSection();
     injectBugFollowUpAnswerBoxUnderReportHeader();
     patchBugWriterFetchOnce();
+    document.addEventListener("click", handleBugFollowUpClick);
     const intervalId = window.setInterval(() => {
       injectBugSupplementalContextFields();
+      hideNativeBugFollowUpSection();
       injectBugFollowUpAnswerBoxUnderReportHeader();
     }, 1000);
-    return () => window.clearInterval(intervalId);
+    return () => {
+      document.removeEventListener("click", handleBugFollowUpClick);
+      window.clearInterval(intervalId);
+    };
   }, [className]);
 
   function toggleCollapsed() {
