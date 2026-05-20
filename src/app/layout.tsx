@@ -3,6 +3,7 @@ import "./globals.css";
 import "./qat-companion-rail.css";
 import "./qat-companion-toolbelt-fix.css";
 import "./qat-full-mascot-override.css";
+import "./bug-report-action-cleanup.css";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
