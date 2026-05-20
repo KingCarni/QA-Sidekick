@@ -76,6 +76,17 @@ function getFieldLabel(element: HTMLInputElement | HTMLTextAreaElement | HTMLSel
   const nearbyLabel = fieldGroup?.querySelector(".field-label, .input-label, span, small")?.textContent;
   return compactText(dataLabel || directLabel || ariaLabel || nearbyLabel || parentLabel || placeholder || element.name || element.id || "Field", 120);
 }
+function readControlValue(control: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): string {
+  if (control instanceof HTMLSelectElement) {
+    return control.value || control.options[control.selectedIndex]?.text || "";
+  }
+
+  if (control instanceof HTMLInputElement && (control.type === "checkbox" || control.type === "radio")) {
+    return control.checked ? "checked" : "unchecked";
+  }
+
+  return control.value;
+}
 function readVisibleFormValues(maxCharacters = 7000): string {
   if (typeof document === "undefined") return "";
   const controls = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>("input, textarea, select"));
@@ -84,15 +95,11 @@ function readVisibleFormValues(maxCharacters = 7000): string {
 
   for (const control of controls) {
     if (control.closest(".qat-companion-rail")) continue;
-    if (control.type === "hidden" || control.type === "password" || control.disabled) continue;
+    if (control instanceof HTMLInputElement && (control.type === "hidden" || control.type === "password")) continue;
+    if (control.disabled) continue;
     const rects = control.getClientRects();
     if (!rects.length) continue;
-    const value = control instanceof HTMLSelectElement
-      ? control.value || control.options[control.selectedIndex]?.text || ""
-      : control.type === "checkbox" || control.type === "radio"
-        ? control.checked ? "checked" : "unchecked"
-        : control.value;
-    const cleanValue = compactText(value, 800);
+    const cleanValue = compactText(readControlValue(control), 800);
     if (!cleanValue) continue;
     const label = getFieldLabel(control);
     const row = `${label}: ${cleanValue}`;
@@ -115,7 +122,7 @@ function readBugSupplementalContext(maxCharacters = 5000): string {
   const rows = fields
     .map((field) => {
       const label = getFieldLabel(field);
-      const value = field instanceof HTMLSelectElement ? field.value : field.value;
+      const value = readControlValue(field);
       return value.trim() ? `${label}: ${value.trim()}` : "";
     })
     .filter(Boolean);
