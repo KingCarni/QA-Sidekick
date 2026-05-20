@@ -176,6 +176,30 @@ function injectBugSupplementalContextFields() {
     bugPanel.appendChild(section);
   }
 }
+function moveBugFollowUpQuestionsUnderReportHeader() {
+  if (typeof document === "undefined") return;
+  const reportWrap = document.querySelector<HTMLElement>(".bug-report-wrap");
+  if (!reportWrap) return;
+
+  const reportHeader = reportWrap.querySelector<HTMLElement>(".report-header");
+  const followUpCard = Array.from(reportWrap.querySelectorAll<HTMLElement>(".bug-section-card")).find((section) => {
+    const heading = section.querySelector("h3")?.textContent?.trim().toLowerCase();
+    return heading === "follow-up questions";
+  });
+
+  if (!reportHeader || !followUpCard) return;
+
+  followUpCard.classList.add("bug-followup-priority-card");
+
+  const savedNotice = reportHeader.nextElementSibling instanceof HTMLElement && reportHeader.nextElementSibling.classList.contains("saved-edit-notice")
+    ? reportHeader.nextElementSibling
+    : null;
+  const anchor = savedNotice ?? reportHeader;
+
+  if (anchor.nextElementSibling !== followUpCard) {
+    anchor.insertAdjacentElement("afterend", followUpCard);
+  }
+}
 function patchBugWriterFetchOnce() {
   if (typeof window === "undefined") return;
   const win = window as QAtalystWindow;
@@ -243,8 +267,12 @@ export default function QAtCompanionRail({
   useEffect(() => {
     if (!className.includes("qat-companion-panel-bug")) return;
     injectBugSupplementalContextFields();
+    moveBugFollowUpQuestionsUnderReportHeader();
     patchBugWriterFetchOnce();
-    const intervalId = window.setInterval(injectBugSupplementalContextFields, 1000);
+    const intervalId = window.setInterval(() => {
+      injectBugSupplementalContextFields();
+      moveBugFollowUpQuestionsUnderReportHeader();
+    }, 1000);
     return () => window.clearInterval(intervalId);
   }, [className]);
 
