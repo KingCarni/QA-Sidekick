@@ -1,9 +1,17 @@
+.bug-report-wrap .report-header {
+  display: grid !important;
+  grid-template-columns: minmax(280px, 1fr) !important;
+  gap: 18px !important;
+  align-items: start !important;
+}
+
 .bug-report-wrap .report-action-stack {
   display: grid !important;
-  grid-template-columns: repeat(5, minmax(140px, 1fr)) !important;
+  grid-template-columns: repeat(5, minmax(126px, 1fr)) !important;
   gap: 12px !important;
   width: 100% !important;
   align-items: stretch !important;
+  justify-self: stretch !important;
 }
 
 .bug-report-wrap .report-actions,
@@ -49,14 +57,14 @@
 .bug-report-wrap .qat-bug-followup-answer-card label {
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important;
+  justify-content: flex-start !important;
   gap: 12px !important;
   margin-top: 12px !important;
 }
 
 .bug-report-wrap .qat-bug-followup-answer-card select {
   width: 220px !important;
-  margin-left: auto !important;
+  margin-left: 0 !important;
 }
 
 @media (max-width: 1100px) {
