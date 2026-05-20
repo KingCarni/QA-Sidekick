@@ -173,6 +173,19 @@ function getBugReportFollowUpQuestions(): string[] {
     .filter((item) => !/^not specified\.?$/i.test(item))
     .slice(0, 8);
 }
+function getQuestionSignature(questions: string[]): string {
+  return questions.map((question) => question.trim()).join("||");
+}
+function ensureFollowUpBoxPlacement(reportHeader: HTMLElement, box: HTMLElement) {
+  const savedNotice = reportHeader.nextElementSibling instanceof HTMLElement && reportHeader.nextElementSibling.classList.contains("saved-edit-notice")
+    ? reportHeader.nextElementSibling
+    : null;
+  const anchor = savedNotice ?? reportHeader;
+
+  if (anchor.nextElementSibling !== box) {
+    anchor.insertAdjacentElement("afterend", box);
+  }
+}
 function injectBugSupplementalContextFields() {
   if (typeof document === "undefined") return;
   if (document.querySelector(".qat-bug-supplemental-context")) return;
@@ -229,10 +242,20 @@ function injectBugFollowUpAnswerBoxUnderReportHeader() {
   if (!reportHeader) return;
 
   const questions = getBugReportFollowUpQuestions();
+  const questionSignature = getQuestionSignature(questions);
   const existing = reportWrap.querySelector<HTMLElement>(".qat-bug-followup-answer-box");
 
   if (!questions.length) {
     existing?.remove();
+    return;
+  }
+
+  if (existing?.dataset.questionSignature === questionSignature) {
+    ensureFollowUpBoxPlacement(reportHeader, existing);
+    return;
+  }
+
+  if (existing && existing.contains(document.activeElement)) {
     return;
   }
 
@@ -247,6 +270,7 @@ function injectBugFollowUpAnswerBoxUnderReportHeader() {
 
   const box = existing ?? document.createElement("section");
   box.className = "bug-section-card qat-bug-followup-answer-box";
+  box.dataset.questionSignature = questionSignature;
   box.setAttribute("data-testid", "qat-bug-followup-answer-box");
   box.innerHTML = `
     <div class="qat-bug-followup-answer-header">
@@ -280,14 +304,7 @@ function injectBugFollowUpAnswerBoxUnderReportHeader() {
     </div>
   `;
 
-  const savedNotice = reportHeader.nextElementSibling instanceof HTMLElement && reportHeader.nextElementSibling.classList.contains("saved-edit-notice")
-    ? reportHeader.nextElementSibling
-    : null;
-  const anchor = savedNotice ?? reportHeader;
-
-  if (anchor.nextElementSibling !== box) {
-    anchor.insertAdjacentElement("afterend", box);
-  }
+  ensureFollowUpBoxPlacement(reportHeader, box);
 }
 function patchBugWriterFetchOnce() {
   if (typeof window === "undefined") return;
