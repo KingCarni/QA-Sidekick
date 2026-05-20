@@ -15,7 +15,7 @@
 
 .bug-report-wrap .report-action-stack {
   display: grid !important;
-  grid-template-columns: repeat(5, minmax(118px, 1fr)) !important;
+  grid-template-columns: repeat(3, minmax(150px, 1fr)) !important;
   gap: 12px !important;
   width: 100% !important;
   max-width: 100% !important;
@@ -124,12 +124,6 @@
 .bug-report-wrap .qat-bug-followup-answer-card.is-closed .qat-bug-followup-close {
   border-color: rgba(96, 165, 250, 0.7) !important;
   background: linear-gradient(135deg, #2563eb, #1e3a8a) !important;
-}
-
-@media (max-width: 1200px) {
-  .bug-report-wrap .report-action-stack {
-    grid-template-columns: repeat(3, minmax(140px, 1fr)) !important;
-  }
 }
 
 @media (max-width: 850px) {
