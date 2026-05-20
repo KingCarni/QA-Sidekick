@@ -157,3 +157,21 @@
 .qat-bug-supplemental-context .bug-context-grid {
   gap: 12px !important;
 }
+
+.qat-bug-supplemental-context select {
+  color: #f8fafc !important;
+  background-color: #020617 !important;
+  border-color: rgba(148, 163, 184, 0.32) !important;
+  color-scheme: dark !important;
+}
+
+.qat-bug-supplemental-context select option {
+  color: #f8fafc !important;
+  background-color: #020617 !important;
+}
+
+.qat-bug-supplemental-context select option:checked,
+.qat-bug-supplemental-context select option:hover {
+  color: #ffffff !important;
+  background-color: #1d4ed8 !important;
+}
