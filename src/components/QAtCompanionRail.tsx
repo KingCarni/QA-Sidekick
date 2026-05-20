@@ -55,6 +55,43 @@ function readTextAreaValue(selector: string, maxCharacters = 6000): string {
   const element = document.querySelector<HTMLTextAreaElement>(selector);
   return compactText(element?.value ?? "", maxCharacters);
 }
+function getFieldLabel(element: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): string {
+  const directLabel = element.labels?.[0]?.textContent;
+  const ariaLabel = element.getAttribute("aria-label");
+  const placeholder = element.getAttribute("placeholder");
+  const parentLabel = element.closest("label")?.textContent;
+  const fieldGroup = element.closest(".field, .form-field, .input-group, .bug-context-field, .bug-context-row, .qa-field");
+  const nearbyLabel = fieldGroup?.querySelector("label, .field-label, .input-label, span, small")?.textContent;
+  return compactText(directLabel || ariaLabel || nearbyLabel || parentLabel || placeholder || element.name || element.id || "Field", 120);
+}
+function readVisibleFormValues(maxCharacters = 7000): string {
+  if (typeof document === "undefined") return "";
+  const controls = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>("input, textarea, select"));
+  const rows: string[] = [];
+  const seen = new Set<string>();
+
+  for (const control of controls) {
+    if (control.closest(".qat-companion-rail")) continue;
+    if (control.type === "hidden" || control.type === "password" || control.disabled) continue;
+    const rects = control.getClientRects();
+    if (!rects.length) continue;
+    const value = control instanceof HTMLSelectElement
+      ? control.options[control.selectedIndex]?.text || control.value
+      : control.type === "checkbox" || control.type === "radio"
+        ? control.checked ? "checked" : "unchecked"
+        : control.value;
+    const cleanValue = compactText(value, 800);
+    if (!cleanValue) continue;
+    const label = getFieldLabel(control).replace(cleanValue, "").trim() || getFieldLabel(control);
+    const row = `${label}: ${cleanValue}`;
+    if (seen.has(row)) continue;
+    seen.add(row);
+    rows.push(row);
+    if (rows.join("\n").length >= maxCharacters) break;
+  }
+
+  return compactText(rows.join("\n"), maxCharacters);
+}
 function readFollowUpContext(maxCharacters = 4000): string {
   if (typeof document === "undefined") return "";
   const sections = Array.from(document.querySelectorAll(".follow-up-answer-box, .followup-history-card"));
@@ -118,6 +155,7 @@ export default function QAtCompanionRail({
         signals.length ? `Signals: ${signals.map((signal) => `${signal.label}: ${signal.value ?? signal.state ?? "unknown"}`).join("; ")}` : "",
         recommendations.length ? `Recommendations: ${recommendations.map((recommendation) => `${recommendation.label} - ${recommendation.body}`).join("; ")}` : "",
         `Visible Brain section: ${readText(".brain-panel", 5000)}`,
+        `Visible form values: ${readVisibleFormValues(4000)}`,
       ].filter(Boolean).join("\n");
       return { question: "Review my current Project Brain setup and tell me the next best step.", displayQuestion: "Ask QAt: review current Brain setup", workflowContext: { page: "brain", workflowState, setupState: compactText(setupState, 9000) } };
     }
@@ -126,8 +164,9 @@ export default function QAtCompanionRail({
     const generatedOutput = readText("[data-testid='qa-output']", 9000);
     const followUpContext = readFollowUpContext(5000);
     const contextSummary = readText(".qa-context-used-line", 1000);
+    const liveFormValues = readVisibleFormValues(7000);
     const outputExists = Boolean(generatedOutput && !generatedOutput.includes("No generated artifact yet"));
-    const inputExists = Boolean(sourceInput);
+    const inputExists = Boolean(sourceInput || liveFormValues);
     const question = outputExists
       ? `Review my current ${title} output and tell me the most important QA risks, gaps, and next steps.`
       : inputExists
@@ -141,7 +180,7 @@ export default function QAtCompanionRail({
         page: isIntegrationPage ? "integrations" : "toolbelt",
         activeTool: activeTool ?? title,
         workflowState,
-        sourceInput,
+        sourceInput: compactText([sourceInput, liveFormValues ? `Live form/refinement values:\n${liveFormValues}` : ""].filter(Boolean).join("\n\n"), 12000),
         generatedOutput,
         followUpContext,
         setupState: compactText([
