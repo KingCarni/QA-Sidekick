@@ -32,25 +32,11 @@
   object-fit: contain !important;
 }
 
-.qat-companion-panel .qat-companion-copy {
-  order: 1 !important;
-}
-
-.qat-companion-panel .qat-companion-topline {
-  order: 2 !important;
-}
-
-.qat-companion-panel .qat-companion-signals {
-  order: 3 !important;
-}
-
-.qat-companion-panel .qat-companion-actions {
-  order: 4 !important;
-}
-
-.qat-companion-panel .qat-companion-tip {
-  display: none !important;
-}
+.qat-companion-panel .qat-companion-copy { order: 1 !important; }
+.qat-companion-panel .qat-companion-topline { order: 2 !important; }
+.qat-companion-panel .qat-companion-signals { order: 3 !important; }
+.qat-companion-panel .qat-companion-actions { order: 4 !important; }
+.qat-companion-panel .qat-companion-tip, .qat-companion-rail-tip { display: none !important; }
 
 .qat-companion-panel .qat-companion-copy h3 {
   font-size: 1.48rem !important;
@@ -70,19 +56,20 @@
   object-fit: contain !important;
 }
 
-/* QAS-198/QAS-199: keep QAt Box clean while preventing endless rail growth. */
 .qat-companion-rail-chat {
   order: 2 !important;
   display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
   gap: 10px !important;
   max-height: 430px !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 .qat-companion-rail-chat-log {
   display: grid !important;
+  align-content: start !important;
   gap: 10px !important;
-  max-height: 285px !important;
+  max-height: 245px !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   padding: 0 6px 0 0 !important;
@@ -91,6 +78,19 @@
   background: transparent !important;
   box-shadow: none !important;
   scrollbar-width: thin !important;
+}
+
+.qat-companion-rail-chat-form {
+  display: grid !important;
+  gap: 9px !important;
+}
+
+.qat-companion-rail-chat-submit {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 40px !important;
 }
 
 .qat-companion-rail-chat-message {
