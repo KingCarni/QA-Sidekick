@@ -97,7 +97,7 @@ function buildFallbackAnswer({ question, contextBlock, missingContext, workflowC
       hasOutput
         ? "From the current output, check for concrete repro/setup details, observable expected results, explicit risks/gaps, Jira/TestRail readiness, and any vague assertions that need tightening."
         : hasInput
-          ? "Before generating, check whether the input includes clear requirements, environment/setup details, acceptance criteria, user roles/data states, and enough evidence to avoid generic output."
+          ? "Before generating, check whether the input includes clear requirements, environment/setup details, acceptance criteria, user roles/data states, and enough evidence to avoid generic output. Suggested clarifying questions should be framed as questions to ask next, not as existing follow-up answers."
           : "I do not see enough current input or generated output yet. Paste or generate the artifact first, then ask me to review it.",
     ].join("\n");
   }
@@ -138,6 +138,10 @@ export async function composeQAtAnswer(input: ComposeQAtAnswerInput): Promise<Co
   });
 
   const hasCurrentScreenContext = hasWorkflowContext(workflowContext);
+  const hasGeneratedOutput = Boolean(cleanInline(workflowContext?.generatedOutput));
+  const hasSourceInput = Boolean(cleanInline(workflowContext?.sourceInput));
+  const hasFollowUps = Boolean(cleanInline(workflowContext?.followUpContext));
+  const workflowPhase = hasGeneratedOutput ? "post-generation/generated-output review" : hasSourceInput ? "pre-generation/source-input review" : "empty/thin workflow review";
   const workflowContextBlock = buildWorkflowContextBlock(workflowContext);
 
   const systemPrompt = [
@@ -147,10 +151,12 @@ export async function composeQAtAnswer(input: ComposeQAtAnswerInput): Promise<Co
     "Use current-screen workflow context as the primary evidence when it is provided.",
     "Use Project Brain context as the source of saved project truth and supporting memory.",
     "If both current-screen context and Project Brain are present, analyze the current artifact first, then use Brain context to sharpen risks, terminology, and project-specific guidance.",
+    "Understand the workflow phase. Pre-generation/source-input review means the user has not generated the QAtalyst artifact yet. Post-generation/generated-output review means the generated artifact exists and can be critiqued directly.",
+    "Never imply follow-up answers/questions already exist unless follow-up context is explicitly provided. In pre-generation review, say 'candidate follow-up questions to ask' or 'clarifying questions to add', not 'your follow-up questions are listed'.",
     "If current-screen context is empty or thin, say what is missing and give the next best setup/action. Do not pretend you reviewed an artifact that was not provided.",
     "Do not give generic QA checklists when there is current input or output. Call out concrete issues, weak spots, missing fields, unclear assertions, weak repro steps, vague acceptance criteria, bad Jira/TestRail readiness, or automation blockers found in the provided context.",
-    "For Bug/Bug triage workflows, prioritize: repro steps, actual vs expected, environment, evidence, severity/priority, scope, regression likelihood, Jira handoff clarity, and missing developer-debug detail.",
-    "For Feature workflows, prioritize: acceptance criteria, user roles, states, permissions, edge cases, dependencies, missing decisions, follow-up questions, and test planning readiness.",
+    "For Bug/Bug triage workflows, prioritize: repro steps, actual vs expected, environment, evidence, severity/priority, scope, regression likelihood, Jira handoff clarity, and missing developer-debug detail. If reviewing pre-generation input, do not demand generated bug report sections as if they already exist; describe the gaps that will weaken the generated bug report.",
+    "For Feature workflows, prioritize: acceptance criteria, user roles, states, permissions, edge cases, dependencies, missing decisions, candidate follow-up questions, and test planning readiness.",
     "For Test coverage workflows, prioritize: coverage balance, preconditions, steps, expected results, data/state coverage, regression areas, duplicate/vague cases, and automation readiness.",
     "For Risk Review workflows, prioritize: likely failure areas, severity/likelihood, mitigation, release blockers, rollback/monitoring, and missing signals.",
     "For Brain page workflows, review setup completeness and recommend the next best setup step. Consider project selection, Source Vault, QA rules, terminology, risks/hotspots, feature registry, Jira, and TestRail.",
@@ -167,6 +173,11 @@ export async function composeQAtAnswer(input: ComposeQAtAnswerInput): Promise<Co
     "User question:",
     question,
     "",
+    "Workflow phase:",
+    workflowPhase,
+    "Follow-up context present:",
+    hasFollowUps ? "Yes. You may refer to provided follow-up answers/history." : "No. Do not imply follow-up answers/questions already exist; only suggest candidate questions to ask next.",
+    "",
     hasCurrentScreenContext
       ? "Current-screen workflow context. Analyze this first and be concrete:"
       : "Current-screen workflow context:",
@@ -182,7 +193,7 @@ export async function composeQAtAnswer(input: ComposeQAtAnswerInput): Promise<Co
     missingContext.length ? missingContext.join(", ") : "None detected.",
     "",
     hasCurrentScreenContext
-      ? "Now answer as QAt. Be specific to the current workflow/artifact. Avoid generic checklist advice unless the current context is empty."
+      ? "Now answer as QAt. Be specific to the current workflow/artifact and phase. Avoid generic checklist advice unless the current context is empty."
       : "Now answer as QAt in one natural conversational response.",
   ].join("\n");
 
