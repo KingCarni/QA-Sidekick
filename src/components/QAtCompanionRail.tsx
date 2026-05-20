@@ -304,6 +304,10 @@ export default function QAtCompanionRail({
   }
 
   const safeProgress = Math.max(0, Math.min(100, Number(progressPercent ?? 0)));
+  const visibleActions = actions.filter((action) => {
+    const label = action.label.trim().toLowerCase();
+    return label !== "ask qat" && label !== "open brain";
+  });
 
   return (
     <aside className={cx("qat-companion-rail", className)} aria-label="QAt Companion" data-testid="qat-companion-rail">
@@ -350,6 +354,15 @@ export default function QAtCompanionRail({
             <button className="qat-companion-rail-chat-submit" type="submit" data-testid="qat-companion-rail-chat-submit" disabled={isChatLoading}>
               {isChatLoading ? "Checking..." : "Send"}
             </button>
+            <button
+              className="qat-companion-rail-contextual-ask"
+              type="button"
+              data-testid="qat-companion-rail-contextual-ask"
+              disabled={isChatLoading}
+              onClick={handleContextualAsk}
+            >
+              {isChatLoading ? "Checking..." : "Ask QAt"}
+            </button>
           </form>
         </section>
       ) : null}
@@ -371,10 +384,9 @@ export default function QAtCompanionRail({
 
       {recommendations.length ? <div className="qat-companion-rail-recommendations" data-testid="qat-companion-recommendations"><strong className="qat-companion-rail-section-label">{recommendationLabel}</strong>{recommendations.map((recommendation) => <button key={recommendation.label} type="button" className={recommendation.kind ? `is-${recommendation.kind}` : undefined} onClick={recommendation.onClick}><span>{recommendation.label}</span><small>{recommendation.body}</small></button>)}</div> : null}
 
-      {actions.length ? <div className="qat-companion-rail-actions" aria-label="QAt actions" data-testid="qat-companion-actions">{actions.map((action) => {
-        const isAskQAt = action.label.trim().toLowerCase() === "ask qat";
-        return <button key={action.label} type="button" className={action.variant === "primary" ? "is-primary" : undefined} disabled={action.disabled || (isAskQAt && isChatLoading)} data-testid={`qat-action-${slugify(action.label)}`} onClick={isAskQAt ? handleContextualAsk : action.onClick}>{isAskQAt && isChatLoading ? "Checking..." : action.label}</button>;
-      })}</div> : null}
+      {visibleActions.length ? <div className="qat-companion-rail-actions" aria-label="QAt actions" data-testid="qat-companion-actions">{visibleActions.map((action) => (
+        <button key={action.label} type="button" className={action.variant === "primary" ? "is-primary" : undefined} disabled={action.disabled} data-testid={`qat-action-${slugify(action.label)}`} onClick={action.onClick}>{action.label}</button>
+      ))}</div> : null}
 
       {tip ? <div className="qat-companion-rail-tip" data-testid="qat-companion-tip"><strong>{tip.title}</strong><span>{tip.body}</span></div> : null}
       {footer ? <div className="qat-companion-rail-footer">{footer}</div> : null}
