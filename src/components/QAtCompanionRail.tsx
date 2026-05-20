@@ -135,8 +135,8 @@ function readBugFollowUpAnswerContext(maxCharacters = 6000): string {
     .map((card) => {
       const question = card.getAttribute("data-question") || card.querySelector("strong")?.textContent || "";
       const answer = card.querySelector<HTMLTextAreaElement>("textarea")?.value || "";
-      const resolution = card.querySelector<HTMLSelectElement>("select")?.value || "Still open";
-      if (!answer.trim() && resolution === "Still open") return "";
+      const resolution = card.querySelector<HTMLSelectElement>("select")?.value || "Commit";
+      if (!answer.trim() && resolution === "Commit") return "";
       return [`Q: ${question.trim()}`, answer.trim() ? `A: ${answer.trim()}` : "A: Not answered yet", `Resolution: ${resolution}`].join("\n");
     })
     .filter(Boolean);
@@ -262,9 +262,10 @@ function injectBugFollowUpAnswerBoxUnderReportHeader() {
   const savedValues = new Map<string, { answer: string; resolution: string }>();
   existing?.querySelectorAll<HTMLElement>(".qat-bug-followup-answer-card").forEach((card) => {
     const question = card.getAttribute("data-question") || "";
+    const rawResolution = card.querySelector<HTMLSelectElement>("select")?.value || "Commit";
     savedValues.set(question, {
       answer: card.querySelector<HTMLTextAreaElement>("textarea")?.value || "",
-      resolution: card.querySelector<HTMLSelectElement>("select")?.value || "Still open",
+      resolution: rawResolution === "No more questions" ? "No more questions" : "Commit",
     });
   });
 
@@ -283,7 +284,7 @@ function injectBugFollowUpAnswerBoxUnderReportHeader() {
     <p class="field-text">Answer these, then run Re-improve Bug Report to fold the details back into the report.</p>
     <div class="qat-bug-followup-answer-list">
       ${questions.map((question, index) => {
-        const saved = savedValues.get(question) ?? { answer: "", resolution: "Still open" };
+        const saved = savedValues.get(question) ?? { answer: "", resolution: "Commit" };
         const escapedQuestion = question.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
         const escapedAnswer = saved.answer.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         return `
@@ -293,8 +294,7 @@ function injectBugFollowUpAnswerBoxUnderReportHeader() {
             <textarea placeholder="Answer this follow-up before re-improving...">${escapedAnswer}</textarea>
             <label>Resolution
               <select>
-                <option value="Still open"${saved.resolution === "Still open" ? " selected" : ""}>Still open</option>
-                <option value="Resolved"${saved.resolution === "Resolved" ? " selected" : ""}>Resolved</option>
+                <option value="Commit"${saved.resolution === "Commit" ? " selected" : ""}>Commit</option>
                 <option value="No more questions"${saved.resolution === "No more questions" ? " selected" : ""}>No more questions</option>
               </select>
             </label>
