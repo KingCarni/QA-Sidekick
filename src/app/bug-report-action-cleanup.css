@@ -1,17 +1,28 @@
+.bug-report-wrap > .report-header,
 .bug-report-wrap .report-header {
-  display: grid !important;
-  grid-template-columns: minmax(280px, 1fr) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
   gap: 18px !important;
-  align-items: start !important;
+}
+
+.bug-report-wrap > .report-header > div:first-child,
+.bug-report-wrap .report-header > div:first-child {
+  width: 100% !important;
+  min-width: 0 !important;
 }
 
 .bug-report-wrap .report-action-stack {
   display: grid !important;
-  grid-template-columns: repeat(5, minmax(126px, 1fr)) !important;
+  grid-template-columns: repeat(5, minmax(118px, 1fr)) !important;
   gap: 12px !important;
   width: 100% !important;
+  max-width: 100% !important;
   align-items: stretch !important;
   justify-self: stretch !important;
+  margin-top: 2px !important;
+  overflow: visible !important;
 }
 
 .bug-report-wrap .report-actions,
@@ -28,8 +39,9 @@
 
 .bug-report-wrap .report-action-stack button {
   width: 100% !important;
-  min-height: 58px !important;
-  padding: 12px 14px !important;
+  min-width: 0 !important;
+  min-height: 54px !important;
+  padding: 10px 12px !important;
   border-radius: 14px !important;
   border: 1px solid rgba(148, 163, 184, 0.26) !important;
   background: rgba(15, 23, 42, 0.86) !important;
@@ -39,6 +51,8 @@
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
+  white-space: normal !important;
+  line-height: 1.18 !important;
 }
 
 .bug-report-wrap .report-action-stack .jira-create-issue-button {
@@ -54,22 +68,73 @@
   grid-column: 1 / -1 !important;
 }
 
-.bug-report-wrap .qat-bug-followup-answer-card label {
+.bug-report-wrap .qat-bug-followup-answer-card label,
+.bug-report-wrap .qat-bug-followup-answer-card select {
+  display: none !important;
+}
+
+.bug-report-wrap .qat-bug-followup-actions {
   display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 12px !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
   margin-top: 12px !important;
 }
 
-.bug-report-wrap .qat-bug-followup-answer-card select {
-  width: 220px !important;
-  margin-left: 0 !important;
+.bug-report-wrap .qat-bug-followup-action {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  min-width: 150px !important;
+  min-height: 38px !important;
+  padding: 9px 13px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(148, 163, 184, 0.28) !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  color: #f8fafc !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.01em !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
 }
 
-@media (max-width: 1100px) {
+.bug-report-wrap .qat-bug-followup-commit {
+  border-color: rgba(34, 197, 94, 0.45) !important;
+  background: rgba(6, 78, 59, 0.72) !important;
+}
+
+.bug-report-wrap .qat-bug-followup-close {
+  border-color: rgba(96, 165, 250, 0.42) !important;
+  background: rgba(30, 41, 59, 0.88) !important;
+}
+
+.bug-report-wrap .qat-bug-followup-action:hover {
+  transform: translateY(-1px) !important;
+}
+
+.bug-report-wrap .qat-bug-followup-action.is-active,
+.bug-report-wrap .qat-bug-followup-answer-card.is-committed .qat-bug-followup-commit,
+.bug-report-wrap .qat-bug-followup-answer-card.is-closed .qat-bug-followup-close {
+  border-color: rgba(74, 222, 128, 0.7) !important;
+  background: linear-gradient(135deg, #16a34a, #065f46) !important;
+  color: #ffffff !important;
+}
+
+.bug-report-wrap .qat-bug-followup-answer-card.is-closed .qat-bug-followup-close {
+  border-color: rgba(96, 165, 250, 0.7) !important;
+  background: linear-gradient(135deg, #2563eb, #1e3a8a) !important;
+}
+
+@media (max-width: 1200px) {
   .bug-report-wrap .report-action-stack {
-    grid-template-columns: repeat(2, minmax(160px, 1fr)) !important;
+    grid-template-columns: repeat(3, minmax(140px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .bug-report-wrap .report-action-stack {
+    grid-template-columns: repeat(2, minmax(150px, 1fr)) !important;
   }
 }
 
@@ -78,12 +143,11 @@
     grid-template-columns: 1fr !important;
   }
 
-  .bug-report-wrap .qat-bug-followup-answer-card label {
+  .bug-report-wrap .qat-bug-followup-actions {
     flex-direction: column !important;
-    align-items: stretch !important;
   }
 
-  .bug-report-wrap .qat-bug-followup-answer-card select {
+  .bug-report-wrap .qat-bug-followup-action {
     width: 100% !important;
   }
 }
