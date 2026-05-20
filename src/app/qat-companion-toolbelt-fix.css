@@ -175,3 +175,121 @@
   color: #ffffff !important;
   background-color: #1d4ed8 !important;
 }
+
+.qat-bug-followup-answer-box {
+  display: grid !important;
+  gap: 16px !important;
+  padding: 18px !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(96, 165, 250, 0.22) !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(248, 113, 113, 0.13), transparent 34%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(10, 16, 30, 0.98)) !important;
+}
+
+.qat-bug-followup-answer-header {
+  display: flex !important;
+  align-items: start !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+.qat-bug-followup-answer-header h3 {
+  margin: 4px 0 0 !important;
+  font-size: 1.08rem !important;
+  line-height: 1.2 !important;
+  color: #f8fafc !important;
+}
+
+.qat-bug-followup-answer-header span {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 28px !important;
+  padding: 5px 10px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(96, 165, 250, 0.32) !important;
+  background: rgba(30, 41, 59, 0.82) !important;
+  color: #bfdbfe !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+.qat-bug-followup-answer-box > .field-text {
+  margin: -6px 0 0 !important;
+  color: #cbd5e1 !important;
+  font-size: 0.88rem !important;
+  line-height: 1.45 !important;
+}
+
+.qat-bug-followup-answer-list {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.qat-bug-followup-answer-card {
+  display: grid !important;
+  gap: 9px !important;
+  padding: 14px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  background: rgba(15, 23, 42, 0.7) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+}
+
+.qat-bug-followup-answer-card > span {
+  color: #fca5a5 !important;
+  font-size: 0.7rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+.qat-bug-followup-answer-card strong {
+  color: #f8fafc !important;
+  font-size: 0.96rem !important;
+  line-height: 1.36 !important;
+}
+
+.qat-bug-followup-answer-card textarea {
+  width: 100% !important;
+  min-height: 74px !important;
+  max-height: 120px !important;
+  padding: 11px 12px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(96, 165, 250, 0.24) !important;
+  background: rgba(2, 6, 23, 0.58) !important;
+  color: #f8fafc !important;
+  resize: vertical !important;
+}
+
+.qat-bug-followup-answer-card textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+.qat-bug-followup-answer-card label {
+  display: grid !important;
+  grid-template-columns: auto minmax(160px, 220px) !important;
+  align-items: center !important;
+  gap: 10px !important;
+  color: #cbd5e1 !important;
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+}
+
+.qat-bug-followup-answer-card select {
+  min-height: 36px !important;
+  padding: 7px 10px !important;
+  border-radius: 11px !important;
+  border: 1px solid rgba(148, 163, 184, 0.26) !important;
+  background-color: #020617 !important;
+  color: #f8fafc !important;
+  color-scheme: dark !important;
+}
+
+.qat-bug-followup-answer-card select option {
+  background-color: #020617 !important;
+  color: #f8fafc !important;
+}
