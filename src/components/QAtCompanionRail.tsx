@@ -11,6 +11,11 @@ type QAtCompanionChatMessage = { id: string; role: "user" | "assistant"; body: s
 type QAtWorkflowContext = { page: "toolbelt" | "brain" | "integrations" | "unknown"; activeTool?: string; workflowState?: string; sourceInput?: string; generatedOutput?: string; followUpContext?: string; setupState?: string };
 type QAtChatResult = { answer: string; usedSources?: Array<{ id?: string; title: string; type?: string }>; missingContext?: string[] };
 
+type QAtalystWindow = typeof window & {
+  __qatalystBugContextFetchPatched?: boolean;
+  __qatalystOriginalFetch?: typeof fetch;
+};
+
 export type QAtCompanionRailProps = {
   storageKey: string;
   eyebrow?: string;
@@ -55,14 +60,21 @@ function readTextAreaValue(selector: string, maxCharacters = 6000): string {
   const element = document.querySelector<HTMLTextAreaElement>(selector);
   return compactText(element?.value ?? "", maxCharacters);
 }
+function labelTextWithoutControls(label: HTMLLabelElement | null | undefined): string {
+  if (!label) return "";
+  const clone = label.cloneNode(true) as HTMLLabelElement;
+  clone.querySelectorAll("input, textarea, select, button, option").forEach((node) => node.remove());
+  return compactText(clone.textContent ?? "", 120);
+}
 function getFieldLabel(element: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): string {
-  const directLabel = element.labels?.[0]?.textContent;
+  const directLabel = labelTextWithoutControls(element.labels?.[0]);
+  const parentLabel = labelTextWithoutControls(element.closest("label"));
   const ariaLabel = element.getAttribute("aria-label");
+  const dataLabel = element.getAttribute("data-qat-label");
   const placeholder = element.getAttribute("placeholder");
-  const parentLabel = element.closest("label")?.textContent;
   const fieldGroup = element.closest(".field, .form-field, .input-group, .bug-context-field, .bug-context-row, .qa-field");
-  const nearbyLabel = fieldGroup?.querySelector("label, .field-label, .input-label, span, small")?.textContent;
-  return compactText(directLabel || ariaLabel || nearbyLabel || parentLabel || placeholder || element.name || element.id || "Field", 120);
+  const nearbyLabel = fieldGroup?.querySelector(".field-label, .input-label, span, small")?.textContent;
+  return compactText(dataLabel || directLabel || ariaLabel || nearbyLabel || parentLabel || placeholder || element.name || element.id || "Field", 120);
 }
 function readVisibleFormValues(maxCharacters = 7000): string {
   if (typeof document === "undefined") return "";
@@ -76,13 +88,13 @@ function readVisibleFormValues(maxCharacters = 7000): string {
     const rects = control.getClientRects();
     if (!rects.length) continue;
     const value = control instanceof HTMLSelectElement
-      ? control.options[control.selectedIndex]?.text || control.value
+      ? control.value || control.options[control.selectedIndex]?.text || ""
       : control.type === "checkbox" || control.type === "radio"
         ? control.checked ? "checked" : "unchecked"
         : control.value;
     const cleanValue = compactText(value, 800);
     if (!cleanValue) continue;
-    const label = getFieldLabel(control).replace(cleanValue, "").trim() || getFieldLabel(control);
+    const label = getFieldLabel(control);
     const row = `${label}: ${cleanValue}`;
     if (seen.has(row)) continue;
     seen.add(row);
@@ -96,6 +108,97 @@ function readFollowUpContext(maxCharacters = 4000): string {
   if (typeof document === "undefined") return "";
   const sections = Array.from(document.querySelectorAll(".follow-up-answer-box, .followup-history-card"));
   return compactText(sections.map((section) => section.textContent ?? "").join("\n\n"), maxCharacters);
+}
+function readBugSupplementalContext(maxCharacters = 5000): string {
+  if (typeof document === "undefined") return "";
+  const fields = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>("[data-qat-bug-extra='true']"));
+  const rows = fields
+    .map((field) => {
+      const label = getFieldLabel(field);
+      const value = field instanceof HTMLSelectElement ? field.value : field.value;
+      return value.trim() ? `${label}: ${value.trim()}` : "";
+    })
+    .filter(Boolean);
+  return compactText(rows.join("\n"), maxCharacters);
+}
+function injectBugSupplementalContextFields() {
+  if (typeof document === "undefined") return;
+  if (document.querySelector(".qat-bug-supplemental-context")) return;
+  const bugPanel = Array.from(document.querySelectorAll<HTMLElement>(".follow-up-answer-box")).find((section) =>
+    /refine bug context/i.test(section.textContent ?? "")
+  );
+  if (!bugPanel) return;
+  const evidencePanel = bugPanel.querySelector(".bug-evidence-panel, [data-testid='bug-evidence-panel']");
+  const section = document.createElement("div");
+  section.className = "bug-refine-section qat-bug-supplemental-context";
+  section.innerHTML = `
+    <h4>Triage details</h4>
+    <p class="bug-refine-help-text">Optional fields QAt and Bug Writer can use before generation.</p>
+    <div class="bug-context-grid">
+      <label>Severity
+        <select data-qat-bug-extra="true" data-qat-label="Severity">
+          <option value="">Not selected</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+      </label>
+      <label>Priority
+        <select data-qat-bug-extra="true" data-qat-label="Priority">
+          <option value="">Not selected</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+      </label>
+      <label>Expected result
+        <textarea data-qat-bug-extra="true" data-qat-label="Expected result" placeholder="What should happen instead?"></textarea>
+      </label>
+      <label>Actual result
+        <textarea data-qat-bug-extra="true" data-qat-label="Actual result" placeholder="What actually happens?"></textarea>
+      </label>
+      <label>Impact
+        <textarea data-qat-bug-extra="true" data-qat-label="Impact" placeholder="Who is affected and how bad is it?"></textarea>
+      </label>
+    </div>
+  `;
+  if (evidencePanel) {
+    bugPanel.insertBefore(section, evidencePanel);
+  } else {
+    bugPanel.appendChild(section);
+  }
+}
+function patchBugWriterFetchOnce() {
+  if (typeof window === "undefined") return;
+  const win = window as QAtalystWindow;
+  if (win.__qatalystBugContextFetchPatched) return;
+  win.__qatalystBugContextFetchPatched = true;
+  win.__qatalystOriginalFetch = window.fetch.bind(window);
+  window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+    if (url.includes("/api/improve-bug") && init?.body && typeof init.body === "string") {
+      const supplementalContext = readBugSupplementalContext();
+      if (supplementalContext) {
+        try {
+          const body = JSON.parse(init.body) as { input?: unknown };
+          const currentInput = String(body.input ?? "");
+          if (!currentInput.includes("SUPPLEMENTAL BUG TRIAGE FIELDS")) {
+            body.input = [
+              currentInput,
+              "",
+              "SUPPLEMENTAL BUG TRIAGE FIELDS - treat these as already answered if provided:",
+              supplementalContext,
+            ].join("\n");
+            init = { ...init, body: JSON.stringify(body) };
+          }
+        } catch {
+          // Keep original request if the body is not JSON.
+        }
+      }
+    }
+    return win.__qatalystOriginalFetch ? win.__qatalystOriginalFetch(input, init) : fetch(input, init);
+  };
 }
 
 export default function QAtCompanionRail({
@@ -130,6 +233,13 @@ export default function QAtCompanionRail({
   const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => { setIsCollapsed(window.localStorage.getItem(storageKey) === "true"); }, [storageKey]);
+  useEffect(() => {
+    if (!className.includes("qat-companion-panel-bug")) return;
+    injectBugSupplementalContextFields();
+    patchBugWriterFetchOnce();
+    const intervalId = window.setInterval(injectBugSupplementalContextFields, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [className]);
 
   function toggleCollapsed() {
     setIsCollapsed((current) => {
