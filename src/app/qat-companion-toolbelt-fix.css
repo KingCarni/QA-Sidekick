@@ -147,3 +147,13 @@
   margin: 0 !important;
   white-space: pre-wrap !important;
 }
+
+.qat-bug-supplemental-context textarea {
+  min-height: 96px !important;
+  max-height: 120px !important;
+  resize: vertical !important;
+}
+
+.qat-bug-supplemental-context .bug-context-grid {
+  gap: 12px !important;
+}
