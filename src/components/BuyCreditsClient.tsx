@@ -177,7 +177,6 @@ export default function BuyCreditsClient({ initialBalance = null, checkoutSucces
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "22px" }}>
             <Link href="/app" style={{ alignItems: "center", border: "1px solid rgba(74, 222, 128, 0.42)", borderRadius: "15px", background: "linear-gradient(135deg, #16a34a, #15803d)", color: "#fff", display: "inline-flex", fontWeight: 1000, justifyContent: "center", minHeight: "44px", padding: "0 18px", textDecoration: "none" }}>Launch App</Link>
-            <a href="#primary-packs" style={{ alignItems: "center", border: "1px solid rgba(147, 197, 253, 0.42)", borderRadius: "15px", background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "#fff", display: "inline-flex", fontWeight: 1000, justifyContent: "center", minHeight: "44px", padding: "0 18px", textDecoration: "none" }}>View Packs</a>
           </div>
         </div>
 
