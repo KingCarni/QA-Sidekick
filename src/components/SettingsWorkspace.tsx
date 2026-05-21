@@ -150,13 +150,24 @@ function getIntegrationQAtGuidance(
   };
 }
 
+function getSettingsChatIntro(activeArea: SettingsArea) {
+  if (activeArea === "testrail") return "Ask QAt about TestRail setup, export readiness, project targeting, or preview-first sync.";
+  if (activeArea === "admin") return "Ask QAt about internal setup scope, automation readiness, or where to continue configuration.";
+  return "Ask QAt about Jira setup, issue types, permissions, handoff readiness, or ticket sync.";
+}
+
+function getSettingsChatPlaceholder(activeArea: SettingsArea) {
+  if (activeArea === "testrail") return "Ask QAt: what is missing before TestRail export is ready?";
+  if (activeArea === "admin") return "Ask QAt: what should I configure next?";
+  return "Ask QAt: what is missing before Jira handoff is ready?";
+}
+
 export default function SettingsWorkspace({
   initialJiraConfig,
   isAdmin,
   userEmail,
 }: SettingsWorkspaceProps) {
   const [activeArea, setActiveArea] = useState<SettingsArea>("jira");
-  const [hasAskedSettingsQAt, setHasAskedSettingsQAt] = useState(false);
   const [jiraReadiness, setJiraReadiness] = useState<JiraIntegrationReadiness>(() => ({
     ...EMPTY_JIRA_READINESS,
     configSaved: Boolean(initialJiraConfig),
@@ -185,7 +196,6 @@ export default function SettingsWorkspace({
 
   function selectSettingsArea(area: SettingsArea) {
     setActiveArea(area);
-    setHasAskedSettingsQAt(false);
   }
 
   useEffect(() => {
@@ -314,13 +324,19 @@ export default function SettingsWorkspace({
 
       <QAtCompanionRail
         storageKey="qatalyst-integrations-qAt-companion-collapsed"
-        className="integrations-qAt-companion-rail"
+        className="integrations-qAt-companion-rail qat-companion-panel-integrations"
         eyebrow="QAt Companion"
         title={integrationGuidance.title}
         body={integrationGuidance.body}
         stateLabel={activeArea === "jira" ? (jiraConfigured ? "Jira saved" : "Jira setup") : activeArea === "testrail" ? "TestRail" : "Admin"}
         imageSrc="/qat/FullQat.png"
         progressPercent={progressPercent}
+        chatEnabled
+        chatTitle="QAt Box"
+        chatIntro={getSettingsChatIntro(activeArea)}
+        chatPlaceholder={getSettingsChatPlaceholder(activeArea)}
+        chatResponse="I can review this integration setup, but Project Brain context is not available yet."
+        chatProjectId="qatalyst"
         steps={
           activeArea === "testrail"
             ? [
@@ -417,18 +433,6 @@ export default function SettingsWorkspace({
         ]}
         actions={[
           {
-            label: "Ask QAt",
-            variant: "secondary",
-            onClick: () => setHasAskedSettingsQAt(true),
-          },
-          {
-            label: "Open Brain",
-            variant: "secondary",
-            onClick: () => {
-              window.location.href = "/brain?tab=integrations";
-            },
-          },
-          {
             label: "Open Toolbelt",
             variant: "primary",
             onClick: () => {
@@ -436,17 +440,7 @@ export default function SettingsWorkspace({
             },
           },
         ]}
-        tip={
-          hasAskedSettingsQAt
-            ? {
-                title: integrationGuidance.tipTitle,
-                body: integrationGuidance.tipBody,
-              }
-            : {
-                title: integrationGuidance.recommendationTitle,
-                body: integrationGuidance.recommendationBody,
-              }
-        }
+        tip={{ title: integrationGuidance.tipTitle, body: integrationGuidance.tipBody }}
       />
     </>
   );
