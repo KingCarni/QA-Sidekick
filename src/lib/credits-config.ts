@@ -32,7 +32,7 @@ export type CreditPack = {
 };
 
 export const SIGNUP_CREDITS = 25;
-export const DAILY_REFRESH_CREDITS = 5;
+export const DAILY_REFRESH_CREDITS = 0;
 export const CREDIT_CURRENCY = "cad";
 
 export const CREDIT_PACKS: Record<CreditPackId, CreditPack> = {

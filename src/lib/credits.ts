@@ -55,7 +55,6 @@ export async function ensureDailyRefreshCredits(userId: string) {
 export async function ensureUserCreditBonuses(userId: string) {
   if (!userId) return;
   await ensureSignupCredits(userId);
-  await ensureDailyRefreshCredits(userId);
 }
 
 export async function spendCredits(args: { userId: string; amount: number; reason: CreditLedgerReason | string; ref: string }) {

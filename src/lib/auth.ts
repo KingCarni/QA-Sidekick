@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getOptionalEnv, isGoogleAuthConfigured } from "@/lib/env";
 
 const SIGNUP_BONUS = 25;
-const DAILY_LOGIN_BONUS = 5;
+const DAILY_LOGIN_BONUS = 0;
 
 function todayKeyUtc(d = new Date()) {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()))
