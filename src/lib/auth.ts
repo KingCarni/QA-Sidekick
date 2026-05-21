@@ -6,13 +6,6 @@ import { prisma } from "@/lib/prisma";
 import { getOptionalEnv, isGoogleAuthConfigured } from "@/lib/env";
 
 const SIGNUP_BONUS = 25;
-const DAILY_LOGIN_BONUS = 0;
-
-function todayKeyUtc(d = new Date()) {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()))
-    .toISOString()
-    .slice(0, 10);
-}
 
 function toJsonObject(meta?: Record<string, unknown>): Prisma.InputJsonObject {
   return (meta ?? {}) as Prisma.InputJsonObject;
@@ -84,16 +77,6 @@ async function ensureUserBonuses(user: unknown) {
     ref: "signup_bonus",
     meta: { email },
   });
-
-  const todayKey = todayKeyUtc();
-
-  await grantCreditIfMissing({
-    userId,
-    delta: DAILY_LOGIN_BONUS,
-    reason: "daily_bonus",
-    ref: `daily_bonus:${todayKey}`,
-    meta: { email, dayUtc: todayKey },
-  });
 }
 
 const providers: NextAuthOptions["providers"] = [];
@@ -129,10 +112,6 @@ export const authOptions: NextAuthOptions = {
 
       if (session.user && uid) {
         session.user.id = uid;
-      }
-
-      if (uid) {
-        await ensureUserBonuses({ id: uid, email: session.user?.email });
       }
 
       return session;
