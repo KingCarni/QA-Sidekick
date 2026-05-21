@@ -216,6 +216,59 @@ function linesFromSection(value: string) {
     .filter((line) => !/^not specified\.?$/i.test(line));
 }
 
+function dedupeLines(items: string[]) {
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const item of items) {
+    const clean = cleanLine(item);
+    if (!clean) continue;
+    const key = clean.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(clean);
+  }
+
+  return result;
+}
+
+function isFollowUpNoiseLine(item: string) {
+  return /^(q|question|a|answer|type|resolution)\s*[:\-]/i.test(item) ||
+    /^resolution\s+/i.test(item) ||
+    /^type\s+/i.test(item) ||
+    /^no answered follow-up questions recorded\.?$/i.test(item) ||
+    /^follow-up history\s*:?$/i.test(item);
+}
+
+function normalizeFollowUpHistory(items: string[]) {
+  const cleanItems = dedupeLines(items).filter((item) => !isFollowUpNoiseLine(item));
+  const compact: string[] = [];
+
+  for (let index = 0; index < items.length; index += 1) {
+    const current = cleanLine(items[index]);
+    const next = cleanLine(items[index + 1] ?? "");
+    const question = current.match(/^q(?:uestion)?\s*[:\-]\s*(.+)$/i)?.[1]?.trim();
+
+    if (question && next) {
+      const answer = next.match(/^a(?:nswer)?\s*[:\-]\s*(.+)$/i)?.[1]?.trim();
+      if (answer) {
+        compact.push(`${question} — ${answer}`);
+        index += 1;
+      }
+    }
+  }
+
+  return dedupeLines([...compact, ...cleanItems]).slice(0, 5);
+}
+
+function cleanQaNotes(items: string[]) {
+  return dedupeLines(items)
+    .filter((item) => !/^follow-up history\s*:?$/i.test(item))
+    .filter((item) => !/^no answered follow-up questions recorded\.?$/i.test(item))
+    .filter((item) => !isFollowUpNoiseLine(item))
+    .slice(0, 8);
+}
+
 function parseBugReportSections(markdown: string, summaryFallback: string): BugReportSections {
   const clean = stripMarkdown(markdown);
   const lines = clean
@@ -226,6 +279,8 @@ function parseBugReportSections(markdown: string, summaryFallback: string): BugR
   const title = lines[0] && !SECTION_HEADINGS.includes(lines[0]) ? lines[0] : summaryFallback;
   const severity = findLabeledValue(clean, ["severity"]) || "Not specified";
   const priority = findLabeledValue(clean, ["priority"]) || "Not specified";
+  const qaNotes = linesFromSection(getSection(clean, "QA Notes"));
+  const followUpHistory = linesFromSection(getSection(clean, "Follow-up History"));
 
   return {
     title,
@@ -239,8 +294,8 @@ function parseBugReportSections(markdown: string, summaryFallback: string): BugR
     impact: getSection(clean, "Impact"),
     missingInfo: linesFromSection(getSection(clean, "Missing Info")),
     followUpQuestions: linesFromSection(getSection(clean, "Follow-up Questions")),
-    qaNotes: linesFromSection(getSection(clean, "QA Notes")),
-    followUpHistory: linesFromSection(getSection(clean, "Follow-up History")),
+    qaNotes: cleanQaNotes(qaNotes),
+    followUpHistory: normalizeFollowUpHistory(followUpHistory),
     evidence: linesFromSection(getSection(clean, "Evidence")),
     logFindings: linesFromSection(getSection(clean, "Relevant Log Findings")),
   };
@@ -334,7 +389,7 @@ function buildDescriptionAdf(input: JiraCreateIssueInput, summary: string): Jira
   pushListIfPresent(content, "Missing Info", bug.missingInfo, false);
   pushListIfPresent(content, "Follow-up Questions", bug.followUpQuestions, false);
   pushListIfPresent(content, "QA Notes", bug.qaNotes, false);
-  pushListIfPresent(content, "Follow-up History", bug.followUpHistory, false);
+  pushListIfPresent(content, "Follow-up Answers", bug.followUpHistory, false);
 
   content.push(heading("Evidence / Attachments"));
   if (bug.evidence.length > 0) {
