@@ -17,27 +17,6 @@ const comparisonItems = {
   ],
 };
 
-const differentiators = [
-  {
-    eyebrow: "Context-first QA",
-    title: "Reusable project memory, not one-off prompt soup",
-    body: "Save notes, specs, edge cases, release decisions, and ticket history in Project Context / Source Vault so every QA workflow starts from what the team already knows.",
-    tone: "green",
-  },
-  {
-    eyebrow: "Ticket triage",
-    title: "Follow-up questions that sound like a real QA review",
-    body: "Surface unclear scope, missing acceptance criteria, blocked decisions, platform assumptions, and release risks before vague work becomes expensive rework.",
-    tone: "gold",
-  },
-  {
-    eyebrow: "Workflow output",
-    title: "Jira-ready, TestRail-ready, and automation-aware",
-    body: "Move from scratch notes or Jira tickets into parent/child work, QA tasks, test coverage, and starter automation skeletons with review steps before creation.",
-    tone: "blue",
-  },
-];
-
 const vaultItems = [
   "Product notes",
   "Known risks",
@@ -161,15 +140,15 @@ export default function LandingPage() {
 
         <nav className="qatalyst-site-nav" aria-label="Landing page sections">
           <a href="#product">Product</a>
-          <a href="#project-brain">Project Brain</a>
           <a href="#workflows">Workflows</a>
           <a href="#pricing">Pricing</a>
-          <Link href="/login">Sign in</Link>
+          <Link href="/buy-credits">Buy Credits</Link>
+          <Link href="/security">Security & Privacy</Link>
         </nav>
 
         <div className="qatalyst-site-actions">
           <Link className="qatalyst-header-button qatalyst-header-button-secondary" href="/brain">
-            View Project Brain
+            Open Setup
           </Link>
           <Link className="qatalyst-header-button qatalyst-header-button-primary" href="/app">
             Launch App
@@ -180,7 +159,6 @@ export default function LandingPage() {
 
       <section className="qatalyst-hero" id="product" aria-labelledby="qatalyst-hero-title">
         <div className="qatalyst-hero-copy">
-          <p className="qatalyst-eyebrow">QA Workflow SaaS</p>
           <h1 id="qatalyst-hero-title">Turn rough tickets into release-ready QA plans.</h1>
           <p className="qatalyst-hero-subcopy">
             QAtalyst helps QA teams turn Jira tickets, feature notes, bug reports, and product
@@ -207,7 +185,6 @@ export default function LandingPage() {
         <div className="qatalyst-hero-logo-stage" aria-label="QAtalyst brand mark">
           <div className="qatalyst-hero-logo-glow" aria-hidden="true" />
           <img src="/qatalyst-header.png" alt="QAtalyst" className="qatalyst-hero-large-logo" />
-          <p className="qatalyst-hero-logo-caption">Project-aware QA workflow support for practical teams.</p>
         </div>
       </section>
 
@@ -323,27 +300,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="qatalyst-section" aria-labelledby="qatalyst-differentiators-title">
-        <div className="qatalyst-section-heading">
-          <p className="qatalyst-eyebrow">Not just generated test cases</p>
-          <h2 id="qatalyst-differentiators-title">A QA planning system for messy real-world product work.</h2>
-          <p>
-            The value is not only writing tests faster. It is carrying context across workflows,
-            exposing gaps early, and keeping every AI-assisted step reviewable.
-          </p>
-        </div>
-
-        <div className="qatalyst-card-grid qatalyst-card-grid-3">
-          {differentiators.map((item) => (
-            <article className={`qatalyst-card qatalyst-card-${item.tone}`} key={item.title}>
-              <p className="qatalyst-card-eyebrow">{item.eyebrow}</p>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
       <section className="qatalyst-section qatalyst-builder-section" aria-labelledby="qatalyst-builder-title">
         <div className="qatalyst-builder-card">
           <div>
@@ -390,29 +346,23 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="qatalyst-final-cta" id="pricing" aria-labelledby="qatalyst-final-title">
+      <footer className="qatalyst-footer" id="pricing" aria-label="QAtalyst footer">
         <div>
-          <p className="qatalyst-eyebrow">Ready when the ticket is not</p>
-          <h2 id="qatalyst-final-title">Start with messy notes. Leave with a QA plan your team can review.</h2>
-          <p>
-            Launch QAtalyst to turn unclear product work into structured coverage, risks, questions,
-            Jira-ready work, TestRail-ready cases, and automation starter direction.
-          </p>
+          <Link className="qatalyst-site-brand qatalyst-footer-brand" href="/" aria-label="QAtalyst home">
+            <img src="/qatalyst-header.png" alt="" aria-hidden="true" />
+            <span>QAtalyst</span>
+          </Link>
+          <p>Reviewable QA workflow support for practical teams.</p>
         </div>
 
-        <div className="qatalyst-final-actions">
-          <Link className="qatalyst-button qatalyst-button-primary" href="/app">
-            Launch QAtalyst
-            <span aria-hidden="true">→</span>
-          </Link>
-          <Link className="qatalyst-button qatalyst-button-secondary" href="/security">
-            Security & Privacy
-          </Link>
-          <Link className="qatalyst-button qatalyst-button-ghost" href="https://git-a-job.com/donate">
-            Donate
-          </Link>
-        </div>
-      </section>
+        <nav className="qatalyst-footer-links" aria-label="Footer links">
+          <Link href="/app">Launch App</Link>
+          <Link href="/brain">Open Setup</Link>
+          <Link href="/buy-credits">Buy Credits</Link>
+          <Link href="/security">Security & Privacy</Link>
+          <Link href="/donate">Donate</Link>
+        </nav>
+      </footer>
     </main>
   );
 }
