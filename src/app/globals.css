@@ -34982,3 +34982,644 @@ body:has(.qatalyst-brain-shell)::after {
 .brain-qAt-companion-rail > .qat-companion-rail-footer {
   order: 10 !important;
 }
+/* QAS-197 landing page polish - append only */
+.qatalyst-landing-qas197 {
+  width: min(1180px, calc(100% - 40px));
+  padding-top: 22px;
+}
+
+.qatalyst-landing-qas197 .qatalyst-site-header {
+  position: sticky;
+  top: 14px;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+  min-height: 74px;
+  margin-bottom: 46px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 999px;
+  background: rgba(5, 5, 5, 0.82);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+}
+
+.qatalyst-landing-qas197 .qatalyst-site-brand,
+.qatalyst-landing-qas197 .qatalyst-site-nav,
+.qatalyst-landing-qas197 .qatalyst-site-actions,
+.qatalyst-landing-qas197 .qatalyst-header-button {
+  display: inline-flex;
+  align-items: center;
+}
+
+.qatalyst-landing-qas197 .qatalyst-site-brand {
+  gap: 10px;
+  color: #ffffff;
+  font-weight: 950;
+  text-decoration: none;
+}
+
+.qatalyst-landing-qas197 .qatalyst-site-brand img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.qatalyst-landing-qas197 .qatalyst-site-brand span {
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+}
+
+.qatalyst-landing-qas197 .qatalyst-site-nav {
+  justify-content: center;
+  gap: clamp(14px, 2vw, 28px);
+}
+
+.qatalyst-landing-qas197 .qatalyst-site-nav a,
+.qatalyst-landing-qas197 .qatalyst-site-nav a:visited {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.9rem;
+  font-weight: 850;
+  text-decoration: none;
+  transition: color 0.16s ease;
+}
+
+.qatalyst-landing-qas197 .qatalyst-site-nav a:hover {
+  color: #ffffff;
+}
+
+.qatalyst-landing-qas197 .qatalyst-site-actions {
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.qatalyst-landing-qas197 .qatalyst-header-button {
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 950;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.qatalyst-landing-qas197 .qatalyst-header-button-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.qatalyst-landing-qas197 .qatalyst-header-button-primary {
+  gap: 8px;
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  background: linear-gradient(135deg, #ef4444, #991b1b);
+  box-shadow: 0 16px 34px rgba(220, 38, 38, 0.26);
+}
+
+.qatalyst-landing-qas197 .qatalyst-hero,
+.qatalyst-landing-qas197 .qatalyst-section,
+.qatalyst-landing-qas197 .qatalyst-final-cta {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(30, 64, 175, 0.17), transparent 28%),
+    radial-gradient(circle at 100% 0%, rgba(127, 29, 29, 0.35), transparent 34%),
+    linear-gradient(135deg, rgba(10, 10, 10, 0.94), rgba(16, 10, 11, 0.94));
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.qatalyst-landing-qas197 .qatalyst-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 430px);
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+  min-height: 650px;
+  padding: clamp(42px, 6vw, 72px);
+}
+
+.qatalyst-landing-qas197 .qatalyst-hero-copy,
+.qatalyst-landing-qas197 .qatalyst-hero-logo-stage,
+.qatalyst-landing-qas197 .qatalyst-section-heading,
+.qatalyst-landing-qas197 .qatalyst-vault-panel,
+.qatalyst-landing-qas197 .qatalyst-builder-card,
+.qatalyst-landing-qas197 .qatalyst-final-cta > * {
+  position: relative;
+  z-index: 1;
+}
+
+.qatalyst-landing-qas197 .qatalyst-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 0 0 18px;
+  padding: 8px 14px;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  border-radius: 999px;
+  background: rgba(127, 29, 29, 0.16);
+  color: #fca5a5;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.qatalyst-landing-qas197 .qatalyst-eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #f87171;
+  box-shadow: 0 0 12px rgba(248, 113, 113, 0.7);
+}
+
+.qatalyst-landing-qas197 h1,
+.qatalyst-landing-qas197 h2 {
+  color: #ffffff;
+  letter-spacing: -0.075em;
+}
+
+.qatalyst-landing-qas197 h1 {
+  max-width: 710px;
+  font-size: clamp(3.2rem, 6vw, 6.2rem);
+  line-height: 0.94;
+}
+
+.qatalyst-landing-qas197 h2 {
+  margin: 0;
+  font-size: clamp(2.15rem, 4vw, 4.6rem);
+  line-height: 0.98;
+}
+
+.qatalyst-landing-qas197 h3 {
+  color: #ffffff;
+}
+
+.qatalyst-landing-qas197 .qatalyst-hero-subcopy,
+.qatalyst-landing-qas197 .qatalyst-section-heading p,
+.qatalyst-landing-qas197 .qatalyst-vault-copy p,
+.qatalyst-landing-qas197 .qatalyst-builder-card p,
+.qatalyst-landing-qas197 .qatalyst-final-cta p {
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.65;
+}
+
+.qatalyst-landing-qas197 .qatalyst-hero-subcopy {
+  max-width: 610px;
+  margin: 24px 0 0;
+  font-size: 1.02rem;
+}
+
+.qatalyst-landing-qas197 .qatalyst-hero-actions,
+.qatalyst-landing-qas197 .qatalyst-final-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.qatalyst-landing-qas197 .qatalyst-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-weight: 950;
+  text-decoration: none;
+}
+
+.qatalyst-landing-qas197 .qatalyst-button-primary {
+  gap: 8px;
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  background: linear-gradient(135deg, #ef4444, #991b1b);
+  box-shadow: 0 18px 38px rgba(220, 38, 38, 0.24);
+}
+
+.qatalyst-landing-qas197 .qatalyst-button-secondary,
+.qatalyst-landing-qas197 .qatalyst-button-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.qatalyst-landing-qas197 .qatalyst-hero-trust-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 690px;
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.qatalyst-landing-qas197 .qatalyst-hero-trust-line span {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: 7px;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 14px rgba(34, 197, 94, 0.8);
+}
+
+.qatalyst-landing-qas197 .qatalyst-hero-logo-stage {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.qatalyst-landing-qas197 .qatalyst-hero-large-logo {
+  width: min(100%, 320px);
+  height: auto;
+  filter: drop-shadow(0 28px 50px rgba(0, 0, 0, 0.45));
+}
+
+.qatalyst-landing-qas197 .qatalyst-hero-logo-caption {
+  max-width: 420px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.qatalyst-landing-qas197 .qatalyst-section {
+  margin-top: 24px;
+  padding: clamp(40px, 5vw, 72px);
+}
+
+.qatalyst-landing-qas197 .qatalyst-section-heading-center {
+  max-width: 800px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.qatalyst-landing-qas197 .qatalyst-section-heading p:not(.qatalyst-eyebrow) {
+  max-width: 760px;
+  margin: 18px auto 0;
+}
+
+.qatalyst-landing-qas197 .qatalyst-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 46px;
+}
+
+.qatalyst-landing-qas197 .qatalyst-comparison-card,
+.qatalyst-landing-qas197 .qatalyst-tool-card,
+.qatalyst-landing-qas197 .qatalyst-step-card,
+.qatalyst-landing-qas197 .qatalyst-mini-card,
+.qatalyst-landing-qas197 .qatalyst-card,
+.qatalyst-landing-qas197 .qatalyst-triage-box {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.qatalyst-landing-qas197 .qatalyst-comparison-card {
+  padding: 28px;
+}
+
+.qatalyst-landing-qas197 .qatalyst-comparison-card-without {
+  border-color: rgba(248, 113, 113, 0.22);
+  background: radial-gradient(circle at top left, rgba(127, 29, 29, 0.15), transparent 42%), rgba(255, 255, 255, 0.025);
+}
+
+.qatalyst-landing-qas197 .qatalyst-comparison-card-with {
+  border-color: rgba(56, 189, 248, 0.2);
+  background: radial-gradient(circle at top left, rgba(14, 116, 144, 0.15), transparent 42%), rgba(255, 255, 255, 0.025);
+}
+
+.qatalyst-landing-qas197 .qatalyst-comparison-card h3 {
+  margin: 0 0 18px;
+  color: #fca5a5;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.qatalyst-landing-qas197 .qatalyst-comparison-card-with h3 {
+  color: #7dd3fc;
+}
+
+.qatalyst-landing-qas197 .qatalyst-comparison-card ul,
+.qatalyst-landing-qas197 .qatalyst-guardrail-list {
+  display: grid;
+  gap: 13px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.qatalyst-landing-qas197 .qatalyst-comparison-card li {
+  display: flex;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.qatalyst-landing-qas197 .qatalyst-comparison-card li span {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(127, 29, 29, 0.36);
+  color: #fecaca;
+  font-weight: 950;
+}
+
+.qatalyst-landing-qas197 .qatalyst-comparison-card-with li span {
+  background: rgba(14, 116, 144, 0.36);
+  color: #bae6fd;
+}
+
+.qatalyst-landing-qas197 .qatalyst-workflow-lane,
+.qatalyst-landing-qas197 .qatalyst-card-grid {
+  display: grid;
+  gap: 18px;
+  margin-top: 42px;
+}
+
+.qatalyst-landing-qas197 .qatalyst-workflow-lane {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.qatalyst-landing-qas197 .qatalyst-card-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.qatalyst-landing-qas197 .qatalyst-card-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.qatalyst-landing-qas197 .qatalyst-step-card,
+.qatalyst-landing-qas197 .qatalyst-tool-card,
+.qatalyst-landing-qas197 .qatalyst-mini-card,
+.qatalyst-landing-qas197 .qatalyst-card {
+  padding: 24px;
+}
+
+.qatalyst-landing-qas197 .qatalyst-step-card span,
+.qatalyst-landing-qas197 .qatalyst-tool-initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 22px;
+  border-radius: 12px;
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  background: linear-gradient(135deg, #ef4444, #991b1b);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 950;
+}
+
+.qatalyst-landing-qas197 .qatalyst-tool-card h3,
+.qatalyst-landing-qas197 .qatalyst-step-card h3,
+.qatalyst-landing-qas197 .qatalyst-mini-card h3,
+.qatalyst-landing-qas197 .qatalyst-card h3 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+
+.qatalyst-landing-qas197 .qatalyst-tool-card p,
+.qatalyst-landing-qas197 .qatalyst-step-card p,
+.qatalyst-landing-qas197 .qatalyst-mini-card p,
+.qatalyst-landing-qas197 .qatalyst-card p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.64);
+  line-height: 1.6;
+}
+
+.qatalyst-landing-qas197 .qatalyst-tool-card-green,
+.qatalyst-landing-qas197 .qatalyst-card-green,
+.qatalyst-landing-qas197 .qatalyst-mini-card-green {
+  border-color: rgba(34, 197, 94, 0.22);
+  background: radial-gradient(circle at top left, rgba(20, 83, 45, 0.22), transparent 44%), rgba(255, 255, 255, 0.025);
+}
+
+.qatalyst-landing-qas197 .qatalyst-tool-card-red,
+.qatalyst-landing-qas197 .qatalyst-comparison-card-without {
+  border-color: rgba(248, 113, 113, 0.24);
+}
+
+.qatalyst-landing-qas197 .qatalyst-tool-card-gold,
+.qatalyst-landing-qas197 .qatalyst-card-gold {
+  border-color: rgba(245, 158, 11, 0.26);
+  background: radial-gradient(circle at top left, rgba(120, 53, 15, 0.2), transparent 44%), rgba(255, 255, 255, 0.025);
+}
+
+.qatalyst-landing-qas197 .qatalyst-tool-card-blue,
+.qatalyst-landing-qas197 .qatalyst-card-blue,
+.qatalyst-landing-qas197 .qatalyst-mini-card-blue {
+  border-color: rgba(96, 165, 250, 0.22);
+  background: radial-gradient(circle at top left, rgba(30, 64, 175, 0.2), transparent 44%), rgba(255, 255, 255, 0.025);
+}
+
+.qatalyst-landing-qas197 .qatalyst-tool-card-purple,
+.qatalyst-landing-qas197 .qatalyst-mini-card-purple {
+  border-color: rgba(168, 85, 247, 0.22);
+  background: radial-gradient(circle at top left, rgba(88, 28, 135, 0.18), transparent 44%), rgba(255, 255, 255, 0.025);
+}
+
+.qatalyst-landing-qas197 .qatalyst-tool-card-cyan {
+  border-color: rgba(34, 211, 238, 0.22);
+  background: radial-gradient(circle at top left, rgba(8, 145, 178, 0.18), transparent 44%), rgba(255, 255, 255, 0.025);
+}
+
+.qatalyst-landing-qas197 .qatalyst-vault-panel,
+.qatalyst-landing-qas197 .qatalyst-builder-card,
+.qatalyst-landing-qas197 .qatalyst-guardrails-section,
+.qatalyst-landing-qas197 .qatalyst-final-cta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
+  gap: clamp(28px, 4vw, 70px);
+  align-items: center;
+}
+
+.qatalyst-landing-qas197 .qatalyst-vault-panel,
+.qatalyst-landing-qas197 .qatalyst-builder-card {
+  padding: 0;
+}
+
+.qatalyst-landing-qas197 .qatalyst-vault-stack {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.qatalyst-landing-qas197 .qatalyst-vault-stack span {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(255, 255, 255, 0.86);
+  font-weight: 950;
+}
+
+.qatalyst-landing-qas197 .qatalyst-triage-box {
+  padding: 24px;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.qatalyst-landing-qas197 .qatalyst-triage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.qatalyst-landing-qas197 .qatalyst-triage-header span {
+  color: #fde68a;
+  font-size: 0.75rem;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.qatalyst-landing-qas197 .qatalyst-triage-header strong {
+  color: #ffffff;
+  font-size: 0.86rem;
+}
+
+.qatalyst-landing-qas197 .qatalyst-triage-box ul {
+  display: grid;
+  gap: 13px;
+  margin: 0;
+  padding-left: 20px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.5;
+}
+
+.qatalyst-landing-qas197 .qatalyst-guardrail-list {
+  gap: 12px;
+}
+
+.qatalyst-landing-qas197 .qatalyst-guardrail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.qatalyst-landing-qas197 .qatalyst-guardrail-item span {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(20, 83, 45, 0.7);
+  color: #bbf7d0;
+  font-weight: 950;
+}
+
+.qatalyst-landing-qas197 .qatalyst-guardrail-item p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.55;
+}
+
+.qatalyst-landing-qas197 .qatalyst-final-cta {
+  margin-top: 24px;
+  padding: clamp(42px, 5vw, 72px);
+}
+
+@media (max-width: 1040px) {
+  .qatalyst-landing-qas197 .qatalyst-site-header {
+    grid-template-columns: 1fr;
+    border-radius: 24px;
+  }
+
+  .qatalyst-landing-qas197 .qatalyst-site-nav,
+  .qatalyst-landing-qas197 .qatalyst-site-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .qatalyst-landing-qas197 .qatalyst-hero,
+  .qatalyst-landing-qas197 .qatalyst-vault-panel,
+  .qatalyst-landing-qas197 .qatalyst-builder-card,
+  .qatalyst-landing-qas197 .qatalyst-guardrails-section,
+  .qatalyst-landing-qas197 .qatalyst-final-cta {
+    grid-template-columns: 1fr;
+  }
+
+  .qatalyst-landing-qas197 .qatalyst-workflow-lane,
+  .qatalyst-landing-qas197 .qatalyst-card-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .qatalyst-landing-qas197 .qatalyst-card-grid-3,
+  .qatalyst-landing-qas197 .qatalyst-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .qatalyst-landing-qas197 {
+    width: min(100% - 24px, 1180px);
+  }
+
+  .qatalyst-landing-qas197 .qatalyst-site-nav {
+    gap: 12px;
+  }
+
+  .qatalyst-landing-qas197 .qatalyst-site-actions,
+  .qatalyst-landing-qas197 .qatalyst-header-button,
+  .qatalyst-landing-qas197 .qatalyst-button,
+  .qatalyst-landing-qas197 .qatalyst-hero-actions,
+  .qatalyst-landing-qas197 .qatalyst-final-actions {
+    width: 100%;
+  }
+
+  .qatalyst-landing-qas197 .qatalyst-hero,
+  .qatalyst-landing-qas197 .qatalyst-section,
+  .qatalyst-landing-qas197 .qatalyst-final-cta {
+    padding: 28px;
+    border-radius: 22px;
+  }
+
+  .qatalyst-landing-qas197 h1 {
+    font-size: clamp(2.55rem, 15vw, 4.2rem);
+  }
+
+  .qatalyst-landing-qas197 h2 {
+    font-size: clamp(2rem, 11vw, 3.2rem);
+  }
+
+  .qatalyst-landing-qas197 .qatalyst-workflow-lane,
+  .qatalyst-landing-qas197 .qatalyst-card-grid-4,
+  .qatalyst-landing-qas197 .qatalyst-vault-stack {
+    grid-template-columns: 1fr;
+  }
+}
