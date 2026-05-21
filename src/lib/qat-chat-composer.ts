@@ -91,6 +91,14 @@ function buildFallbackAnswer({ question, contextBlock, missingContext, workflowC
       ].join("\n");
     }
 
+    if (workflowContext?.page === "integrations") {
+      return [
+        `I can review ${tool}, but my live answer composer is unavailable right now.`,
+        "",
+        "Use the visible setup steps as the source of truth: completed steps are already verified, active steps are the next action, and missing steps are the only blockers to call out.",
+      ].join("\n");
+    }
+
     return [
       `I can review ${tool}, but my live answer composer is unavailable right now.`,
       "",
@@ -151,6 +159,10 @@ export async function composeQAtAnswer(input: ComposeQAtAnswerInput): Promise<Co
     "Use Project Brain context as saved project truth and supporting memory only after reviewing the current artifact/state.",
     "Keep embedded companion answers short: aim for 3 to 5 bullets, no long essay, no generic checklist unless there is no current context.",
     "Understand the workflow phase. Pre-generation/source-input review means the user has not generated the QAtalyst artifact yet. Post-generation/generated-output review means the generated artifact exists and can be critiqued directly.",
+    "For integrations setup pages, lead with a readiness verdict: Ready, Partially ready, or Blocked. Treat completed steps, readiness signals, and visible status text as already verified. Do not ask the user to verify or confirm things the screen already says are saved, tested, loaded, connected, or ready.",
+    "For integrations setup pages, only mention actual missing or active setup items. If Jira is saved/tested/types loaded/handoff ready, say it is ready and give one smoke-test next action. If TestRail is saved/tested/project target/export ready, say it is ready and give one export-preview next action.",
+    "For integrations setup pages, avoid generic phrases like ensure, confirm, verify, double-check, or make sure unless the visible state is missing, warning, failed, or unknown. Do not invent permission doubts if the page says handoff/export is ready.",
+    "For integrations setup pages, never expose or repeat credentials, API tokens, API keys, secrets, or masked secret values. If asked for a secret, refuse briefly and offer safe setup steps.",
     "HARD RULE FOR PRE-GENERATION: never mention follow-up questions, follow-up notes, missing follow-ups, generated follow-ups, or questions to include. Follow-up questions are not available yet.",
     "HARD RULE FOR PRE-GENERATION: do not ask the user to justify severity or priority. If visible severity/priority fields are filled, accept them as user-provided triage context.",
     "HARD RULE FOR PRE-GENERATION: do not mention Jira links, Jira ticket links, Jira access, or Jira comments unless the user specifically asks about Jira linking/comments.",
@@ -177,9 +189,11 @@ export async function composeQAtAnswer(input: ComposeQAtAnswerInput): Promise<Co
     "Follow-up context present:",
     hasFollowUps ? "Yes. You may refer to provided follow-up answers/history." : "No. Do not mention follow-up questions at all in pre-generation.",
     "",
-    hasCurrentScreenContext
-      ? "Current-screen workflow context. Analyze this first and be concrete:"
-      : "Current-screen workflow context:",
+    workflowContext?.page === "integrations"
+      ? "Current-screen integrations context. Treat completed/saved/tested/loaded/ready items as already true; do not ask to verify them again. Give a readiness verdict and one next action:"
+      : hasCurrentScreenContext
+        ? "Current-screen workflow context. Analyze this first and be concrete:"
+        : "Current-screen workflow context:",
     workflowContextBlock,
     "",
     "Project Brain context available to you:",
@@ -191,9 +205,11 @@ export async function composeQAtAnswer(input: ComposeQAtAnswerInput): Promise<Co
     "Known missing Brain context. Mention only if it directly improves the answer:",
     missingContext.length ? missingContext.join(", ") : "None detected.",
     "",
-    hasCurrentScreenContext
-      ? "Now answer as QAt. Be concise and specific to the current workflow phase. In pre-generation, do not mention follow-up questions, Jira links/comments, or severity/priority justification."
-      : "Now answer as QAt in one natural conversational response.",
+    workflowContext?.page === "integrations"
+      ? "Now answer as QAt. Start with Ready / Partially ready / Blocked. Do not ask to verify completed setup checks. End with one practical next action."
+      : hasCurrentScreenContext
+        ? "Now answer as QAt. Be concise and specific to the current workflow phase. In pre-generation, do not mention follow-up questions, Jira links/comments, or severity/priority justification."
+        : "Now answer as QAt in one natural conversational response.",
   ].join("\n");
 
   try {
