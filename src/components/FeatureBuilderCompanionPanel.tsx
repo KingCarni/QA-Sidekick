@@ -27,6 +27,13 @@ type GuidanceItem = { icon: string; title: string; detail: string; tone: "good" 
 type QaLens = { id: string; label: string; detail: string; tone: "blue" | "green" | "yellow" | "red" };
 type BuilderAction = { title: string; detail: string; prompt: string; tone: "blue" | "green" | "yellow" | "red" };
 type LiveInsight = { label: string; value: string; detail: string; tone: "good" | "watch" | "risk" | "info" };
+type QatIntervention = {
+  title: string;
+  message: string;
+  primaryAction: { label: string; prompt: string };
+  secondaryAction?: { label: string; prompt: string };
+  tone: "good" | "watch" | "risk" | "info";
+};
 type AiPromptResponse = { ok?: boolean; error?: string; prompts?: CompanionPrompt[]; nextQuestion?: string; credits?: { balanceAfter?: number } };
 
 const CATEGORY_LABELS: Record<PromptCategory, string> = {
@@ -175,6 +182,153 @@ function buildLiveInsights(draft: string, extraContext = ""): LiveInsight[] {
     { label: "Jira", value: signals.hasJira || (signals.hasScope && signals.hasAcceptance) ? "Can shape" : "Not ready", detail: signals.hasJira ? "Jira language is present." : "Scope + criteria improves Jira output.", tone: signals.hasJira || (signals.hasScope && signals.hasAcceptance) ? "good" : "watch" },
   ];
 }
+function buildQatInterventions(draft: string, extraContext = ""): QatIntervention[] {
+  const signals = getSignals(draft, extraContext);
+  const lenses = buildQaLenses(draft, extraContext);
+  const missing = getMissingCallouts(draft, extraContext).filter((item) => !item.isReady);
+
+  if (!draft.trim()) {
+    return [
+      {
+        title: "QAt is ready",
+        message: "Give me the messy version of the feature. I’ll watch for scope, risk, acceptance criteria, and Jira readiness as it takes shape.",
+        tone: "info",
+        primaryAction: {
+          label: "Add starter scaffold",
+          prompt: "Feature idea:\nPrimary user:\nUser goal:\nMVP scope:\nKnown risks:\nAcceptance criteria:",
+        },
+      },
+    ];
+  }
+
+  const interventions: QatIntervention[] = [];
+
+  if (signals.hasIntegration) {
+    interventions.push({
+      title: "Integration risk spotted",
+      message: "You’re touching an integration surface. I’d define success, failure, timeout, permission, and partial-data behavior before turning this into Jira work.",
+      tone: "watch",
+      primaryAction: {
+        label: "Add integration handling",
+        prompt:
+          "Integration handling:\n- Success state:\n- Auth or permission failure:\n- Timeout/retry behavior:\n- Partial data behavior:\n- User-facing error message:",
+      },
+      secondaryAction: {
+        label: "Add as QA risk",
+        prompt:
+          "QA risk: Integration failures may leave the user with stale, partial, or misleading data unless success, failure, timeout, and retry states are clearly handled.",
+      },
+    });
+  }
+
+  if (signals.hasBilling) {
+    interventions.push({
+      title: "Credit/billing risk spotted",
+      message: "Anything involving credits or payments needs duplicate-click, failed-spend, refund, and balance-refresh coverage. This is where small bugs get expensive.",
+      tone: "risk",
+      primaryAction: {
+        label: "Add billing guardrails",
+        prompt:
+          "Billing/credit guardrails:\n- Prevent duplicate spend/charge:\n- Failed payment or failed credit spend:\n- Balance refresh behavior:\n- Refund/reversal behavior:\n- User-facing confirmation:",
+      },
+      secondaryAction: {
+        label: "Add as QA risk",
+        prompt:
+          "QA risk: Credit or billing actions may double-spend, fail silently, or show stale balances unless duplicate actions, failed spends, and refresh behavior are covered.",
+      },
+    });
+  }
+
+  if (signals.hasRoles) {
+    interventions.push({
+      title: "Permission boundary needed",
+      message: "I’m seeing role/access language. Define who can use this, who is blocked, and what blocked users see.",
+      tone: "watch",
+      primaryAction: {
+        label: "Add permissions section",
+        prompt:
+          "Permissions:\n- Allowed roles:\n- Blocked roles:\n- Empty/blocked state:\n- Audit or ownership concerns:\n- Error message:",
+      },
+      secondaryAction: {
+        label: "Add acceptance criteria",
+        prompt:
+          "Acceptance criteria:\n- Given a user with permission, when they access this feature, then they can complete the intended action.\n- Given a user without permission, when they attempt access, then they see a safe blocked state and no data is changed.",
+      },
+    });
+  }
+
+  if (signals.hasAsync) {
+    interventions.push({
+      title: "State handling risk",
+      message: "This sounds like it may involve async work. Loading, retry, stale state, and duplicate submissions should be explicit before build starts.",
+      tone: "risk",
+      primaryAction: {
+        label: "Add state handling",
+        prompt:
+          "State handling:\n- Loading state:\n- Retry behavior:\n- Duplicate-click prevention:\n- Stale data behavior:\n- Partial success behavior:",
+      },
+      secondaryAction: {
+        label: "Add as QA risk",
+        prompt:
+          "QA risk: Async state may create duplicate actions, stale UI, partial completion, or unclear recovery unless loading, retry, and failure states are defined.",
+      },
+    });
+  }
+
+  if (!signals.hasScope) {
+    interventions.push({
+      title: "Scope is still loose",
+      message: "I don’t see a clear MVP boundary yet. This can turn into a bloated ticket unless we split first-pass scope from later ideas.",
+      tone: "watch",
+      primaryAction: {
+        label: "Split MVP vs later",
+        prompt:
+          "MVP scope:\n- Included in first pass:\n- Explicitly out of scope:\n- Future follow-up ideas:\n- Dependencies:",
+      },
+    });
+  }
+
+  if (!signals.hasAcceptance) {
+    interventions.push({
+      title: "Needs testable done states",
+      message: "The idea is forming, but I don’t see acceptance criteria yet. Add observable success and failure states before Jira creation.",
+      tone: "watch",
+      primaryAction: {
+        label: "Add acceptance criteria",
+        prompt:
+          "Acceptance criteria:\n- Given [context], when [action], then [observable success result].\n- Given [edge/failure case], when [action], then [safe user-facing behavior].",
+      },
+    });
+  }
+
+  if (!interventions.length && missing[0]) {
+    interventions.push({
+      title: `${missing[0].label} is the next gap`,
+      message: missing[0].detail,
+      tone: "info",
+      primaryAction: {
+        label: "Add missing detail",
+        prompt: `${missing[0].label}: `,
+      },
+    });
+  }
+
+  if (!interventions.length && lenses[0]) {
+    interventions.push({
+      title: `${lenses[0].label} looks covered`,
+      message: "This draft is getting healthier. I’d do one final pass for acceptance criteria, regression risk, and Jira child task shape.",
+      tone: "good",
+      primaryAction: {
+        label: "Prep Jira structure",
+        prompt:
+          "Jira-ready structure:\nParent ticket summary:\nImplementation tasks:\nQA tasks:\nAcceptance criteria:\nRisks/regression areas:",
+      },
+    });
+  }
+
+  return interventions.slice(0, 2);
+}
+
 function buildBuilderActions(draft: string, extraContext = ""): BuilderAction[] {
   const signals = getSignals(draft, extraContext);
   const lenses = buildQaLenses(draft, extraContext);
@@ -294,6 +448,7 @@ export default function FeatureBuilderCompanionPanel({ draft, extraContext = "",
   const missingCallouts = useMemo(() => getMissingCallouts(draft, extraContext), [draft, extraContext]);
   const qaLenses = useMemo(() => buildQaLenses(draft, extraContext), [draft, extraContext]);
   const liveInsights = useMemo(() => buildLiveInsights(draft, extraContext), [draft, extraContext]);
+  const qatInterventions = useMemo(() => buildQatInterventions(draft, extraContext), [draft, extraContext]);
   const confidence = useMemo(() => getContextConfidence({ draft, extraContext, projectName, productType }), [draft, extraContext, projectName, productType]);
   const confidenceCopy = useMemo(() => getConfidenceCopy(confidence), [confidence]);
   const guidanceFeed = useMemo(() => buildGuidanceFeed({ draft, extraContext, projectName, productType, readinessScore, confidence, lenses: qaLenses }), [draft, extraContext, projectName, productType, readinessScore, confidence, qaLenses]);
@@ -336,6 +491,128 @@ export default function FeatureBuilderCompanionPanel({ draft, extraContext = "",
         </div>
 
         <div aria-label={`Readiness score ${readinessScore}%`} role="progressbar" aria-valuenow={readinessScore} aria-valuemin={0} aria-valuemax={100} style={{ marginTop: "13px" }}><div style={{ alignItems: "center", display: "flex", justifyContent: "space-between", gap: "12px", marginBottom: "7px" }}><span style={{ color: "rgba(229,231,235,0.7)", fontSize: "0.72rem", fontWeight: 900, letterSpacing: "0.12em", textTransform: "uppercase" }}>Readiness</span><strong style={{ color: readinessScore >= 80 ? "#86efac" : readinessScore >= 50 ? "#fde68a" : "#fecaca" }}>{readinessScore}%</strong></div><div style={{ background: "rgba(15,23,42,0.9)", border: "1px solid rgba(148,163,184,0.18)", borderRadius: "999px", height: "9px", overflow: "hidden" }}><span style={{ background: readinessScore >= 80 ? "linear-gradient(90deg, #22c55e, #86efac)" : readinessScore >= 50 ? "linear-gradient(90deg, #f59e0b, #fde68a)" : "linear-gradient(90deg, #ef4444, #fca5a5)", borderRadius: "999px", display: "block", height: "100%", width: `${readinessScore}%` }} /></div></div>
+
+
+        <section
+          style={{
+            ...guidanceCardStyle,
+            marginTop: "12px",
+            borderColor: "rgba(248, 113, 113, 0.26)",
+            background:
+              "linear-gradient(135deg, rgba(127, 29, 29, 0.18), rgba(15, 23, 42, 0.72))",
+          }}
+        >
+          <div
+            style={{
+              alignItems: "center",
+              display: "flex",
+              justifyContent: "space-between",
+              gap: "10px",
+              marginBottom: "10px",
+            }}
+          >
+            <div>
+              <p className="report-kicker" style={{ margin: 0 }}>
+                QAt Says
+              </p>
+              <h4 style={{ color: "#fff", fontSize: "0.92rem", margin: "3px 0 0" }}>
+                Live review notes
+              </h4>
+            </div>
+            <span
+              style={{
+                border: "1px solid rgba(248, 113, 113, 0.26)",
+                borderRadius: "999px",
+                color: "rgba(254, 202, 202, 0.9)",
+                fontSize: "0.68rem",
+                fontWeight: 900,
+                padding: "5px 8px",
+              }}
+            >
+              watching
+            </span>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
+            {qatInterventions.map((item) => (
+              <div key={`${item.title}-${item.message}`} style={getGuidanceStyle(item.tone)}>
+                <span style={{ fontSize: "1rem", lineHeight: 1 }}>
+                  {item.tone === "risk" ? "⚠️" : item.tone === "good" ? "✅" : item.tone === "watch" ? "🔎" : "💬"}
+                </span>
+
+                <div>
+                  <strong
+                    style={{
+                      color: "#fff",
+                      display: "block",
+                      fontSize: "0.8rem",
+                      lineHeight: 1.32,
+                    }}
+                  >
+                    {item.title}
+                  </strong>
+
+                  <span
+                    style={{
+                      color: "rgba(229,231,235,0.68)",
+                      display: "block",
+                      fontSize: "0.72rem",
+                      lineHeight: 1.38,
+                      marginTop: "4px",
+                    }}
+                  >
+                    {item.message}
+                  </span>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "7px",
+                      marginTop: "9px",
+                    }}
+                  >
+                    <button
+                      onClick={() => onAppendPrompt(item.primaryAction.prompt)}
+                      style={{
+                        border: "1px solid rgba(248, 113, 113, 0.32)",
+                        borderRadius: "999px",
+                        background: "rgba(127, 29, 29, 0.32)",
+                        color: "#fff",
+                        cursor: "pointer",
+                        fontSize: "0.68rem",
+                        fontWeight: 900,
+                        padding: "7px 9px",
+                      }}
+                      type="button"
+                    >
+                      {item.primaryAction.label}
+                    </button>
+
+                    {item.secondaryAction ? (
+                      <button
+                        onClick={() => onAppendPrompt(item.secondaryAction!.prompt)}
+                        style={{
+                          border: "1px solid rgba(148, 163, 184, 0.22)",
+                          borderRadius: "999px",
+                          background: "rgba(15, 23, 42, 0.72)",
+                          color: "rgba(229,231,235,0.86)",
+                          cursor: "pointer",
+                          fontSize: "0.68rem",
+                          fontWeight: 850,
+                          padding: "7px 9px",
+                        }}
+                        type="button"
+                      >
+                        {item.secondaryAction.label}
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <section style={{ ...guidanceCardStyle, marginTop: "12px", borderColor: "rgba(96,165,250,0.24)", background: "linear-gradient(135deg, rgba(30,64,175,0.14), rgba(0,0,0,0.24))" }}>
           <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between", gap: "10px" }}><p className="report-kicker" style={{ margin: 0 }}>Live insights</p><span style={{ color: "rgba(229,231,235,0.5)", fontSize: "0.68rem", fontWeight: 850 }}>Updates while typing</span></div>
