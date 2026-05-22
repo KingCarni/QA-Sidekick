@@ -26,6 +26,7 @@ type MissingCallout = { label: string; detail: string; isReady: boolean };
 type GuidanceItem = { icon: string; title: string; detail: string; tone: "good" | "watch" | "risk" | "info" };
 type QaLens = { id: string; label: string; detail: string; tone: "blue" | "green" | "yellow" | "red" };
 type BuilderAction = { title: string; detail: string; prompt: string; tone: "blue" | "green" | "yellow" | "red" };
+type LiveInsight = { label: string; value: string; detail: string; tone: "good" | "watch" | "risk" | "info" };
 type AiPromptResponse = { ok?: boolean; error?: string; prompts?: CompanionPrompt[]; nextQuestion?: string; credits?: { balanceAfter?: number } };
 
 const CATEGORY_LABELS: Record<PromptCategory, string> = {
@@ -72,6 +73,7 @@ const askAiButtonStyle: CSSProperties = { alignItems: "center", background: "lin
 const guidanceItemStyle: CSSProperties = { alignItems: "flex-start", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", display: "grid", gap: "9px", gridTemplateColumns: "24px minmax(0, 1fr)", padding: "9px" };
 const lensGridStyle: CSSProperties = { display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "10px" };
 const compactDetailsStyle: CSSProperties = { ...guidanceCardStyle, marginTop: "10px", padding: "10px 12px" };
+const liveInsightsGridStyle: CSSProperties = { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "8px", marginTop: "10px" };
 
 function splitWords(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").split(/\s+/).filter(Boolean);
@@ -161,6 +163,18 @@ function buildGuidanceFeed(args: { draft: string; extraContext: string; projectN
   if (!items.length) items.push({ icon: "🧱", title: "Start rough", detail: "Give me the messy idea. QAt will turn it into scope, criteria, risks, and Jira work.", tone: "info" });
   return items.slice(0, 3);
 }
+function buildLiveInsights(draft: string, extraContext = ""): LiveInsight[] {
+  const signals = getSignals(draft, extraContext);
+  const lenses = buildQaLenses(draft, extraContext);
+  return [
+    { label: "User", value: signals.hasUser ? "Detected" : "Missing", detail: signals.hasUser ? "There is a usable actor/user signal." : "Add the role/person this helps.", tone: signals.hasUser ? "good" : "watch" },
+    { label: "Value", value: signals.hasOutcome ? "Detected" : "Missing", detail: signals.hasOutcome ? "Outcome language is present." : "State what gets better after release.", tone: signals.hasOutcome ? "good" : "watch" },
+    { label: "Scope", value: signals.hasScope ? "Bounded" : "Open", detail: signals.hasScope ? "MVP or boundary signal found." : "Define first pass vs later work.", tone: signals.hasScope ? "good" : "watch" },
+    { label: "Risk", value: signals.hasRisk ? "Present" : "Thin", detail: signals.hasRisk ? "Risk language is present." : "Add failure modes before Jira creation.", tone: signals.hasRisk ? "good" : "risk" },
+    { label: "Lens", value: lenses[0]?.label ?? "None yet", detail: lenses[0]?.detail ?? "No specialized QA lens detected yet.", tone: lenses[0]?.tone === "red" ? "risk" : lenses[0]?.tone === "yellow" ? "watch" : lenses[0] ? "info" : "watch" },
+    { label: "Jira", value: signals.hasJira || (signals.hasScope && signals.hasAcceptance) ? "Can shape" : "Not ready", detail: signals.hasJira ? "Jira language is present." : "Scope + criteria improves Jira output.", tone: signals.hasJira || (signals.hasScope && signals.hasAcceptance) ? "good" : "watch" },
+  ];
+}
 function buildBuilderActions(draft: string, extraContext = ""): BuilderAction[] {
   const signals = getSignals(draft, extraContext);
   const lenses = buildQaLenses(draft, extraContext);
@@ -226,6 +240,15 @@ function getGuidanceStyle(tone: GuidanceItem["tone"]): CSSProperties {
   };
   return { ...guidanceItemStyle, ...colors[tone] };
 }
+function getInsightStyle(tone: LiveInsight["tone"]): CSSProperties {
+  const colors: Record<LiveInsight["tone"], CSSProperties> = {
+    good: { borderColor: "rgba(134, 239, 172, 0.28)", background: "rgba(22, 101, 52, 0.13)" },
+    watch: { borderColor: "rgba(250, 204, 21, 0.28)", background: "rgba(113, 63, 18, 0.13)" },
+    risk: { borderColor: "rgba(248, 113, 113, 0.28)", background: "rgba(127, 29, 29, 0.13)" },
+    info: { borderColor: "rgba(96, 165, 250, 0.28)", background: "rgba(30, 64, 175, 0.13)" },
+  };
+  return { ...colors[tone], border: colors[tone].borderColor as string, borderRadius: "13px", padding: "9px 10px" };
+}
 function getLensStyle(tone: QaLens["tone"]): CSSProperties {
   const styles: Record<QaLens["tone"], CSSProperties> = {
     blue: { border: "1px solid rgba(96, 165, 250, 0.3)", background: "rgba(30, 64, 175, 0.14)" },
@@ -270,6 +293,7 @@ export default function FeatureBuilderCompanionPanel({ draft, extraContext = "",
   const readinessScore = useMemo(() => getReadinessScore(draft, extraContext), [draft, extraContext]);
   const missingCallouts = useMemo(() => getMissingCallouts(draft, extraContext), [draft, extraContext]);
   const qaLenses = useMemo(() => buildQaLenses(draft, extraContext), [draft, extraContext]);
+  const liveInsights = useMemo(() => buildLiveInsights(draft, extraContext), [draft, extraContext]);
   const confidence = useMemo(() => getContextConfidence({ draft, extraContext, projectName, productType }), [draft, extraContext, projectName, productType]);
   const confidenceCopy = useMemo(() => getConfidenceCopy(confidence), [confidence]);
   const guidanceFeed = useMemo(() => buildGuidanceFeed({ draft, extraContext, projectName, productType, readinessScore, confidence, lenses: qaLenses }), [draft, extraContext, projectName, productType, readinessScore, confidence, qaLenses]);
@@ -288,7 +312,7 @@ export default function FeatureBuilderCompanionPanel({ draft, extraContext = "",
       const response = await fetch("/api/feature-builder/prompts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ draft, extraContext, projectName, productType, category: activeCategory, readinessScore, contextConfidence: confidence, activeQaLenses: qaLenses, missingCallouts: missingCallouts.filter((item) => !item.isReady) }),
+        body: JSON.stringify({ draft, extraContext, projectName, productType, category: activeCategory, readinessScore, contextConfidence: confidence, activeQaLenses: qaLenses, missingCallouts: missingCallouts.filter((item) => !item.isReady), liveInsights }),
       });
       const payload = (await response.json().catch(() => null)) as AiPromptResponse | null;
       if (!response.ok || payload?.ok === false) throw new Error(payload?.error || "Could not generate AI prompt suggestions.");
@@ -313,7 +337,12 @@ export default function FeatureBuilderCompanionPanel({ draft, extraContext = "",
 
         <div aria-label={`Readiness score ${readinessScore}%`} role="progressbar" aria-valuenow={readinessScore} aria-valuemin={0} aria-valuemax={100} style={{ marginTop: "13px" }}><div style={{ alignItems: "center", display: "flex", justifyContent: "space-between", gap: "12px", marginBottom: "7px" }}><span style={{ color: "rgba(229,231,235,0.7)", fontSize: "0.72rem", fontWeight: 900, letterSpacing: "0.12em", textTransform: "uppercase" }}>Readiness</span><strong style={{ color: readinessScore >= 80 ? "#86efac" : readinessScore >= 50 ? "#fde68a" : "#fecaca" }}>{readinessScore}%</strong></div><div style={{ background: "rgba(15,23,42,0.9)", border: "1px solid rgba(148,163,184,0.18)", borderRadius: "999px", height: "9px", overflow: "hidden" }}><span style={{ background: readinessScore >= 80 ? "linear-gradient(90deg, #22c55e, #86efac)" : readinessScore >= 50 ? "linear-gradient(90deg, #f59e0b, #fde68a)" : "linear-gradient(90deg, #ef4444, #fca5a5)", borderRadius: "999px", display: "block", height: "100%", width: `${readinessScore}%` }} /></div></div>
 
-        <section style={{ ...guidanceCardStyle, marginTop: "14px", borderColor: "rgba(250,204,21,0.28)", background: "linear-gradient(135deg, rgba(113,63,18,0.28), rgba(0,0,0,0.25))" }}><p className="report-kicker" style={{ marginBottom: "7px" }}>Suggested next move</p><button onClick={() => onAppendPrompt(nextQuestion)} style={{ border: "1px solid rgba(250,204,21,0.34)", borderRadius: "14px", background: "rgba(15,23,42,0.74)", color: "#fff", cursor: "pointer", fontWeight: 900, lineHeight: 1.35, padding: "11px 12px", textAlign: "left", width: "100%" }} type="button">{nextQuestion}<span style={{ color: "rgba(253,230,138,0.8)", display: "block", fontSize: "0.68rem", fontWeight: 850, marginTop: "5px" }}>Click to insert into the draft</span></button></section>
+        <section style={{ ...guidanceCardStyle, marginTop: "12px", borderColor: "rgba(96,165,250,0.24)", background: "linear-gradient(135deg, rgba(30,64,175,0.14), rgba(0,0,0,0.24))" }}>
+          <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between", gap: "10px" }}><p className="report-kicker" style={{ margin: 0 }}>Live insights</p><span style={{ color: "rgba(229,231,235,0.5)", fontSize: "0.68rem", fontWeight: 850 }}>Updates while typing</span></div>
+          <div style={liveInsightsGridStyle}>{liveInsights.map((insight) => <div key={insight.label} title={insight.detail} style={getInsightStyle(insight.tone)}><strong style={{ color: "rgba(255,255,255,0.82)", display: "block", fontSize: "0.66rem", letterSpacing: "0.08em", textTransform: "uppercase" }}>{insight.label}</strong><span style={{ color: "#fff", display: "block", fontSize: "0.78rem", fontWeight: 900, marginTop: "3px" }}>{insight.value}</span></div>)}</div>
+        </section>
+
+        <section style={{ ...guidanceCardStyle, marginTop: "12px", borderColor: "rgba(250,204,21,0.28)", background: "linear-gradient(135deg, rgba(113,63,18,0.28), rgba(0,0,0,0.25))" }}><p className="report-kicker" style={{ marginBottom: "7px" }}>Suggested next move</p><button onClick={() => onAppendPrompt(nextQuestion)} style={{ border: "1px solid rgba(250,204,21,0.34)", borderRadius: "14px", background: "rgba(15,23,42,0.74)", color: "#fff", cursor: "pointer", fontWeight: 900, lineHeight: 1.35, padding: "11px 12px", textAlign: "left", width: "100%" }} type="button">{nextQuestion}<span style={{ color: "rgba(253,230,138,0.8)", display: "block", fontSize: "0.68rem", fontWeight: 850, marginTop: "5px" }}>Click to insert into the draft</span></button></section>
 
         <section style={{ ...guidanceCardStyle, marginTop: "12px" }}><div style={{ alignItems: "center", display: "flex", gap: "10px", justifyContent: "space-between", marginBottom: "10px" }}><div><h4 style={{ color: "#fff", fontSize: "0.9rem", margin: 0 }}>{CATEGORY_LABELS[activeCategory]} accelerators</h4><p style={{ color: "rgba(229,231,235,0.58)", fontSize: "0.7rem", margin: "3px 0 0" }}>Quick inserts that move the brief forward.</p></div><button disabled={!canAskAi} onClick={requestAiPrompts} style={askAiButtonStyle} type="button"><span>{isLoadingAiPrompts ? "Asking..." : "Ask AI"}</span><strong>1 credit</strong></button></div>
           <div role="tablist" aria-label="Prompt categories" style={categoryGridStyle}>{(Object.keys(CATEGORY_LABELS) as PromptCategory[]).map((category) => { const isActive = activeCategory === category; return <button aria-selected={isActive} key={category} onClick={() => { setActiveCategory(category); setAiPrompts([]); setAiNextQuestion(""); setAiError(""); }} role="tab" style={{ ...categoryButtonBaseStyle, ...(isActive ? activeCategoryButtonStyle : inactiveCategoryButtonStyle) }} type="button"><strong style={{ display: "block", fontSize: "0.76rem", marginBottom: "4px" }}>{CATEGORY_LABELS[category]}</strong><span style={{ color: "rgba(229,231,235,0.62)", display: "block", fontSize: "0.64rem", lineHeight: 1.25 }}>{CATEGORY_DESCRIPTIONS[category]}</span></button>; })}</div>
