@@ -32,6 +32,7 @@ type QatIntervention = {
   message: string;
   primaryAction: { label: string; prompt: string };
   secondaryAction?: { label: string; prompt: string };
+  why: string;
   tone: "good" | "watch" | "risk" | "info";
 };
 type AiPromptResponse = { ok?: boolean; error?: string; prompts?: CompanionPrompt[]; nextQuestion?: string; credits?: { balanceAfter?: number } };
@@ -81,6 +82,25 @@ const guidanceItemStyle: CSSProperties = { alignItems: "flex-start", border: "1p
 const lensGridStyle: CSSProperties = { display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "10px" };
 const compactDetailsStyle: CSSProperties = { ...guidanceCardStyle, marginTop: "10px", padding: "10px 12px" };
 const liveInsightsGridStyle: CSSProperties = { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "8px", marginTop: "10px" };
+
+function getToneIcon(tone: QatIntervention["tone"] | GuidanceItem["tone"]) {
+  if (tone === "risk") return "⚠️";
+  if (tone === "good") return "✅";
+  if (tone === "watch") return "🔎";
+  return "💬";
+}
+function getToneLabel(tone: QatIntervention["tone"]) {
+  if (tone === "risk") return "Needs attention";
+  if (tone === "good") return "Looks healthy";
+  if (tone === "watch") return "Worth checking";
+  return "Guidance";
+}
+function getCompactInsightSummary(liveInsights: LiveInsight[]) {
+  const readyCount = liveInsights.filter((insight) => insight.tone === "good").length;
+  const riskCount = liveInsights.filter((insight) => insight.tone === "risk").length;
+  const watchCount = liveInsights.filter((insight) => insight.tone === "watch").length;
+  return `${readyCount} healthy · ${riskCount + watchCount} watching`;
+}
 
 function splitWords(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").split(/\s+/).filter(Boolean);
@@ -191,6 +211,7 @@ function buildQatInterventions(draft: string, extraContext = ""): QatInterventio
     return [
       {
         title: "QAt is ready",
+        why: "Starting with a scaffold prevents the feature from becoming a vague paragraph and gives QAt stable fields to evaluate.",
         message: "Give me the messy version of the feature. I’ll watch for scope, risk, acceptance criteria, and Jira readiness as it takes shape.",
         tone: "info",
         primaryAction: {
@@ -206,6 +227,7 @@ function buildQatInterventions(draft: string, extraContext = ""): QatInterventio
   if (signals.hasIntegration) {
     interventions.push({
       title: "Integration risk spotted",
+      why: "Integration bugs usually hide in auth, timeouts, stale data, and partial responses. Defining those now gives QA and Jira clearer targets.",
       message: "You’re touching an integration surface. I’d define success, failure, timeout, permission, and partial-data behavior before turning this into Jira work.",
       tone: "watch",
       primaryAction: {
@@ -224,6 +246,7 @@ function buildQatInterventions(draft: string, extraContext = ""): QatInterventio
   if (signals.hasBilling) {
     interventions.push({
       title: "Credit/billing risk spotted",
+      why: "Credit and payment flows are expensive failure zones. Duplicate actions, failed spends, and stale balances need explicit handling before build.",
       message: "Anything involving credits or payments needs duplicate-click, failed-spend, refund, and balance-refresh coverage. This is where small bugs get expensive.",
       tone: "risk",
       primaryAction: {
@@ -242,6 +265,7 @@ function buildQatInterventions(draft: string, extraContext = ""): QatInterventio
   if (signals.hasRoles) {
     interventions.push({
       title: "Permission boundary needed",
+      why: "Permission gaps create security and trust issues. QAt wants allowed, blocked, and empty states defined before implementation starts.",
       message: "I’m seeing role/access language. Define who can use this, who is blocked, and what blocked users see.",
       tone: "watch",
       primaryAction: {
@@ -260,6 +284,7 @@ function buildQatInterventions(draft: string, extraContext = ""): QatInterventio
   if (signals.hasAsync) {
     interventions.push({
       title: "State handling risk",
+      why: "Async work often creates duplicate submissions, unclear loading, stale UI, and partial success states unless the behavior is named up front.",
       message: "This sounds like it may involve async work. Loading, retry, stale state, and duplicate submissions should be explicit before build starts.",
       tone: "risk",
       primaryAction: {
@@ -278,6 +303,7 @@ function buildQatInterventions(draft: string, extraContext = ""): QatInterventio
   if (!signals.hasScope) {
     interventions.push({
       title: "Scope is still loose",
+      why: "Loose scope makes generated Jira work too broad. Separating first-pass work from later ideas keeps the ticket buildable.",
       message: "I don’t see a clear MVP boundary yet. This can turn into a bloated ticket unless we split first-pass scope from later ideas.",
       tone: "watch",
       primaryAction: {
@@ -291,6 +317,7 @@ function buildQatInterventions(draft: string, extraContext = ""): QatInterventio
   if (!signals.hasAcceptance) {
     interventions.push({
       title: "Needs testable done states",
+      why: "Acceptance criteria turn a rough idea into something QA can verify and developers can finish without guessing.",
       message: "The idea is forming, but I don’t see acceptance criteria yet. Add observable success and failure states before Jira creation.",
       tone: "watch",
       primaryAction: {
@@ -304,6 +331,7 @@ function buildQatInterventions(draft: string, extraContext = ""): QatInterventio
   if (!interventions.length && missing[0]) {
     interventions.push({
       title: `${missing[0].label} is the next gap`,
+      why: "This is the next missing signal blocking a cleaner feature brief and stronger Jira output.",
       message: missing[0].detail,
       tone: "info",
       primaryAction: {
@@ -316,6 +344,7 @@ function buildQatInterventions(draft: string, extraContext = ""): QatInterventio
   if (!interventions.length && lenses[0]) {
     interventions.push({
       title: `${lenses[0].label} looks covered`,
+      why: "The main lens is present now, so QAt is shifting from discovery into final Jira-readiness checks.",
       message: "This draft is getting healthier. I’d do one final pass for acceptance criteria, regression risk, and Jira child task shape.",
       tone: "good",
       primaryAction: {
@@ -449,6 +478,8 @@ export default function FeatureBuilderCompanionPanel({ draft, extraContext = "",
   const qaLenses = useMemo(() => buildQaLenses(draft, extraContext), [draft, extraContext]);
   const liveInsights = useMemo(() => buildLiveInsights(draft, extraContext), [draft, extraContext]);
   const qatInterventions = useMemo(() => buildQatInterventions(draft, extraContext), [draft, extraContext]);
+  const primaryQatIntervention = qatInterventions[0];
+  const secondaryQatIntervention = qatInterventions[1];
   const confidence = useMemo(() => getContextConfidence({ draft, extraContext, projectName, productType }), [draft, extraContext, projectName, productType]);
   const confidenceCopy = useMemo(() => getConfidenceCopy(confidence), [confidence]);
   const guidanceFeed = useMemo(() => buildGuidanceFeed({ draft, extraContext, projectName, productType, readinessScore, confidence, lenses: qaLenses }), [draft, extraContext, projectName, productType, readinessScore, confidence, qaLenses]);
@@ -497,9 +528,9 @@ export default function FeatureBuilderCompanionPanel({ draft, extraContext = "",
           style={{
             ...guidanceCardStyle,
             marginTop: "12px",
-            borderColor: "rgba(248, 113, 113, 0.26)",
+            borderColor: "rgba(248, 113, 113, 0.28)",
             background:
-              "linear-gradient(135deg, rgba(127, 29, 29, 0.18), rgba(15, 23, 42, 0.72))",
+              "radial-gradient(circle at top left, rgba(248, 113, 113, 0.16), transparent 36%), linear-gradient(135deg, rgba(127, 29, 29, 0.16), rgba(15, 23, 42, 0.78))",
           }}
         >
           <div
@@ -516,7 +547,7 @@ export default function FeatureBuilderCompanionPanel({ draft, extraContext = "",
                 QAt Says
               </p>
               <h4 style={{ color: "#fff", fontSize: "0.92rem", margin: "3px 0 0" }}>
-                Live review notes
+                {primaryQatIntervention?.title ?? "Live review"}
               </h4>
             </div>
             <span
@@ -529,95 +560,196 @@ export default function FeatureBuilderCompanionPanel({ draft, extraContext = "",
                 padding: "5px 8px",
               }}
             >
-              watching
+              {primaryQatIntervention ? getToneLabel(primaryQatIntervention.tone) : "watching"}
             </span>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
-            {qatInterventions.map((item) => (
-              <div key={`${item.title}-${item.message}`} style={getGuidanceStyle(item.tone)}>
-                <span style={{ fontSize: "1rem", lineHeight: 1 }}>
-                  {item.tone === "risk" ? "⚠️" : item.tone === "good" ? "✅" : item.tone === "watch" ? "🔎" : "💬"}
+          {primaryQatIntervention ? (
+            <div style={getGuidanceStyle(primaryQatIntervention.tone)}>
+              <span style={{ fontSize: "1rem", lineHeight: 1 }}>
+                {getToneIcon(primaryQatIntervention.tone)}
+              </span>
+
+              <div>
+                <span
+                  style={{
+                    color: "rgba(229,231,235,0.72)",
+                    display: "block",
+                    fontSize: "0.74rem",
+                    lineHeight: 1.42,
+                  }}
+                >
+                  {primaryQatIntervention.message}
                 </span>
 
-                <div>
-                  <strong
+                <details style={{ marginTop: "8px" }}>
+                  <summary
                     style={{
+                      color: "rgba(254, 202, 202, 0.9)",
+                      cursor: "pointer",
+                      fontSize: "0.68rem",
+                      fontWeight: 900,
+                    }}
+                  >
+                    Why QAt cares
+                  </summary>
+                  <p
+                    style={{
+                      color: "rgba(229,231,235,0.62)",
+                      fontSize: "0.7rem",
+                      lineHeight: 1.4,
+                      margin: "6px 0 0",
+                    }}
+                  >
+                    {primaryQatIntervention.why}
+                  </p>
+                </details>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "7px",
+                    marginTop: "10px",
+                  }}
+                >
+                  <button
+                    onClick={() => onAppendPrompt(primaryQatIntervention.primaryAction.prompt)}
+                    style={{
+                      border: "1px solid rgba(248, 113, 113, 0.32)",
+                      borderRadius: "999px",
+                      background: "rgba(127, 29, 29, 0.36)",
                       color: "#fff",
-                      display: "block",
-                      fontSize: "0.8rem",
-                      lineHeight: 1.32,
+                      cursor: "pointer",
+                      fontSize: "0.68rem",
+                      fontWeight: 900,
+                      padding: "7px 9px",
                     }}
+                    type="button"
                   >
-                    {item.title}
-                  </strong>
+                    {primaryQatIntervention.primaryAction.label}
+                  </button>
 
-                  <span
-                    style={{
-                      color: "rgba(229,231,235,0.68)",
-                      display: "block",
-                      fontSize: "0.72rem",
-                      lineHeight: 1.38,
-                      marginTop: "4px",
-                    }}
-                  >
-                    {item.message}
-                  </span>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "7px",
-                      marginTop: "9px",
-                    }}
-                  >
+                  {primaryQatIntervention.secondaryAction ? (
                     <button
-                      onClick={() => onAppendPrompt(item.primaryAction.prompt)}
+                      onClick={() => onAppendPrompt(primaryQatIntervention.secondaryAction!.prompt)}
                       style={{
-                        border: "1px solid rgba(248, 113, 113, 0.32)",
+                        border: "1px solid rgba(148, 163, 184, 0.22)",
                         borderRadius: "999px",
-                        background: "rgba(127, 29, 29, 0.32)",
-                        color: "#fff",
+                        background: "rgba(15, 23, 42, 0.72)",
+                        color: "rgba(229,231,235,0.86)",
                         cursor: "pointer",
                         fontSize: "0.68rem",
-                        fontWeight: 900,
+                        fontWeight: 850,
                         padding: "7px 9px",
                       }}
                       type="button"
                     >
-                      {item.primaryAction.label}
+                      {primaryQatIntervention.secondaryAction.label}
                     </button>
-
-                    {item.secondaryAction ? (
-                      <button
-                        onClick={() => onAppendPrompt(item.secondaryAction!.prompt)}
-                        style={{
-                          border: "1px solid rgba(148, 163, 184, 0.22)",
-                          borderRadius: "999px",
-                          background: "rgba(15, 23, 42, 0.72)",
-                          color: "rgba(229,231,235,0.86)",
-                          cursor: "pointer",
-                          fontSize: "0.68rem",
-                          fontWeight: 850,
-                          padding: "7px 9px",
-                        }}
-                        type="button"
-                      >
-                        {item.secondaryAction.label}
-                      </button>
-                    ) : null}
-                  </div>
+                  ) : null}
                 </div>
+              </div>
+            </div>
+          ) : null}
+
+          {secondaryQatIntervention ? (
+            <div
+              style={{
+                alignItems: "center",
+                border: "1px solid rgba(148, 163, 184, 0.16)",
+                borderRadius: "13px",
+                background: "rgba(15, 23, 42, 0.42)",
+                display: "grid",
+                gap: "9px",
+                gridTemplateColumns: "22px minmax(0, 1fr) auto",
+                marginTop: "9px",
+                padding: "9px",
+              }}
+            >
+              <span aria-hidden="true">{getToneIcon(secondaryQatIntervention.tone)}</span>
+              <div>
+                <strong style={{ color: "#fff", display: "block", fontSize: "0.74rem" }}>
+                  Also watching: {secondaryQatIntervention.title}
+                </strong>
+                <span
+                  style={{
+                    color: "rgba(229,231,235,0.58)",
+                    display: "block",
+                    fontSize: "0.67rem",
+                    lineHeight: 1.32,
+                    marginTop: "2px",
+                  }}
+                >
+                  {secondaryQatIntervention.message}
+                </span>
+              </div>
+              <button
+                onClick={() => onAppendPrompt(secondaryQatIntervention.primaryAction.prompt)}
+                style={{
+                  border: "1px solid rgba(148, 163, 184, 0.2)",
+                  borderRadius: "999px",
+                  background: "rgba(2, 6, 23, 0.72)",
+                  color: "rgba(229,231,235,0.84)",
+                  cursor: "pointer",
+                  fontSize: "0.66rem",
+                  fontWeight: 900,
+                  padding: "6px 8px",
+                  whiteSpace: "nowrap",
+                }}
+                type="button"
+              >
+                Add
+              </button>
+            </div>
+          ) : null}
+        </section>
+
+        <details
+          style={{
+            ...compactDetailsStyle,
+            borderColor: "rgba(96,165,250,0.2)",
+            background: "linear-gradient(135deg, rgba(30,64,175,0.1), rgba(0,0,0,0.2))",
+          }}
+        >
+          <summary
+            style={{
+              alignItems: "center",
+              color: "#fff",
+              cursor: "pointer",
+              display: "flex",
+              fontSize: "0.86rem",
+              fontWeight: 900,
+              justifyContent: "space-between",
+              gap: "10px",
+            }}
+          >
+            <span>Live insights</span>
+            <span style={{ color: "rgba(229,231,235,0.48)", fontSize: "0.68rem", fontWeight: 850 }}>
+              {getCompactInsightSummary(liveInsights)}
+            </span>
+          </summary>
+          <div style={liveInsightsGridStyle}>
+            {liveInsights.map((insight) => (
+              <div key={insight.label} title={insight.detail} style={getInsightStyle(insight.tone)}>
+                <strong
+                  style={{
+                    color: "rgba(255,255,255,0.82)",
+                    display: "block",
+                    fontSize: "0.66rem",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {insight.label}
+                </strong>
+                <span style={{ color: "#fff", display: "block", fontSize: "0.78rem", fontWeight: 900, marginTop: "3px" }}>
+                  {insight.value}
+                </span>
               </div>
             ))}
           </div>
-        </section>
-
-        <section style={{ ...guidanceCardStyle, marginTop: "12px", borderColor: "rgba(96,165,250,0.24)", background: "linear-gradient(135deg, rgba(30,64,175,0.14), rgba(0,0,0,0.24))" }}>
-          <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between", gap: "10px" }}><p className="report-kicker" style={{ margin: 0 }}>Live insights</p><span style={{ color: "rgba(229,231,235,0.5)", fontSize: "0.68rem", fontWeight: 850 }}>Updates while typing</span></div>
-          <div style={liveInsightsGridStyle}>{liveInsights.map((insight) => <div key={insight.label} title={insight.detail} style={getInsightStyle(insight.tone)}><strong style={{ color: "rgba(255,255,255,0.82)", display: "block", fontSize: "0.66rem", letterSpacing: "0.08em", textTransform: "uppercase" }}>{insight.label}</strong><span style={{ color: "#fff", display: "block", fontSize: "0.78rem", fontWeight: 900, marginTop: "3px" }}>{insight.value}</span></div>)}</div>
-        </section>
+        </details>
 
         <section style={{ ...guidanceCardStyle, marginTop: "12px", borderColor: "rgba(250,204,21,0.28)", background: "linear-gradient(135deg, rgba(113,63,18,0.28), rgba(0,0,0,0.25))" }}><p className="report-kicker" style={{ marginBottom: "7px" }}>Suggested next move</p><button onClick={() => onAppendPrompt(nextQuestion)} style={{ border: "1px solid rgba(250,204,21,0.34)", borderRadius: "14px", background: "rgba(15,23,42,0.74)", color: "#fff", cursor: "pointer", fontWeight: 900, lineHeight: 1.35, padding: "11px 12px", textAlign: "left", width: "100%" }} type="button">{nextQuestion}<span style={{ color: "rgba(253,230,138,0.8)", display: "block", fontSize: "0.68rem", fontWeight: 850, marginTop: "5px" }}>Click to insert into the draft</span></button></section>
 
